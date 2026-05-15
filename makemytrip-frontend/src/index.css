@@ -1,0 +1,88 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap');
+@import './styles/design-tokens.css';
+@import './styles/InnerPages.css';
+
+
+/* ── Global Reset ──────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ── Base ──────────────────────────────────────────────────── */
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-family);
+  font-size: var(--fs-body);
+  font-weight: var(--fw-regular);
+  color: var(--clr-text-primary);
+  background: var(--clr-bg-base);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: var(--lh-relaxed);
+}
+
+#root { width: 100%; min-height: 100vh; }
+
+/* ── Typography reset ──────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-family);
+  font-weight: var(--fw-bold);
+  line-height: var(--lh-tight);
+  color: var(--clr-text-primary);
+}
+h1 { font-size: var(--fs-h1); }
+h2 { font-size: var(--fs-h2); }
+h3 { font-size: var(--fs-h3); }
+
+p { line-height: var(--lh-relaxed); }
+
+a { text-decoration: none; color: inherit; }
+a:hover { color: var(--clr-primary); }
+
+/* ── Form elements ─────────────────────────────────────────── */
+button    { cursor: pointer; font-family: var(--font-family); }
+input,
+select,
+textarea  { font-family: var(--font-family); font-size: var(--fs-body); }
+
+/* ── Accessibility ─────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--clr-primary);
+  outline-offset: 2px;
+}
+
+/* Respect reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+/* ── Primary Button (Image 3 design) ──────────────────────── */
+.btn-primary {
+  background-color: #3266B3 !important;
+  background: #3266B3 !important;
+  color: #FFFFFF !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 12px 24px;
+  font-family: var(--font-family, 'Space Grotesk', sans-serif);
+  font-weight: 800 !important;
+  text-transform: uppercase;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+  transition: all 0.2s ease-in-out;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.btn-primary:hover {
+  background-color: #285494 !important;
+  background: #285494 !important;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15) !important;
+  transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: translateY(1px);
+}

@@ -1,0 +1,188 @@
+/* ═══════════════════════════════════════════════════════════════
+   MakeMyTrip — Design Tokens  (Cosmos 2.1)
+   Source of truth: files/design.md
+   Import this file FIRST in index.css so every stylesheet can
+   reference these custom properties.
+═══════════════════════════════════════════════════════════════ */
+:root {
+  /* ── Brand Colors ──────────────────────────────────────────── */
+  --clr-primary:        #1F6DB8;   /* action CTAs, active states   */
+  --clr-primary-dark:   #003580;   /* headers, navbar              */
+  --clr-primary-hover:  #1557A0;   /* primary button hover         */
+  --clr-gold:           #FFD700;   /* ratings, highlights          */
+
+  /* ── Semantic Colors ───────────────────────────────────────── */
+  --clr-success:        #4CAF50;
+  --clr-success-bg:     #E8F5E9;
+  --clr-error:          #F44336;
+  --clr-error-bg:       #FFEBEE;
+  --clr-warning:        #FF9800;
+  --clr-warning-bg:     #FFF3E0;
+  --clr-info:           #2196F3;
+  --clr-info-bg:        #E3F2FD;
+
+  /* ── Text Colors ───────────────────────────────────────────── */
+  --clr-text-primary:   #212121;
+  --clr-text-secondary: #757575;
+  --clr-text-hint:      #9E9E9E;
+  --clr-text-inverse:   #FFFFFF;
+  --clr-text-dark:      #424242;
+
+  /* ── Backgrounds ───────────────────────────────────────────── */
+  --clr-bg-base:        #F5F5F5;   /* page background              */
+  --clr-bg-white:       #FFFFFF;   /* card / surface               */
+  --clr-bg-hover:       #F5F5F5;
+
+  /* ── Borders ───────────────────────────────────────────────── */
+  --clr-border:         #E0E0E0;
+  --clr-border-focus:   #1F6DB8;
+  --clr-divider:        #EEEEEE;
+
+  /* ── Airline Brand Colors ──────────────────────────────────── */
+  --clr-indigo:         #00a0e2;
+  --clr-airindia:       #C8102E;
+  --clr-vistara:        #6D1F7F;
+  --clr-spicejet:       #FF7800;
+  --clr-akasa:          #E8682A;
+  --clr-aiexpress:      #CC0000;
+
+  /* ── Dark Mode (surfaces) ──────────────────────────────────── */
+  --clr-dm-bg:          #121212;
+  --clr-dm-surface:     #1E1E1E;
+  --clr-dm-border:      #383838;
+  --clr-dm-text:        #FFFFFF;
+  --clr-dm-text-sec:    #B0B0B0;
+
+  /* ── Spacing (8 px base) ───────────────────────────────────── */
+  --sp-xs:   4px;
+  --sp-s:    8px;
+  --sp-m:    16px;
+  --sp-l:    24px;
+  --sp-xl:   32px;
+  --sp-xxl:  48px;
+
+  /* ── Typography (Space Grotesk SaaS System) ─────────────────── */
+  --font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Fluid Responsive Typography Scale */
+  --fs-h1:       clamp(2rem, 4vw, 3rem);        /* Hero Heading 32px - 48px */
+  --fs-h2:       clamp(1.75rem, 3vw, 2.25rem);  /* Section Heading 28px - 36px */
+  --fs-h3:       clamp(1.5rem, 2.5vw, 1.75rem); /* Subheading 24px - 28px */
+  --fs-h4:       clamp(1.25rem, 2vw, 1.5rem);   /* Card Title 20px - 24px */
+  --fs-h5:       clamp(1.125rem, 1.75vw, 1.25rem); /* Small Heading 18px - 20px */
+  --fs-h6:       1rem;                          /* Label Heading 16px */
+  --fs-body-lg:  1.125rem;                      /* Body Large 18px */
+  --fs-body:     1rem;                          /* Body Regular 16px */
+  --fs-body-sm:  0.875rem;                      /* Body Small 14px */
+  --fs-small:    0.875rem;                      /* Legacy compat */
+  --fs-caption:  0.75rem;                       /* Caption 12px */
+
+  --fw-light:    300;
+  --fw-regular:  400;
+  --fw-medium:   500;
+  --fw-semibold: 600;
+  --fw-bold:     700;
+
+  --lh-tight:    1.15;
+  --lh-snug:     1.25;
+  --lh-normal:   1.5;
+  --lh-relaxed:  1.6;
+
+  /* ── Border Radius ─────────────────────────────────────────── */
+  --radius-xs:   2px;
+  --radius-sm:   4px;   /* inputs, chips                          */
+  --radius-md:   8px;   /* cards                                  */
+  --radius-lg:   12px;
+  --radius-xl:   20px;
+  --radius-full: 9999px;
+
+  /* ── Elevation / Shadows ───────────────────────────────────── */
+  --shadow-sm:  0 2px 8px  rgba(0, 0, 0, 0.08);
+  --shadow-md:  0 4px 16px rgba(0, 0, 0, 0.12);
+  --shadow-lg:  0 8px 32px rgba(0, 0, 0, 0.15);
+
+  /* ── Transitions ───────────────────────────────────────────── */
+  --transition-fast: all 0.1s ease-out;
+  --transition-base: all 0.2s ease-in-out;
+  --transition-slow: all 0.3s ease-in-out;
+
+  /* ── Layout ────────────────────────────────────────────────── */
+  --max-width:  1200px;
+  --header-h:   64px;   /* matches .common-header-inner height  */
+  --sidebar-w:  268px;
+
+  /* ── Button Sizes ──────────────────────────────────────────── */
+  --btn-sm-pad:  8px 16px;
+  --btn-sm-fs:   var(--fs-small);
+  --btn-sm-h:    32px;
+
+  --btn-md-pad:  12px 24px;
+  --btn-md-fs:   var(--fs-body);
+  --btn-md-h:    40px;
+
+  --btn-lg-pad:  16px 32px;
+  --btn-lg-fs:   var(--fs-body-lg);
+  --btn-lg-h:    48px;
+
+  /* ── Input ─────────────────────────────────────────────────── */
+  --input-border: 1px solid var(--clr-border);
+  --input-radius: var(--radius-sm);
+  --input-pad:    12px 16px;
+  --input-fs:     var(--fs-body);
+  --input-h:      40px;
+}
+
+/* ── Utility classes used across every page ─────────────────── */
+.ds-page-bg   { background: var(--clr-bg-base); min-height: 100vh; }
+.ds-container { max-width: var(--max-width); margin: 0 auto; padding: 0 var(--sp-m); }
+
+/* Primary Button */
+.ds-btn-primary {
+  background: var(--clr-primary);
+  color: var(--clr-text-inverse);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-family);
+  font-weight: var(--fw-bold);
+  cursor: pointer;
+  transition: var(--transition-fast);
+  letter-spacing: 0.5px;
+}
+.ds-btn-primary:hover  { background: var(--clr-primary-hover); box-shadow: var(--shadow-sm); }
+.ds-btn-primary:active { transform: translateY(1px); }
+.ds-btn-primary:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* Secondary Button */
+.ds-btn-secondary {
+  background: transparent;
+  color: var(--clr-primary);
+  border: 1.5px solid var(--clr-primary);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-family);
+  font-weight: var(--fw-semibold);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+.ds-btn-secondary:hover { background: var(--clr-info-bg); }
+
+/* Card shell */
+.ds-card {
+  background: var(--clr-bg-white);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+.ds-card:hover { box-shadow: var(--shadow-md); }
+
+/* Status badges */
+.ds-badge-success { color: var(--clr-success); background: var(--clr-success-bg); }
+.ds-badge-error   { color: var(--clr-error);   background: var(--clr-error-bg);   }
+.ds-badge-warning { color: var(--clr-warning);  background: var(--clr-warning-bg); }
+.ds-badge-info    { color: var(--clr-info);     background: var(--clr-info-bg);    }
+
+/* Divider */
+.ds-divider {
+  height: 1px;
+  background: var(--clr-divider);
+  border: none;
+  margin: var(--sp-m) 0;
+}

@@ -1,0 +1,1032 @@
+/* ═══════════════════════════════════════════════════════════════
+   MakeMyTrip — Awwwards-Level Auth Page · Atlas Edition v3
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Page wrapper: deep starfield background ─────────────────── */
+.login-page-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 70px);
+  background: #050e1f;
+  padding: 24px var(--sp-m, 16px);
+  position: relative;
+  overflow: hidden;
+  font-family: var(--font-family, 'Poppins', sans-serif);
+}
+
+/* Subtle diagonal grid lines on the dark page bg */
+.login-page-wrapper::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(-45deg,
+      transparent,
+      transparent 80px,
+      rgba(255, 255, 255, 0.013) 80px,
+      rgba(255, 255, 255, 0.013) 81px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Ocean teal ambient glow — bottom left */
+.login-bg-blob-1 {
+  position: absolute;
+  bottom: -22%;
+  left: -8%;
+  width: 700px;
+  height: 440px;
+  background: radial-gradient(ellipse, rgba(0, 190, 220, 0.13) 0%, transparent 70%);
+  filter: blur(85px);
+  z-index: 0;
+  pointer-events: none;
+  animation: blob-breathe 9s ease-in-out infinite alternate;
+}
+
+/* Sunset amber glow — top right */
+.login-bg-blob-2 {
+  position: absolute;
+  top: -14%;
+  right: -10%;
+  width: 580px;
+  height: 580px;
+  background: radial-gradient(circle, rgba(255, 130, 30, 0.08) 0%, transparent 70%);
+  filter: blur(100px);
+  z-index: 0;
+  pointer-events: none;
+  animation: blob-breathe 12s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes blob-breathe {
+  from {
+    transform: scale(1) translate(0, 0);
+    opacity: 1;
+  }
+
+  to {
+    transform: scale(1.12) translate(18px, -12px);
+    opacity: 0.75;
+  }
+}
+
+/* ── Main two-pane card ─────────────────────────────────────── */
+.login-container-card {
+  display: flex;
+  width: 100%;
+  max-width: 1080px;
+  border-radius: 28px;
+  box-shadow:
+    0 40px 100px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(255, 255, 255, 0.055),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+  /* Entrance animation */
+  animation: card-enter 0.75s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(36px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   LEFT — Cinematic Travel Visual Panel
+   ══════════════════════════════════════════════════════════════ */
+.login-visual-panel {
+  flex: 1.2;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 40px 42px;
+  color: #fff;
+  overflow: hidden;
+  /* Cinematic beach aerial with layered dark overlay */
+  background:
+    linear-gradient(178deg,
+      rgba(3, 16, 40, 0.80) 0%,
+      rgba(4, 26, 62, 0.50) 34%,
+      rgba(3, 16, 40, 0.68) 72%,
+      rgba(3, 16, 40, 0.92) 100%),
+    url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=80') center / cover no-repeat;
+}
+
+/* Decorative "EXPLORE" watermark in panel background */
+.panel-watermark {
+  position: absolute;
+  bottom: 52px;
+  right: -18px;
+  font-size: 128px;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.032);
+  letter-spacing: -6px;
+  pointer-events: none;
+  z-index: 1;
+  user-select: none;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* Top haze for logo contrast */
+.login-visual-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 170px;
+  background: linear-gradient(180deg, rgba(3, 16, 40, 0.68) 0%, transparent 100%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Bottom haze for stats contrast */
+.login-visual-panel::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 155px;
+  background: linear-gradient(0deg, rgba(3, 16, 40, 0.80) 0%, transparent 100%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* ── SVG flight arc ── */
+.flight-arc-wrapper {
+  position: absolute;
+  top: 58px;
+  left: 0;
+  right: 0;
+  height: 64px;
+  pointer-events: none;
+  z-index: 4;
+  overflow: hidden;
+}
+
+.flight-arc-svg {
+  width: 100%;
+  height: 64px;
+}
+
+/* ── Brand logo ── */
+.visual-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  position: relative;
+  z-index: 6;
+  width: fit-content;
+  display: none;
+}
+
+.brand-circle {
+  width: 38px;
+  height: 38px;
+  background: rgba(255, 255, 255, 0.96);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 16px;
+  color: #003580;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
+  flex-shrink: 0;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.visual-brand:hover .brand-circle {
+  transform: rotate(-10deg) scale(1.1);
+}
+
+.brand-text {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.45);
+}
+
+.brand-trip {
+  color: #ffb347;
+}
+
+/* ── Center hero editorial content ── */
+.visual-promo-content {
+  position: relative;
+  z-index: 6;
+  margin: auto 0;
+}
+
+/* Live pulsing badge */
+.dest-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.20);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-radius: 24px;
+  padding: 6px 16px 6px 10px;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.95);
+  margin-bottom: 20px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+.dest-badge-dot {
+  width: 7px;
+  height: 7px;
+  background: #4ade80;
+  border-radius: 50%;
+  flex-shrink: 0;
+  animation: live-pulse 2.2s ease-in-out infinite;
+  box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.5);
+}
+
+@keyframes live-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.55);
+  }
+
+  65% {
+    box-shadow: 0 0 0 7px rgba(74, 222, 128, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(74, 222, 128, 0);
+  }
+}
+
+/* Editorial gradient headline */
+.visual-promo-heading {
+  font-size: 40px;
+  font-weight: 800;
+  line-height: 1.13;
+  margin: 0 0 14px;
+  letter-spacing: -1px;
+  background: linear-gradient(130deg, #ffffff 40%, #ffe082 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.visual-promo-desc {
+  font-size: 13.5px;
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1.65;
+  margin: 0 0 22px;
+  max-width: 310px;
+}
+
+/* ── Live departure board ── */
+.departure-board {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.departure-board-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 15px;
+  background: rgba(255, 255, 255, 0.055);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 9.5px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.50);
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+}
+
+.departure-board-body {
+  padding: 9px 15px 11px;
+  height: 48px;
+  overflow: hidden;
+}
+
+.departure-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 48px;
+  /* Flip-in animation triggered by React key change */
+  animation: flip-in 0.42s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+  perspective: 600px;
+}
+
+@keyframes flip-in {
+  from {
+    opacity: 0;
+    transform: translateY(-16px) rotateX(-28deg);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) rotateX(0deg);
+  }
+}
+
+.dep-route {
+  font-size: 17px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 0.3px;
+  display: block;
+  line-height: 1.1;
+}
+
+.dep-airport {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.42);
+  font-weight: 500;
+  display: block;
+  margin-top: 2px;
+}
+
+.dep-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dep-flight {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.50);
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.dep-status {
+  font-size: 10px;
+  font-weight: 800;
+  color: #4ade80;
+  letter-spacing: 0.6px;
+  padding: 3px 11px;
+  background: rgba(74, 222, 128, 0.13);
+  border-radius: 20px;
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+
+.dep-status.boarding {
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.13);
+  animation: boarding-blink 1.4s ease-in-out infinite;
+}
+
+@keyframes boarding-blink {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.55;
+  }
+}
+
+/* ── Destination photo cards (staggered heights) ── */
+.dest-cards-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.dest-card {
+  flex: 1;
+  position: relative;
+  border-radius: 16px;
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+  transition:
+    transform 0.32s cubic-bezier(0.34, 1.4, 0.64, 1),
+    box-shadow 0.32s ease;
+}
+
+/* Staggered heights for visual rhythm */
+.dest-card:nth-child(1) {
+  height: 126px;
+}
+
+.dest-card:nth-child(2) {
+  height: 106px;
+}
+
+.dest-card:nth-child(3) {
+  height: 126px;
+}
+
+.dest-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg,
+      rgba(0, 0, 0, 0.74) 0%,
+      rgba(0, 0, 0, 0.08) 55%,
+      transparent 100%);
+  transition: opacity 0.3s ease;
+}
+
+.dest-card:hover {
+  transform: translateY(-7px) scale(1.04);
+  box-shadow: 0 22px 44px rgba(0, 0, 0, 0.48);
+}
+
+/* HOT / TRENDING badge on cards */
+.dest-card-badge {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  background: linear-gradient(135deg, #ff3d5a, #ff7b3a);
+  color: #fff;
+  font-size: 8px;
+  font-weight: 900;
+  padding: 3px 9px;
+  border-radius: 20px;
+  letter-spacing: 0.9px;
+  z-index: 2;
+  text-transform: uppercase;
+  box-shadow: 0 2px 8px rgba(255, 61, 90, 0.40);
+}
+
+.dest-card-badge.trending {
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.38);
+}
+
+.dest-card-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 10px 13px;
+  z-index: 2;
+}
+
+.dest-card-name {
+  display: block;
+  font-size: 13px;
+  font-weight: 800;
+  color: #fff;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.55);
+}
+
+.dest-card-price {
+  display: block;
+  font-size: 10px;
+  color: #fde68a;
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+/* ── Bottom stats strip ── */
+.visual-stats-strip {
+  display: flex;
+  align-items: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.11);
+  padding-top: 18px;
+  position: relative;
+  z-index: 6;
+}
+
+.stat-item {
+  text-align: center;
+  flex: 1;
+  padding: 0 6px;
+}
+
+.stat-item+.stat-item {
+  border-left: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.stat-num {
+  display: block;
+  font-size: 22px;
+  font-weight: 900;
+  color: #fff;
+  line-height: 1;
+  letter-spacing: -0.5px;
+}
+
+.stat-label {
+  display: block;
+  font-size: 9.5px;
+  color: rgba(255, 255, 255, 0.50);
+  margin-top: 4px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   RIGHT — Authentication Form Panel
+   ══════════════════════════════════════════════════════════════ */
+.login-form-panel {
+  flex: 0.82;
+  padding: 44px 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: #ffffff;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle radial tint in top-left corner */
+.login-form-panel::before {
+  content: '';
+  position: absolute;
+  top: -40px;
+  left: -40px;
+  width: 260px;
+  height: 260px;
+  background: radial-gradient(circle, rgba(26, 115, 232, 0.05) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* Ocean-to-sky gradient accent bar at top of form panel */
+.form-accent-bar {
+  height: 3px;
+  background: linear-gradient(90deg, #003580 0%, #1a73e8 55%, #00c4e0 100%);
+  border-radius: 2px;
+  margin-bottom: 30px;
+  flex-shrink: 0;
+  position: relative;
+}
+
+/* Soft glow below accent bar */
+.form-accent-bar::after {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 0;
+  right: 0;
+  height: 8px;
+  background: inherit;
+  filter: blur(8px);
+  opacity: 0.35;
+  border-radius: 2px;
+}
+
+.form-header-box {
+  margin-bottom: 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.form-main-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: #0a1628;
+  margin-bottom: 6px;
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+}
+
+.form-sub-title {
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.58;
+}
+
+/* ── Tab switcher ── */
+.login-tabs-container {
+  display: flex;
+  background: #f1f5f9;
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 22px;
+  position: relative;
+}
+
+.login-tab-btn {
+  flex: 1;
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  color: #94a3b8;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: inherit;
+  position: relative;
+  z-index: 1;
+}
+
+.login-tab-btn.active {
+  background: #fff;
+  color: #003580;
+  font-weight: 700;
+  box-shadow: 0 2px 12px rgba(0, 53, 128, 0.10);
+}
+
+/* ── Form fields ── */
+.login-form-element {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+  z-index: 1;
+}
+
+.login-input-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.login-input-group label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+  margin-bottom: 7px;
+  letter-spacing: 0.9px;
+  text-transform: uppercase;
+  transition: color 0.2s ease;
+}
+
+/* Label turns blue when any child is focused */
+.login-input-group:focus-within label {
+  color: #1a73e8;
+}
+
+.login-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* Gradient border input — the premium effect */
+.login-input-field {
+  width: 100%;
+  height: 50px;
+  padding: 12px 16px 12px 46px;
+  border: 1.5px solid #e8edf5;
+  border-radius: 12px;
+  font-size: 14px;
+  color: #1e293b;
+  background: #f8fafc;
+  outline: none;
+  transition: border-color 0.22s ease, box-shadow 0.22s ease, background 0.22s ease;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.login-input-field::placeholder {
+  color: #b0bec5;
+  font-size: 13.5px;
+}
+
+/* On focus: gradient border using double background-clip */
+.login-input-field:focus {
+  border-color: transparent;
+  background-color: #fff;
+  background-image:
+    linear-gradient(#fff, #fff),
+    linear-gradient(135deg, #003580, #1a73e8, #00c4e0);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  box-shadow: 0 0 0 4px rgba(26, 115, 232, 0.09);
+}
+
+.input-icon-left {
+  position: absolute;
+  left: 15px;
+  font-size: 16px;
+  color: #cbd5e1;
+  pointer-events: none;
+  z-index: 1;
+  transition: color 0.2s ease;
+}
+
+/* Icon turns accent-blue when input is focused */
+.login-input-group:focus-within .input-icon-left {
+  color: #1a73e8;
+}
+
+/* ── Error card ── */
+.login-error-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  padding: 12px 16px;
+  border-radius: 11px;
+  font-size: 13px;
+  font-weight: 500;
+  animation: shake 0.42s ease-in-out;
+}
+
+@keyframes shake {
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  18% {
+    transform: translateX(-6px);
+  }
+
+  38% {
+    transform: translateX(6px);
+  }
+
+  58% {
+    transform: translateX(-4px);
+  }
+
+  78% {
+    transform: translateX(4px);
+  }
+}
+
+/* ── Forgot password link ── */
+.forgot-password-link {
+  background: none;
+  border: none;
+  color: #1a73e8;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+  transition: color 0.2s ease;
+}
+
+.forgot-password-link:hover {
+  color: #003580;
+  text-decoration: underline;
+}
+
+/* ── Premium submit button ── */
+.login-submit-btn {
+  width: 100%;
+  height: 52px;
+  background: linear-gradient(135deg, #003580 0%, #1565c0 50%, #1a73e8 100%);
+  background-size: 200% 100%;
+  background-position: right center;
+  color: #fff;
+  border: none;
+  border-radius: 13px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 6px 22px rgba(26, 115, 232, 0.34);
+  transition:
+    background-position 0.5s ease,
+    box-shadow 0.3s ease,
+    transform 0.2s ease;
+  letter-spacing: 0.3px;
+  margin-top: 6px;
+  font-family: inherit;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+/* Shimmer sweep on hover */
+.login-submit-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(105deg,
+      transparent 30%,
+      rgba(255, 255, 255, 0.20) 50%,
+      transparent 70%);
+  transform: skewX(-20deg);
+  transition: left 0.6s ease;
+  pointer-events: none;
+}
+
+.login-submit-btn:hover::before {
+  left: 140%;
+}
+
+.login-submit-btn:hover {
+  background-position: left center;
+  box-shadow: 0 10px 30px rgba(26, 115, 232, 0.42);
+  transform: translateY(-2px);
+}
+
+.login-submit-btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 4px 10px rgba(26, 115, 232, 0.24);
+}
+
+.login-submit-btn:disabled {
+  background: #94a3b8;
+  background-size: 100% 100%;
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ── Footer: secure badge + switch link ── */
+.form-secure-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 14px;
+  font-size: 11px;
+  color: #94a3b8;
+  letter-spacing: 0.2px;
+  position: relative;
+  z-index: 1;
+}
+
+.form-footer-action {
+  text-align: center;
+  margin-top: 16px;
+  font-size: 13.5px;
+  color: #64748b;
+  position: relative;
+  z-index: 1;
+}
+
+.form-footer-switch-btn {
+  background: none;
+  border: none;
+  color: #003580;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 5px;
+  font-size: 13.5px;
+  font-family: inherit;
+  transition: color 0.2s ease;
+}
+
+.form-footer-switch-btn:hover {
+  color: #1a73e8;
+  text-decoration: underline;
+}
+
+.form-legal-notice {
+  text-align: center;
+  margin-top: 18px;
+  font-size: 11px;
+  color: #b0bec5;
+  line-height: 1.65;
+  position: relative;
+  z-index: 1;
+}
+
+.legal-highlight-link {
+  color: #1a73e8;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.legal-highlight-link:hover {
+  text-decoration: underline;
+}
+
+/* ── Spinner ── */
+.login-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.28);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 0.75s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   MOBILE — compact beach header strip (≤ 900px)
+   ══════════════════════════════════════════════════════════════ */
+.login-mobile-hero {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .login-container-card {
+    max-width: 460px;
+    flex-direction: column;
+    border-radius: 22px;
+  }
+
+  .login-visual-panel {
+    display: none;
+  }
+
+  .login-mobile-hero {
+    display: flex;
+    align-items: flex-end;
+    height: 148px;
+    padding: 0 24px 18px;
+    background:
+      linear-gradient(0deg, rgba(3, 16, 40, 0.85) 0%, rgba(3, 16, 40, 0.20) 58%, transparent 100%),
+      url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=700&q=80') center / cover no-repeat;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .mobile-flight-strip {
+    position: absolute;
+    top: 30px;
+    left: 0;
+    right: 0;
+    height: 22px;
+    overflow: hidden;
+  }
+
+  .flight-path-line {
+    position: absolute;
+    top: 50%;
+    left: 4%;
+    right: 4%;
+    height: 1px;
+    transform: translateY(-50%);
+    background: repeating-linear-gradient(90deg,
+        rgba(255, 255, 255, 0.26) 0px, rgba(255, 255, 255, 0.26) 6px,
+        transparent 6px, transparent 15px);
+  }
+
+  .flight-plane-icon {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-55%);
+    font-size: 15px;
+    animation: fly-across 7s ease-in-out infinite;
+  }
+
+  @keyframes fly-across {
+    0% {
+      left: 2%;
+      opacity: 0;
+    }
+
+    8% {
+      opacity: 1;
+    }
+
+    92% {
+      opacity: 1;
+    }
+
+    100% {
+      left: 93%;
+      opacity: 0;
+    }
+  }
+
+  .mobile-hero-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    z-index: 3;
+  }
+
+  .login-form-panel {
+    padding: 28px 24px;
+  }
+
+  .form-accent-bar {
+    margin-bottom: 20px;
+  }
+}

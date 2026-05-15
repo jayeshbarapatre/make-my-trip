@@ -1,0 +1,382 @@
+.pmt-wrapper {
+  background-color: #eef1f5;
+  min-height: 100vh;
+  padding: 24px 0 60px;
+  font-family: 'Space Grotesk', sans-serif;
+  color: #0f172a;
+}
+
+.pmt-top-bar {
+  background: #fff;
+  border-bottom: 1px solid #cbd5e1;
+  padding: 16px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.pmt-logo {
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pmt-secure-badge {
+  color: #10b981;
+  font-size: 13px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pmt-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.pmt-grid {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 980px) {
+  .pmt-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Left Column Cards ── */
+.pmt-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  margin-bottom: 20px;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+}
+
+.pmt-summary-box {
+  padding: 20px 24px;
+}
+
+.pmt-summary-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.pmt-prop-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.pmt-prop-thumb {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.pmt-prop-text h3 {
+  font-size: 18px;
+  font-weight: 800;
+  margin: 0 0 4px;
+}
+
+.pmt-meta {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0;
+}
+
+.pmt-toggle {
+  color: #008cff;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.pmt-traveller-row {
+  border-top: 1px solid #e2e8f0;
+  padding: 14px 24px;
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  font-size: 13px;
+  color: #475569;
+}
+
+.pmt-traveller-lbl {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.pmt-login-promo {
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fff;
+}
+
+.pmt-login-text h4 {
+  font-size: 16px;
+  font-weight: 800;
+  margin: 0 0 4px;
+}
+
+.pmt-login-text p {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0;
+}
+
+.pmt-login-btn {
+  background: #008cff;
+  color: #fff;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-weight: 800;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+/* Trip Secure Banner */
+.pmt-secure-banner {
+  padding: 20px 24px;
+  background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 100%);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pmt-sec-badge {
+  background: #3b82f6;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 4px;
+  display: inline-block;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.pmt-sec-hdr {
+  font-size: 16px;
+  font-weight: 800;
+  color: #1e3a8a;
+  margin: 0 0 4px;
+}
+
+.pmt-sec-desc {
+  font-size: 12px;
+  color: #3b82f6;
+  margin: 0;
+}
+
+.pmt-sec-add {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+/* Payment Options List */
+.pmt-options-title {
+  padding: 20px 24px 12px;
+  font-size: 18px;
+  font-weight: 800;
+  border-bottom: 1px solid #e2e8f0;
+  margin: 0;
+}
+
+.pmt-option-item {
+  padding: 20px 24px;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.pmt-option-item:hover {
+  background: #f8fafc;
+}
+
+.pmt-option-item:last-child {
+  border-bottom: none;
+}
+
+.pmt-opt-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.pmt-opt-icon {
+  font-size: 24px;
+  width: 32px;
+  text-align: center;
+}
+
+.pmt-opt-name {
+  font-size: 16px;
+  font-weight: 800;
+  margin: 0 0 2px;
+}
+
+.pmt-opt-sub {
+  font-size: 12px;
+  color: #64748b;
+  margin: 0;
+}
+
+.pmt-emi-badge {
+  background: #10b981;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* ── Right Column Sidebar Cards ── */
+.pmt-total-card {
+  padding: 24px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  border: 1px solid #e2e8f0;
+  margin-bottom: 20px;
+}
+
+.pmt-due-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+}
+
+.pmt-due-lbl {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.pmt-due-val {
+  font-size: 26px;
+  font-weight: 900;
+  color: #eb2026;
+}
+
+.pmt-due-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: #475569;
+  margin-bottom: 12px;
+}
+
+/* Scan to Pay Card */
+.pmt-qr-card {
+  padding: 24px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  border: 1px solid #e2e8f0;
+  text-align: center;
+}
+
+.pmt-qr-hdr {
+  font-size: 16px;
+  font-weight: 800;
+  text-align: left;
+  margin: 0 0 4px;
+}
+
+.pmt-qr-sub {
+  font-size: 12px;
+  color: #64748b;
+  text-align: left;
+  margin: 0 0 20px;
+}
+
+.pmt-qr-box {
+  background: #f8fafc;
+  border: 2px dashed #cbd5e1;
+  padding: 24px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.pmt-qr-img {
+  width: 140px;
+  height: 140px;
+  opacity: 0.9;
+  margin: 0 auto;
+}
+
+.pmt-qr-overlay-btn {
+  background: #008cff;
+  color: #fff;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 6px;
+  font-weight: 800;
+  font-size: 13px;
+  cursor: pointer;
+  margin-top: 16px;
+}
+
+.pmt-qr-logos {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  font-size: 20px;
+  color: #64748b;
+  margin-top: 16px;
+}
+
+/* Payment Active Dialog Simulation */
+.pmt-action-box {
+  background: #f8fafc;
+  padding: 20px 24px;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pmt-final-btn {
+  background: #eb2026;
+  color: #fff;
+  border: none;
+  padding: 12px 32px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(235,32,38,0.3);
+}

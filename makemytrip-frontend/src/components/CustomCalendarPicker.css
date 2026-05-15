@@ -1,0 +1,304 @@
+/* ═══════════════════════════════════════════════════════════════
+   MakeMyTrip — Custom Calendar Picker Stylesheet
+   ═══════════════════════════════════════════════════════════════ */
+
+.mmt-cal-overlay {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 9999;
+  width: 760px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.16), 0 1px 3px rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  font-family: "Space Grotesk", sans-serif;
+  overflow: hidden;
+  animation: mmtCalFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes mmtCalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Header section styling */
+.mmt-cal-header {
+  background: #fcfcfc;
+  border-bottom: 1px solid #f2f2f2;
+  padding: 14px 24px;
+}
+
+.mmt-cal-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mmt-cal-icon {
+  font-size: 14px;
+  color: #4a4a4a;
+}
+
+.mmt-cal-selected-val {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.mmt-cal-dash {
+  color: #9b9b9b;
+  margin: 0 4px;
+}
+
+.mmt-cal-helper-txt {
+  font-size: 13px;
+  color: #4a4a4a;
+  font-weight: 500;
+}
+
+/* Body / Months Grid Panel */
+.mmt-cal-body {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  padding: 20px 10px;
+}
+
+.mmt-cal-nav-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: #4a5568;
+  font-size: 18px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+  transition: all 0.15s ease;
+  user-select: none;
+  z-index: 10;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.mmt-cal-nav-btn:hover {
+  background: #f7fafc;
+  border-color: #cbd5e0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.mmt-cal-nav-btn.prev {
+  left: 12px;
+}
+
+.mmt-cal-nav-btn.next {
+  right: 12px;
+}
+
+/* Panels Grid */
+.mmt-cal-month-panels {
+  display: flex;
+  gap: 40px;
+  width: 100%;
+  padding: 0 24px;
+}
+
+.mmt-cal-month-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.mmt-cal-month-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1a1a;
+  text-align: center;
+  margin: 0 0 16px 0;
+  letter-spacing: -0.2px;
+}
+
+.mmt-cal-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 10px;
+  border-bottom: 1px solid #f7fafc;
+  padding-bottom: 6px;
+}
+
+.mmt-cal-wkday {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: #9b9b9b;
+  text-transform: capitalize;
+}
+
+/* Days Grid Layout */
+.mmt-cal-days-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  row-gap: 4px;
+}
+
+/* Standard day cell */
+.mmt-cal-day-cell {
+  background: none;
+  border: none;
+  padding: 4px 0;
+  height: 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  outline: none;
+  user-select: none;
+}
+
+.mmt-cal-day-cell.empty {
+  cursor: default;
+  background: none !important;
+}
+
+.mmt-cal-day-cell.disabled {
+  cursor: not-allowed;
+  opacity: 0.18;
+}
+
+.mmt-cal-day-num {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.mmt-cal-day-fare {
+  font-size: 9px;
+  color: #718096;
+  font-weight: 500;
+  margin-top: 2px;
+  letter-spacing: -0.1px;
+}
+
+/* Hover state */
+.mmt-cal-day-cell.active-day:not(.disabled):not(.selected):hover {
+  background: #ebf8ff;
+}
+
+.mmt-cal-day-cell.active-day:not(.disabled):not(.selected):hover .mmt-cal-day-num {
+  color: #0084ff;
+}
+
+/* Cheap / Lowest pricing highlight in green */
+.mmt-cal-day-fare.cheap {
+  color: #0A8043;
+  font-weight: 600;
+}
+
+/* Selected state matching image */
+.mmt-cal-day-cell.selected {
+  background: #2f80ed !important;
+  color: #ffffff !important;
+}
+
+.mmt-cal-day-cell.selected .mmt-cal-day-num,
+.mmt-cal-day-cell.selected .mmt-cal-day-fare {
+  color: #ffffff !important;
+  font-weight: 700;
+}
+
+/* Footer Section Styling */
+.mmt-cal-footer {
+  background: #ebf5ff;
+  color: #2b6cb0;
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+  padding: 8px 0;
+  letter-spacing: 0.1px;
+}
+
+/* Backdrop Blur overlay for screen focus on mobile view */
+.mmt-cal-backdrop {
+  display: none;
+}
+
+@keyframes mmtCalModalIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -40%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+/* Responsive adjustment for tablets/mobiles */
+@media (max-width: 768px) {
+  .mmt-cal-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(11, 17, 30, 0.6);
+    backdrop-filter: blur(6px);
+    z-index: 99998;
+    animation: mmtCalFadeIn 0.2s ease-out;
+  }
+
+  .mmt-cal-overlay {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: calc(100vw - 32px) !important;
+    max-width: 360px !important;
+    background: #ffffff;
+    border-radius: 16px;
+    z-index: 100000 !important;
+    overflow: hidden;
+    margin: 0 !important;
+    animation: mmtCalModalIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  }
+
+  .mmt-cal-month-panels {
+    flex-direction: column;
+    gap: 20px;
+    padding: 0 12px;
+  }
+
+  .mmt-cal-nav-btn {
+    top: 32px;
+    transform: none;
+  }
+
+  .mmt-cal-nav-btn.prev {
+    left: 12px;
+  }
+
+  .mmt-cal-nav-btn.next {
+    right: 12px;
+  }
+
+  .mmt-cal-month-col:nth-child(2) {
+    display: none;
+    /* Hide second month on very small devices to maintain beautiful layout */
+  }
+}

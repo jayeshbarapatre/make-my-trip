@@ -1,0 +1,803 @@
+
+
+import { useState, useEffect, useMemo, useRef } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
+import AOS from 'aos'
+import 'aos/dist/aos.css'
+import { setCriteria } from '../store/reducers/searchReducer'
+import { SERVICE_TABS } from '../data/homepageData'
+import { CITIES } from '../data/cities'
+import { flightService } from '../services/flightService'
+import CustomCalendarPicker from '../components/CustomCalendarPicker'
+import '../styles/HomePage.css'
+import '../styles/Hero.css'
+
+const TRIP_TYPES = [
+  { id: 'oneway',    label: 'One-way' },
+  { id: 'roundtrip', label: 'Round-trip' },
+  { id: 'multicity', label: 'Multi-city' },
+]
+
+const FARES = ['Regular', 'Student', 'Armed Forces', 'Senior Citizen', 'Doctors & Nurses']
+
+const OFFERS = [
+  { type: 'flight',  tag: 'FLIGHTS',  title: 'Flat 25% off domestic flights',  desc: 'Save up to ₹3,000 on bookings made with HDFC credit cards. Code: MMTHDFC',          cta: 'Book Now' },
+  { type: 'hotel',   tag: 'HOTELS',   title: 'Hotels at ₹999 per night',        desc: 'Verified 3-star+ stays across 80 Indian cities. Free cancellation included.',        cta: 'View Deals' },
+  { type: 'luxury',  tag: 'LUXURY',   title: 'Premium escapes, up to 40% off',  desc: 'Curated 5-star resorts in Maldives, Bali, and the Andamans for your dream getaway.', cta: 'Explore' },
+  { type: 'beach',   tag: 'PACKAGES', title: 'Goa long weekend bundle',          desc: 'Flights + hotel + airport transfer from ₹14,499 per person. 3N / 4D.',              cta: 'Book Now' },
+  { type: 'cab',     tag: 'CABS',     title: 'Flat ₹200 off airport cabs',       desc: 'Reliable airport transfers in 60+ cities. Pay only when you ride.',                  cta: 'Book Cab' },
+]
+
+const CATEGORIES = [
+  { key: 'flights',  icon: '✈',  title: 'Flights',  desc: 'Lowest fares across 500+ airlines, with Price Lock and free cancellation options.' },
+  { key: 'hotels',   icon: '🏨', title: 'Hotels',   desc: 'Pay-at-hotel options, verified reviews, and 2 lakh+ properties worldwide.' },
+  { key: 'holidays', icon: '🏝', title: 'Holidays', desc: 'End-to-end packages with flights, stays, sightseeing, and dedicated trip planners.' },
+  { key: 'cabs',     icon: '🚕', title: 'Cabs',     desc: 'Airport transfers, outstation, and hourly rentals — at transparent flat fares.' },
+]
+
+const PARTNERS = [
+  { cls: 'hp-p-ai', name: 'Air India' },
+  { cls: 'hp-p-6e', name: 'IndiGo' },
+  { cls: 'hp-p-uk', name: 'Vistara' },
+  { cls: 'hp-p-sg', name: 'SpiceJet' },
+  { cls: 'hp-p-tj', name: 'Taj Hotels' },
+  { cls: 'hp-p-mt', name: 'Marriott' },
+  { cls: 'hp-p-ob', name: 'Oberoi' },
+  { cls: 'hp-p-tg', name: 'Treebo' },
+]
+
+const DESTINATIONS = [
+  { cls: 'hp-d-goa',       name: 'Goa',       desc: 'Beach destinations · 4 nights', price: '₹12,499' },
+  { cls: 'hp-d-manali',    name: 'Manali',     desc: 'Hill stations · 5 nights',      price: '₹9,999' },
+  { cls: 'hp-d-jaipur',    name: 'Jaipur',     desc: 'Heritage & culture · 3 nights', price: '₹8,499' },
+  { cls: 'hp-d-kerala',    name: 'Kerala',     desc: 'Backwaters · 6 nights',         price: '₹16,999' },
+  { cls: 'hp-d-udaipur',   name: 'Udaipur',    desc: 'Lakes & palaces · 3 nights',    price: '₹11,299' },
+  { cls: 'hp-d-ladakh',    name: 'Ladakh',     desc: 'Adventure · 7 nights',          price: '₹24,999' },
+  { cls: 'hp-d-rishikesh', name: 'Rishikesh',  desc: 'Yoga & wellness · 2 nights',    price: '₹6,999' },
+  { cls: 'hp-d-andaman',   name: 'Andaman',    desc: 'Islands · 5 nights',            price: '₹19,499' },
+]
+
+const PICKS = [
+  { cls: 'hp-pick-1', eyebrow: "EDITOR'S PICK", title: 'Spice route through Kerala',  desc: '10-day curated journey through tea plantations, backwaters, and coastal towns.', from: '₹42,999' },
+  { cls: 'hp-pick-2', eyebrow: 'NEW',            title: 'Northeast escapes',            desc: 'Tawang & Shillong · 6N' },
+  { cls: 'hp-pick-3', eyebrow: 'WELLNESS',       title: 'Yoga retreats',                desc: 'Rishikesh & Pondicherry' },
+  { cls: 'hp-pick-4', eyebrow: 'LUXURY',         title: 'Royal Rajasthan',              desc: 'Heritage palace stays' },
+  { cls: 'hp-pick-5', eyebrow: 'ADVENTURE',      title: 'Himalayan treks',              desc: 'Beginner to expert routes' },
+]
+
+const FOOTER_COLS = [
+  { title: 'About',    links: ['Company', 'Investor relations', 'Careers', 'Foundation (CSR)', 'Newsroom'] },
+  { title: 'Booking',  links: ['Flight tickets', 'Hotel bookings', 'Holiday packages', 'Train tickets', 'Bus tickets', 'Cabs'] },
+  { title: 'Support',  links: ['Contact us', 'Customer support', 'FAQs', 'Cancellation refunds', 'Travel insurance', 'Web check-in'] },
+  { title: 'Policies', links: ['Privacy policy', 'User agreement', 'Terms of service', 'Cookie policy', 'Trust & safety'] },
+]
+
+export default function HomePage() {
+  const [activeTab,  setActiveTab]  = useState('flights')
+  const [tripType,   setTripType]   = useState('oneway')
+  const [activeFare, setActiveFare] = useState('Regular')
+  
+  // Autocomplete & Search state variables
+  const [fromQuery, setFromQuery] = useState('New Delhi')
+  const [debouncedFromQuery, setDebouncedFromQuery] = useState('New Delhi')
+  const [showFromSuggestions, setShowFromSuggestions] = useState(false)
+
+  const [toQuery, setToQuery] = useState('Bengaluru')
+  const [debouncedToQuery, setDebouncedToQuery] = useState('Bengaluru')
+  const [showToSuggestions, setShowToSuggestions] = useState(false)
+
+  // Traveler states
+  const [travellers, setTravellers] = useState({
+    adults: 1,
+    children: 0,
+    infants: 0,
+    class: 'Economy'
+  })
+  const [showTravellerDropdown, setShowTravellerDropdown] = useState(false)
+
+  // Date and UI controls
+  const [departDate, setDepartDate] = useState('2026-05-13')
+  const [returnDate, setReturnDate] = useState('2026-05-16')
+  const [showDepartCal, setShowDepartCal] = useState(false)
+  const [showReturnCal, setShowReturnCal] = useState(false)
+  const [phone,      setPhone]      = useState('')
+
+  // Results & Loading controls
+  const [loading, setLoading] = useState(false)
+  const [searched, setSearched] = useState(false)
+  const [flights, setFlights] = useState([])
+
+  const fromRef = useRef(null)
+  const toRef = useRef(null)
+  const travellerRef = useRef(null)
+
+  // Recent searches list
+  const [recentSearches, setRecentSearches] = useState(() => {
+    try {
+      const saved = localStorage.getItem('recentSearches_flights')
+      return saved ? JSON.parse(saved) : [
+        { from: 'New Delhi', to: 'Bengaluru', date: '2026-05-13' },
+        { from: 'Mumbai', to: 'Goa', date: '2026-05-14' }
+      ]
+    } catch {
+      return []
+    }
+  })
+
+  // Debounce effect
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedFromQuery(fromQuery)
+    }, 300)
+    return () => clearTimeout(handler)
+  }, [fromQuery])
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedToQuery(toQuery)
+    }, 300)
+    return () => clearTimeout(handler)
+  }, [toQuery])
+
+  // Autocomplete filtering
+  const fromSuggestions = useMemo(() => {
+    if (!debouncedFromQuery || debouncedFromQuery.trim().length < 1) return []
+    const q = debouncedFromQuery.toLowerCase().trim()
+    return CITIES.filter(c =>
+      c.city.toLowerCase().includes(q) ||
+      c.code.toLowerCase().includes(q) ||
+      c.country.toLowerCase().includes(q)
+    ).slice(0, 5)
+  }, [debouncedFromQuery])
+
+  const toSuggestions = useMemo(() => {
+    if (!debouncedToQuery || debouncedToQuery.trim().length < 1) return []
+    const q = debouncedToQuery.toLowerCase().trim()
+    return CITIES.filter(c =>
+      c.city.toLowerCase().includes(q) ||
+      c.code.toLowerCase().includes(q) ||
+      c.country.toLowerCase().includes(q)
+    ).slice(0, 5)
+  }, [debouncedToQuery])
+
+  // Click outside to close overlays
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (fromRef.current && !fromRef.current.contains(e.target)) setShowFromSuggestions(false)
+      if (toRef.current && !toRef.current.contains(e.target)) setShowToSuggestions(false)
+      if (travellerRef.current && !travellerRef.current.contains(e.target)) setShowTravellerDropdown(false)
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  // Initialize AOS On-Scroll Animations
+  useEffect(() => {
+    AOS.init({
+      duration: 800,
+      once: true,
+      easing: 'ease-out-cubic',
+      offset: 80,
+    })
+  }, [])
+
+  const handleTravellerChange = (type, action) => {
+    setTravellers(prev => {
+      const current = prev[type]
+      if (action === 'dec') {
+        if (type === 'adults' && current <= 1) return prev
+        if (current <= 0) return prev
+        const nextVal = current - 1
+        if (type === 'adults' && prev.infants > nextVal) {
+          alert("Each infant must be accompanied by at least one adult.")
+          return prev
+        }
+        return { ...prev, [type]: nextVal }
+      } else {
+        if (type === 'adults' && current >= 9) return prev
+        if (current >= 6) return prev
+        const nextVal = current + 1
+        if (type === 'infants' && nextVal > prev.adults) {
+          alert("You cannot add more infants than the total number of accompanying adults.")
+          return prev
+        }
+        return { ...prev, [type]: nextVal }
+      }
+    })
+  }
+
+  // Helper to format date into Day, Month Name, Year and Weekday
+  const formatDateDisplay = (dateStr) => {
+    if (!dateStr) return { day: 'Select', monthYear: 'Date', weekday: 'Click to select' };
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return { day: 'Select', monthYear: 'Date', weekday: 'Click to select' };
+    const day = date.getDate();
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const month = months[date.getMonth()];
+    const year = String(date.getFullYear()).substring(2);
+    const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const weekday = weekdays[date.getDay()];
+    return {
+      day: String(day),
+      monthYear: `${month} '${year}`,
+      weekday
+    };
+  };
+
+  const dispatch  = useDispatch()
+  const navigate  = useNavigate()
+  const { user }  = useSelector(s => s.auth)
+
+  const triggerSearch = async (fromVal, toVal, dateVal) => {
+    setLoading(true)
+    setSearched(true)
+    setFlights([])
+    try {
+      await new Promise(r => setTimeout(r, 600))
+      const res = await flightService.search({
+        from: fromVal,
+        to: toVal,
+        date: dateVal
+      })
+      // Save recent search
+      const filtered = recentSearches.filter(item => 
+        !(item.from.toLowerCase() === fromVal.toLowerCase() && 
+          item.to.toLowerCase() === toVal.toLowerCase())
+      )
+      const updated = [{ from: fromVal, to: toVal, date: dateVal }, ...filtered].slice(0, 3)
+      setRecentSearches(updated)
+      localStorage.setItem('recentSearches_flights', JSON.stringify(updated))
+
+      setFlights(res?.data || res?.flights || res || [])
+    } catch (err) {
+      console.error(err)
+      setFlights([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  function handleSearch(e) {
+    if (e) e.preventDefault()
+    try {
+      localStorage.setItem('travellers_flight', JSON.stringify(travellers))
+    } catch (err) {
+      console.error(err)
+    }
+    const passengersCount = travellers.adults + travellers.children;
+    navigate(`/flights/results?from=${fromQuery}&to=${toQuery}&date=${departDate || new Date().toISOString().split('T')[0]}&passengers=${passengersCount}&class=${travellers.class || 'Economy'}`)
+  }
+
+
+  return (
+    <div className="hp-root">
+
+      {/* ── Hero + Booking widget ───────────────────────────────── */}
+      <header className="hp-hero">
+        <div className="hp-plane">✈</div>
+        <div className="hp-wrap hp-hero-inner">
+          <div className="hp-eyebrow">
+            <span className="hp-dot-gold"></span>
+            Summer sale · Up to 25% off domestic flights
+          </div>
+          <h1>Plan your next <span>unforgettable</span> trip.</h1>
+          <p className="hp-hero-sub">
+            Compare flights, stays, and experiences across 200+ destinations — all in one place.
+          </p>
+
+          <div className="hp-booker">
+            {/* Premium service navigation tab strip matching image2 */}
+            <div className="service-tabs" style={{ marginBottom: 20 }}>
+              {SERVICE_TABS.map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  className={`service-tab${activeTab === t.id ? ' active' : ''}`}
+                  onClick={() => {
+                    setActiveTab(t.id)
+                    if (t.id === 'hotels') navigate('/hotels')
+                    if (t.id === 'villas') navigate('/homestays')
+                    if (t.id === 'trains') navigate('/trains')
+                    if (t.id === 'holidays') navigate('/holidays')
+                    if (t.id === 'cabs') navigate('/cabs')
+                    if (t.id === 'buses') navigate('/buses')
+                    if (t.id === 'cruise') navigate('/cruise')
+                    if (t.id === 'forex') navigate('/forex')
+                    if (t.id === 'insurance') navigate('/insurance')
+                  }}
+                >
+                  {t.isNew && <span className="tab-new">new</span>}
+                  <span className="tab-icon">{t.icon}</span>
+                  <span className="tab-lbl" style={{ whiteSpace: 'pre-line' }}>{t.label}</span>
+                  {activeTab === t.id && <div className="tab-bar" />}
+                </button>
+              ))}
+            </div>
+
+            <div className="hp-booker-body">
+              <div className="hp-trip-row">
+                {TRIP_TYPES.map(tt => (
+                  <button
+                    key={tt.id}
+                    type="button"
+                    className={`hp-trip-btn${tripType === tt.id ? ' hp-trip-on' : ''}`}
+                    onClick={() => setTripType(tt.id)}
+                  >
+                    <span className="hp-radio-dot"></span>
+                    {tt.label}
+                  </button>
+                ))}
+              </div>
+
+              <form onSubmit={handleSearch}>
+                <div className="hp-grid">
+                  {/* From Field */}
+                  <div className="hp-field hp-field-wrap" ref={fromRef}>
+                    <small>From</small>
+                    <input
+                      value={fromQuery}
+                      onChange={e => {
+                        setFromQuery(e.target.value)
+                        setShowFromSuggestions(true)
+                      }}
+                      onFocus={() => setShowFromSuggestions(true)}
+                      placeholder="City or Airport"
+                    />
+                    <div className="hp-sub">Departure city</div>
+
+                    {showFromSuggestions && fromSuggestions.length > 0 && (
+                      <div className="hp-autocomplete-dropdown">
+                        {fromSuggestions.map((c) => (
+                          <div
+                            key={c.code}
+                            className="hp-suggestion-item"
+                            onClick={() => {
+                              setFromQuery(c.city)
+                              setShowFromSuggestions(false)
+                            }}
+                          >
+                            <div className="hp-suggestion-left">
+                              <span className="hp-suggestion-city">{c.city}</span>
+                              <span className="hp-suggestion-country">{c.region || c.country}</span>
+                            </div>
+                            <span className="hp-suggestion-code">{c.code}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* To Field */}
+                  <div className="hp-field hp-field-wrap" ref={toRef}>
+                    <small>To</small>
+                    <input
+                      value={toQuery}
+                      onChange={e => {
+                        setToQuery(e.target.value)
+                        setShowToSuggestions(true)
+                      }}
+                      onFocus={() => setShowToSuggestions(true)}
+                      placeholder="City or Airport"
+                    />
+                    <div className="hp-sub">Arrival city</div>
+
+                    {showToSuggestions && toSuggestions.length > 0 && (
+                      <div className="hp-autocomplete-dropdown">
+                        {toSuggestions.map((c) => (
+                          <div
+                            key={c.code}
+                            className="hp-suggestion-item"
+                            onClick={() => {
+                              setToQuery(c.city)
+                              setShowToSuggestions(false)
+                            }}
+                          >
+                            <div className="hp-suggestion-left">
+                              <span className="hp-suggestion-city">{c.city}</span>
+                              <span className="hp-suggestion-country">{c.region || c.country}</span>
+                            </div>
+                            <span className="hp-suggestion-code">{c.code}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Departure Field */}
+                  <div className="hp-field clickable" onClick={(e) => { e.stopPropagation(); setShowDepartCal(true); }} style={{ position: 'relative', cursor: 'pointer' }}>
+                    <small>Departure</small>
+                    <div className="hp-field-big" style={{ fontSize: '24px', fontWeight: 800, margin: '4px 0' }}>
+                      {formatDateDisplay(departDate).day} <span className="hp-unit" style={{ fontSize: '14px', fontWeight: 600 }}>{formatDateDisplay(departDate).monthYear}</span>
+                    </div>
+                    <div className="hp-sub">{formatDateDisplay(departDate).weekday}</div>
+                    <CustomCalendarPicker
+                      isOpen={showDepartCal}
+                      value={departDate}
+                      onChange={(date) => {
+                        const today = new Date()
+                        today.setHours(0,0,0,0)
+                        if (new Date(date) < today) {
+                          alert("Departure date cannot be in the past. Please select a valid date.")
+                          return
+                        }
+                        setDepartDate(date)
+                      }}
+                      onClose={() => setShowDepartCal(false)}
+                      labelText="Departure"
+                    />
+                  </div>
+
+                  {/* Return Field */}
+                  <div className="hp-field clickable" style={{ position: 'relative', cursor: 'pointer' }}>
+                    <small>Return</small>
+                    {tripType === 'roundtrip' ? (
+                      <div onClick={(e) => { e.stopPropagation(); setShowReturnCal(true); }}>
+                        <div className="hp-field-big" style={{ fontSize: '24px', fontWeight: 800, margin: '4px 0' }}>
+                          {formatDateDisplay(returnDate).day} <span className="hp-unit" style={{ fontSize: '14px', fontWeight: 600 }}>{formatDateDisplay(returnDate).monthYear}</span>
+                        </div>
+                        <div className="hp-sub">{formatDateDisplay(returnDate).weekday}</div>
+                        <CustomCalendarPicker
+                          isOpen={showReturnCal}
+                          value={returnDate}
+                          onChange={(date) => {
+                            if (new Date(date) < new Date(departDate)) {
+                              alert("Return date cannot be earlier than departure date.")
+                              return
+                            }
+                            setReturnDate(date)
+                          }}
+                          onClose={() => setShowReturnCal(false)}
+                          labelText="Return"
+                        />
+                      </div>
+                    ) : (
+                      <div className="hp-tap-hint" onClick={() => setTripType('roundtrip')} style={{ marginTop: '10px', fontSize: '12px', color: '#0084ff', fontWeight: 600 }}>
+                        Tap to add for bigger discounts
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Travellers Field */}
+                  <div className="hp-field clickable" ref={travellerRef} onClick={() => setShowTravellerDropdown(true)} style={{ position: 'relative', cursor: 'pointer' }}>
+                    <small>Travellers &amp; Class</small>
+                    <div className="hp-field-big">
+                      {travellers.adults + travellers.children + travellers.infants} <span className="hp-unit">Travellers</span>
+                    </div>
+                    <div className="hp-sub">{travellers.class}</div>
+
+                    {showTravellerDropdown && (
+                      <div className="hp-traveller-dropdown" onClick={(e) => e.stopPropagation()}>
+                        <div className="hp-traveller-row">
+                          <div className="hp-traveller-label-col">
+                            <span className="hp-traveller-label">Adults</span>
+                            <span className="hp-traveller-sub">12 yrs &amp; above</span>
+                          </div>
+                          <div className="hp-counter-group">
+                            <button type="button" className="hp-counter-btn" disabled={travellers.adults <= 1} onClick={() => handleTravellerChange('adults', 'dec')}>-</button>
+                            <span className="hp-counter-val">{travellers.adults}</span>
+                            <button type="button" className="hp-counter-btn" disabled={travellers.adults >= 9} onClick={() => handleTravellerChange('adults', 'inc')}>+</button>
+                          </div>
+                        </div>
+
+                        <div className="hp-traveller-row">
+                          <div className="hp-traveller-label-col">
+                            <span className="hp-traveller-label">Children</span>
+                            <span className="hp-traveller-sub">2 - 12 yrs</span>
+                          </div>
+                          <div className="hp-counter-group">
+                            <button type="button" className="hp-counter-btn" disabled={travellers.children <= 0} onClick={() => handleTravellerChange('children', 'dec')}>-</button>
+                            <span className="hp-counter-val">{travellers.children}</span>
+                            <button type="button" className="hp-counter-btn" disabled={travellers.children >= 6} onClick={() => handleTravellerChange('children', 'inc')}>+</button>
+                          </div>
+                        </div>
+
+                        <div className="hp-traveller-row">
+                          <div className="hp-traveller-label-col">
+                            <span className="hp-traveller-label">Infants</span>
+                            <span className="hp-traveller-sub">Below 2 yrs</span>
+                          </div>
+                          <div className="hp-counter-group">
+                            <button type="button" className="hp-counter-btn" disabled={travellers.infants <= 0} onClick={() => handleTravellerChange('infants', 'dec')}>-</button>
+                            <span className="hp-counter-val">{travellers.infants}</span>
+                            <button type="button" className="hp-counter-btn" disabled={travellers.infants >= 6} onClick={() => handleTravellerChange('infants', 'inc')}>+</button>
+                          </div>
+                        </div>
+
+                        <div className="hp-class-selector">
+                          <div className="hp-class-title">Choose Travel Class</div>
+                          <div className="hp-class-chips">
+                            {['Economy', 'Premium Economy', 'Business'].map(cl => (
+                              <button
+                                key={cl}
+                                type="button"
+                                className={`hp-class-chip${travellers.class === cl ? ' active' : ''}`}
+                                onClick={() => setTravellers(prev => ({ ...prev, class: cl }))}
+                              >
+                                {cl}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        <button type="button" className="hp-traveller-apply-btn" onClick={() => setShowTravellerDropdown(false)}>
+                          APPLY
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  <button type="submit" className="hp-search-btn btn-primary">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                      <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2.2"/>
+                      <path d="M20 20l-3.5-3.5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/>
+                    </svg>
+                    Search
+                  </button>
+                </div>
+
+                {/* Recent Searches Row */}
+                {recentSearches.length > 0 && (
+                  <div className="hp-recent-row">
+                    <span className="hp-recent-label">Recent Searches:</span>
+                    {recentSearches.map((item, idx) => (
+                      <button
+                        key={`${item.from}-${item.to}-${idx}`}
+                        type="button"
+                        className="hp-recent-chip"
+                        onClick={() => {
+                          setFromQuery(item.from)
+                          setToQuery(item.to)
+                          setDepartDate(item.date)
+                          triggerSearch(item.from, item.to, item.date)
+                        }}
+                      >
+                        {item.from} → {item.to} ({item.date})
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                <div className="hp-fare-row">
+                  <span className="hp-fare-lbl">Special fares (Extra savings):</span>
+                  {FARES.map(f => (
+                    <button
+                      key={f}
+                      type="button"
+                      className={`hp-chip${activeFare === f ? ' hp-chip-on' : ''}`}
+                      onClick={() => setActiveFare(f)}
+                    >
+                      <span className="hp-chip-dot">{activeFare === f ? '✓' : ''}</span>
+                      {f}
+                    </button>
+                  ))}
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </header>
+
+
+
+
+      {/* ── Offers ─────────────────────────────────────────────── */}
+      <section className="hp-section">
+        <div className="hp-wrap">
+          <div className="hp-sec-head" data-aos="fade-up">
+            <div>
+              <h2>Offers &amp; deals</h2>
+              <div className="hp-sec-sub">Limited-time savings curated for you</div>
+            </div>
+            <a href="#offers" className="hp-see-all">View all offers →</a>
+          </div>
+          <div className="hp-offers-scroll">
+            {OFFERS.map((o, idx) => (
+              <div key={o.type} className="hp-offer-card" data-aos="fade-up" data-aos-delay={idx * 100}>
+                <div className={`hp-offer-img hp-offer-${o.type}`}>
+                  <span className="hp-offer-tag">{o.tag}</span>
+                </div>
+                <div className="hp-offer-body">
+                  <h3>{o.title}</h3>
+                  <p>{o.desc}</p>
+                  <button className="hp-offer-btn">{o.cta}</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Categories ─────────────────────────────────────────── */}
+      <section className="hp-section-0">
+        <div className="hp-wrap">
+          <div className="hp-sec-head" data-aos="fade-up">
+            <div>
+              <h2>One app, every journey</h2>
+              <div className="hp-sec-sub">Plan, book, and manage your entire trip in a single place</div>
+            </div>
+          </div>
+          <div className="hp-cat-grid">
+            {CATEGORIES.map((c, idx) => (
+              <div key={c.key} className={`hp-cat-card hp-cat-${c.key}`} data-aos="fade-up" data-aos-delay={idx * 100}>
+                <div className="hp-cat-icon">{c.icon}</div>
+                <h3>{c.title}</h3>
+                <p>{c.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Partners ───────────────────────────────────────────── */}
+      <section className="hp-section-0">
+        <div className="hp-wrap">
+          <div className="hp-sec-head" data-aos="fade-up">
+            <div>
+              <h2>We partner with the best</h2>
+              <div className="hp-sec-sub">Trusted by every major airline and global hotel chain</div>
+            </div>
+          </div>
+          <div className="hp-partners-bar" data-aos="fade-up">
+            <div className="hp-partners-row">
+              {PARTNERS.map(p => (
+                <div key={p.name} className={`hp-partner ${p.cls}`}>{p.name}</div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Destinations ───────────────────────────────────────── */}
+      <section className="hp-section-0">
+        <div className="hp-wrap">
+          <div className="hp-sec-head" data-aos="fade-up">
+            <div>
+              <h2>Destinations &amp; experiences</h2>
+              <div className="hp-sec-sub">Hand-picked places that make for unforgettable trips</div>
+            </div>
+            <a href="#destinations" className="hp-see-all">All destinations →</a>
+          </div>
+          <div className="hp-dest-grid">
+            {DESTINATIONS.map((d, idx) => (
+              <div key={d.name} className="hp-dest-card" data-aos="zoom-in" data-aos-delay={idx * 100}>
+                <div className={`hp-dest-img ${d.cls}`}></div>
+                <div className="hp-dest-info">
+                  <h3>{d.name}</h3>
+                  <p>{d.desc}</p>
+                  <div className="hp-dest-price">From {d.price}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Top picks ──────────────────────────────────────────── */}
+      <section className="hp-section-0">
+        <div className="hp-wrap">
+          <div className="hp-sec-head" data-aos="fade-up">
+            <div>
+              <h2>Top picks for May</h2>
+              <div className="hp-sec-sub">Curated travel deals from our editors</div>
+            </div>
+            <a href="#picks" className="hp-see-all">See more →</a>
+          </div>
+          <div className="hp-picks-grid">
+            {PICKS.map((p, idx) => (
+              <div key={p.cls} className={`hp-pick ${p.cls}`} data-aos="fade-up" data-aos-delay={idx * 100}>
+                <div className="hp-pick-content">
+                  <span className="hp-pick-eyebrow">{p.eyebrow}</span>
+                  <h3>{p.title}</h3>
+                  <p>{p.desc}</p>
+                  {p.from && (
+                    <div className="hp-pick-from">From <b>{p.from}</b> per person</div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── App banner ─────────────────────────────────────────── */}
+      <section className="hp-section-0">
+        <div className="hp-wrap">
+          <div className="hp-app-banner" data-aos="fade-up">
+            <div className="hp-app-text">
+              <h2>The whole trip in your <span>pocket.</span></h2>
+              <p>Download the MakeMyTrip app for exclusive in-app deals, faster check-in, and 24×7 trip support — wherever you go.</p>
+              <div className="hp-app-input">
+                <span className="hp-app-cc">
+                  <span className="hp-flag" style={{ width: 20, height: 14 }}></span>
+                  +91
+                </span>
+                <input
+                  type="tel"
+                  placeholder="Enter your mobile number"
+                  value={phone}
+                  onChange={e => setPhone(e.target.value)}
+                />
+                <button type="button">Send link</button>
+              </div>
+              <div className="hp-app-stores">
+                <a href="#appstore" className="hp-app-store">
+                  <span className="hp-glyph"></span>
+                  <div><small>Download on the</small><strong>App Store</strong></div>
+                </a>
+                <a href="#playstore" className="hp-app-store">
+                  <span className="hp-glyph">▶</span>
+                  <div><small>Get it on</small><strong>Google Play</strong></div>
+                </a>
+              </div>
+            </div>
+
+            <div className="hp-phone-wrap">
+              <div className="hp-phone">
+                <div className="hp-phone-screen">
+                  <div className="hp-phone-notch"></div>
+                  <h4>Good evening</h4>
+                  <h2>Where to next?</h2>
+                  <div className="hp-phone-card">
+                    <small>Trending</small>
+                    <strong>Goa · ₹4,775</strong>
+                  </div>
+                  <div className="hp-phone-card">
+                    <small>Last searched</small>
+                    <strong>DEL → BLR · 14 May</strong>
+                  </div>
+                  <div className="hp-phone-cta">SEARCH FLIGHTS</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Footer ─────────────────────────────────────────────── */}
+      <footer className="hp-footer">
+        <div className="hp-wrap">
+          <div className="hp-ft-grid">
+            <div className="hp-ft-brand">
+              <h3>
+                <span className="hp-ft-mark">My</span>
+                MakeMyTrip
+              </h3>
+              <p>India's leading online travel company since 2000 — bringing flights, stays, and experiences to over 50 million travellers.</p>
+              <div className="hp-ft-social">
+                <a href="#fb"  aria-label="Facebook">f</a>
+                <a href="#tw"  aria-label="Twitter">𝕏</a>
+                <a href="#ig"  aria-label="Instagram">◎</a>
+                <a href="#yt"  aria-label="YouTube">▶</a>
+                <a href="#li"  aria-label="LinkedIn">in</a>
+              </div>
+            </div>
+
+            {FOOTER_COLS.map(col => (
+              <div key={col.title} className="hp-ft-col">
+                <h4>{col.title}</h4>
+                <ul>
+                  {col.links.map(link => (
+                    <li key={link}>
+                      <a href={`#${link.toLowerCase().replace(/\s+/g, '-')}`}>{link}</a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+
+          <div className="hp-ft-bottom">
+            <div>© 2026 MakeMyTrip Pvt Ltd · All rights reserved</div>
+            <div className="hp-ft-pay">
+              {['VISA', 'MasterCard', 'RuPay', 'UPI', 'NetBanking'].map(p => (
+                <span key={p}>{p}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </footer>
+
+    </div>
+  )
+}

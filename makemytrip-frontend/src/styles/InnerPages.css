@@ -1,0 +1,1552 @@
+/* ═══════════════════════════════════════════════════════════════
+   MakeMyTrip — Inner Pages Modern Award-Level Stylesheet
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Hero Backdrop Gradients ─────────────────────────────────── */
+body {
+  overflow-x: clip;
+}
+
+.phero {
+  padding: 40px 0 80px;
+  color: var(--clr-text-inverse);
+  position: relative;
+  overflow: visible;
+}
+
+.phero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.phero-inner {
+  position: relative;
+  z-index: 2;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 var(--sp-m);
+}
+
+.phero-inner h1 {
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--clr-text-inverse);
+  margin-bottom: 6px;
+  letter-spacing: -0.5px;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+
+.phero-inner p {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 28px;
+  font-weight: 500;
+}
+
+/* Page backdrops */
+.phero.hotels {
+  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, var(--clr-bg-base) 100%),
+              url('https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1920&q=80') center / cover no-repeat !important;
+}
+
+.phero.trains {
+  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, var(--clr-bg-base) 100%),
+              url('https://images.unsplash.com/photo-1518609878373-06d740f60d8b?auto=format&fit=crop&w=1920&q=80') center / cover no-repeat !important;
+}
+
+.phero.holidays {
+  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, var(--clr-bg-base) 100%),
+              url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1920&q=80') center / cover no-repeat !important;
+}
+
+.phero.homestays {
+  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, var(--clr-bg-base) 100%),
+              url('https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1920&q=80') center / cover no-repeat !important;
+}
+
+.phero.cabs {
+  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, var(--clr-bg-base) 100%),
+              url('https://images.unsplash.com/photo-1517524206127-48bbd363f3d7?auto=format&fit=crop&w=1920&q=80') center / cover no-repeat !important;
+}
+
+.phero.buses {
+  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, var(--clr-bg-base) 100%),
+              url('https://images.unsplash.com/photo-1570125909232-eb263c188f7e?auto=format&fit=crop&w=1920&q=80') center / cover no-repeat !important;
+}
+
+.phero.cruise {
+  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, var(--clr-bg-base) 100%),
+              url('https://images.unsplash.com/photo-1500835556837-99ac94a94552?auto=format&fit=crop&w=1920&q=80') center / cover no-repeat !important;
+}
+
+.phero.forex {
+  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, var(--clr-bg-base) 100%),
+              url('https://images.unsplash.com/photo-1580584126903-c17d41830450?auto=format&fit=crop&w=1920&q=80') center / cover no-repeat !important;
+}
+
+.phero.insurance {
+  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, var(--clr-bg-base) 100%),
+              url('https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1920&q=80') center / cover no-repeat !important;
+}
+
+.phero.tours {
+  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, var(--clr-bg-base) 100%),
+              url('https://images.unsplash.com/photo-1513622470522-26c3c8a854bc?auto=format&fit=crop&w=1920&q=80') center / cover no-repeat !important;
+}
+
+.phero.visa {
+  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, var(--clr-bg-base) 100%),
+              url('https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=1920&q=80') center / cover no-repeat !important;
+}
+
+/* Breadcrumb styling */
+.crumb-container {
+  max-width: var(--max-width);
+  margin: 16px auto 0;
+  padding: 0 var(--sp-m);
+  font-size: 12px;
+  color: var(--clr-text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.crumb-link {
+  color: var(--clr-primary);
+  font-weight: 500;
+}
+
+.crumb-link:hover {
+  text-decoration: underline;
+}
+
+.crumb-sep {
+  color: var(--clr-text-hint);
+}
+
+/* Breadcrumb styling inside Hero banners */
+.phero .crumb-container {
+  max-width: none;
+  margin: 0 0 20px 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+}
+
+.phero .crumb-link {
+  color: rgba(255, 255, 255, 0.7) !important;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.phero .crumb-link:hover {
+  color: #ffffff !important;
+  text-decoration: underline !important;
+}
+
+.phero .crumb-sep {
+  color: rgba(255, 255, 255, 0.4) !important;
+  font-size: 11px;
+}
+
+.phero .crumb-cur {
+  color: rgba(255, 255, 255, 0.95) !important;
+  font-weight: 500;
+}
+
+/* ── Integrated Search Widgets ────────────────────────────────── */
+.inner-search-bcard {
+  background: var(--clr-bg-white);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.12), 0 1px 3px rgba(0,0,0,0.02);
+  border: 1px solid rgba(255,255,255,0.8);
+}
+
+.inner-search-grid {
+  display: grid;
+  border: 1px solid var(--clr-border);
+  border-radius: 12px;
+  background: var(--clr-bg-white);
+}
+.inner-search-field:first-of-type {
+  border-top-left-radius: 11px;
+  border-bottom-left-radius: 11px;
+}
+.inner-search-cta {
+  border-top-right-radius: 11px;
+  border-bottom-right-radius: 11px;
+}
+
+.hotels-grid {
+  grid-template-columns: 1.4fr 1fr 1fr 1fr auto;
+}
+
+.trains-grid {
+  grid-template-columns: 1.3fr 1.3fr 1fr 1fr auto;
+}
+
+.holidays-grid {
+  grid-template-columns: 1.4fr 1.4fr 1fr 1fr auto;
+}
+
+.inner-search-field {
+  padding: 14px 20px;
+  border-right: 1px solid var(--clr-divider);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.inner-search-field:hover {
+  background: var(--clr-bg-hover);
+}
+
+.inner-field-lbl {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--clr-text-secondary);
+  margin-bottom: 4px;
+  letter-spacing: 0.5px;
+}
+
+.inner-field-val {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--clr-text-primary);
+  line-height: 1.2;
+}
+
+.inner-field-val span.unit-suffix {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--clr-text-secondary);
+  margin-left: 2px;
+}
+
+.inner-field-sub {
+  font-size: 11px;
+  color: var(--clr-text-hint);
+  margin-top: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Giant Search button inside grid */
+.inner-search-cta {
+  background: linear-gradient(135deg, var(--clr-primary) 0%, #1557A0 100%);
+  color: var(--clr-text-inverse);
+  border: none;
+  font-size: 16px;
+  font-weight: 800;
+  padding: 0 40px;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.inner-search-cta:hover {
+  filter: brightness(1.1);
+  box-shadow: inset 0 -4px 12px rgba(0,0,0,0.15);
+}
+
+/* Quick Filter Chips Row */
+.inner-chips-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.inner-chip-btn {
+  background: rgba(0, 53, 128, 0.04);
+  border: 1px solid rgba(0, 53, 128, 0.08);
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--clr-text-dark);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.inner-chip-btn:hover {
+  background: rgba(0, 53, 128, 0.08);
+  border-color: rgba(31, 109, 184, 0.3);
+}
+
+.inner-chip-btn.active {
+  background: var(--clr-primary-dark);
+  color: var(--clr-text-inverse);
+  border-color: var(--clr-primary-dark);
+  box-shadow: 0 4px 10px rgba(0, 35, 80, 0.15);
+}
+
+/* ── Sections Common Layout ──────────────────────────────────── */
+.inner-page-section {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: var(--sp-xl) var(--sp-m);
+}
+
+.inner-sec-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 24px;
+}
+
+.inner-sec-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--clr-primary-dark);
+  letter-spacing: -0.5px;
+}
+
+.inner-sec-subtitle {
+  font-size: 13px;
+  color: var(--clr-text-secondary);
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+.inner-sec-all-link {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--clr-primary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.15s ease;
+}
+
+.inner-sec-all-link:hover {
+  color: var(--clr-primary-dark);
+  text-decoration: underline;
+}
+
+/* ── Hotels Page Components ──────────────────────────────────── */
+.hotels-deals-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.hotels-deal-card {
+  background: var(--clr-bg-white);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid rgba(0,0,0,0.03);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+}
+
+.hotels-deal-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-lg);
+}
+
+.hotels-deal-img-wrapper {
+  height: 160px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.hotels-deal-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.hotels-deal-body h4 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--clr-text-primary);
+  margin-bottom: 6px;
+}
+
+.hotels-deal-meta {
+  font-size: 12px;
+  color: var(--clr-text-secondary);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hotels-deal-price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.hotels-deal-price {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--clr-primary);
+}
+
+.hotels-deal-strike {
+  font-size: 12px;
+  color: var(--clr-text-hint);
+  text-decoration: line-through;
+  font-weight: 500;
+}
+
+/* Destination city cards */
+.hotels-cities-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 16px;
+}
+
+.hotels-city-card {
+  aspect-ratio: 0.9;
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+}
+
+.hotels-city-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  transition: transform 0.4s ease;
+}
+
+.hotels-city-card:hover .hotels-city-bg {
+  transform: scale(1.1);
+}
+
+.hotels-city-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.8));
+  z-index: 1;
+}
+
+.hotels-city-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 14px;
+  color: var(--clr-text-inverse);
+  z-index: 2;
+}
+
+.hotels-city-info h4 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--clr-text-inverse);
+  margin: 0;
+}
+
+.hotels-city-info small {
+  font-size: 11px;
+  opacity: 0.85;
+}
+
+/* Category grid cards */
+.hotels-cats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.hotels-cat-card {
+  background: var(--clr-bg-white);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid rgba(0,0,0,0.03);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.hotels-cat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+  border-color: rgba(31, 109, 184, 0.15);
+}
+
+.hotels-cat-ico {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  background: rgba(31, 109, 184, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.hotels-cat-details h4 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--clr-text-primary);
+  margin: 0;
+}
+
+.hotels-cat-details p {
+  font-size: 11px;
+  color: var(--clr-text-secondary);
+  margin-top: 2px;
+}
+
+/* ── Trains Page Components ──────────────────────────────────── */
+.trains-quick-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.trains-quick-card {
+  background: var(--clr-bg-white);
+  border-radius: 16px;
+  padding: 18px 20px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid rgba(0,0,0,0.03);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.trains-quick-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+
+.trains-quick-ico-box {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.trains-quick-card[data-c="pnr"] .trains-quick-ico-box { background: #fff5e0; color: #ff9800; }
+.trains-quick-card[data-c="live"] .trains-quick-ico-box { background: #e8f5e9; color: #2e7d32; }
+.trains-quick-card[data-c="sched"] .trains-quick-ico-box { background: #f3eefa; color: #5c2d91; }
+.trains-quick-card[data-c="book"] .trains-quick-ico-box { background: #fef2f2; color: var(--clr-error); }
+
+.trains-quick-details h4 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--clr-text-primary);
+  margin: 0;
+}
+
+.trains-quick-details p {
+  font-size: 11px;
+  color: var(--clr-text-secondary);
+  margin-top: 2px;
+}
+
+/* Train results listing cards */
+.trains-results-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.train-result-row {
+  background: var(--clr-bg-white);
+  border-radius: 16px;
+  padding: 20px 24px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid rgba(0,0,0,0.03);
+  display: grid;
+  grid-template-columns: 1.3fr 2fr 1.2fr 1fr;
+  gap: 24px;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+.train-result-row:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.train-row-identity {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.train-row-identity strong {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--clr-primary-dark);
+}
+
+.train-row-identity small {
+  font-size: 12px;
+  color: var(--clr-text-secondary);
+}
+
+.train-row-days {
+  font-size: 10px;
+  background: rgba(31,109,184,0.08);
+  color: var(--clr-primary);
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  width: fit-content;
+  margin-top: 4px;
+}
+
+.train-row-timeline {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr 1fr;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.train-timeline-node strong {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--clr-text-primary);
+  display: block;
+}
+
+.train-timeline-node small {
+  font-size: 11px;
+  color: var(--clr-text-hint);
+  margin-top: 2px;
+  display: block;
+}
+
+.train-timeline-midline em {
+  font-style: normal;
+  font-size: 11px;
+  color: var(--clr-text-secondary);
+  font-weight: 600;
+  display: block;
+}
+
+.train-timeline-bar {
+  height: 2px;
+  background: var(--clr-border);
+  position: relative;
+  margin: 6px 0;
+}
+
+.train-timeline-bar::before,
+.train-timeline-bar::after {
+  content: '';
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--clr-bg-white);
+  border: 1.5px solid var(--clr-border);
+  top: -2px;
+}
+
+.train-timeline-bar::before { left: 0; }
+.train-timeline-bar::after { right: 0; }
+
+.train-row-classes {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.train-class-pill {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  background: var(--clr-bg-base);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.train-class-pill strong {
+  font-weight: 700;
+}
+
+.train-class-pill.avail {
+  background: var(--clr-success-bg);
+  color: var(--clr-success);
+}
+
+.train-class-pill.wl {
+  background: var(--clr-warning-bg);
+  color: #7a4a00;
+}
+
+.train-row-action {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.train-row-action .price {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--clr-primary-dark);
+}
+
+.train-row-action button {
+  margin-top: 8px;
+  background: var(--clr-primary);
+  color: #fff;
+  border: none;
+  padding: 8px 24px;
+  border-radius: 30px;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.train-row-action button:hover {
+  background: var(--clr-primary-hover);
+  box-shadow: 0 4px 12px rgba(31,109,184,0.2);
+}
+
+/* Train routes */
+.trains-routes-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.train-route-card {
+  background: var(--clr-bg-white);
+  border-radius: 12px;
+  padding: 14px 18px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid rgba(0,0,0,0.03);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.train-route-card:hover {
+  transform: translateX(4px);
+  box-shadow: var(--shadow-md);
+  border-color: rgba(31,109,184,0.15);
+}
+
+.train-route-card strong {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--clr-text-primary);
+  display: block;
+}
+
+.train-route-card small {
+  font-size: 11px;
+  color: var(--clr-text-secondary);
+}
+
+.train-route-card .arrow-icon {
+  color: var(--clr-primary);
+  font-size: 18px;
+  font-weight: 800;
+}
+
+/* ── Holidays Page Components ────────────────────────────────── */
+.holidays-themes-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 16px;
+}
+
+.holiday-theme-card {
+  background: var(--clr-bg-white);
+  border-radius: 16px;
+  padding: 20px 14px;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid rgba(0,0,0,0.03);
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.holiday-theme-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-lg);
+  border-color: rgba(31,109,184,0.15);
+}
+
+.holiday-theme-ico {
+  font-size: 34px;
+  margin-bottom: 8px;
+}
+
+.holiday-theme-card h4 {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--clr-text-primary);
+  margin: 0;
+}
+
+.holiday-theme-card p {
+  font-size: 10px;
+  color: var(--clr-text-secondary);
+  margin-top: 2px;
+}
+
+/* India holiday package card */
+.holidays-pkgs-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.holiday-pkg-card {
+  background: var(--clr-bg-white);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid rgba(0,0,0,0.03);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.holiday-pkg-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-lg);
+}
+
+.holiday-pkg-header {
+  height: 200px;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  padding: 20px;
+  background-size: cover;
+  background-position: center;
+}
+
+.holiday-pkg-header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.85));
+  z-index: 1;
+}
+
+.holiday-pkg-badge {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  background: var(--clr-gold);
+  color: #1a1a1a;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 6px;
+  z-index: 2;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+.holiday-pkg-title-box {
+  position: relative;
+  z-index: 2;
+  color: var(--clr-text-inverse);
+}
+
+.holiday-pkg-title-box h4 {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--clr-text-inverse);
+  margin: 0;
+}
+
+.holiday-pkg-title-box small {
+  font-size: 11px;
+  opacity: 0.85;
+  margin-top: 2px;
+  display: block;
+}
+
+.holiday-pkg-body {
+  padding: 20px;
+}
+
+.holiday-pkg-inclusions {
+  display: flex;
+  gap: 14px;
+  font-size: 12px;
+  color: var(--clr-text-secondary);
+  margin-bottom: 16px;
+}
+
+.holiday-pkg-inclusions span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.holiday-pkg-meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 14px;
+  border-top: 1.5px dashed var(--clr-divider);
+}
+
+.holiday-pkg-price {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--clr-text-primary);
+}
+
+.holiday-pkg-price small {
+  font-size: 11px;
+  color: var(--clr-text-secondary);
+  font-weight: 500;
+  display: block;
+  margin-top: 2px;
+}
+
+.holiday-pkg-action-btn {
+  background: var(--clr-primary);
+  color: #fff;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.holiday-pkg-action-btn:hover {
+  background: var(--clr-primary-hover);
+}
+
+/* International getaway card */
+.holidays-intl-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.holiday-intl-card {
+  aspect-ratio: 0.9;
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+}
+
+.holiday-intl-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  transition: transform 0.4s ease;
+}
+
+.holiday-intl-card:hover .holiday-intl-bg {
+  transform: scale(1.1);
+}
+
+.holiday-intl-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.8));
+  z-index: 1;
+}
+
+.holiday-intl-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 16px;
+  color: var(--clr-text-inverse);
+  z-index: 2;
+}
+
+.holiday-intl-info h4 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--clr-text-inverse);
+  margin: 0;
+}
+
+.holiday-intl-info small {
+  font-size: 11px;
+  opacity: 0.85;
+  margin-top: 2px;
+  display: block;
+}
+
+.holiday-intl-info .price-tag {
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--clr-gold);
+}
+
+/* ── Tablet & Mobile Responsiveness overrides ────────────────── */
+@media (max-width: 1024px) {
+  .hotels-grid, .trains-grid, .holidays-grid {
+    grid-template-columns: 1fr;
+  }
+  .inner-search-field {
+    border-right: none;
+    border-bottom: 1px solid var(--clr-divider);
+  }
+  .inner-search-cta {
+    padding: 14px;
+    border-radius: 0 0 12px 12px;
+  }
+  .hotels-deals-grid, .hotels-cats-grid, .trains-quick-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .hotels-cities-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .train-result-row {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .train-row-action {
+    align-items: flex-start;
+  }
+  .holidays-themes-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .holidays-pkgs-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .holidays-intl-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .hotels-deals-grid, .hotels-cats-grid, .trains-quick-grid, .hotels-cities-grid, .holidays-themes-grid, .holidays-pkgs-grid, .holidays-intl-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Live weather forecast badge widget ──────────────────────── */
+.live-weather-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  color: var(--clr-text-inverse);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  margin-top: 12px;
+  font-weight: 600;
+  width: fit-content;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease;
+}
+
+.live-weather-badge:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.live-weather-pulse {
+  width: 6px;
+  height: 6px;
+  background: #4CAF50;
+  border-radius: 50%;
+  box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7);
+  animation: pulse-ring 1.5s infinite;
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(76, 175, 80, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+}
+
+/* ── Homestays Page Components ───────────────────────────────── */
+/* Overriding rules removed to enforce top image backgrounds */
+
+.homestays-grid {
+  grid-template-columns: 1.6fr 1fr 1fr 1fr auto;
+}
+
+.homestays-feat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.hs-feat-card {
+  background: var(--clr-bg-white);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.hs-feat-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-lg);
+}
+
+.hs-feat-img-box {
+  height: 220px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.hs-feat-badge {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--clr-primary);
+  font-size: 10px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 30px;
+  letter-spacing: 0.5px;
+}
+
+.hs-feat-heart {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--clr-primary);
+  font-size: 16px;
+  transition: transform 0.2s ease;
+}
+
+.hs-feat-heart:hover {
+  transform: scale(1.15);
+}
+
+.hs-feat-body {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.hs-feat-body h4 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--clr-text-primary);
+  margin: 0 0 6px;
+}
+
+.hs-feat-loc {
+  font-size: 12px;
+  color: var(--clr-text-secondary);
+  margin-bottom: 14px;
+}
+
+.hs-feat-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-top: auto;
+}
+
+.hs-feat-meta .price {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--clr-text-primary);
+}
+
+.hs-feat-meta .price small {
+  font-size: 11px;
+  color: var(--clr-text-secondary);
+  font-weight: 500;
+}
+
+.hs-feat-rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #0A8043;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.homestays-why-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  background: var(--clr-bg-white);
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid rgba(0,0,0,0.03);
+}
+
+.hs-why-card {
+  text-align: center;
+}
+
+.hs-why-ico {
+  font-size: 36px;
+  margin-bottom: 10px;
+}
+
+.hs-why-card h4 {
+  margin: 0 0 6px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--clr-text-primary);
+}
+
+.hs-why-card p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--clr-text-secondary);
+  line-height: 1.5;
+}
+
+.homestays-host-banner {
+  background: linear-gradient(135deg, var(--clr-primary-dark) 0%, #1f2b3e 100%);
+  color: #fff;
+  border-radius: 20px;
+  padding: 40px;
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 30px;
+  align-items: center;
+  box-shadow: var(--shadow-md);
+}
+
+.host-banner-left h2 {
+  margin: 0 0 10px;
+  font-size: 28px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.5px;
+}
+
+.host-banner-left h2 span {
+  color: var(--clr-gold);
+}
+
+.host-banner-left p {
+  margin: 0 0 20px;
+  font-size: 14px;
+  opacity: 0.85;
+  line-height: 1.6;
+}
+
+.host-banner-left button {
+  background: var(--clr-gold);
+  color: #111;
+  border: none;
+  padding: 12px 28px;
+  border-radius: 8px;
+  font-weight: 800;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.host-banner-left button:hover {
+  background: #ffb300;
+  box-shadow: 0 4px 14px rgba(255, 179, 0, 0.25);
+}
+
+.host-banner-right {
+  font-size: 90px;
+  text-align: center;
+  opacity: 0.6;
+}
+
+@media (max-width: 1024px) {
+  .homestays-grid {
+    grid-template-columns: 1fr;
+  }
+  .homestays-feat-grid, .homestays-why-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .homestays-host-banner {
+    grid-template-columns: 1fr;
+    padding: 30px;
+  }
+  .host-banner-right {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .homestays-feat-grid, .homestays-why-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Cabs Page Components ────────────────────────────────────── */
+/* Overriding rules removed to enforce top image backgrounds */
+
+.cabs-grid {
+  grid-template-columns: 1.2fr 1.2fr 1fr 1fr auto;
+}
+
+.cabs-list-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.cab-result-card {
+  background: var(--clr-bg-white);
+  border-radius: 16px;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 240px 1fr auto;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(0,0,0,0.03);
+}
+
+.cab-result-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+  border-color: rgba(0,0,0,0.08);
+}
+
+.cab-card-img {
+  background-size: cover;
+  background-position: center;
+  height: 100%;
+  min-height: 180px;
+}
+
+.cab-card-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.cab-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.cab-icon {
+  font-size: 20px;
+}
+
+.cab-rating {
+  font-size: 12px;
+  font-weight: 700;
+  background: rgba(10, 128, 67, 0.1);
+  color: #0A8043;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.cab-card-body h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--clr-text-primary);
+  margin: 0 0 4px;
+}
+
+.cab-type {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--clr-primary);
+  margin-bottom: 8px;
+}
+
+.cab-desc {
+  font-size: 12px;
+  color: var(--clr-text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.cab-card-price-action {
+  padding: 24px 32px;
+  border-left: 1px dashed var(--clr-divider);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 16px;
+  min-width: 220px;
+  background: rgba(0,0,0,0.01);
+}
+
+.cab-card-price-action .price-box {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+}
+
+.cab-card-price-action .old-price {
+  font-size: 13px;
+  text-decoration: line-through;
+  color: var(--clr-text-secondary);
+  opacity: 0.8;
+}
+
+.cab-card-price-action .price {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--clr-text-primary);
+}
+
+.cab-card-price-action small {
+  font-size: 11px;
+  color: #0A8043;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.cab-card-price-action button {
+  background: var(--clr-primary);
+  color: var(--clr-text-inverse);
+  font-weight: 700;
+  border: none;
+  padding: 10px 24px;
+  font-size: 13px;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.15s ease;
+}
+
+.cab-card-price-action button:hover {
+  background: var(--clr-primary-dark);
+  box-shadow: 0 4px 12px rgba(var(--clr-primary-rgb), 0.25);
+}
+
+.cabs-why-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  background: var(--clr-bg-white);
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid rgba(0,0,0,0.03);
+}
+
+.cab-why-card {
+  text-align: center;
+}
+
+.cab-why-ico {
+  font-size: 36px;
+  margin-bottom: 10px;
+}
+
+.cab-why-card h4 {
+  margin: 0 0 6px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--clr-text-primary);
+}
+
+.cab-why-card p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--clr-text-secondary);
+  line-height: 1.5;
+}
+
+@media (max-width: 1024px) {
+  .cabs-grid {
+    grid-template-columns: 1fr;
+  }
+  .cab-result-card {
+    grid-template-columns: 1fr;
+  }
+  .cab-card-img {
+    height: 200px;
+  }
+  .cab-card-price-action {
+    border-left: none;
+    border-top: 1px dashed var(--clr-divider);
+    align-items: flex-start;
+    padding: 20px 24px;
+    background: transparent;
+  }
+  .cab-card-price-action .price-box {
+    text-align: left;
+  }
+  .cabs-why-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .cabs-why-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+

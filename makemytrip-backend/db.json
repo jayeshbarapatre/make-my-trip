@@ -1,0 +1,165 @@
+{
+  "users": [
+    {
+      "id": "usr_1111-2222-3333-4444",
+      "name": "Jayesh Barapatre S",
+      "email": "jayeshbarapatre4923@gmail.com",
+      "phone": "8866121829",
+      "password": "$2a$10$OIREDoQmkZlxOx1DgvXOFutMZLmaIfr4eWYlDIjHwZsVIg0csJAci",
+      "createdAt": "2026-05-15T08:57:01.831Z"
+    }
+  ],
+  "bookings": [
+    {
+      "id": "bkg_abcd-1234-5678-90ef",
+      "userId": "usr_1111-2222-3333-4444",
+      "type": "flight",
+      "fromCity": "Delhi (DEL)",
+      "toCity": "Bengaluru (BLR)",
+      "departureDate": "2026-05-20",
+      "returnDate": "2026-05-25",
+      "travellers": {
+        "adults": 1,
+        "children": 0,
+        "infants": 0
+      },
+      "totalAmount": 6499,
+      "status": "confirmed",
+      "bookingId": "MMT-FL-987654",
+      "pnr": "PNR-884422",
+      "createdAt": "2026-05-13T08:57:01.831Z"
+    },
+    {
+      "id": "bkg_ef01-2345-6789-abcd",
+      "userId": "usr_1111-2222-3333-4444",
+      "type": "hotel",
+      "fromCity": "Goa Beach Resort",
+      "toCity": "Goa",
+      "departureDate": "2026-06-10",
+      "returnDate": "2026-06-14",
+      "travellers": {
+        "rooms": 1,
+        "adults": 2,
+        "children": 0
+      },
+      "totalAmount": 14500,
+      "status": "confirmed",
+      "bookingId": "MMT-HT-123456",
+      "pnr": "HTL-557799",
+      "createdAt": "2026-05-10T08:57:01.831Z"
+    },
+    {
+      "id": "bkg_9999-8888-7777-6666",
+      "userId": "usr_1111-2222-3333-4444",
+      "type": "flight",
+      "fromCity": "Mumbai (BOM)",
+      "toCity": "Jaipur (JAI)",
+      "departureDate": "2026-04-10",
+      "returnDate": "2026-04-15",
+      "travellers": {
+        "adults": 2,
+        "children": 1,
+        "infants": 0
+      },
+      "totalAmount": 12400,
+      "status": "completed",
+      "bookingId": "MMT-FL-554433",
+      "pnr": "PNR-112233",
+      "createdAt": "2026-04-05T08:57:01.831Z"
+    },
+    {
+      "id": "bkg_7777-6666-5555-4444",
+      "userId": "usr_1111-2222-3333-4444",
+      "type": "hotel",
+      "fromCity": "Taj Palace Jaipur",
+      "toCity": "Jaipur",
+      "departureDate": "2026-05-01",
+      "returnDate": "2026-05-05",
+      "travellers": {
+        "rooms": 1,
+        "adults": 2,
+        "children": 0
+      },
+      "totalAmount": 22000,
+      "status": "cancelled",
+      "bookingId": "MMT-HT-998877",
+      "pnr": "HTL-334455",
+      "createdAt": "2026-04-30T08:57:01.831Z"
+    },
+    {
+      "id": "bkg_1778838589854",
+      "createdAt": "2026-05-15T09:49:49.854Z",
+      "status": "confirmed",
+      "userId": "usr_1111-2222-3333-4444",
+      "type": "flight",
+      "fromCity": "New Delhi",
+      "toCity": "Bengaluru",
+      "departureDate": "2026-05-13",
+      "returnDate": null,
+      "travellers": [
+        {
+          "type": "Adult",
+          "firstName": "dg",
+          "lastName": "dfgdf",
+          "gender": "Male",
+          "dob": "2026-05-14",
+          "seat": "Window",
+          "meal": "Veg"
+        }
+      ],
+      "totalAmount": 4126,
+      "bookingId": "MMT-FL-464392",
+      "pnr": "PNR-873849"
+    },
+    {
+      "id": "bkg_1778840257177",
+      "createdAt": "2026-05-15T10:17:37.177Z",
+      "status": "confirmed",
+      "userId": "usr_1111-2222-3333-4444",
+      "type": "flight",
+      "fromCity": "New Delhi",
+      "toCity": "Bengaluru",
+      "departureDate": "2026-05-13",
+      "returnDate": null,
+      "travellers": [
+        {
+          "type": "Adult",
+          "firstName": "Jayesh",
+          "lastName": "Barapatre",
+          "gender": "Male",
+          "dob": "2008-01-15",
+          "seat": "Window",
+          "meal": "Veg"
+        }
+      ],
+      "totalAmount": 3890,
+      "bookingId": "MMT-FL-630300",
+      "pnr": "PNR-162943"
+    },
+    {
+      "id": "bkg_1778840515369",
+      "createdAt": "2026-05-15T10:21:55.369Z",
+      "status": "confirmed",
+      "userId": "usr_1111-2222-3333-4444",
+      "type": "flight",
+      "fromCity": "New Delhi",
+      "toCity": "Bengaluru",
+      "departureDate": "2026-05-13",
+      "returnDate": null,
+      "travellers": [
+        {
+          "type": "Adult",
+          "firstName": "Jayesh",
+          "lastName": "Barapatre",
+          "gender": "Male",
+          "dob": "2026-05-14",
+          "seat": "Window",
+          "meal": "Veg"
+        }
+      ],
+      "totalAmount": 3890,
+      "bookingId": "MMT-FL-814173",
+      "pnr": "PNR-482007"
+    }
+  ]
+}
