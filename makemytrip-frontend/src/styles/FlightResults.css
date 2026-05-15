@@ -37,6 +37,7 @@
   white-space: nowrap;
   cursor: pointer;
   letter-spacing: 0.8px;
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
 }
 .fr-search-field {
   background: var(--clr-bg-white);
@@ -98,6 +99,7 @@
   text-transform: uppercase;
   transition: var(--transition-fast);
   flex-shrink: 0;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
 }
 .fr-search-btn:hover { background: var(--clr-primary-hover); }
 
@@ -122,6 +124,7 @@
   cursor: pointer;
   letter-spacing: 0.8px;
   user-select: none;
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
 }
 .fr-trip-type:hover { background: rgba(255,255,255,0.2); }
 .fr-trip-arrow { font-size: 9px; opacity: 0.8; }
@@ -147,6 +150,15 @@
 }
 .fr-trip-option:hover { background: #f0f4ff; color: var(--clr-primary); }
 .fr-trip-option-active { color: var(--clr-primary); font-weight: var(--fw-bold); background: #eef4ff; }
+.fr-qty-btn {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 1.5px solid var(--clr-primary);
+  background: #fff; color: var(--clr-primary);
+  font-size: 16px; font-weight: 700;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  line-height: 1; transition: var(--transition-fast);
+}
+.fr-qty-btn:hover { background: var(--clr-primary); color: #fff; }
 
 /* ── City field with inline input ───────────────────────── */
 .fr-city-field { position: relative; }

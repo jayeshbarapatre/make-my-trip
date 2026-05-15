@@ -92,11 +92,15 @@ export default function SearchResultsPage() {
   const [toOpen,       setToOpen]       = useState(false)
   const [dateVal,      setDateVal]      = useState(params.get('date') || '')
   const [showCal,      setShowCal]      = useState(false)
+  const [passengers,   setPassengers]   = useState(parseInt(params.get('passengers') || '1', 10))
+  const [travelClass,  setTravelClass]  = useState(params.get('class') || 'Economy')
+  const [showTravDrop, setShowTravDrop] = useState(false)
 
   const fromRef = useRef(null)
   const toRef   = useRef(null)
   const tripRef = useRef(null)
   const calRef  = useRef(null)
+  const travRef = useRef(null)
 
   const { user, verifyOtpLogin } = useAuth()
   const [showLoginModal, setShowLoginModal] = useState(false)
@@ -208,6 +212,7 @@ export default function SearchResultsPage() {
       if (toRef.current   && !toRef.current.contains(e.target))   setToOpen(false)
       if (tripRef.current && !tripRef.current.contains(e.target)) setShowTripDrop(false)
       if (calRef.current  && !calRef.current.contains(e.target))  setShowCal(false)
+      if (travRef.current && !travRef.current.contains(e.target)) setShowTravDrop(false)
     }
     document.addEventListener('mousedown', onOutside)
     return () => document.removeEventListener('mousedown', onOutside)
@@ -238,8 +243,8 @@ export default function SearchResultsPage() {
     p.set('from',       fromVal)
     p.set('to',         toVal)
     p.set('type',       tripType)
-    p.set('passengers', criteria.passengers)
-    p.set('class',      criteria.travelClass)
+    p.set('passengers', String(passengers))
+    p.set('class',      travelClass)
     if (dateVal) p.set('date', dateVal)
     navigate({ search: p.toString() })
   }
@@ -383,13 +388,29 @@ export default function SearchResultsPage() {
             />
           </div>
 
-          {/* ── Travellers ── */}
-          <div className="fr-search-field">
+          {/* ── Travellers & Class ── */}
+          <div className="fr-search-field" ref={travRef} style={{ position: 'relative' }}
+            onClick={() => setShowTravDrop(p => !p)}>
             <span className="fr-search-label">Travellers &amp; Class</span>
-            <span className="fr-search-value">
-              {criteria.passengers} Traveller{criteria.passengers > 1 ? 's' : ''}
-            </span>
-            <span className="fr-search-sub">{criteria.travelClass}</span>
+            <span className="fr-search-value">{passengers} Traveller{passengers > 1 ? 's' : ''}</span>
+            <span className="fr-search-sub">{travelClass}</span>
+            {showTravDrop && (
+              <div className="fr-trip-dropdown" style={{ minWidth: 220 }} onMouseDown={e => e.stopPropagation()}>
+                <div style={{ padding: '10px 16px 6px', fontSize: 12, fontWeight: 700, color: '#666', textTransform: 'uppercase', letterSpacing: '0.6px' }}>Travellers</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '6px 16px 12px' }}>
+                  <button className="fr-qty-btn" onClick={e => { e.stopPropagation(); setPassengers(p => Math.max(1, p - 1)) }}>−</button>
+                  <span style={{ fontWeight: 700, fontSize: 16, minWidth: 20, textAlign: 'center' }}>{passengers}</span>
+                  <button className="fr-qty-btn" onClick={e => { e.stopPropagation(); setPassengers(p => Math.min(9, p + 1)) }}>+</button>
+                </div>
+                <div style={{ borderTop: '1px solid #f2f2f2', padding: '8px 16px 6px', fontSize: 12, fontWeight: 700, color: '#666', textTransform: 'uppercase', letterSpacing: '0.6px' }}>Class</div>
+                {['Economy', 'Premium Economy', 'Business', 'First Class'].map(cls => (
+                  <div key={cls} className={`fr-trip-option${travelClass === cls ? ' fr-trip-option-active' : ''}`}
+                    onMouseDown={e => { e.stopPropagation(); setTravelClass(cls); setShowTravDrop(false) }}>
+                    {cls}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <button className="fr-search-btn" onClick={handleNewSearch}>SEARCH</button>

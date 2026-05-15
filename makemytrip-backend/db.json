@@ -160,6 +160,31 @@
       "totalAmount": 3890,
       "bookingId": "MMT-FL-814173",
       "pnr": "PNR-482007"
+    },
+    {
+      "id": "bkg_1778853503891",
+      "createdAt": "2026-05-15T13:58:23.891Z",
+      "status": "confirmed",
+      "userId": "usr_1111-2222-3333-4444",
+      "type": "flight",
+      "fromCity": "New Delhi",
+      "toCity": "Bengaluru",
+      "departureDate": "2026-05-13",
+      "returnDate": null,
+      "travellers": [
+        {
+          "type": "Adult",
+          "firstName": "dgf",
+          "lastName": "dfg",
+          "gender": "Male",
+          "dob": "2026-05-07",
+          "seat": "Window",
+          "meal": "Veg"
+        }
+      ],
+      "totalAmount": 3890,
+      "bookingId": "MMT-FL-369983",
+      "pnr": "PNR-443816"
     }
   ]
 }
