@@ -8,6 +8,9 @@ import flightRoutes from './routes/flights.js'
 import bookingRoutes from './routes/bookings.js'
 import paymentRoutes from './routes/paymentRoutes.js'
 import userRoutes from './routes/userRoutes.js'
+import unifiedSearchRoutes from './routes/unifiedSearch.js'
+import adminRoutes from './routes/adminRoutes.js'
+import autocompleteRoutes from './routes/autocomplete.js'
 
 const app = express()
 const PORT = process.env.PORT || 5000
@@ -29,6 +32,12 @@ app.use('/api/payment', paymentRoutes)
 app.use('/api/v1/payment', paymentRoutes)
 app.use('/api/user', userRoutes)
 app.use('/api/v1/user', userRoutes)
+app.use('/api/search', unifiedSearchRoutes)
+app.use('/api/v1/search', unifiedSearchRoutes)
+app.use('/api/admin', adminRoutes)
+app.use('/api/v1/admin', adminRoutes)
+app.use('/api/autocomplete', autocompleteRoutes)
+app.use('/api/v1/autocomplete', autocompleteRoutes)
 
 app.use((_req, res) => res.status(404).json({ message: 'Route not found' }))
 

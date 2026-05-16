@@ -33,10 +33,17 @@ const getCode = (city='') => IATA[city.toLowerCase().trim()] || city.slice(0,3).
 
 // ── Helpers ───────────────────────────────────────────────────
 const fmtTime = (iso) => {
+  if (!iso) return 'N/A'
+  if (typeof iso === 'string' && iso.match(/^\d{1,2}:\d{2}/)) return iso
   const d = new Date(iso)
+  if (isNaN(d.getTime())) return iso
   return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`
 }
-const fmtDuration = (m) => `${Math.floor(m/60)}h${m%60?` ${m%60}m`:''}`
+const fmtDuration = (m) => {
+  if (!m) return 'N/A'
+  if (typeof m === 'string') return m
+  return `${Math.floor(m/60)}h${m%60?` ${m%60}m`:''}`
+}
 const fmtPrice    = (p) => '₹' + Number(p).toLocaleString('en-IN')
 const fmtDate     = (s) => {
   if (!s) return ''
@@ -109,6 +116,8 @@ export default function SearchResultsPage() {
   const [otpSent, setOtpSent] = useState(false)
   const [selectedFlight, setSelectedFlight] = useState(null)
   const [loginError, setLoginError] = useState('')
+  const [showCustomAlert, setShowCustomAlert] = useState(false)
+  const [alertMsg, setAlertMsg] = useState('')
 
   const criteria = {
     from:        params.get('from')       || 'New Delhi',
@@ -134,14 +143,14 @@ export default function SearchResultsPage() {
     }
   })
 
-  const handleSelectFlight = (flightId) => {
+  const handleSelectFlight = (flight) => {
     if (!user) {
-      alert("Please login to continue booking")
-      setSelectedFlight(flightId)
-      setShowLoginModal(true)
+      setAlertMsg("Please login to continue booking")
+      setShowCustomAlert(true)
+      setSelectedFlight(flight)
       return
     }
-    navigate(`/booking/${flightId}`)
+    navigate(`/booking/${flight.id}`, { state: { flight } })
   }
 
   const handleSendOtp = async (e) => {
@@ -170,7 +179,7 @@ export default function SearchResultsPage() {
       await verifyOtpLogin(mobilePhone, otpCode)
       setShowLoginModal(false)
       if (selectedFlight) {
-        navigate(`/booking/${selectedFlight}`)
+        navigate(`/booking/${selectedFlight.id}`, { state: { flight: selectedFlight } })
       }
     } catch (err) {
       setLoginError(err.message || 'Verification failed. Try 123456.')
@@ -178,14 +187,28 @@ export default function SearchResultsPage() {
   }
 
   const { data, isLoading } = useQuery({
-    queryKey: ['flights', criteria],
-    queryFn:  () => flightService.search(criteria),
-    enabled:  !!(criteria.from && criteria.to),
+    queryKey: ['flights'],
+    queryFn:  () => flightService.getAll(),
   })
 
-  const apiFlights   = data?.data || []
-  const dummyFlights = useMemo(() => searchDummyFlights(criteria), [criteria.from, criteria.to])
-  const allFlights   = apiFlights.length > 0 ? apiFlights : dummyFlights
+  const apiFlights = data?.data || []
+  const parsedFlights = apiFlights.map(f => ({
+    ...f,
+    departure: typeof f.departure === 'string' ? JSON.parse(f.departure) : f.departure,
+    arrival: typeof f.arrival === 'string' ? JSON.parse(f.arrival) : f.arrival,
+    refundable: f.refundable !== undefined ? f.refundable : true,
+    class: f.class || 'Economy'
+  }))
+
+  const allFlights = parsedFlights.filter(f =>
+    f.departure.city.toLowerCase().includes(criteria.from.toLowerCase()) &&
+    f.arrival.city.toLowerCase().includes(criteria.to.toLowerCase())
+  ).length > 0 ?
+    parsedFlights.filter(f =>
+      f.departure.city.toLowerCase().includes(criteria.from.toLowerCase()) &&
+      f.arrival.city.toLowerCase().includes(criteria.to.toLowerCase())
+    ) :
+    parsedFlights
 
   const allAirlines = useMemo(() => [...new Set(allFlights.map(f=>f.airline))], [allFlights])
 
@@ -563,7 +586,7 @@ export default function SearchResultsPage() {
                   {promo && <PromoBanner banner={promo} />}
                   <div
                     className="fc-card"
-                    onClick={() => handleSelectFlight(flight.id)}
+                    onClick={() => handleSelectFlight(flight)}
                   >
                     <div className="fc-main-row">
                       {/* Airline */}
@@ -585,8 +608,8 @@ export default function SearchResultsPage() {
                       {/* Route & times */}
                       <div className="fc-times-col">
                         <div className="fc-time-block">
-                          <span className="fc-time">{fmtTime(flight.departure)}</span>
-                          <span className="fc-city-code">{fromCode}</span>
+                          <span className="fc-time">{fmtTime(flight.departure.time || flight.departure)}</span>
+                          <span className="fc-city-code">{flight.departure.airport || getCode(flight.departure.city)}</span>
                         </div>
                         <div className="fc-route-info">
                           <span className="fc-duration">{fmtDuration(flight.duration)}</span>
@@ -602,8 +625,8 @@ export default function SearchResultsPage() {
                           </span>
                         </div>
                         <div className="fc-time-block">
-                          <span className="fc-time">{fmtTime(flight.arrival)}</span>
-                          <span className="fc-city-code">{toCode}</span>
+                          <span className="fc-time">{fmtTime(flight.arrival.time || flight.arrival)}</span>
+                          <span className="fc-city-code">{flight.arrival.airport || getCode(flight.arrival.city)}</span>
                         </div>
                       </div>
 
@@ -619,7 +642,7 @@ export default function SearchResultsPage() {
                         <span className="fc-price">{fmtPrice(flight.price)}</span>
                         <button
                           className="fc-view-btn"
-                          onClick={e => { e.stopPropagation(); handleSelectFlight(flight.id) }}
+                          onClick={e => { e.stopPropagation(); handleSelectFlight(flight) }}
                         >
                           View Prices
                         </button>
@@ -642,103 +665,42 @@ export default function SearchResultsPage() {
       </div>
 
       {showLoginModal && (
-        <div style={{
-          position: 'fixed',
-          inset: 0,
-          background: 'rgba(0,0,0,0.7)',
-          backdropFilter: 'blur(5px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 9999
-        }}>
-          <div style={{
-            background: '#fff',
-            borderRadius: '16px',
-            width: '90%',
-            maxWidth: '420px',
-            padding: '32px 28px',
-            boxShadow: '0 24px 48px rgba(0,0,0,0.2)',
-            position: 'relative',
-            boxSizing: 'border-box'
-          }}>
-            <button
-              onClick={() => setShowLoginModal(false)}
-              style={{
-                position: 'absolute',
-                top: '20px',
-                right: '20px',
-                background: '#f3f4f6',
-                border: 'none',
-                width: '32px',
-                height: '32px',
-                borderRadius: '50%',
-                fontSize: '14px',
-                fontWeight: 700,
-                cursor: 'pointer'
-              }}
-            >
-              ✕
-            </button>
+        <div className="custom-modal-overlay">
+          <div className="custom-login-card">
+            <button className="custom-modal-close" onClick={() => setShowLoginModal(false)}>✕</button>
 
-            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-              <span style={{ fontSize: '36px', display: 'block', marginBottom: '8px' }}>🔐</span>
-              <h3 style={{ margin: '0 0 8px', fontSize: '22px', fontWeight: 900, color: '#111827' }}>
-                Login to Continue
-              </h3>
-              <p style={{ margin: 0, fontSize: '13px', color: '#6b7280' }}>
-                MakeMyTrip requires verification before booking. Enter your mobile number to instantly login.
-              </p>
+            <div className="custom-login-header">
+              <span className="custom-login-icon">🔐</span>
+              <h3>Login to Continue</h3>
+              <p>MakeMyTrip requires verification before booking. Enter your mobile number to instantly login.</p>
             </div>
 
-            {loginError && (
-              <div style={{ background: '#fee2e2', color: '#991b1b', padding: '10px 14px', borderRadius: '8px', fontSize: '12px', marginBottom: '16px', textAlign: 'center', fontWeight: 600 }}>
-                {loginError}
-              </div>
-            )}
+            {loginError && <div className="custom-login-error">{loginError}</div>}
 
             {!otpSent ? (
               <form onSubmit={handleSendOtp}>
-                <div style={{ marginBottom: '20px' }}>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#374151', marginBottom: '6px' }}>
-                    MOBILE NUMBER
-                  </label>
-                  <div style={{ display: 'flex', gap: '10px' }}>
-                    <span style={{ background: '#f3f4f6', border: '1px solid #d1d5db', borderRadius: '8px', padding: '10px 14px', fontSize: '14px', fontWeight: 700, color: '#4b5563', display: 'flex', alignItems: 'center' }}>
-                      +91
-                    </span>
+                <div className="custom-input-group">
+                  <label>MOBILE NUMBER</label>
+                  <div className="custom-phone-input">
+                    <span className="custom-country-code">+91</span>
                     <input
                       type="tel"
                       placeholder="10-digit mobile number"
                       value={mobilePhone}
                       onChange={(e) => setMobilePhone(e.target.value)}
-                      style={{ flex: 1, border: '1px solid #d1d5db', borderRadius: '8px', padding: '10px 14px', fontSize: '14px', fontWeight: 600, outline: 'none', width: '100%', boxSizing: 'border-box' }}
                       autoFocus
                       required
                     />
                   </div>
                 </div>
-                <button
-                  type="submit"
-                  style={{ width: '100%', background: 'var(--clr-primary, #ef4444)', color: '#fff', border: 'none', borderRadius: '8px', padding: '14px', fontSize: '15px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(239,68,68,0.3)' }}
-                >
-                  GET ONE TIME PASSWORD (OTP)
-                </button>
+                <button type="submit" className="custom-login-btn">GET ONE TIME PASSWORD (OTP)</button>
               </form>
             ) : (
               <form onSubmit={handleVerifyOtp}>
-                <div style={{ marginBottom: '20px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                    <label style={{ fontSize: '12px', fontWeight: 700, color: '#374151' }}>
-                      ENTER 6-DIGIT OTP
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => setOtpSent(false)}
-                      style={{ background: 'none', border: 'none', color: 'var(--clr-primary, #ef4444)', fontSize: '12px', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }}
-                    >
-                      Change Number
-                    </button>
+                <div className="custom-input-group">
+                  <div className="custom-otp-header">
+                    <label>ENTER 6-DIGIT OTP</label>
+                    <button type="button" onClick={() => setOtpSent(false)}>Change Number</button>
                   </div>
                   <input
                     type="text"
@@ -746,27 +708,47 @@ export default function SearchResultsPage() {
                     placeholder="e.g. 123456"
                     value={otpCode}
                     onChange={(e) => setOtpCode(e.target.value)}
-                    style={{ width: '100%', border: '2px solid var(--clr-primary, #ef4444)', borderRadius: '8px', padding: '12px 14px', fontSize: '18px', fontWeight: 800, letterSpacing: '4px', textAlign: 'center', outline: 'none', boxSizing: 'border-box' }}
+                    className="custom-otp-input"
                     autoFocus
                     required
                   />
-                  <span style={{ display: 'block', textAlign: 'center', fontSize: '11px', color: '#10b981', marginTop: '8px', fontWeight: 600 }}>
-                    ✓ Simulated OTP sent! (Use test OTP: 123456)
-                  </span>
+                  <span className="custom-otp-hint">✓ Simulated OTP sent! (Use test OTP: 123456)</span>
                 </div>
-                <button
-                  type="submit"
-                  style={{ width: '100%', background: '#10b981', color: '#fff', border: 'none', borderRadius: '8px', padding: '14px', fontSize: '15px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(16,185,129,0.3)' }}
-                >
-                  VERIFY &amp; RESUME BOOKING
-                </button>
+                <button type="submit" className="custom-verify-btn">VERIFY & RESUME BOOKING</button>
               </form>
             )}
           </div>
         </div>
       )}
+
+      {showCustomAlert && (
+        <div className="custom-modal-overlay" style={{ zIndex: 10000 }}>
+          <div className="custom-alert-card">
+            <div className="custom-alert-icon">⚠️</div>
+            <h3 className="custom-alert-title">Authentication Required</h3>
+            <p className="custom-alert-msg">{alertMsg}</p>
+            <div className="custom-alert-actions">
+              <button 
+                className="custom-alert-btn-cancel" 
+                onClick={() => setShowCustomAlert(false)}
+              >
+                CANCEL
+              </button>
+              <button 
+                className="custom-alert-btn-confirm" 
+                onClick={() => {
+                  setShowCustomAlert(false)
+                  setShowLoginModal(true)
+                }}
+              >
+                LOGIN NOW
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
-  )
+  );
 }
 
 function PromoBanner({ banner }) {

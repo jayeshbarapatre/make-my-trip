@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import AOS from 'aos'
 import 'aos/dist/aos.css'
 import Header from './components/Common/Header'
@@ -30,20 +30,25 @@ import ToursPage from './pages/ToursPage'
 import VisaPage from './pages/VisaPage'
 import MyTrips from './pages/MyTrips'
 import Profile from './pages/Profile'
+import { AdminProvider } from './context/AdminContext'
+import AdminLoginPage from './pages/AdminLoginPage'
+import AdminDashboard from './pages/AdminDashboard'
+import AdminFlights from './pages/AdminFlights'
+import AdminHotels from './pages/AdminHotels'
+import AdminBuses from './pages/AdminBuses'
+import AdminCabs from './pages/AdminCabs'
+import AdminBookings from './pages/AdminBookings'
+import AdminUsers from './pages/AdminUsers'
+import ProtectedAdminRoute from './components/Admin/ProtectedAdminRoute'
+import FlightFormDemo from './pages/FlightFormDemo'
 
-function App() {
-  useEffect(() => {
-    AOS.init({
-      duration: 800,
-      once: true,
-      easing: 'ease-out-cubic',
-      offset: 80,
-    })
-  }, [])
+function AppContent() {
+  const location = useLocation()
+  const isAdminRoute = location.pathname.startsWith('/admin')
 
   return (
-    <BrowserRouter>
-      <Header />
+    <AdminProvider>
+      {!isAdminRoute && <Header />}
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/flights/results" element={<SearchResultsPage />} />
@@ -71,8 +76,35 @@ function App() {
         <Route path="/visa" element={<VisaPage />} />
         <Route path="/my-trips" element={<MyTrips />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/flight-form-demo" element={<FlightFormDemo />} />
+
+        <Route path="/admin/login" element={<AdminLoginPage />} />
+        <Route path="/admin/dashboard" element={<ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute>} />
+        <Route path="/admin/flights" element={<ProtectedAdminRoute><AdminFlights /></ProtectedAdminRoute>} />
+        <Route path="/admin/hotels" element={<ProtectedAdminRoute><AdminHotels /></ProtectedAdminRoute>} />
+        <Route path="/admin/buses" element={<ProtectedAdminRoute><AdminBuses /></ProtectedAdminRoute>} />
+        <Route path="/admin/cabs" element={<ProtectedAdminRoute><AdminCabs /></ProtectedAdminRoute>} />
+        <Route path="/admin/bookings" element={<ProtectedAdminRoute><AdminBookings /></ProtectedAdminRoute>} />
+        <Route path="/admin/users" element={<ProtectedAdminRoute><AdminUsers /></ProtectedAdminRoute>} />
       </Routes>
-      <Footer />
+      {!isAdminRoute && <Footer />}
+    </AdminProvider>
+  )
+}
+
+function App() {
+  useEffect(() => {
+    AOS.init({
+      duration: 800,
+      once: true,
+      easing: 'ease-out-cubic',
+      offset: 80,
+    })
+  }, [])
+
+  return (
+    <BrowserRouter>
+      <AppContent />
     </BrowserRouter>
   )
 }

@@ -7,7 +7,8 @@ import {
   resetPassword,
   getProfile,
   logout,
-  sendMobileOtp
+  sendMobileOtp,
+  promoteToAdmin
 } from '../controllers/authController.js'
 import { authenticate } from '../middleware/auth.js'
 
@@ -27,5 +28,8 @@ router.post('/logout', logout)
 
 // Razorpay-style Mobile OTP Login endpoints
 router.post('/send-otp', sendMobileOtp)
+
+// Admin promotion endpoint
+router.post('/promote-admin', authenticate, promoteToAdmin)
 
 export default router

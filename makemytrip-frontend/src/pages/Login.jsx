@@ -43,8 +43,12 @@ export default function Login({ onSwitchTab, onForgotPassword }) {
     setLoading(true)
     setError('')
     try {
-      await login(form.email, form.password)
-      navigate('/')
+      const userData = await login(form.email, form.password)
+      if (userData?.is_admin) {
+        navigate('/admin/dashboard')
+      } else {
+        navigate('/')
+      }
     } catch (err) {
       setError(err || 'Invalid credentials. Please verify your email and password.')
     } finally {

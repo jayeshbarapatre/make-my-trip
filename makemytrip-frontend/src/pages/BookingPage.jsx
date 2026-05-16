@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
+import { useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { flightService } from '../services/flightService'
 import { getDummyFlightById } from '../data/dummyFlights'
@@ -31,6 +31,7 @@ const AIRLINE_CODE = {
 export default function BookingPage() {
   const { flightId } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const [params] = useSearchParams()
 
   const { user, verifyOtpLogin } = useAuth()
@@ -90,7 +91,7 @@ export default function BookingPage() {
     retry: false,
   })
 
-  const flight = data?.data || getDummyFlightById(flightId)
+  const flight = data?.data || location.state?.flight || getDummyFlightById(flightId)
 
   // Reset scroll on step navigation
   useEffect(() => {

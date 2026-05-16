@@ -6,7 +6,8 @@ const userSchema = new mongoose.Schema({
   phone: { type: String, required: true },
   password: { type: String, required: true },
   otp: { type: String, default: null },
-  otpExpiry: { type: Date, default: null }
+  otpExpiry: { type: Date, default: null },
+  is_admin: { type: Boolean, default: false }
 }, { timestamps: true })
 
 const User = mongoose.models.User || mongoose.model('User', userSchema)

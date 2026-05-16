@@ -1,5 +1,4 @@
-import { prisma } from '../config/prismaClient.js'
-import { postgresDB, saveMockDb } from '../config/prismaClient.js'
+import prisma from '../config/prismaClient.js'
 import { sendBookingConfirmationEmail } from '../services/emailService.js'
 
 export const createBooking = async (req, res) => {
@@ -34,7 +33,6 @@ export const createBooking = async (req, res) => {
         pnr
       }
     })
-    saveMockDb()
 
     // Attach extracted email info for the email service
     if (userEmail) newBooking.userEmail = userEmail;
