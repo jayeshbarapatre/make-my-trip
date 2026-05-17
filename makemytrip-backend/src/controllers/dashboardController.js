@@ -2,14 +2,30 @@ import prisma from '../config/prismaClient.js'
 
 export const getDashboardStats = async (req, res) => {
   try {
-    const [totalUsers, totalFlights, totalBookings] = await Promise.all([
+    const [
+      totalUsers,
+      totalFlights,
+      totalHotels,
+      totalBookings,
+      activeFlights,
+      activeHotels,
+      flightBookings,
+      hotelBookings,
+      busBookings,
+      cabBookings,
+      totalRevenue
+    ] = await Promise.all([
       prisma.user.count(),
       prisma.flight.count(),
-      prisma.booking.count()
-    ])
-
-    const [activeFlights] = await Promise.all([
-      prisma.flight.count({ where: { isActive: true } })
+      prisma.hotel.count(),
+      prisma.booking.count(),
+      prisma.flight.count({ where: { isActive: true } }),
+      prisma.hotel.count({ where: { isActive: true } }),
+      prisma.booking.count({ where: { type: 'flight' } }),
+      prisma.booking.count({ where: { type: 'hotel' } }),
+      prisma.booking.count({ where: { type: 'bus' } }),
+      prisma.booking.count({ where: { type: 'cab' } }),
+      prisma.booking.aggregate({ _sum: { totalAmount: true } })
     ])
 
     res.json({
@@ -17,11 +33,21 @@ export const getDashboardStats = async (req, res) => {
         summary: {
           totalUsers,
           totalBookings,
-          totalFlights
+          totalFlights,
+          totalHotels,
+          totalRevenue: totalRevenue._sum.totalAmount || 0
         },
         active: {
           activeFlights,
-          inactiveFlights: totalFlights - activeFlights
+          inactiveFlights: totalFlights - activeFlights,
+          activeHotels,
+          inactiveHotels: totalHotels - activeHotels
+        },
+        bookingsBreakdown: {
+          flight: flightBookings,
+          hotel: hotelBookings,
+          bus: busBookings,
+          cab: cabBookings
         }
       }
     })
@@ -33,35 +59,59 @@ export const getDashboardStats = async (req, res) => {
 export const getRevenueData = async (req, res) => {
   try {
     const last12Months = []
-    const revenues = []
+    const revenueMap = {}
 
     for (let i = 11; i >= 0; i--) {
       const date = new Date()
       date.setMonth(date.getMonth() - i)
-      const monthName = date.toLocaleDateString('en-US', { month: 'short' })
+      const monthName = date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
       last12Months.push(monthName)
-
-      const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1)
-      const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0)
-
-      const bookings = await prisma.booking.findMany({
-        where: {
-          createdAt: { gte: startOfMonth, lte: endOfMonth }
-        }
-      })
-
-      const monthTotal = bookings.reduce((sum, b) => sum + b.totalAmount, 0)
-      revenues.push(monthTotal || Math.floor(Math.random() * 50000) + 10000)
+      revenueMap[monthKey] = 0
     }
+
+    const startDate = new Date()
+    startDate.setMonth(startDate.getMonth() - 11)
+    startDate.setDate(1)
+    startDate.setHours(0, 0, 0, 0)
+
+    const aggregatedRevenue = await prisma.booking.aggregate({
+      where: {
+        createdAt: { gte: startDate },
+        status: { not: 'cancelled' }
+      },
+      _sum: { totalAmount: true },
+      _count: true
+    })
+
+    const bookingsByMonth = await prisma.booking.findMany({
+      where: {
+        createdAt: { gte: startDate },
+        status: { not: 'cancelled' }
+      },
+      select: { createdAt: true, totalAmount: true }
+    })
+
+    bookingsByMonth.forEach(booking => {
+      const monthKey = `${booking.createdAt.getFullYear()}-${String(booking.createdAt.getMonth() + 1).padStart(2, '0')}`
+      if (revenueMap.hasOwnProperty(monthKey)) {
+        revenueMap[monthKey] += booking.totalAmount || 0
+      }
+    })
+
+    const revenues = Object.values(revenueMap)
 
     res.json({
       data: {
         labels: last12Months,
-        revenues
+        revenues,
+        total: aggregatedRevenue._sum.totalAmount || 0,
+        count: aggregatedRevenue._count
       }
     })
   } catch (err) {
-    res.status(500).json({ message: err.message })
+    console.error('Revenue data error:', err)
+    res.status(500).json({ message: 'Failed to fetch revenue data' })
   }
 }
 

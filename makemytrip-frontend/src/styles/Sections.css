@@ -1377,16 +1377,6 @@
   letter-spacing: -0.2px;
 }
 
-/* Replicating the capsule pill at the bottom */
-.flight-loader-bottom-dash {
-  position: absolute;
-  bottom: 24px;
-  width: 50px;
-  height: 5px;
-  background-color: #cbd5e1;
-  /* Slate-300 */
-  border-radius: 10px;
-}
 
 /* ── ANIMATION KEYFRAMES ────────────────────────────────── */
 @keyframes flight-progress-run {

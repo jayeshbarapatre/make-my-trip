@@ -2,21 +2,53 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { flightService } from '../services/flightService'
-import { getDummyFlightById } from '../data/dummyFlights'
 import { useAuth } from '../context/AuthContext'
 import { authService, bookingService } from '../services/authService'
 import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
 
-const fmtTime = (iso) => {
-  const d = new Date(iso)
+const fmtTime = (val) => {
+  if (!val) return 'N/A'
+  if (typeof val === 'object' && val.time) return val.time
+  if (typeof val === 'string' && val.match(/^\d{1,2}:\d{2}/)) return val
+  const d = new Date(val)
+  if (isNaN(d.getTime())) return val
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
 }
-const fmtDuration = (m) => `${Math.floor(m / 60)}h ${m % 60 ? `${m % 60}m` : ''}`
+const fmtDuration = (m) => {
+  if (!m || isNaN(m)) return 'N/A'
+  const duration = Number(m)
+  const hours = Math.floor(duration / 60)
+  const mins = duration % 60
+  if (hours > 0 && mins > 0) return `${hours}h ${mins}m`
+  if (hours > 0) return `${hours}h`
+  return `${mins}m`
+}
 const fmtPrice = (p) => '₹' + Number(p).toLocaleString('en-IN')
-const fmtDateTime = (iso) => new Date(iso).toLocaleString('en-IN', {
-  weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
-})
+const fmtDate = (dateStr) => {
+  if (!dateStr) return 'N/A'
+  const [year, month, day] = dateStr.split('-')
+  if (!year || !month || !day) return dateStr
+  const d = new Date(Number(year), Number(month) - 1, Number(day))
+  if (isNaN(d.getTime())) return dateStr
+  return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })
+}
+const fmtDateTime = (val) => {
+  if (!val) return 'N/A'
+  let dateObj
+  if (typeof val === 'object' && val.date) {
+    const [h, m] = (val.time || '00:00').split(':')
+    const [year, month, day] = val.date.split('-')
+    dateObj = new Date(Number(year), Number(month) - 1, Number(day))
+    dateObj.setHours(parseInt(h) || 0, parseInt(m) || 0)
+  } else {
+    dateObj = new Date(val)
+  }
+  if (isNaN(dateObj.getTime())) return 'N/A'
+  return dateObj.toLocaleString('en-IN', {
+    weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+  })
+}
 
 const AIRLINE_COLOR = {
   'IndiGo': 'var(--clr-indigo)', 'Air India': 'var(--clr-airindia)',
@@ -33,6 +65,7 @@ export default function BookingPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const [params] = useSearchParams()
+  const searchDate = location.state?.searchDate
 
   const { user, verifyOtpLogin } = useAuth()
   const [showLoginModal, setShowLoginModal] = useState(false)
@@ -41,9 +74,19 @@ export default function BookingPage() {
   const [otpSent, setOtpSent] = useState(false)
   const [pendingStep, setPendingStep] = useState(null)
   const [loginError, setLoginError] = useState('')
+  const [toastMsg, setToastMsg] = useState('')
+  const [toastType, setToastType] = useState('info') // 'info', 'error', 'success'
+  const [showToast, setShowToast] = useState(false)
 
   // Steps: 1: Select/Review Flight, 2: Traveller Details, 3: Review & Payment, 4: Confirmation
   const [step, setStep] = useState(1)
+
+  const showToastMsg = (message, type = 'info') => {
+    setToastMsg(message)
+    setToastType(type)
+    setShowToast(true)
+    setTimeout(() => setShowToast(false), 3500)
+  }
 
   // Passenger state configuration
   const [travellers] = useState(() => {
@@ -91,7 +134,38 @@ export default function BookingPage() {
     retry: false,
   })
 
-  const flight = data?.data || location.state?.flight || getDummyFlightById(flightId)
+  const rawFlight = data?.data || location.state?.flight
+  const flight = rawFlight ? (() => {
+    const departure = typeof rawFlight.departure === 'string' ? JSON.parse(rawFlight.departure) : rawFlight.departure
+    const arrival = typeof rawFlight.arrival === 'string' ? JSON.parse(rawFlight.arrival) : rawFlight.arrival
+
+    // Use search date if provided, otherwise use flight's date
+    const dateToUse = searchDate || departure?.date
+
+    // Calculate arrival date (next day if flight crosses midnight, same day otherwise)
+    let arrivalDate = dateToUse
+    if (arrival?.time && departure?.time) {
+      const [depH, depM] = (departure.time || '00:00').split(':').map(Number)
+      const [arrH, arrM] = (arrival.time || '00:00').split(':').map(Number)
+      const depMinutes = depH * 60 + depM
+      const arrMinutes = arrH * 60 + arrM
+
+      if (arrMinutes < depMinutes) {
+        // Flight crosses midnight
+        const date = new Date(dateToUse)
+        date.setDate(date.getDate() + 1)
+        arrivalDate = date.toISOString().split('T')[0]
+      }
+    }
+
+    return {
+      ...rawFlight,
+      departure: { ...departure, date: dateToUse },
+      arrival: { ...arrival, date: arrivalDate },
+      source: departure?.city || rawFlight.source,
+      destination: arrival?.city || rawFlight.destination,
+    }
+  })() : null
 
   // Reset scroll on step navigation
   useEffect(() => {
@@ -111,7 +185,11 @@ export default function BookingPage() {
   const airlineColor = AIRLINE_COLOR[flight.airline] || 'var(--clr-primary)'
   const airlineCode = AIRLINE_CODE[flight.airline] || flight.airline.slice(0, 2).toUpperCase()
 
-  // Dynamic fare calculations based on traveller configuration
+  // Dynamic fare calculations based on current traveller details (not fixed initial count)
+  const adultsCount = travellerDetails.filter(t => t.type === 'Adult').length
+  const childrenCount = travellerDetails.filter(t => t.type === 'Child').length
+  const infantsCount = travellerDetails.filter(t => t.type === 'Infant').length
+
   const seatFees = travellerDetails.reduce((sum, t) => {
     if (t.seat === 'Window') return sum + 350
     if (t.seat === 'Aisle') return sum + 250
@@ -119,8 +197,8 @@ export default function BookingPage() {
     return sum
   }, 0)
 
-  const totalPassengers = travellers.adults + travellers.children + travellers.infants
-  const basePrice = flight.price * (travellers.adults + travellers.children) + Math.round(flight.price * 0.4 * travellers.infants)
+  const totalPassengers = adultsCount + childrenCount + infantsCount
+  const basePrice = flight.price * (adultsCount + childrenCount) + Math.round(flight.price * 0.4 * infantsCount)
   const taxes = Math.round(basePrice * 0.18)
   const totalAmount = basePrice + taxes + seatFees
 
@@ -149,7 +227,7 @@ export default function BookingPage() {
 
   const handleProceedToTravellers = () => {
     if (!user) {
-      alert("Please login to continue booking")
+      showToastMsg("Please login to continue booking", "info")
       setPendingStep(2)
       setShowLoginModal(true)
       return
@@ -165,10 +243,14 @@ export default function BookingPage() {
     }
     setLoginError('')
     try {
-      await authService.sendMobileOtp(mobilePhone)
-      setOtpSent(true)
+      const res = await authService.sendMobileOtp(mobilePhone)
+      if (res && (res.data || res.message)) {
+        setOtpSent(true)
+      } else {
+        setLoginError('Failed to send OTP. Please try again.')
+      }
     } catch (err) {
-      setOtpSent(true)
+      setLoginError(err.message || 'Failed to send OTP. Please try again.')
     }
   }
 
@@ -192,7 +274,7 @@ export default function BookingPage() {
 
   const handleProceedToPayment = () => {
     if (!user) {
-      alert("Please login to continue booking")
+      showToastMsg("Please login to continue booking", "info")
       setPendingStep(3)
       setShowLoginModal(true)
       return
@@ -211,18 +293,18 @@ export default function BookingPage() {
   const handlePaymentSubmit = (e) => {
     e.preventDefault()
     if (!user) {
-      alert("Please login to continue booking")
+      showToastMsg("Please login to continue booking", "info")
       setPendingStep(3)
       setShowLoginModal(true)
       return
     }
 
     if (payMethod === 'upi' && !upiDetails.vpa.includes('@')) {
-      alert('Please enter a valid UPI ID (e.g. name@okhdfc)')
+      showToastMsg('Please enter a valid UPI ID (e.g. name@okhdfc)', 'error')
       return
     }
     if (payMethod === 'card' && (cardDetails.number.length < 16 || cardDetails.cvv.length < 3)) {
-      alert('Please enter valid 16-digit card and CVV details.')
+      showToastMsg('Please enter valid 16-digit card and CVV details.', 'error')
       return
     }
 
@@ -239,11 +321,12 @@ export default function BookingPage() {
         setTimeout(() => {
           setPaymentLoading(false)
 
+          const departureObj = typeof flight.departure === 'object' ? flight.departure : { date: '2026-05-20' }
           const bookingPayload = {
             type: 'flight',
-            fromCity: flight.source,
-            toCity: flight.destination,
-            departureDate: flight.departure ? flight.departure.slice(0, 10) : '2026-05-20',
+            fromCity: flight.source || (typeof flight.departure === 'object' ? flight.departure.city : ''),
+            toCity: flight.destination || (typeof flight.arrival === 'object' ? flight.arrival.city : ''),
+            departureDate: departureObj.date || '2026-05-20',
             travellers: travellerDetails,
             totalAmount: totalAmount,
             contact: passenger,
@@ -305,7 +388,7 @@ export default function BookingPage() {
       pdf.save(`MMT_Ticket_${bookingDetails?.pnr || 'Booking'}.pdf`)
     } catch (error) {
       console.error('PDF Generation Error:', error)
-      alert('Failed to generate PDF. Please try again.')
+      showToastMsg('Failed to generate PDF. Please try again.', 'error')
     }
   }
 
@@ -467,9 +550,42 @@ export default function BookingPage() {
 
                 {travellerDetails.map((traveller, index) => (
                   <div key={index} style={s.cardPanel}>
-                    <h3 style={s.travellerFormTitle}>
-                      👤 Traveller #{index + 1} ({traveller.type})
-                    </h3>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                      <h3 style={s.travellerFormTitle}>
+                        👤 Traveller #{index + 1} ({traveller.type})
+                      </h3>
+                      {travellerDetails.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setTravellerDetails(prev => prev.filter((_, idx) => idx !== index))
+                            showToastMsg(`Traveller #${index + 1} removed`, 'success')
+                          }}
+                          style={{
+                            background: '#fee2e2',
+                            color: '#991b1b',
+                            border: 'none',
+                            borderRadius: '6px',
+                            padding: '8px 14px',
+                            fontSize: '13px',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            transition: 'all 0.2s ease'
+                          }}
+                          onMouseOver={(e) => {
+                            e.target.style.background = '#fca5a5'
+                          }}
+                          onMouseOut={(e) => {
+                            e.target.style.background = '#fee2e2'
+                          }}
+                        >
+                          🗑️ Delete
+                        </button>
+                      )}
+                    </div>
 
                     <div style={s.formGrid}>
                       <div style={s.fieldGroup} id={`t_${index}_firstName`}>
@@ -621,6 +737,7 @@ export default function BookingPage() {
                         }}
                         type="tel"
                         placeholder="10-digit mobile number"
+                        maxLength={10}
                         value={passenger.phone}
                         onChange={(e) => {
                           const val = e.target.value
@@ -912,8 +1029,12 @@ export default function BookingPage() {
                         <div style={s.tfRoute}>
                           <div style={s.tfNode}>
                             <div style={s.tfTime}>{fmtTime(flight.departure)}</div>
-                            <div style={s.tfCity}>{flight.source}</div>
-                            <div style={s.tfDate}>{new Date(flight.departure).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</div>
+                            <div style={s.tfCity}>{flight.source || (typeof flight.departure === 'object' ? flight.departure.city : 'N/A')}</div>
+                            <div style={s.tfDate}>{
+                              typeof flight.departure === 'object' && flight.departure.date
+                                ? fmtDate(flight.departure.date)
+                                : new Date(flight.departure).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })
+                            }</div>
                           </div>
                           
                           <div style={s.tfMid}>
@@ -925,13 +1046,17 @@ export default function BookingPage() {
                               <div style={s.tfLineBar} />
                               <div style={s.tfDot} />
                             </div>
-                            <div style={s.tfStops}>{flight.stops === 0 ? 'Non-stop' : `${flight.stops} Stop`}</div>
+                            <div style={s.tfStops}>{flight.stops === 0 ? 'Non-stop' : `${flight.stops} Stop${flight.stops > 1 ? 's' : ''}`}</div>
                           </div>
                           
                           <div style={{ ...s.tfNode, alignItems: 'flex-end', textAlign: 'right' }}>
                             <div style={s.tfTime}>{fmtTime(flight.arrival)}</div>
-                            <div style={s.tfCity}>{flight.destination}</div>
-                            <div style={s.tfDate}>{new Date(flight.arrival).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</div>
+                            <div style={s.tfCity}>{flight.destination || (typeof flight.arrival === 'object' ? flight.arrival.city : 'N/A')}</div>
+                            <div style={s.tfDate}>{
+                              typeof flight.arrival === 'object' && flight.arrival.date
+                                ? fmtDate(flight.arrival.date)
+                                : new Date(flight.arrival).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })
+                            }</div>
                           </div>
                         </div>
                       </div>
@@ -1001,7 +1126,7 @@ export default function BookingPage() {
                   type="button"
                   style={s.actionBtnSec}
                   onClick={() => {
-                    alert(`Confirmation email sent to ${bookingDetails.contact.email}`);
+                    showToastMsg(`Confirmation email sent to ${bookingDetails.contact.email}`, 'success');
                   }}
                 >
                   ✉️ EMAIL TICKET
@@ -1091,6 +1216,7 @@ export default function BookingPage() {
                       type="tel"
                       placeholder="10-digit mobile number"
                       value={mobilePhone}
+                      maxLength={10}
                       onChange={(e) => setMobilePhone(e.target.value)}
                       style={{ flex: 1, border: '1px solid #d1d5db', borderRadius: '8px', padding: '10px 14px', fontSize: '14px', fontWeight: 600, outline: 'none', width: '100%', boxSizing: 'border-box' }}
                       autoFocus
@@ -1145,6 +1271,73 @@ export default function BookingPage() {
           </div>
         </div>
       )}
+
+      {/* ── Custom Toast Notification ── */}
+      {showToast && (
+        <div style={{
+          position: 'fixed',
+          bottom: '20px',
+          right: '20px',
+          zIndex: 10000,
+          animation: 'slideInUp 0.3s ease-out'
+        }}>
+          <div style={{
+            background: toastType === 'error' ? '#fee2e2' : toastType === 'success' ? '#dcfce7' : '#dbeafe',
+            border: `1.5px solid ${toastType === 'error' ? '#fca5a5' : toastType === 'success' ? '#86efac' : '#93c5fd'}`,
+            borderRadius: '12px',
+            padding: '16px 20px',
+            boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            maxWidth: '400px',
+            minWidth: '300px'
+          }}>
+            <span style={{ fontSize: '20px' }}>
+              {toastType === 'error' ? '✕' : toastType === 'success' ? '✓' : 'ℹ'}
+            </span>
+            <span style={{
+              color: toastType === 'error' ? '#991b1b' : toastType === 'success' ? '#15803d' : '#1e40af',
+              fontWeight: 600,
+              fontSize: '14px',
+              flex: 1
+            }}>
+              {toastMsg}
+            </span>
+            <button
+              onClick={() => setShowToast(false)}
+              style={{
+                background: 'none',
+                border: 'none',
+                fontSize: '16px',
+                color: toastType === 'error' ? '#991b1b' : toastType === 'success' ? '#15803d' : '#1e40af',
+                cursor: 'pointer',
+                padding: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minWidth: '20px',
+                minHeight: '20px'
+              }}
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @keyframes slideInUp {
+          from {
+            transform: translateY(100px);
+            opacity: 0;
+          }
+          to {
+            transform: translateY(0);
+            opacity: 1;
+          }
+        }
+      `}</style>
     </div>
   )
 }

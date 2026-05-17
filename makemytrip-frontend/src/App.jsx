@@ -4,6 +4,7 @@ import AOS from 'aos'
 import 'aos/dist/aos.css'
 import Header from './components/Common/Header'
 import Footer from './components/Common/Footer'
+import ProtectedRoute from './components/ProtectedRoute'
 import HomePage from './pages/HomePage'
 import SearchResultsPage from './pages/SearchResultsPage'
 import BookingPage from './pages/BookingPage'
@@ -40,7 +41,18 @@ import AdminCabs from './pages/AdminCabs'
 import AdminBookings from './pages/AdminBookings'
 import AdminUsers from './pages/AdminUsers'
 import ProtectedAdminRoute from './components/Admin/ProtectedAdminRoute'
-import FlightFormDemo from './pages/FlightFormDemo'
+
+function NotFound() {
+  return (
+    <div style={{ padding: '40px', textAlign: 'center', minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+      <h1>404 — Page Not Found</h1>
+      <p>Sorry, the page you're looking for doesn't exist.</p>
+      <a href="/" style={{ marginTop: '20px', padding: '10px 20px', backgroundColor: '#003580', color: 'white', textDecoration: 'none', borderRadius: '4px' }}>
+        Return to Home
+      </a>
+    </div>
+  )
+}
 
 function AppContent() {
   const location = useLocation()
@@ -52,19 +64,19 @@ function AppContent() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/flights/results" element={<SearchResultsPage />} />
-        <Route path="/booking/:flightId" element={<BookingPage />} />
+        <Route path="/booking/:flightId" element={<ProtectedRoute><BookingPage /></ProtectedRoute>} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/hotels" element={<HotelsPage />} />
         <Route path="/hotels/results" element={<HotelListingPage />} />
         <Route path="/hotels/detail/:hotelId" element={<HotelDetailsPage />} />
-        <Route path="/hotels/review" element={<HotelReviewPage />} />
-        <Route path="/hotels/payment" element={<HotelPaymentPage />} />
-        <Route path="/hotels/success" element={<HotelSuccessPage />} />
+        <Route path="/hotels/review" element={<ProtectedRoute><HotelReviewPage /></ProtectedRoute>} />
+        <Route path="/hotels/payment" element={<ProtectedRoute><HotelPaymentPage /></ProtectedRoute>} />
+        <Route path="/hotels/success" element={<ProtectedRoute><HotelSuccessPage /></ProtectedRoute>} />
         <Route path="/trains" element={<TrainsPage />} />
         <Route path="/trains/results" element={<TrainResultsPage />} />
-        <Route path="/trains/passengers" element={<TrainPassengersPage />} />
-        <Route path="/trains/payment" element={<TrainPaymentPage />} />
-        <Route path="/trains/success" element={<TrainSuccessPage />} />
+        <Route path="/trains/passengers" element={<ProtectedRoute><TrainPassengersPage /></ProtectedRoute>} />
+        <Route path="/trains/payment" element={<ProtectedRoute><TrainPaymentPage /></ProtectedRoute>} />
+        <Route path="/trains/success" element={<ProtectedRoute><TrainSuccessPage /></ProtectedRoute>} />
         <Route path="/holidays" element={<HolidaysPage />} />
         <Route path="/homestays" element={<HomestaysPage />} />
         <Route path="/cabs" element={<CabsPage />} />
@@ -74,9 +86,8 @@ function AppContent() {
         <Route path="/insurance" element={<InsurancePage />} />
         <Route path="/tours" element={<ToursPage />} />
         <Route path="/visa" element={<VisaPage />} />
-        <Route path="/my-trips" element={<MyTrips />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/flight-form-demo" element={<FlightFormDemo />} />
+        <Route path="/my-trips" element={<ProtectedRoute><MyTrips /></ProtectedRoute>} />
+        <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
 
         <Route path="/admin/login" element={<AdminLoginPage />} />
         <Route path="/admin/dashboard" element={<ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute>} />
@@ -86,6 +97,8 @@ function AppContent() {
         <Route path="/admin/cabs" element={<ProtectedAdminRoute><AdminCabs /></ProtectedAdminRoute>} />
         <Route path="/admin/bookings" element={<ProtectedAdminRoute><AdminBookings /></ProtectedAdminRoute>} />
         <Route path="/admin/users" element={<ProtectedAdminRoute><AdminUsers /></ProtectedAdminRoute>} />
+
+        <Route path="*" element={<NotFound />} />
       </Routes>
       {!isAdminRoute && <Footer />}
     </AdminProvider>

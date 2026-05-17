@@ -2,11 +2,12 @@ import { useState, useMemo, useRef, useEffect } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { flightService } from '../services/flightService'
-import { searchDummyFlights } from '../data/dummyFlights'
 import FlightLoader from '../components/Atoms/FlightLoader'
+import { ErrorState } from '../components/EmptyState'
 import { useAuth } from '../context/AuthContext'
 import { authService } from '../services/authService'
 import CustomCalendarPicker from '../components/CustomCalendarPicker'
+import { CITIES } from '../data/cities'
 import '../styles/FlightResults.css'
 
 // ── Airline meta ──────────────────────────────────────────────
@@ -32,22 +33,42 @@ const IATA = {
 const getCode = (city='') => IATA[city.toLowerCase().trim()] || city.slice(0,3).toUpperCase()
 
 // ── Helpers ───────────────────────────────────────────────────
-const fmtTime = (iso) => {
-  if (!iso) return 'N/A'
-  if (typeof iso === 'string' && iso.match(/^\d{1,2}:\d{2}/)) return iso
-  const d = new Date(iso)
-  if (isNaN(d.getTime())) return iso
+const fmtDateDisplay = (dateStr) => {
+  if (!dateStr) return { formatted: 'Select Date', weekday: 'Tap to pick' }
+  const [year, month, day] = dateStr.split('-')
+  if (!year || !month || !day) return { formatted: 'Invalid Date', weekday: '' }
+  const d = new Date(Number(year), Number(month) - 1, Number(day))
+  if (isNaN(d.getTime())) return { formatted: 'Invalid Date', weekday: '' }
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+  const formatted = `${d.getDate()} ${months[d.getMonth()]} '${String(d.getFullYear()).slice(-2)}`
+  const weekday = d.toLocaleDateString('en-IN', { weekday: 'long' })
+  return { formatted, weekday }
+}
+const fmtTime = (val) => {
+  if (!val) return 'N/A'
+  if (typeof val === 'object') {
+    if (val.time) return val.time
+    return 'N/A'
+  }
+  if (typeof val === 'string' && val.match(/^\d{1,2}:\d{2}/)) return val
+  const d = new Date(val)
+  if (isNaN(d.getTime())) return val
   return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`
 }
 const fmtDuration = (m) => {
   if (!m) return 'N/A'
   if (typeof m === 'string') return m
-  return `${Math.floor(m/60)}h${m%60?` ${m%60}m`:''}`
+  const hours = Math.floor(m / 60)
+  const mins = m % 60
+  if (hours > 0 && mins > 0) return `${hours} hour${hours > 1 ? 's' : ''} ${mins} minute${mins > 1 ? 's' : ''}`
+  if (hours > 0) return `${hours} hour${hours > 1 ? 's' : ''}`
+  return `${mins} minute${mins > 1 ? 's' : ''}`
 }
 const fmtPrice    = (p) => '₹' + Number(p).toLocaleString('en-IN')
 const fmtDate     = (s) => {
   if (!s) return ''
-  const d = new Date(s+'T00:00:00')
+  const [year, month, day] = s.split('-')
+  const d = new Date(Number(year), Number(month) - 1, Number(day))
   return d.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'2-digit'})
 }
 
@@ -59,29 +80,6 @@ const PROMOS = [
   {after:18,type:'cashback', logo:'💳',   title:'Book & Win! ₹500 Cashback',                subtitle:'Limited time offer — Book any domestic flight today!',                   cta:'EXPLORE'   },
 ]
 
-// ── City list for autocomplete ───────────────────────────────
-const CITIES_LIST = [
-  { city: 'New Delhi',    code: 'DEL', airport: 'Indira Gandhi Intl Airport' },
-  { city: 'Bengaluru',    code: 'BLR', airport: 'Kempegowda Intl Airport' },
-  { city: 'Mumbai',       code: 'BOM', airport: 'Chhatrapati Shivaji Maharaj Intl Airport' },
-  { city: 'Chennai',      code: 'MAA', airport: 'Chennai Intl Airport' },
-  { city: 'Kolkata',      code: 'CCU', airport: 'Netaji Subhash Chandra Bose Intl Airport' },
-  { city: 'Hyderabad',    code: 'HYD', airport: 'Rajiv Gandhi Intl Airport' },
-  { city: 'Pune',         code: 'PNQ', airport: 'Pune Airport' },
-  { city: 'Ahmedabad',    code: 'AMD', airport: 'Sardar Vallabhbhai Patel Intl Airport' },
-  { city: 'Goa',          code: 'GOI', airport: 'Dabolim Airport' },
-  { city: 'Jaipur',       code: 'JAI', airport: 'Jaipur Intl Airport' },
-  { city: 'Kochi',        code: 'COK', airport: 'Cochin Intl Airport' },
-  { city: 'Lucknow',      code: 'LKO', airport: 'Chaudhary Charan Singh Intl Airport' },
-  { city: 'Chandigarh',   code: 'IXC', airport: 'Chandigarh Intl Airport' },
-  { city: 'Patna',        code: 'PAT', airport: 'Lok Nayak Jayaprakash Airport' },
-  { city: 'Bhopal',       code: 'BHO', airport: 'Raja Bhoj Airport' },
-  { city: 'Nagpur',       code: 'NAG', airport: 'Dr. Babasaheb Ambedkar Intl Airport' },
-  { city: 'Indore',       code: 'IDR', airport: 'Devi Ahilya Bai Holkar Airport' },
-  { city: 'Srinagar',     code: 'SXR', airport: 'Sheikh ul-Alam Intl Airport' },
-  { city: 'Leh',          code: 'IXL', airport: 'Kushok Bakula Rimpochee Airport' },
-  { city: 'Varanasi',     code: 'VNS', airport: 'Lal Bahadur Shastri Airport' },
-]
 
 // ─────────────────────────────────────────────────────────────
 export default function SearchResultsPage() {
@@ -97,8 +95,16 @@ export default function SearchResultsPage() {
   const [toVal,        setToVal]        = useState(params.get('to')   || 'Bengaluru')
   const [fromOpen,     setFromOpen]     = useState(false)
   const [toOpen,       setToOpen]       = useState(false)
-  const [dateVal,      setDateVal]      = useState(params.get('date') || '')
+  const [dateVal,      setDateVal]      = useState(() => {
+    const fromUrl = params.get('date')
+    if (fromUrl) return fromUrl
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    return today.toISOString().split('T')[0]
+  })
+  const [returnDate,   setReturnDate]   = useState(params.get('returnDate') || '')
   const [showCal,      setShowCal]      = useState(false)
+  const [showReturnCal, setShowReturnCal] = useState(false)
   const [passengers,   setPassengers]   = useState(parseInt(params.get('passengers') || '1', 10))
   const [travelClass,  setTravelClass]  = useState(params.get('class') || 'Economy')
   const [showTravDrop, setShowTravDrop] = useState(false)
@@ -107,6 +113,7 @@ export default function SearchResultsPage() {
   const toRef   = useRef(null)
   const tripRef = useRef(null)
   const calRef  = useRef(null)
+  const returnCalRef = useRef(null)
   const travRef = useRef(null)
 
   const { user, verifyOtpLogin } = useAuth()
@@ -150,7 +157,7 @@ export default function SearchResultsPage() {
       setSelectedFlight(flight)
       return
     }
-    navigate(`/booking/${flight.id}`, { state: { flight } })
+    navigate(`/booking/${flight.id}`, { state: { flight, searchDate: criteria.date } })
   }
 
   const handleSendOtp = async (e) => {
@@ -161,10 +168,14 @@ export default function SearchResultsPage() {
     }
     setLoginError('')
     try {
-      await authService.sendMobileOtp(mobilePhone)
-      setOtpSent(true)
+      const res = await authService.sendMobileOtp(mobilePhone)
+      if (res && (res.data || res.message)) {
+        setOtpSent(true)
+      } else {
+        setLoginError('Failed to send OTP. Please try again.')
+      }
     } catch (err) {
-      setOtpSent(true)
+      setLoginError(err.message || 'Failed to send OTP. Please try again.')
     }
   }
 
@@ -186,12 +197,20 @@ export default function SearchResultsPage() {
     }
   }
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['flights'],
-    queryFn:  () => flightService.getAll(),
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: ['flights', criteria.from, criteria.to, criteria.date],
+    queryFn:  () => flightService.search({
+      from: criteria.from,
+      to: criteria.to,
+      date: criteria.date
+    }),
   })
 
   const apiFlights = data?.data || []
+
+  if (isError) {
+    return <ErrorState message="Unable to fetch flights. Please try again." onRetry={refetch} />
+  }
   const parsedFlights = apiFlights.map(f => ({
     ...f,
     departure: typeof f.departure === 'string' ? JSON.parse(f.departure) : f.departure,
@@ -201,12 +220,12 @@ export default function SearchResultsPage() {
   }))
 
   const allFlights = parsedFlights.filter(f =>
-    f.departure.city.toLowerCase().includes(criteria.from.toLowerCase()) &&
-    f.arrival.city.toLowerCase().includes(criteria.to.toLowerCase())
+    f?.departure?.city?.toLowerCase().includes(criteria.from.toLowerCase()) &&
+    f?.arrival?.city?.toLowerCase().includes(criteria.to.toLowerCase())
   ).length > 0 ?
     parsedFlights.filter(f =>
-      f.departure.city.toLowerCase().includes(criteria.from.toLowerCase()) &&
-      f.arrival.city.toLowerCase().includes(criteria.to.toLowerCase())
+      f?.departure?.city?.toLowerCase().includes(criteria.from.toLowerCase()) &&
+      f?.arrival?.city?.toLowerCase().includes(criteria.to.toLowerCase())
     ) :
     parsedFlights
 
@@ -235,6 +254,7 @@ export default function SearchResultsPage() {
       if (toRef.current   && !toRef.current.contains(e.target))   setToOpen(false)
       if (tripRef.current && !tripRef.current.contains(e.target)) setShowTripDrop(false)
       if (calRef.current  && !calRef.current.contains(e.target))  setShowCal(false)
+      if (returnCalRef.current && !returnCalRef.current.contains(e.target)) setShowReturnCal(false)
       if (travRef.current && !travRef.current.contains(e.target)) setShowTravDrop(false)
     }
     document.addEventListener('mousedown', onOutside)
@@ -242,17 +262,17 @@ export default function SearchResultsPage() {
   }, [])
 
   const fromSugg = useMemo(() => {
-    if (!fromVal.trim()) return CITIES_LIST.slice(0, 6)
+    if (!fromVal.trim()) return CITIES.slice(0, 6)
     const q = fromVal.toLowerCase()
-    return CITIES_LIST.filter(c =>
+    return CITIES.filter(c =>
       c.city.toLowerCase().includes(q) || c.code.toLowerCase().includes(q)
     ).slice(0, 6)
   }, [fromVal])
 
   const toSugg = useMemo(() => {
-    if (!toVal.trim()) return CITIES_LIST.slice(0, 6)
+    if (!toVal.trim()) return CITIES.slice(0, 6)
     const q = toVal.toLowerCase()
-    return CITIES_LIST.filter(c =>
+    return CITIES.filter(c =>
       c.city.toLowerCase().includes(q) || c.code.toLowerCase().includes(q)
     ).slice(0, 6)
   }, [toVal])
@@ -269,6 +289,7 @@ export default function SearchResultsPage() {
     p.set('passengers', String(passengers))
     p.set('class',      travelClass)
     if (dateVal) p.set('date', dateVal)
+    if (tripType === 'round-trip' && returnDate) p.set('returnDate', returnDate)
     navigate({ search: p.toString() })
   }
 
@@ -276,13 +297,21 @@ export default function SearchResultsPage() {
     if (!allFlights.length) return {}
     const cheapest = Math.min(...allFlights.map(f=>f.price))
     const fastest  = allFlights.reduce((a,b)=>a.duration<b.duration?a:b)
-    const earliest = allFlights.reduce((a,b)=>new Date(a.departure)<new Date(b.departure)?a:b)
-    const latest   = allFlights.reduce((a,b)=>new Date(a.departure)>new Date(b.departure)?a:b)
+    const earliest = allFlights.reduce((a,b)=> {
+      const timeA = a.departure?.time || a.departure;
+      const timeB = b.departure?.time || b.departure;
+      return timeA < timeB ? a : b;
+    })
+    const latest   = allFlights.reduce((a,b)=> {
+      const timeA = a.departure?.time || a.departure;
+      const timeB = b.departure?.time || b.departure;
+      return timeA > timeB ? a : b;
+    })
     return {
       cheapest: fmtPrice(cheapest),
       fastest:  fmtDuration(fastest.duration),
-      earliest: fmtTime(earliest.departure),
-      latest:   fmtTime(latest.departure),
+      earliest: fmtTime(earliest.departure?.time || earliest.departure),
+      latest:   fmtTime(latest.departure?.time || latest.departure),
     }
   }, [allFlights])
 
@@ -346,7 +375,7 @@ export default function SearchResultsPage() {
                   >
                     <div className="fr-city-left">
                       <span className="fr-city-name">{c.city}</span>
-                      <span className="fr-city-apt">{c.airport}</span>
+                      <span className="fr-city-apt">{c.airport || c.region}</span>
                     </div>
                     <span className="fr-city-badge">{c.code}</span>
                   </div>
@@ -379,7 +408,7 @@ export default function SearchResultsPage() {
                   >
                     <div className="fr-city-left">
                       <span className="fr-city-name">{c.city}</span>
-                      <span className="fr-city-apt">{c.airport}</span>
+                      <span className="fr-city-apt">{c.airport || c.region}</span>
                     </div>
                     <span className="fr-city-badge">{c.code}</span>
                   </div>
@@ -393,14 +422,10 @@ export default function SearchResultsPage() {
             onClick={() => setShowCal(p => !p)}>
             <span className="fr-search-label">Departure</span>
             <span className="fr-search-value">
-              {dateVal ? (() => {
-                const d = new Date(dateVal + 'T00:00:00')
-                const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
-                return `${d.getDate()} ${months[d.getMonth()]} '${String(d.getFullYear()).slice(2)}`
-              })() : 'Select Date'}
+              {fmtDateDisplay(dateVal).formatted}
             </span>
             <span className="fr-search-sub">
-              {dateVal ? new Date(dateVal + 'T00:00:00').toLocaleDateString('en-IN', { weekday: 'long' }) : 'Tap to pick'}
+              {fmtDateDisplay(dateVal).weekday}
             </span>
             <CustomCalendarPicker
               isOpen={showCal}
@@ -410,6 +435,34 @@ export default function SearchResultsPage() {
               labelText="Departure"
             />
           </div>
+
+          {/* ── Return date (only for roundtrip) ── */}
+          {tripType === 'round-trip' && (
+            <div className="fr-search-field fr-date-field" ref={returnCalRef} style={{ position: 'relative' }}
+              onClick={() => setShowReturnCal(p => !p)}>
+              <span className="fr-search-label">Return</span>
+              <span className="fr-search-value">
+                {fmtDateDisplay(returnDate).formatted}
+              </span>
+              <span className="fr-search-sub">
+                {fmtDateDisplay(returnDate).weekday}
+              </span>
+              <CustomCalendarPicker
+                isOpen={showReturnCal}
+                value={returnDate}
+                onChange={v => {
+                  if (new Date(v) < new Date(dateVal)) {
+                    alert('Return date cannot be earlier than departure date')
+                    return
+                  }
+                  setReturnDate(v)
+                  setShowReturnCal(false)
+                }}
+                onClose={() => setShowReturnCal(false)}
+                labelText="Return"
+              />
+            </div>
+          )}
 
           {/* ── Travellers & Class ── */}
           <div className="fr-search-field" ref={travRef} style={{ position: 'relative' }}
@@ -687,6 +740,7 @@ export default function SearchResultsPage() {
                       type="tel"
                       placeholder="10-digit mobile number"
                       value={mobilePhone}
+                      maxLength={10}
                       onChange={(e) => setMobilePhone(e.target.value)}
                       autoFocus
                       required
@@ -705,14 +759,13 @@ export default function SearchResultsPage() {
                   <input
                     type="text"
                     maxLength="6"
-                    placeholder="e.g. 123456"
+                    placeholder="Enter 6-digit OTP"
                     value={otpCode}
                     onChange={(e) => setOtpCode(e.target.value)}
                     className="custom-otp-input"
                     autoFocus
                     required
                   />
-                  <span className="custom-otp-hint">✓ Simulated OTP sent! (Use test OTP: 123456)</span>
                 </div>
                 <button type="submit" className="custom-verify-btn">VERIFY & RESUME BOOKING</button>
               </form>

@@ -222,6 +222,7 @@ export default function TrainPassengersPage() {
                     type="tel" 
                     placeholder="10-digit mobile number" 
                     value={contactMobile}
+                    maxLength={10}
                     onChange={(e) => setContactMobile(e.target.value)}
                     className="train-input" 
                     required 

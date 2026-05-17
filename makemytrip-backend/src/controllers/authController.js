@@ -3,22 +3,22 @@ import bcrypt from 'bcryptjs'
 import nodemailer from 'nodemailer'
 import prisma from '../config/prismaClient.js'
 
-const JWT_SECRET = process.env.JWT_SECRET || 'change_this_secret_in_production'
+if (!process.env.JWT_SECRET) {
+  throw new Error('FATAL: JWT_SECRET environment variable is not set. This is required for security. Set JWT_SECRET in your .env file.')
+}
+
+const JWT_SECRET = process.env.JWT_SECRET
 
 const signToken = (id) => jwt.sign({ id }, JWT_SECRET, { expiresIn: '7d' })
 
-// Memory fallback datastore if MongoDB is offline
-const memoryUsers = [
-  {
-    id: "usr_1111-2222-3333-4444",
-    name: "Jayesh Sharma",
-    email: "jayesh@gmail.com",
-    phone: "9988776655",
-    password: bcrypt.hashSync("Psspl@123#", 10), 
-    otp: null,
-    otpExpiry: null
-  }
-]
+const validateEmail = (email) => {
+  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  return regex.test(email)
+}
+
+const validatePassword = (password) => {
+  return password && password.length >= 8
+}
 
 // Simulated SMTP / mailer logging helper
 const sendOTPEmail = async (email, otp) => {
@@ -61,6 +61,14 @@ export const register = async (req, res) => {
     const { name, email, password, phone } = req.body
     if (!name || !email || !password || !phone) {
       return res.status(400).json({ message: 'All fields (name, email, password, phone) are required.' })
+    }
+
+    if (!validateEmail(email)) {
+      return res.status(400).json({ message: 'Invalid email address format.' })
+    }
+
+    if (!validatePassword(password)) {
+      return res.status(400).json({ message: 'Password must be at least 8 characters long.' })
     }
 
     const existing = await prisma.user.findUnique({ where: { email } })
@@ -119,7 +127,7 @@ export const forgotPassword = async (req, res) => {
 
     await prisma.user.update({ where: { email }, data: { otp, otpExpiry: expiry } })
     await sendOTPEmail(email, otp)
-    res.json({ message: 'Verification OTP sent to your registered email address successfully!', simulatedOtp: otp })
+    res.json({ message: 'Verification OTP sent to your registered email address successfully!' })
   } catch (err) {
     console.error('Forgot password error:', err)
     res.status(500).json({ message: err.message })
@@ -212,29 +220,18 @@ export const sendMobileOtp = async (req, res) => {
     const { phone } = req.body
     if (!phone) return res.status(400).json({ message: 'Mobile number is required.' })
 
+    const user = await prisma.user.findFirst({ where: { phone } })
+    if (!user) {
+      return res.status(404).json({ message: 'No account found with this phone number. Please register first.' })
+    }
+
     const otp = Math.floor(100000 + Math.random() * 900000).toString()
     const expiry = new Date(Date.now() + 5 * 60 * 1000)
 
-    let user = await prisma.user.findFirst({ where: { phone } })
-    if (!user) {
-      const email = phone + '@mmt.mobile'
-      const hashed = await bcrypt.hash('mobile_otp_user', 10)
-      user = await prisma.user.create({
-        data: {
-          name: 'Traveller_' + phone.slice(-4),
-          email,
-          phone,
-          password: hashed,
-          otp,
-          otpExpiry: expiry
-        }
-      })
-    } else {
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { otp, otpExpiry: expiry }
-      })
-    }
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { otp, otpExpiry: expiry }
+    })
 
     console.log('\n=============================================')
     console.log(`📱 SIMULATED SMS SENT (Razorpay Style Login)`)
@@ -242,9 +239,12 @@ export const sendMobileOtp = async (req, res) => {
     console.log(`👉 MakeMyTrip Login OTP: [ ${otp} ]`)
     console.log('=============================================\n')
 
-    res.json({ message: 'OTP sent successfully via simulated SMS.', simulatedOtp: otp })
+    res.json({
+      message: 'OTP sent successfully via simulated SMS.'
+    })
   } catch (err) {
-    res.status(500).json({ message: err.message })
+    console.error('Send OTP error:', err.message)
+    res.status(500).json({ message: 'Failed to send OTP: ' + err.message })
   }
 }
 
@@ -253,23 +253,12 @@ export const verifyMobileOtp = async (req, res) => {
     const { phone, otp } = req.body
     if (!phone || !otp) return res.status(400).json({ message: 'Phone number and OTP code are required.' })
 
-    let user = await prisma.user.findFirst({ where: { phone } })
+    const user = await prisma.user.findFirst({ where: { phone } })
     if (!user) {
-      const email = phone + '@mmt.mobile'
-      const hashed = await bcrypt.hash('mobile_otp_user', 10)
-      user = await prisma.user.create({
-        data: {
-          name: 'Traveller_' + phone.slice(-4),
-          email,
-          phone,
-          password: hashed,
-          otp: '123456',
-          otpExpiry: new Date(Date.now() + 5 * 60 * 1000)
-        }
-      })
+      return res.status(404).json({ message: 'No account found with this phone number.' })
     }
 
-    if (user.otp !== otp && otp !== '123456') {
+    if (user.otp !== otp) {
       return res.status(400).json({ message: 'Invalid OTP code.' })
     }
 
@@ -287,12 +276,17 @@ export const verifyMobileOtp = async (req, res) => {
       data: { user: { id: user.id, name: user.name, email: user.email, phone: user.phone }, token }
     })
   } catch (err) {
-    res.status(500).json({ message: err.message })
+    console.error('Verify OTP error:', err.message)
+    res.status(500).json({ message: 'OTP verification failed: ' + err.message })
   }
 }
 
 export const promoteToAdmin = async (req, res) => {
   try {
+    if (!req.adminId) {
+      return res.status(403).json({ message: 'Forbidden: Admin authorization required' })
+    }
+
     const { email } = req.body
     if (!email) return res.status(400).json({ message: 'Email is required' })
 

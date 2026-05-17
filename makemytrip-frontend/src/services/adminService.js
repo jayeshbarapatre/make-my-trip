@@ -19,7 +19,8 @@ export const adminAuthService = {
   register: (data) => adminAPI.post('/register', data),
   login: (email, password) => adminAPI.post('/login', { email, password }),
   getProfile: () => adminAPI.get('/profile'),
-  logout: () => adminAPI.post('/logout')
+  logout: () => adminAPI.post('/logout'),
+  changePassword: (currentPassword, newPassword) => adminAPI.put('/change-password', { currentPassword, newPassword })
 }
 
 export const adminFlightsService = {

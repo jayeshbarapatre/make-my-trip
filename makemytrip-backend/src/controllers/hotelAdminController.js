@@ -1,4 +1,15 @@
-import Hotel from '../models/Hotel.js'
+import prisma from '../config/prismaClient.js'
+
+export const listAllHotels = async (req, res) => {
+  try {
+    const hotels = await prisma.hotel.findMany({
+      orderBy: { rating: 'desc' }
+    })
+    res.json({ data: hotels })
+  } catch (err) {
+    res.status(500).json({ message: err.message })
+  }
+}
 
 export const createHotel = async (req, res) => {
   try {
@@ -8,22 +19,24 @@ export const createHotel = async (req, res) => {
       return res.status(400).json({ message: 'Missing required fields' })
     }
 
-    const hotel = await Hotel.create({
-      name,
-      city,
-      location,
-      description,
-      image,
-      images: images || [],
-      rating: rating || 4,
-      reviews: reviews || 0,
-      price,
-      pricePerNight,
-      rooms: rooms || 50,
-      roomsAvailable: rooms || 50,
-      amenities: amenities || [],
-      checkin,
-      checkout
+    const hotel = await prisma.hotel.create({
+      data: {
+        name,
+        city,
+        location,
+        description,
+        image,
+        images: images || [],
+        rating: rating || 4,
+        reviews: reviews || 0,
+        price,
+        pricePerNight,
+        rooms: rooms || 50,
+        roomsAvailable: rooms || 50,
+        amenities: amenities || [],
+        checkin,
+        checkout
+      }
     })
 
     res.status(201).json({ message: 'Hotel created successfully', data: { hotel } })
@@ -34,27 +47,10 @@ export const createHotel = async (req, res) => {
 
 export const getAllHotels = async (req, res) => {
   try {
-    const { page = 1, limit = 10, search, city, status } = req.query
-    const skip = (page - 1) * limit
-
-    const query = {}
-    if (search) {
-      query.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { city: { $regex: search, $options: 'i' } },
-        { location: { $regex: search, $options: 'i' } }
-      ]
-    }
-    if (city) query.city = city
-    if (status === 'active') query.isActive = true
-    if (status === 'inactive') query.isActive = false
-
-    const total = await Hotel.countDocuments(query)
-    const hotels = await Hotel.find(query).skip(skip).limit(parseInt(limit)).sort({ createdAt: -1 })
-
-    res.json({
-      data: { hotels, pagination: { page: parseInt(page), limit: parseInt(limit), total, pages: Math.ceil(total / limit) } }
+    const hotels = await prisma.hotel.findMany({
+      orderBy: { rating: 'desc' }
     })
+    res.json({ data: hotels })
   } catch (err) {
     res.status(500).json({ message: err.message })
   }
@@ -62,7 +58,7 @@ export const getAllHotels = async (req, res) => {
 
 export const getHotelById = async (req, res) => {
   try {
-    const hotel = await Hotel.findById(req.params.id)
+    const hotel = await prisma.hotel.findUnique({ where: { id: req.params.id } })
     if (!hotel) {
       return res.status(404).json({ message: 'Hotel not found' })
     }
@@ -74,12 +70,11 @@ export const getHotelById = async (req, res) => {
 
 export const updateHotel = async (req, res) => {
   try {
-    const updates = req.body
-    const hotel = await Hotel.findByIdAndUpdate(req.params.id, { ...updates, updatedAt: new Date() }, { new: true })
-
-    if (!hotel) {
-      return res.status(404).json({ message: 'Hotel not found' })
-    }
+    const { id, createdAt, updatedAt, _id, ...updates } = req.body
+    const hotel = await prisma.hotel.update({
+      where: { id: req.params.id },
+      data: updates
+    })
 
     res.json({ message: 'Hotel updated successfully', data: { hotel } })
   } catch (err) {
@@ -89,25 +84,68 @@ export const updateHotel = async (req, res) => {
 
 export const deleteHotel = async (req, res) => {
   try {
-    const hotel = await Hotel.findByIdAndDelete(req.params.id)
-    if (!hotel) {
-      return res.status(404).json({ message: 'Hotel not found' })
-    }
+    await prisma.hotel.delete({ where: { id: req.params.id } })
     res.json({ message: 'Hotel deleted successfully' })
   } catch (err) {
+    if (err.code === 'P2025') {
+      return res.status(404).json({ message: 'Hotel not found' })
+    }
     res.status(500).json({ message: err.message })
   }
 }
 
 export const toggleHotelStatus = async (req, res) => {
   try {
-    const hotel = await Hotel.findById(req.params.id)
+    const hotel = await prisma.hotel.findUnique({ where: { id: req.params.id } })
     if (!hotel) {
       return res.status(404).json({ message: 'Hotel not found' })
     }
-    hotel.isActive = !hotel.isActive
-    await hotel.save()
-    res.json({ message: `Hotel ${hotel.isActive ? 'activated' : 'deactivated'}`, data: { hotel } })
+    const updatedHotel = await prisma.hotel.update({
+      where: { id: req.params.id },
+      data: { isActive: !hotel.isActive }
+    })
+    res.json({ message: `Hotel ${updatedHotel.isActive ? 'activated' : 'deactivated'}`, data: { hotel: updatedHotel } })
+  } catch (err) {
+    res.status(500).json({ message: err.message })
+  }
+}
+
+export const updateHotelImages = async (req, res) => {
+  try {
+    const { imageUrls } = req.body
+
+    if (!Array.isArray(imageUrls)) {
+      return res.status(400).json({ message: 'imageUrls must be an array' })
+    }
+
+    const hotel = await prisma.hotel.update({
+      where: { id: req.params.id },
+      data: { images: imageUrls }
+    })
+
+    res.json({ message: 'Hotel images updated successfully', data: { hotel } })
+  } catch (err) {
+    if (err.code === 'P2025') {
+      return res.status(404).json({ message: 'Hotel not found' })
+    }
+    res.status(500).json({ message: err.message })
+  }
+}
+
+export const getHotelImages = async (req, res) => {
+  try {
+    const hotel = await prisma.hotel.findUnique({
+      where: { id: req.params.id },
+      select: { id: true, name: true, images: true, image: true }
+    })
+
+    if (!hotel) {
+      return res.status(404).json({ message: 'Hotel not found' })
+    }
+
+    const images = hotel.images && Array.isArray(hotel.images) ? hotel.images : (hotel.image ? [hotel.image] : [])
+
+    res.json({ data: { hotelId: hotel.id, hotelName: hotel.name, images } })
   } catch (err) {
     res.status(500).json({ message: err.message })
   }

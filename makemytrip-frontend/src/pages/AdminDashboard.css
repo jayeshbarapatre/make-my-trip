@@ -1,29 +1,30 @@
 .dashboard {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 16px;
 }
 
 .dashboard-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .dashboard-header h1 {
   margin: 0;
-  font-size: 28px;
+  font-size: 18px;
   color: #1a1f36;
 }
 
 .refresh-btn {
-  padding: 10px 16px;
+  padding: 6px 12px;
   background: #1a73e8;
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 4px;
   font-weight: 600;
+  font-size: 12px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -35,17 +36,17 @@
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
 }
 
 .stat-card {
   background: white;
-  border-radius: 8px;
-  padding: 20px;
+  border-radius: 6px;
+  padding: 12px;
   display: flex;
-  gap: 16px;
-  border-left: 4px solid;
+  gap: 10px;
+  border-left: 3px solid;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   transition: all 0.2s ease;
 }
@@ -56,11 +57,11 @@
 }
 
 .stat-icon {
-  font-size: 32px;
+  font-size: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 50px;
+  min-width: 32px;
 }
 
 .stat-content {
@@ -71,15 +72,15 @@
 
 .stat-label {
   margin: 0;
-  font-size: 12px;
+  font-size: 10px;
   color: #6b7280;
   font-weight: 600;
   text-transform: uppercase;
 }
 
 .stat-value {
-  margin: 8px 0 0 0;
-  font-size: 28px;
+  margin: 4px 0 0 0;
+  font-size: 18px;
   font-weight: 700;
   color: #1a1f36;
 }
@@ -104,24 +105,24 @@
 .dashboard-row {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 24px;
+  gap: 16px;
 }
 
 .chart-container {
   background: white;
-  border-radius: 8px;
-  padding: 24px;
+  border-radius: 6px;
+  padding: 16px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .chart-container h2 {
-  margin: 0 0 20px 0;
-  font-size: 18px;
+  margin: 0 0 12px 0;
+  font-size: 14px;
   color: #1a1f36;
 }
 
 .revenue-chart {
-  height: 300px;
+  height: 200px;
   display: flex;
   align-items: flex-end;
 }
@@ -166,53 +167,53 @@
 
 .availability-container {
   background: white;
-  border-radius: 8px;
-  padding: 24px;
+  border-radius: 6px;
+  padding: 16px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .availability-container h2 {
-  margin: 0 0 20px 0;
-  font-size: 18px;
+  margin: 0 0 12px 0;
+  font-size: 14px;
   color: #1a1f36;
 }
 
 .availability-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
 }
 
 .availability-card {
-  padding: 16px;
+  padding: 10px;
   background: #f9fafb;
-  border-radius: 8px;
+  border-radius: 6px;
   border: 1px solid #e5e7eb;
 }
 
 .avail-header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: 8px;
+  margin-bottom: 10px;
 }
 
 .avail-icon {
-  font-size: 24px;
+  font-size: 16px;
 }
 
 .avail-header h3 {
   margin: 0;
-  font-size: 16px;
+  font-size: 13px;
   color: #1a1f36;
 }
 
 .avail-bar {
-  height: 8px;
+  height: 6px;
   background: #e5e7eb;
-  border-radius: 4px;
+  border-radius: 3px;
   overflow: hidden;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .avail-progress {
@@ -223,13 +224,13 @@
 
 .avail-text {
   margin: 0;
-  font-size: 13px;
+  font-size: 11px;
   color: #6b7280;
 }
 
 .avail-percentage {
   margin: 4px 0 0 0;
-  font-size: 20px;
+  font-size: 14px;
   font-weight: 700;
   color: #1a1f36;
 }

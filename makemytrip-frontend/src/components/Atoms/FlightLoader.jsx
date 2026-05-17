@@ -83,8 +83,7 @@ export default function FlightLoader() {
         Hold on, we're fetching flights for you
       </h3>
 
-      {/* Replicating the bottom drag dashboard pill */}
-      <div className="flight-loader-bottom-dash" />
+     
     </div>
   )
 }

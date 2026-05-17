@@ -1673,6 +1673,47 @@
   border-radius: 4px;
 }
 
+.hp-input-error {
+  color: #e63946;
+  font-size: 12px;
+  margin-top: 4px;
+  display: block;
+}
+
+.hp-input-clear {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: #999;
+  padding: 4px 8px;
+  transition: color 0.2s ease;
+}
+
+.hp-input-clear:hover {
+  color: #333;
+}
+
+/* Autocomplete dropdown animation */
+.hp-autocomplete-dropdown {
+  animation: fadeInDown 0.15s ease;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Traveller & Guest Selectors */
 .hp-traveller-dropdown {
   position: absolute;

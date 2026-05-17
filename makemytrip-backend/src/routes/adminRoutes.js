@@ -1,10 +1,10 @@
 import express from 'express'
-import { adminRegister, adminLogin, getAdminProfile, adminLogout } from '../controllers/adminAuthController.js'
+import { adminRegister, adminLogin, getAdminProfile, adminLogout, changePassword } from '../controllers/adminAuthController.js'
 import {
   createFlight, getAllFlights, getFlightById, updateFlight, deleteFlight, toggleFlightStatus
 } from '../controllers/flightAdminController.js'
 import {
-  createHotel, getAllHotels, getHotelById, updateHotel, deleteHotel, toggleHotelStatus
+  createHotel, getAllHotels, getHotelById, updateHotel, deleteHotel, toggleHotelStatus, updateHotelImages, getHotelImages
 } from '../controllers/hotelAdminController.js'
 import {
   createBus, getAllBuses, getBusById, updateBus, deleteBus, toggleBusStatus
@@ -23,6 +23,7 @@ router.post('/register', adminRegister)
 router.post('/login', adminLogin)
 router.get('/profile', authenticateAdmin, getAdminProfile)
 router.post('/logout', authenticateAdmin, adminLogout)
+router.put('/change-password', authenticateAdmin, changePassword)
 
 router.get('/dashboard/stats', authenticateAdmin, adminOnly, getDashboardStats)
 router.get('/dashboard/revenue', authenticateAdmin, adminOnly, getRevenueData)
@@ -42,6 +43,8 @@ router.get('/hotels/:id', authenticateAdmin, adminOnly, getHotelById)
 router.put('/hotels/:id', authenticateAdmin, adminOnly, updateHotel)
 router.delete('/hotels/:id', authenticateAdmin, adminOnly, deleteHotel)
 router.patch('/hotels/:id/toggle', authenticateAdmin, adminOnly, toggleHotelStatus)
+router.put('/hotels/:id/images', authenticateAdmin, adminOnly, updateHotelImages)
+router.get('/hotels/:id/images', getHotelImages)
 
 router.post('/buses', authenticateAdmin, adminOnly, createBus)
 router.get('/buses', authenticateAdmin, adminOnly, getAllBuses)

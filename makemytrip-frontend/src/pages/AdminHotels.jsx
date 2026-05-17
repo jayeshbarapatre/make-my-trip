@@ -6,25 +6,36 @@ import './AdminFlights.css'
 
 const AdminHotels = () => {
   const [hotels, setHotels] = useState([])
+  const [allHotels, setAllHotels] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [search, setSearch] = useState('')
-  const [page, setPage] = useState(1)
-  const [pagination, setPagination] = useState({})
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState(null)
   const [editingHotel, setEditingHotel] = useState(null)
 
   useEffect(() => {
     fetchHotels()
-  }, [page, search])
+  }, [])
+
+  useEffect(() => {
+    if (search.trim() === '') {
+      setHotels(allHotels)
+    } else {
+      const filtered = allHotels.filter(h =>
+        h.name.toLowerCase().includes(search.toLowerCase()) ||
+        h.city.toLowerCase().includes(search.toLowerCase())
+      )
+      setHotels(filtered)
+    }
+  }, [search, allHotels])
 
   const fetchHotels = async () => {
     try {
       setLoading(true)
-      const response = await adminHotelsService.getAll({ page, limit: 10, search })
-      setHotels(response.data.data.hotels)
-      setPagination(response.data.data.pagination)
+      const response = await adminHotelsService.getAll()
+      setAllHotels(response.data.data)
+      setHotels(response.data.data)
       setError('')
     } catch (err) {
       setError('Failed to load hotels')
@@ -37,7 +48,7 @@ const AdminHotels = () => {
     if (window.confirm('Delete this hotel?')) {
       try {
         await adminHotelsService.delete(id)
-        setHotels(hotels.filter(h => h._id !== id))
+        setHotels(hotels.filter(h => h.id !== id))
       } catch (err) {
         setError('Failed to delete hotel')
       }
@@ -47,7 +58,7 @@ const AdminHotels = () => {
   const handleToggleStatus = async (id) => {
     try {
       await adminHotelsService.toggleStatus(id)
-      setHotels(hotels.map(h => h._id === id ? { ...h, isActive: !h.isActive } : h))
+      setHotels(hotels.map(h => h.id === id ? { ...h, isActive: !h.isActive } : h))
     } catch (err) {
       setError('Failed to update status')
     }
@@ -55,7 +66,7 @@ const AdminHotels = () => {
 
   const handleEdit = (hotel) => {
     setEditingHotel(hotel)
-    setEditingId(hotel._id)
+    setEditingId(hotel.id)
     setShowForm(true)
   }
 
@@ -69,7 +80,7 @@ const AdminHotels = () => {
     try {
       if (editingId) {
         await adminHotelsService.update(editingId, formData)
-        setHotels(hotels.map(h => h._id === editingId ? { ...h, ...formData } : h))
+        setHotels(hotels.map(h => h.id === editingId ? { ...h, ...formData } : h))
       } else {
         const response = await adminHotelsService.create(formData)
         setHotels([response.data.data.hotel, ...hotels])
@@ -84,13 +95,29 @@ const AdminHotels = () => {
     <AdminLayout>
       <div className="admin-page">
         <div className="page-header">
-          <h1>Hotels Management</h1>
+          <div>
+            <h1>Hotels Management</h1>
+            <div style={{ display: 'flex', gap: '24px', marginTop: '8px', fontSize: '14px', color: '#64748b' }}>
+              <span>📊 Total: <strong style={{ color: '#0f172a' }}>{allHotels.length}</strong></span>
+              <span>✅ Active: <strong style={{ color: '#10b981' }}>{allHotels.filter(h => h.isActive).length}</strong></span>
+              <span>⛔ Inactive: <strong style={{ color: '#ef4444' }}>{allHotels.filter(h => !h.isActive).length}</strong></span>
+            </div>
+          </div>
           <button className="btn-primary" onClick={() => setShowForm(true)}>
             🏨 Add New Hotel
           </button>
         </div>
 
         {error && <div className="error-banner">{error}</div>}
+
+        <div className="search-bar">
+          <input
+            type="text"
+            placeholder="Search hotels by name, city..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
 
         {showForm && (
           <div className="modal-overlay" onClick={handleCloseForm}>
@@ -104,17 +131,6 @@ const AdminHotels = () => {
           </div>
         )}
 
-        <div className="search-bar">
-          <input
-            type="text"
-            placeholder="Search hotels by name, city..."
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value)
-              setPage(1)
-            }}
-          />
-        </div>
 
         {loading ? (
           <div className="loading">Loading hotels...</div>
@@ -137,7 +153,7 @@ const AdminHotels = () => {
                 </thead>
                 <tbody>
                   {hotels.map(hotel => (
-                    <tr key={hotel._id}>
+                    <tr key={hotel.id}>
                       <td className="font-bold">{hotel.name}</td>
                       <td>{hotel.city}</td>
                       <td>⭐ {hotel.rating}</td>
@@ -150,10 +166,10 @@ const AdminHotels = () => {
                       </td>
                       <td className="actions">
                         <button className="btn-sm btn-edit" onClick={() => handleEdit(hotel)}>✎ Edit</button>
-                        <button className="btn-sm btn-toggle" onClick={() => handleToggleStatus(hotel._id)}>
+                        <button className="btn-sm btn-toggle" onClick={() => handleToggleStatus(hotel.id)}>
                           {hotel.isActive ? '🔒' : '🔓'}
                         </button>
-                        <button className="btn-sm btn-delete" onClick={() => handleDelete(hotel._id)}>🗑️ Delete</button>
+                        <button className="btn-sm btn-delete" onClick={() => handleDelete(hotel.id)}>🗑️ Delete</button>
                       </td>
                     </tr>
                   ))}
@@ -161,13 +177,6 @@ const AdminHotels = () => {
               </table>
             </div>
 
-            {pagination.pages > 1 && (
-              <div className="pagination">
-                <button disabled={page === 1} onClick={() => setPage(page - 1)}>← Previous</button>
-                <span>Page {page} of {pagination.pages}</span>
-                <button disabled={page === pagination.pages} onClick={() => setPage(page + 1)}>Next →</button>
-              </div>
-            )}
           </>
         )}
       </div>

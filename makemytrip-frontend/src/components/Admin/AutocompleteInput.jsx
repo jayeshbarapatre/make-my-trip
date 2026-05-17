@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { getAutocompleteSuggestions } from '../../data/autocompleteData'
+import { flightService } from '../../services/flightService'
 import './AutocompleteInput.css'
 
 const AutocompleteInput = ({ type, placeholder, value, onChange, onSelect, label, required = false }) => {
@@ -20,7 +20,7 @@ const AutocompleteInput = ({ type, placeholder, value, onChange, onSelect, label
 
     if (debounceRef.current) clearTimeout(debounceRef.current)
 
-    debounceRef.current = setTimeout(() => {
+    debounceRef.current = setTimeout(async () => {
       if (val.trim() === '') {
         setSuggestions([])
         setShowDropdown(false)
@@ -30,9 +30,25 @@ const AutocompleteInput = ({ type, placeholder, value, onChange, onSelect, label
       if (cache[val]) {
         setSuggestions(cache[val])
       } else {
-        const results = getAutocompleteSuggestions(type, val)
-        setSuggestions(results)
-        setCache(prev => ({ ...prev, [val]: results }))
+        try {
+          let results = [];
+          switch(type) {
+            case 'airline': results = await flightService.getAirlines(val); break;
+            case 'airport': results = await flightService.getAirports(val); break;
+            case 'city': results = await flightService.getCities(val); break;
+            case 'aircraft': results = await flightService.getAircrafts(val); break;
+            case 'flightNumber': results = await flightService.getFlightNumbers(val); break;
+            default: results = [];
+          }
+          const items = Array.isArray(results)
+            ? results.map(item => typeof item === 'string' ? { name: item, code: item } : item)
+            : [];
+          setSuggestions(items)
+          setCache(prev => ({ ...prev, [val]: items }))
+        } catch (err) {
+          console.error('Autocomplete error:', err)
+          setSuggestions([])
+        }
       }
 
       setShowDropdown(true)
@@ -40,11 +56,7 @@ const AutocompleteInput = ({ type, placeholder, value, onChange, onSelect, label
   }
 
   const handleSelect = (suggestion) => {
-    const displayValue = type === 'city' ? `${suggestion.name} (${suggestion.code})` :
-                        type === 'airport' ? `${suggestion.code} - ${suggestion.name}` :
-                        type === 'airline' ? `${suggestion.name} (${suggestion.code})` :
-                        type === 'aircraft' ? suggestion.name :
-                        type === 'flightNumber' ? `${suggestion.code}` : suggestion.name
+    const displayValue = suggestion.name
 
     setInput(displayValue)
     onChange?.(displayValue)
@@ -110,19 +122,13 @@ const AutocompleteInput = ({ type, placeholder, value, onChange, onSelect, label
         {showDropdown && suggestions.length > 0 && (
           <div ref={dropdownRef} className="autocomplete-dropdown">
             {suggestions.map((suggestion, index) => {
-              const displayText = type === 'city' ? `${suggestion.name} (${suggestion.code})` :
-                                 type === 'airport' ? `${suggestion.code} - ${suggestion.name}` :
-                                 type === 'airline' ? `${suggestion.name} (${suggestion.code})` :
-                                 type === 'aircraft' ? suggestion.name :
-                                 type === 'flightNumber' ? suggestion.name : suggestion.name
-
               return (
                 <div
                   key={`${type}-${index}`}
                   className={`autocomplete-item ${index === highlightedIndex ? 'highlighted' : ''}`}
                   onClick={() => handleSelect(suggestion)}
                 >
-                  {displayText}
+                  {suggestion.name}
                 </div>
               )
             })}

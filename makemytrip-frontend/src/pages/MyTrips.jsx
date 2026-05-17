@@ -1,16 +1,32 @@
 import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { bookingService, paymentService, authService } from '../services/authService'
 import BookingCard from '../components/BookingCard'
 import { useAuth } from '../context/AuthContext'
 
 export default function MyTrips() {
+  const navigate = useNavigate()
+  const { user, verifyOtpLogin } = useAuth()
+
+  // Auth guard
+  useEffect(() => {
+    if (!user) {
+      navigate('/login?returnTo=/my-trips', { replace: true })
+    }
+  }, [user, navigate])
+
   const [activeTab, setActiveTab] = useState('upcoming')
+  const [typeFilter, setTypeFilter] = useState('all') // 'all', 'flight', 'hotel'
   const [bookings, setBookings] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedBooking, setSelectedBooking] = useState(null)
 
-  // Auth context
-  const { user, verifyOtpLogin } = useAuth()
+  // Notification state
+  const [notification, setNotification] = useState({ show: false, message: '', type: 'success' })
+  const showNotification = (message, type = 'success') => {
+    setNotification({ show: true, message, type })
+    setTimeout(() => setNotification({ show: false, message: '', type: 'success' }), 4000)
+  }
 
   // Razorpay Checkout Simulation State
   const [razorpayOrder, setRazorpayOrder] = useState(null)
@@ -22,17 +38,22 @@ export default function MyTrips() {
   const [mobilePhone, setMobilePhone] = useState('')
   const [otpCode, setOtpCode] = useState('')
   const [otpSent, setOtpSent] = useState(false)
-  const [walletBalance, setWalletBalance] = useState(4250) // MakeMyTrip Wallet bonus feature
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false)
+  const [cancelBookingId, setCancelBookingId] = useState(null)
 
   // Fetch Bookings
   const fetchBookings = async () => {
     setLoading(true)
     try {
-      const currentUserId = user?.id || 'usr_1111-2222-3333-4444'
-      const data = await bookingService.getUserBookings(currentUserId)
+      if (!user?.id) {
+        setLoading(false)
+        return
+      }
+      const data = await bookingService.getUserBookings(user.id)
       setBookings(data || [])
     } catch (err) {
       console.error("Failed to load trips:", err)
+      showNotification('Failed to load your trips', 'error')
     } finally {
       setLoading(false)
     }
@@ -44,8 +65,6 @@ export default function MyTrips() {
 
   // Cancel trip handler
   const handleCancelBooking = async (id) => {
-    if (!window.confirm("Are you sure you want to cancel this booking? Standard cancellation charges (20%) will apply.")) return;
-
     try {
       const target = bookings.find(b => b.id === id)
       const baseAmt = target ? (target.totalAmount || target.amount || 5000) : 5000
@@ -54,10 +73,11 @@ export default function MyTrips() {
 
       await bookingService.cancelBooking(id)
       setBookings(prev => prev.map(b => b.id === id ? { ...b, status: 'cancelled' } : b))
-      setWalletBalance(prev => prev + refundAmt)
-      alert(`Booking cancelled successfully. A refund of ₹${refundAmt.toLocaleString()} (after ₹${cancelFee.toLocaleString()} cancellation charges) has been credited to your MakeMyTrip Wallet!`)
+      showNotification(`Booking cancelled. Refund of ₹${refundAmt.toLocaleString()} after ₹${cancelFee.toLocaleString()} charges.`, 'success')
+      setShowCancelConfirm(false)
+      setCancelBookingId(null)
     } catch (err) {
-      alert("Failed to cancel booking.")
+      showNotification('Failed to cancel booking', 'error')
     }
   }
 
@@ -69,7 +89,7 @@ export default function MyTrips() {
       setShowRazorpay(true)
       setPaymentSuccess(false)
     } catch (err) {
-      alert("Failed to initialize Razorpay test order.")
+      showNotification('Failed to initialize payment', 'error')
     }
   }
 
@@ -77,15 +97,19 @@ export default function MyTrips() {
   const handleSendOtp = async (e) => {
     e.preventDefault()
     if (!mobilePhone || mobilePhone.length < 10) {
-      alert("Please enter a valid 10-digit mobile number.")
+      showNotification('Please enter a valid 10-digit mobile number', 'error')
       return
     }
     try {
       const res = await authService.sendMobileOtp(mobilePhone)
-      setOtpSent(true)
-      alert(res?.message || "OTP sent successfully via simulated SMS!")
+      if (res && (res.data || res.message)) {
+        setOtpSent(true)
+        showNotification('OTP sent successfully', 'success')
+      } else {
+        showNotification('Failed to send OTP. Please try again', 'error')
+      }
     } catch (err) {
-      alert(err || "Failed to send OTP.")
+      showNotification('Failed to send OTP', 'error')
     }
   }
 
@@ -93,7 +117,7 @@ export default function MyTrips() {
   const handleVerifyOtp = async (e) => {
     e.preventDefault()
     if (!otpCode) {
-      alert("Please enter the verification OTP.")
+      showNotification('Please enter the verification OTP', 'error')
       return
     }
     try {
@@ -102,22 +126,22 @@ export default function MyTrips() {
       } else {
         await authService.verifyMobileOtp(mobilePhone, otpCode)
       }
-      alert("Authentication Successful via Razorpay-Style Mobile OTP!")
+      showNotification('Authentication successful!', 'success')
       setShowOtpModal(false)
       setOtpSent(false)
       setOtpCode('')
       fetchBookings()
     } catch (err) {
-      alert(err || "Invalid OTP code.")
+      showNotification(err?.message || 'Invalid OTP code', 'error')
     }
   }
 
-  // Filtered bookings
+  // Filtering logic
   const filteredBookings = bookings.filter(b => {
-    if (activeTab === 'upcoming') return b.status === 'confirmed'
-    if (activeTab === 'completed') return b.status === 'completed'
-    if (activeTab === 'cancelled') return b.status === 'cancelled'
-    return true
+    const statusToMatch = activeTab === 'upcoming' ? 'confirmed' : activeTab
+    const statusMatch = b.status === statusToMatch
+    const typeMatch = typeFilter === 'all' || b.type === typeFilter
+    return statusMatch && typeMatch
   })
 
   return (
@@ -147,19 +171,46 @@ export default function MyTrips() {
           </div>
 
           <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
-            {/* MakeMyTrip Wallet Balance Badge */}
-            <div style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', padding: '16px 24px', borderRadius: '12px', backdropFilter: 'blur(10px)', textAlign: 'right' }}>
-              <div style={{ fontSize: '12px', color: '#cbd5e1', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 700 }}>MMT Wallet Cash</div>
-              <div style={{ fontSize: '24px', fontWeight: 900, color: '#38bdf8', marginTop: '2px' }}>₹{walletBalance.toLocaleString()}</div>
-            </div>
-
-            <button
-              onClick={() => setShowOtpModal(true)}
-              style={{ background: '#eb2026', color: '#fff', border: 'none', padding: '16px 24px', borderRadius: '12px', fontSize: '15px', fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 12px rgba(235,32,38,0.3)', transition: 'transform 0.2s' }}
-            >
-              📱 Mobile OTP Login
-            </button>
+            {/* User Info */}
+            {user && (
+              <div style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', padding: '12px 20px', borderRadius: '12px' }}>
+                <div style={{ fontSize: '12px', color: '#cbd5e1', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Welcome</div>
+                <div style={{ fontSize: '16px', fontWeight: 700, color: '#38bdf8', marginTop: '2px' }}>{user.name || user.email || 'Traveller'}</div>
+              </div>
+            )}
           </div>
+        </div>
+
+        {/* Category Filter (Flight / Hotel) */}
+        <div style={{ display: 'flex', gap: '16px', marginBottom: '24px' }}>
+          {[
+            { id: 'all', label: 'All Services', icon: '📋' },
+            { id: 'flight', label: 'Flights', icon: '✈️' },
+            { id: 'hotel', label: 'Hotels', icon: '🏨' }
+          ].map(type => (
+            <button
+              key={type.id}
+              onClick={() => setTypeFilter(type.id)}
+              style={{
+                background: typeFilter === type.id ? '#eb2026' : '#fff',
+                color: typeFilter === type.id ? '#fff' : '#0f172a',
+                border: typeFilter === type.id ? '1px solid #eb2026' : '1px solid #cbd5e1',
+                padding: '10px 20px',
+                borderRadius: '8px',
+                fontSize: '14px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: typeFilter === type.id ? '0 4px 12px rgba(235,32,38,0.2)' : 'none',
+                transition: 'all 0.2s'
+              }}
+            >
+              <span>{type.icon}</span>
+              {type.label}
+            </button>
+          ))}
         </div>
 
         {/* Tab Selection Navigation */}
@@ -193,7 +244,7 @@ export default function MyTrips() {
         {/* Bookings List Container */}
         {loading ? (
           <div style={{ padding: '60px 20px', textAlign: 'center', fontSize: '18px', color: '#64748b', fontWeight: 600 }}>
-            ⏳ Loading your booking history from PostgreSQL database...
+            ⏳ Loading your trips...
           </div>
         ) : filteredBookings.length === 0 ? (
           <div style={{ background: '#fff', borderRadius: '16px', padding: '80px 20px', textAlign: 'center', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', border: '1px solid #e2e8f0' }}>
@@ -206,7 +257,10 @@ export default function MyTrips() {
             <BookingCard
               key={b.id}
               booking={b}
-              onCancel={handleCancelBooking}
+              onCancel={(id) => {
+                setCancelBookingId(id)
+                setShowCancelConfirm(true)
+              }}
               onViewDetails={(bkg) => setSelectedBooking(bkg)}
               onTriggerPayment={handleTriggerPayment}
             />
@@ -395,6 +449,101 @@ export default function MyTrips() {
         </div>
       )}
 
+      {/* Notification Toast */}
+      {notification.show && (
+        <div style={{
+          position: 'fixed',
+          bottom: '24px',
+          right: '24px',
+          backgroundColor: notification.type === 'success' ? '#10b981' : '#ef4444',
+          color: 'white',
+          padding: '16px 20px',
+          borderRadius: '8px',
+          fontSize: '14px',
+          fontWeight: 600,
+          boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
+          zIndex: 2000,
+          animation: 'slideIn 0.3s ease'
+        }}>
+          {notification.message}
+        </div>
+      )}
+
+      {/* Cancel Confirmation Modal */}
+      {showCancelConfirm && cancelBookingId && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0,0,0,0.6)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1500
+        }}>
+          <div style={{
+            background: 'white',
+            borderRadius: '12px',
+            padding: '32px',
+            maxWidth: '400px',
+            boxShadow: '0 20px 25px rgba(0,0,0,0.15)',
+            textAlign: 'center'
+          }}>
+            <div style={{ fontSize: '48px', marginBottom: '16px' }}>⚠️</div>
+            <h3 style={{ margin: '0 0 12px', fontSize: '20px', fontWeight: 700, color: '#0f172a' }}>Cancel Booking?</h3>
+            <p style={{ margin: '0 0 20px', color: '#64748b', fontSize: '14px' }}>
+              Standard cancellation charges (20%) will apply. Are you sure you want to proceed?
+            </p>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+              <button
+                onClick={() => {
+                  setShowCancelConfirm(false)
+                  setCancelBookingId(null)
+                }}
+                style={{
+                  background: '#f1f5f9',
+                  color: '#0f172a',
+                  border: 'none',
+                  padding: '10px 24px',
+                  borderRadius: '6px',
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+              >
+                Keep Booking
+              </button>
+              <button
+                onClick={() => {
+                  handleCancelBooking(cancelBookingId)
+                }}
+                style={{
+                  background: '#ef4444',
+                  color: 'white',
+                  border: 'none',
+                  padding: '10px 24px',
+                  borderRadius: '6px',
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+              >
+                Yes, Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @keyframes slideIn {
+          from {
+            transform: translateX(400px);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+      `}</style>
     </div>
   )
 }

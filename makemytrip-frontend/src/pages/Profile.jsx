@@ -3,6 +3,26 @@ import { userService } from '../services/authService'
 import { useAuth } from '../context/AuthContext'
 import { Link } from 'react-router-dom'
 
+// Key used to persist mobile user profile data locally
+const MOBILE_PROFILE_KEY = 'mmt_mobile_profiles'
+
+// Save a mobile user's profile details keyed by their phone number
+function saveMobileProfile(phone, data) {
+  try {
+    const all = JSON.parse(localStorage.getItem(MOBILE_PROFILE_KEY) || '{}')
+    all[phone] = { ...all[phone], ...data, updatedAt: Date.now() }
+    localStorage.setItem(MOBILE_PROFILE_KEY, JSON.stringify(all))
+  } catch {}
+}
+
+// Retrieve saved profile for a given phone number
+export function getMobileProfile(phone) {
+  try {
+    const all = JSON.parse(localStorage.getItem(MOBILE_PROFILE_KEY) || '{}')
+    return all[phone] || null
+  } catch { return null }
+}
+
 export default function Profile() {
   const { user, setUser } = useAuth()
   const [loading, setLoading] = useState(true)
@@ -12,165 +32,234 @@ export default function Profile() {
   const [emailInput, setEmailInput] = useState('')
   const [toast, setToast] = useState({ show: false, message: '', type: '' })
 
+  // Detect mobile OTP user
+  const isMobileUser = user && (user.name?.startsWith('Traveller_') || (!user.name && user.phone))
+
   const showToast = (message, type = 'success') => {
     setToast({ show: true, message, type })
-    setTimeout(() => {
-      setToast(prev => ({ ...prev, show: false }))
-    }, 3000)
+    setTimeout(() => setToast(prev => ({ ...prev, show: false })), 3000)
   }
 
   useEffect(() => {
     async function loadProfile() {
       setLoading(true)
       try {
+        // For mobile users: check localStorage first for saved name/email
+        if (isMobileUser && user?.phone) {
+          const saved = getMobileProfile(user.phone)
+          if (saved?.name) {
+            const merged = { ...user, ...saved }
+            setUser(merged)
+            setNameInput(saved.name || '')
+            setPhoneInput(user.phone || '')
+            setEmailInput(saved.email || '')
+            setLoading(false)
+            return
+          }
+        }
+
         const res = await userService.getProfile()
         const fetchedUser = res?.data?.user || res?.user || user
         if (fetchedUser) {
-          setUser(fetchedUser)
-          setNameInput(fetchedUser.name || '')
-          setPhoneInput(fetchedUser.phone || '')
-          setEmailInput(fetchedUser.email || '')
+          // Merge with any locally saved mobile profile
+          const localProfile = user?.phone ? getMobileProfile(user.phone) : null
+          const merged = { ...fetchedUser, ...(localProfile || {}) }
+          setUser(merged)
+          setNameInput(merged.name?.startsWith('Traveller_') ? '' : (merged.name || ''))
+          setPhoneInput(merged.phone || '')
+          setEmailInput(merged.email?.includes('@mmt.mobile') ? '' : (merged.email || ''))
         }
       } catch (err) {
         console.warn(err)
+        // Fallback: use current user
+        if (user) {
+          const localProfile = user?.phone ? getMobileProfile(user.phone) : null
+          const merged = { ...user, ...(localProfile || {}) }
+          setNameInput(merged.name?.startsWith('Traveller_') ? '' : (merged.name || ''))
+          setPhoneInput(merged.phone || '')
+          setEmailInput(merged.email?.includes('@mmt.mobile') ? '' : (merged.email || ''))
+        }
       } finally {
         setLoading(false)
       }
     }
     loadProfile()
-  }, [])
+  }, [])  // eslint-disable-line
 
   const handleSave = async (e) => {
     e.preventDefault()
+    if (!nameInput.trim()) {
+      showToast('Please enter your full name.', 'error')
+      return
+    }
     setLoading(true)
     try {
-      const updatedData = { name: nameInput, phone: phoneInput, email: emailInput }
-      const res = await userService.updateProfile(updatedData)
-      const updatedUser = res?.data?.user || res?.user || { ...user, ...updatedData }
+      const updatedData = {
+        name: nameInput.trim(),
+        phone: phoneInput,
+        email: emailInput.trim() || (user?.phone + '@mmt.mobile')
+      }
+
+      // Always save to localStorage for mobile users (works offline)
+      if (user?.phone) {
+        saveMobileProfile(user.phone, { name: updatedData.name, email: updatedData.email })
+      }
+
+      // Try backend update
+      let updatedUser = { ...user, ...updatedData }
+      try {
+        const res = await userService.updateProfile(updatedData)
+        updatedUser = res?.data?.user || res?.user || updatedUser
+      } catch (apiErr) {
+        console.warn('Profile API update failed, saved locally:', apiErr)
+      }
+
       setUser(updatedUser)
       setEditing(false)
-      showToast("Profile updated successfully!", "success")
+      showToast('Profile updated successfully!', 'success')
     } catch (err) {
-      showToast("Failed to update profile.", "error")
+      showToast('Failed to update profile.', 'error')
     } finally {
       setLoading(false)
     }
   }
 
+  const displayPhone = phoneInput || user?.phone || ''
+  const displayName  = nameInput || (user?.name?.startsWith('Traveller_') ? '' : user?.name) || ''
+  const avatarText   = displayName ? displayName.slice(0, 2).toUpperCase() : '👤'
+
   return (
-    <div style={{ minHeight: '100vh', background: '#f8fafc', padding: '60px 0', }}>
+    <div style={{ minHeight: '100vh', background: '#f8fafc', padding: '60px 0' }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px', boxSizing: 'border-box' }}>
         <div style={{ maxWidth: '600px', margin: '0 auto 20px auto' }}>
           <Link to="/" style={{ textDecoration: 'none', color: '#EB2026', fontSize: '16px', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-            &larr; Back
+            ← Back
           </Link>
         </div>
+
         <div style={{ maxWidth: '600px', margin: '0 auto', background: '#fff', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.08)', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
 
-        {/* Header */}
-        <div style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', color: '#fff', padding: '32px 40px', display: 'flex', alignItems: 'center', gap: '20px' }}>
-          <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: '#38bdf8', color: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', fontWeight: 900 }}>
-            {nameInput ? nameInput.slice(0, 2).toUpperCase() : '👤'}
+          {/* Header */}
+          <div style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', color: '#fff', padding: '32px 40px', display: 'flex', alignItems: 'center', gap: '20px' }}>
+            <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: isMobileUser ? '#0ea5e9' : '#38bdf8', color: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', fontWeight: 900 }}>
+              {avatarText}
+            </div>
+            <div>
+              <h1 style={{ margin: 0, fontSize: '28px', fontWeight: 900, color: '#ffffff' }}>
+                {displayName || 'Mobile User'}
+              </h1>
+              <div style={{ color: '#94a3b8', fontSize: '15px', marginTop: '4px' }}>
+                +91 {displayPhone}
+              </div>
+              {isMobileUser && (
+                <div style={{ marginTop: '8px', display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(14,165,233,0.2)', border: '1px solid rgba(14,165,233,0.3)', borderRadius: '20px', padding: '3px 12px', fontSize: '12px', fontWeight: 700, color: '#7dd3fc' }}>
+                  📱 Logged in via Mobile OTP
+                </div>
+              )}
+            </div>
           </div>
-          <div>
-            <h1 style={{ margin: 0, fontSize: '28px', fontWeight: 900, color: '#ffffff' }}>{user?.name || nameInput || 'Guest User'}</h1>
-            <div style={{ color: '#94a3b8', fontSize: '15px', marginTop: '4px' }}>+91 {user?.phone || phoneInput || '9876543210'}</div>
-          </div>
-        </div>
 
-        {/* Content / Form */}
-        <div style={{ padding: '40px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-            <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 800, color: '#0f172a' }}>Personal Details</h2>
-            {!editing ? (
+          {/* Mobile user prompt banner */}
+          {isMobileUser && !editing && !displayName && (
+            <div style={{ background: '#fef9c3', borderBottom: '1px solid #fef08a', padding: '16px 40px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <span style={{ fontSize: '20px' }}>✏️</span>
+              <div>
+                <div style={{ fontWeight: 800, color: '#854d0e', fontSize: '14px' }}>Complete your profile</div>
+                <div style={{ color: '#92400e', fontSize: '13px' }}>Add your name and email so future logins show your real name.</div>
+              </div>
               <button
                 onClick={() => setEditing(true)}
-                style={{ background: '#eef2ff', color: '#4f46e5', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }}
+                style={{ marginLeft: 'auto', background: '#eab308', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '13px', fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap' }}
               >
-                ✏️ Edit Profile
+                Add Now
               </button>
-            ) : (
-              <button
-                onClick={() => setEditing(false)}
-                style={{ background: '#f1f5f9', color: '#64748b', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }}
-              >
-                Cancel
-              </button>
-            )}
-          </div>
+            </div>
+          )}
 
-          <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div>
-              <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#475569', marginBottom: '8px' }}>Full Name</label>
-              <input
-                type="text"
-                disabled={!editing}
-                value={nameInput}
-                onChange={e => setNameInput(e.target.value)}
-                style={{ width: '100%', padding: '14px 16px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '16px', fontWeight: 600, color: editing ? '#0f172a' : '#64748b', background: editing ? '#fff' : '#f8fafc', outline: 'none' }}
-                required
-              />
+          {/* Content / Form */}
+          <div style={{ padding: '40px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 800, color: '#0f172a' }}>Personal Details</h2>
+              {!editing ? (
+                <button
+                  onClick={() => setEditing(true)}
+                  style={{ background: '#eef2ff', color: '#4f46e5', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }}
+                >
+                  ✏️ Edit Profile
+                </button>
+              ) : (
+                <button
+                  onClick={() => setEditing(false)}
+                  style={{ background: '#f1f5f9', color: '#64748b', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }}
+                >
+                  Cancel
+                </button>
+              )}
             </div>
 
-            <div>
-              <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#475569', marginBottom: '8px' }}>Mobile Number</label>
-              <div style={{ display: 'flex', borderRadius: '10px', overflow: 'hidden', border: '1px solid #cbd5e1' }}>
-                <span style={{ background: '#f1f5f9', padding: '14px 16px', color: '#64748b', fontWeight: 700, borderRight: '1px solid #cbd5e1' }}>+91</span>
+            <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#475569', marginBottom: '8px' }}>
+                  Full Name {isMobileUser && !displayName && <span style={{ color: '#eb2026' }}>*</span>}
+                </label>
                 <input
                   type="text"
                   disabled={!editing}
-                  value={phoneInput}
-                  onChange={e => setPhoneInput(e.target.value)}
-                  style={{ width: '100%', padding: '14px 16px', border: 'none', fontSize: '16px', fontWeight: 600, color: editing ? '#0f172a' : '#64748b', background: editing ? '#fff' : '#f8fafc', outline: 'none' }}
-                  required
+                  value={nameInput}
+                  onChange={e => setNameInput(e.target.value)}
+                  placeholder={editing ? 'Enter your full name' : '—'}
+                  style={{ width: '100%', padding: '14px 16px', borderRadius: '10px', border: `1px solid ${editing ? '#6366f1' : '#cbd5e1'}`, fontSize: '16px', fontWeight: 600, color: editing ? '#0f172a' : '#64748b', background: editing ? '#fff' : '#f8fafc', outline: 'none', boxSizing: 'border-box' }}
                 />
               </div>
-            </div>
 
-            <div>
-              <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#475569', marginBottom: '8px' }}>Email Address</label>
-              <input
-                type="email"
-                disabled={!editing}
-                value={emailInput}
-                onChange={e => setEmailInput(e.target.value)}
-                style={{ width: '100%', padding: '14px 16px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '16px', fontWeight: 600, color: editing ? '#0f172a' : '#64748b', background: editing ? '#fff' : '#f8fafc', outline: 'none' }}
-              />
-            </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#475569', marginBottom: '8px' }}>Mobile Number</label>
+                <div style={{ display: 'flex', borderRadius: '10px', overflow: 'hidden', border: '1px solid #cbd5e1' }}>
+                  <span style={{ background: '#f1f5f9', padding: '14px 16px', color: '#64748b', fontWeight: 700, borderRight: '1px solid #cbd5e1' }}>+91</span>
+                  <input
+                    type="text"
+                    disabled
+                    value={displayPhone}
+                    style={{ width: '100%', padding: '14px 16px', border: 'none', fontSize: '16px', fontWeight: 600, color: '#64748b', background: '#f8fafc', outline: 'none' }}
+                  />
+                </div>
+                <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>Mobile number cannot be changed after OTP login.</div>
+              </div>
 
-            {editing && (
-              <button
-                type="submit"
-                disabled={loading}
-                style={{ background: '#eb2026', color: '#fff', border: 'none', padding: '16px', borderRadius: '10px', fontSize: '16px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(235,32,38,0.3)', marginTop: '12px' }}
-              >
-                {loading ? 'Saving...' : 'Save Profile Changes'}
-              </button>
-            )}
-          </form>
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#475569', marginBottom: '8px' }}>Email Address</label>
+                <input
+                  type="email"
+                  disabled={!editing}
+                  value={emailInput}
+                  onChange={e => setEmailInput(e.target.value)}
+                  placeholder={editing ? 'Enter your email address' : '—'}
+                  style={{ width: '100%', padding: '14px 16px', borderRadius: '10px', border: `1px solid ${editing ? '#6366f1' : '#cbd5e1'}`, fontSize: '16px', fontWeight: 600, color: editing ? '#0f172a' : '#64748b', background: editing ? '#fff' : '#f8fafc', outline: 'none', boxSizing: 'border-box' }}
+                />
+              </div>
+
+              {editing && (
+                <button
+                  type="submit"
+                  disabled={loading}
+                  style={{ background: '#eb2026', color: '#fff', border: 'none', padding: '16px', borderRadius: '10px', fontSize: '16px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(235,32,38,0.3)', marginTop: '12px' }}
+                >
+                  {loading ? 'Saving...' : 'Save Profile Changes'}
+                </button>
+              )}
+            </form>
+          </div>
         </div>
-
-      </div>
       </div>
 
-      {/* Premium Toast Notification */}
+      {/* Toast Notification */}
       {toast.show && (
         <div style={{
-          position: 'fixed',
-          bottom: '40px',
-          left: '50%',
-          transform: 'translateX(-50%)',
+          position: 'fixed', bottom: '40px', left: '50%', transform: 'translateX(-50%)',
           background: toast.type === 'success' ? '#10b981' : '#ef4444',
-          color: '#fff',
-          padding: '14px 28px',
-          borderRadius: '12px',
-          fontSize: '16px',
-          fontWeight: '600',
-          boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          zIndex: 9999,
+          color: '#fff', padding: '14px 28px', borderRadius: '12px', fontSize: '16px',
+          fontWeight: '600', boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
+          display: 'flex', alignItems: 'center', gap: '12px', zIndex: 9999,
           animation: 'toastSlideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards'
         }}>
           <span>{toast.type === 'success' ? '✅' : '❌'}</span>

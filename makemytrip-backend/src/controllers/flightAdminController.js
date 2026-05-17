@@ -1,26 +1,40 @@
 import prisma from '../config/prismaClient.js'
+import { validatePrice, validateSeats } from '../utils/validation.js'
 
 export const createFlight = async (req, res) => {
   try {
     const { airline, flightNumber, departure, arrival, duration, price, seats, baggage, stops, aircraft, image } = req.body
 
-    if (!airline || !flightNumber || !departure || !arrival || !price) {
-      return res.status(400).json({ message: 'Missing required fields' })
+    const errors = {}
+    if (!airline || !airline.trim()) errors.airline = 'Airline name is required'
+    if (!flightNumber || !flightNumber.trim()) errors.flightNumber = 'Flight number is required'
+    if (!departure) errors.departure = 'Departure details are required'
+    if (!arrival) errors.arrival = 'Arrival details are required'
+    if (!price) errors.price = 'Price is required'
+    else if (!validatePrice(price).valid) errors.price = 'Invalid price'
+
+    if (seats && !validateSeats(seats).valid) {
+      errors.seats = 'Seats must be between 0 and 500'
     }
 
+    if (Object.keys(errors).length > 0) {
+      return res.status(400).json({ message: 'Validation failed', errors })
+    }
+
+    const seatCount = parseInt(seats) || 180
     const flight = await prisma.flight.create({
       data: {
-        airline,
-        flightNumber,
+        airline: airline.trim(),
+        flightNumber: flightNumber.trim(),
         departure,
         arrival,
-        duration,
+        duration: duration || '2h',
         price: parseFloat(price),
-        seats: parseInt(seats) || 180,
-        seatsAvailable: parseInt(seats) || 180,
-        baggage: baggage ? parseInt(baggage) : null,
+        seats: seatCount,
+        seatsAvailable: seatCount,
+        baggage: baggage ? parseInt(baggage) : 15,
         stops: parseInt(stops) || 0,
-        aircraft,
+        aircraft: aircraft || 'Boeing 737',
         image
       }
     })
@@ -59,7 +73,16 @@ export const getFlightById = async (req, res) => {
 
 export const updateFlight = async (req, res) => {
   try {
-    const updates = req.body
+    const { id, createdAt, updatedAt, ...updates } = req.body
+
+    const errors = {}
+    if (updates.price && !validatePrice(updates.price).valid) errors.price = 'Invalid price'
+    if (updates.seats && !validateSeats(updates.seats).valid) errors.seats = 'Seats must be between 0 and 500'
+
+    if (Object.keys(errors).length > 0) {
+      return res.status(400).json({ message: 'Validation failed', errors })
+    }
+
     const flight = await prisma.flight.update({
       where: { id: req.params.id },
       data: {

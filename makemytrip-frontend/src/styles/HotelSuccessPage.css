@@ -2,7 +2,7 @@
   background-color: #f0f3f6;
   min-height: 100vh;
   padding: 40px 20px 80px;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-family, 'Space Grotesk', sans-serif);
   color: #111827;
 }
 
@@ -48,6 +48,7 @@
   font-weight: 900;
   margin: 0;
   letter-spacing: -0.5px;
+  color: #ffffff;
 }
 
 .succ-subtitle {
@@ -228,3 +229,72 @@
   }
 }
 
+/* ── Section spacing ── */
+.succ-sec {
+  margin-bottom: 24px;
+}
+
+/* ── Meta chips (nights / rooms / guests) ── */
+.succ-meta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 4px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #334155;
+}
+
+/* ── Price Breakdown Table ── */
+.succ-price-table {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.succ-price-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 20px;
+  font-size: 14px;
+  color: #374151;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.succ-price-row:last-child {
+  border-bottom: none;
+}
+
+.succ-price-row .succ-price-sub {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.succ-price-row.discount {
+  color: #059669;
+  font-weight: 700;
+}
+
+.succ-price-row.discount span:last-child {
+  color: #059669;
+  font-weight: 800;
+}
+
+.succ-price-row.total {
+  background: #0f172a;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 900;
+  padding: 16px 20px;
+}
+
+.succ-price-row.total span:last-child {
+  color: #fbbf24;
+  font-size: 18px;
+}

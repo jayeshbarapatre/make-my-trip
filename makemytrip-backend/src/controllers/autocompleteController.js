@@ -1,6 +1,6 @@
 import prisma from '../config/prismaClient.js'
 
-const sanitizeQuery = (q) => q ? q.trim().toLowerCase() : ''
+const sanitizeQuery = (q) => q ? String(q).trim().toLowerCase() : ''
 
 export const getAirlines = async (req, res) => {
   try {
@@ -91,6 +91,28 @@ export const getAircrafts = async (req, res) => {
       .sort()
 
     res.json({ data: aircrafts })
+  } catch (err) {
+    res.status(500).json({ message: err.message })
+  }
+}
+
+export const getFlightNumbers = async (req, res) => {
+  try {
+    const { q } = req.query
+    const searchQuery = sanitizeQuery(q)
+
+    const flights = await prisma.flight.findMany({
+      select: { flightNumber: true },
+      where: { isActive: true },
+      distinct: ['flightNumber']
+    })
+
+    const flightNumbers = flights
+      .map(f => f.flightNumber)
+      .filter(num => num && num.toLowerCase().includes(searchQuery))
+      .sort()
+
+    res.json({ data: flightNumbers })
   } catch (err) {
     res.status(500).json({ message: err.message })
   }

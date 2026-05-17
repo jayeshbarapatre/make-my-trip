@@ -11,6 +11,7 @@ import userRoutes from './routes/userRoutes.js'
 import unifiedSearchRoutes from './routes/unifiedSearch.js'
 import adminRoutes from './routes/adminRoutes.js'
 import autocompleteRoutes from './routes/autocomplete.js'
+import hotelRoutes from './routes/hotels.js'
 
 const app = express()
 const PORT = process.env.PORT || 5000
@@ -38,6 +39,8 @@ app.use('/api/admin', adminRoutes)
 app.use('/api/v1/admin', adminRoutes)
 app.use('/api/autocomplete', autocompleteRoutes)
 app.use('/api/v1/autocomplete', autocompleteRoutes)
+app.use('/api/hotels', hotelRoutes)
+app.use('/api/v1/hotels', hotelRoutes)
 
 app.use((_req, res) => res.status(404).json({ message: 'Route not found' }))
 

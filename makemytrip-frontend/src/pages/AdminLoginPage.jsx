@@ -6,8 +6,8 @@ import './AdminLoginPage.css'
 const AdminLoginPage = () => {
   const navigate = useNavigate()
   const { login, isAuthenticated, loading, error } = useAdmin()
-  const [email, setEmail] = useState('admin@makemytrip.com')
-  const [password, setPassword] = useState('admin123')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [localError, setLocalError] = useState('')
 
   useEffect(() => {
@@ -15,6 +15,10 @@ const AdminLoginPage = () => {
       navigate('/admin/dashboard')
     }
   }, [isAuthenticated, navigate])
+
+  useEffect(() => {
+    setLocalError('')
+  }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -75,12 +79,6 @@ const AdminLoginPage = () => {
             {loading ? 'Logging in...' : 'Login to Admin Panel'}
           </button>
         </form>
-
-        <div className="login-footer">
-          <p className="demo-credentials">Demo Credentials:</p>
-          <p className="demo-text">Email: jayesh@yopmail.com</p>
-          <p className="demo-text">Password: User@123</p>
-        </div>
       </div>
 
       <div className="login-background">

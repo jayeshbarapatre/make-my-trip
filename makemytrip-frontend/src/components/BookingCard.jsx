@@ -8,6 +8,15 @@ export default function BookingCard({ booking, onCancel, onViewDetails, onTrigge
   // Format travelers text
   const getTravellersText = (t) => {
     if (!t) return '1 Adult'
+    
+    // Handle array of passenger objects (common for flights)
+    if (Array.isArray(t)) {
+      if (t.length === 1 && t[0].firstName) {
+        return `1 Traveller (${t[0].firstName} ${t[0].lastName})`
+      }
+      return `${t.length} Traveller${t.length > 1 ? 's' : ''}`
+    }
+
     if (t.passengers) {
       return `${t.passengers.length} Passenger${t.passengers.length > 1 ? 's' : ''} (${t.classCode || '3A'})`
     }
@@ -18,7 +27,7 @@ export default function BookingCard({ booking, onCancel, onViewDetails, onTrigge
     if (t.rooms) {
       return `${t.rooms} Room, ${t.adults || 1} Adult`
     }
-    return JSON.stringify(t)
+    return '1 Adult'
   }
 
   // Color coded status badge

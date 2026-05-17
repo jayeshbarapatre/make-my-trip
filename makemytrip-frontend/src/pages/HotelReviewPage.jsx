@@ -4,12 +4,13 @@ import { useAuth } from '../context/AuthContext';
 import { authService } from '../services/authService';
 import '../styles/HotelReviewPage.css';
 
-export default function HotelReviewPage() {
+function HotelReviewPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, verifyOtpLogin } = useAuth();
 
   // Retrieve state or fallback values
+  const defaultImage = "https://images.unsplash.com/photo-1542314831-c53cd4b85d05?auto=format&fit=crop&w=240&h=180&q=80";
   const hotel = location.state?.hotel || {
     id: "hotel-fallback",
     name: "Axiom Resort Luxury Cottages, Arambol",
@@ -19,19 +20,33 @@ export default function HotelReviewPage() {
     reviews: 124,
     price: 5000,
     taxes: 511,
-    img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=240&h=180&q=80"
+    images: [defaultImage]
+  };
+
+  const getImageUrl = (h) => {
+    if (h.images && h.images.length > 0) return h.images[0].includes('unsplash.com') ? h.images[0] : `https://images.unsplash.com/photo-${h.images[0]}?auto=format&fit=crop&w=240&h=180&q=80`;
+    if (h.seed && h.seed.length > 0) return h.seed[0].includes('unsplash.com') ? h.seed[0] : `https://images.unsplash.com/photo-${h.seed[0]}?auto=format&fit=crop&w=240&h=180&q=80`;
+    if (h.img) return h.img;
+    return defaultImage;
   };
 
   const roomName = location.state?.roomName || "Premium room with Pool view";
   const checkIn = location.state?.checkIn || "2026-05-15";
   const checkOut = location.state?.checkOut || "2026-05-16";
   const guests = location.state?.guests || "2 Adults | 1 Room";
+  const guestsObj = location.state?.guestsObj || { adults: 2, rooms: 1 };
+
+  // Calculate nights (with consistent timezone handling)
+  const checkInDate = new Date(checkIn + 'T00:00:00');
+  const checkOutDate = new Date(checkOut + 'T00:00:00');
+  const nights = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
+  const rooms = guestsObj.rooms || 1;
 
   // Calculations matching MakeMyTrip Price Breakup
-  const basePrice = hotel.price;
-  const discount = Math.round(basePrice * 0.15);
+  const basePrice = hotel.price * nights * rooms;
+  const discount = Math.round(basePrice * 0.15);       // 15% property discount
   const priceAfterDiscount = basePrice - discount;
-  const taxes = hotel.taxes || 511;
+  const taxes = Math.round(basePrice * 0.18);          // 18% GST on base price
   const totalAmount = priceAfterDiscount + taxes;
 
   // Coupon state
@@ -43,6 +58,22 @@ export default function HotelReviewPage() {
   const [mobilePhone, setMobilePhone] = useState('');
   const [otpCode, setOtpCode] = useState('');
   const [otpSent, setOtpSent] = useState(false);
+
+  // Custom Alert State
+  const [alertConfig, setAlertConfig] = useState({
+    show: false,
+    title: '',
+    message: '',
+    type: 'success' // 'success' | 'error'
+  });
+
+  const showNotify = (title, message, type = 'success') => {
+    setAlertConfig({ show: true, title, message, type });
+  };
+
+  const closeNotify = () => {
+    setAlertConfig({ ...alertConfig, show: false });
+  };
   const [loginError, setLoginError] = useState('');
 
   const finalizeBooking = () => {
@@ -54,6 +85,9 @@ export default function HotelReviewPage() {
         checkIn,
         checkOut,
         guests,
+        guestsObj,
+        nights,
+        rooms,
         totalAmount: finalBilled
       }
     });
@@ -75,10 +109,14 @@ export default function HotelReviewPage() {
     }
     setLoginError('');
     try {
-      await authService.sendMobileOtp(mobilePhone);
-      setOtpSent(true);
+      const res = await authService.sendMobileOtp(mobilePhone);
+      if (res && (res.data || res.message)) {
+        setOtpSent(true);
+      } else {
+        setLoginError('Failed to send OTP. Please try again.');
+      }
     } catch (err) {
-      setOtpSent(true);
+      setLoginError(err.message || 'Failed to send OTP. Please try again.');
     }
   };
 
@@ -102,9 +140,9 @@ export default function HotelReviewPage() {
     if (!couponCode) return;
     if (couponCode.toUpperCase() === 'MMT500') {
       setAppliedDiscount(500);
-      alert('Coupon MMT500 applied successfully! ₹500 discount added.');
+      showNotify('Success!', 'Coupon MMT500 applied successfully! ₹500 discount added.', 'success');
     } else {
-      alert('Invalid coupon code. Try MMT500.');
+      showNotify('Invalid Coupon', 'The coupon code you entered is invalid. Please try MMT500.', 'error');
     }
   };
 
@@ -130,7 +168,7 @@ export default function HotelReviewPage() {
                   </div>
                   <p className="rev-address">{hotel.locality}</p>
                 </div>
-                <img src={hotel.img || "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=240&h=180&q=80"} alt={hotel.name} className="rev-prop-img" />
+                <img src={getImageUrl(hotel)} alt={hotel.name} className="rev-prop-img" />
               </div>
 
               {/* Check-in / Check-out Dates */}
@@ -141,7 +179,7 @@ export default function HotelReviewPage() {
                   <span className="rev-time">2 PM</span>
                 </div>
 
-                <div className="rev-night-pill">1 NIGHT</div>
+                <div className="rev-night-pill">{nights} NIGHT{nights !== 1 ? 'S' : ''}</div>
 
                 <div className="rev-date-box">
                   <span className="rev-date-lbl">Check Out</span>
@@ -156,11 +194,11 @@ export default function HotelReviewPage() {
                   <div className="rev-early-lbl">⏱️ Early Check-in/Late Check-out</div>
                   <div className="rev-early-sub">Opt for early check-in/late check-out at an extra cost</div>
                 </div>
-                <button className="rev-early-btn" onClick={() => alert("Time slot request added.")}>Add Time Slot</button>
+                <button className="rev-early-btn" onClick={() => showNotify('Time Slot', 'Your early check-in request has been added to the booking.', 'success')}>Add Time Slot</button>
               </div>
 
               <div className="rev-summary-bar">
-                1 Night | {guests}
+                {nights} Night{nights !== 1 ? 's' : ''} | {guests}
               </div>
             </div>
 
@@ -168,7 +206,7 @@ export default function HotelReviewPage() {
             <div className="rev-card">
               <div className="rev-room-header">
                 <h3>{roomName}</h3>
-                <span className="rev-link" onClick={() => alert("Room Inclusions: Free WiFi, Air Conditioning, Private Balcony, Mineral Water.")}>See Inclusions</span>
+                <span className="rev-link" onClick={() => showNotify('Room Inclusions', 'Free WiFi, Air Conditioning, Private Balcony, and complimentary Mineral Water are included in this stay.', 'success')}>See Inclusions</span>
               </div>
               <div className="rev-room-sub">2 Adults</div>
               <ul className="rev-room-bullets">
@@ -177,7 +215,7 @@ export default function HotelReviewPage() {
               </ul>
               <div className="rev-non-ref">Non-Refundable</div>
               <div className="rev-non-ref-sub">Refund is not applicable for this booking</div>
-              <span className="rev-link" onClick={() => alert("Cancellation policy: 100% penalty applies if cancelled.")}>Cancellation policy details</span>
+              <span className="rev-link" onClick={() => showNotify('Cancellation Policy', 'Refundable up to 24 hours before check-in. 100% penalty applies if cancelled within 24 hours of arrival.', 'success')}>Cancellation policy details</span>
             </div>
 
             {/* Important Information Card */}
@@ -207,7 +245,7 @@ export default function HotelReviewPage() {
               <h3 className="rev-side-title">Price Breakup</h3>
               
               <div className="rev-price-row">
-                <span>Base Price <br/><small>1 Room x 1 Night</small></span>
+                <span>Base Price <br/><small>{rooms} Room{rooms !== 1 ? 's' : ''} x {nights} Night{nights !== 1 ? 's' : ''}</small></span>
                 <span>₹ {basePrice.toLocaleString("en-IN")}</span>
               </div>
 
@@ -301,7 +339,7 @@ export default function HotelReviewPage() {
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#374151', marginBottom: '6px' }}>MOBILE NUMBER</label>
                   <div style={{ display: 'flex', gap: '10px' }}>
                     <span style={{ background: '#f3f4f6', border: '1px solid #d1d5db', borderRadius: '8px', padding: '10px 14px', fontSize: '14px', fontWeight: 700, color: '#4b5563', display: 'flex', alignItems: 'center' }}>+91</span>
-                    <input type="tel" placeholder="10-digit mobile number" value={mobilePhone} onChange={(e) => setMobilePhone(e.target.value)} style={{ flex: 1, border: '1px solid #d1d5db', borderRadius: '8px', padding: '10px 14px', fontSize: '14px', fontWeight: 600, outline: 'none', width: '100%', boxSizing: 'border-box' }} autoFocus required />
+                    <input type="tel" placeholder="10-digit mobile number" maxLength={10} value={mobilePhone} onChange={(e) => setMobilePhone(e.target.value)} style={{ flex: 1, border: '1px solid #d1d5db', borderRadius: '8px', padding: '10px 14px', fontSize: '14px', fontWeight: 600, outline: 'none', width: '100%', boxSizing: 'border-box' }} autoFocus required />
                   </div>
                 </div>
                 <button type="submit" style={{ width: '100%', background: '#eb2026', color: '#fff', border: 'none', borderRadius: '8px', padding: '14px', fontSize: '15px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(235,32,38,0.3)' }}>GET ONE TIME PASSWORD (OTP)</button>
@@ -323,6 +361,23 @@ export default function HotelReviewPage() {
         </div>
       )}
 
+      {/* ── Custom Alert Modal ── */}
+      {alertConfig.show && (
+        <div className="custom-alert-overlay" onClick={closeNotify}>
+          <div className="custom-alert-box" onClick={e => e.stopPropagation()}>
+            <div className={`alert-icon ${alertConfig.type}`}>
+              {alertConfig.type === 'success' ? '✓' : '✕'}
+            </div>
+            <h3 className="alert-title">{alertConfig.title}</h3>
+            <p className="alert-message">{alertConfig.message}</p>
+            <button className="alert-btn" onClick={closeNotify}>
+              GOT IT
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
+export default HotelReviewPage;

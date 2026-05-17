@@ -2,9 +2,13 @@ import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
 import prisma from '../config/prismaClient.js'
 
-const JWT_SECRET = process.env.JWT_SECRET || 'change_this_secret_in_production'
+if (!process.env.JWT_SECRET) {
+  throw new Error('FATAL: JWT_SECRET environment variable is not set. This is required for security. Set JWT_SECRET in your .env file.')
+}
 
-const signToken = (id) => jwt.sign({ id }, JWT_SECRET, { expiresIn: '30d' })
+const JWT_SECRET = process.env.JWT_SECRET
+
+const signToken = (id) => jwt.sign({ id }, JWT_SECRET, { expiresIn: '8h' })
 
 export const adminRegister = async (req, res) => {
   try {
@@ -91,4 +95,42 @@ export const getAdminProfile = async (req, res) => {
 
 export const adminLogout = (req, res) => {
   res.json({ message: 'Logged out successfully' })
+}
+
+export const changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ message: 'Current and new passwords are required' })
+    }
+
+    if (newPassword.length < 8) {
+      return res.status(400).json({ message: 'New password must be at least 8 characters long' })
+    }
+
+    if (!/\d/.test(newPassword)) {
+      return res.status(400).json({ message: 'New password must contain at least one number' })
+    }
+
+    const admin = await prisma.user.findUnique({ where: { id: req.adminId } })
+    if (!admin) {
+      return res.status(404).json({ message: 'Admin not found' })
+    }
+
+    const isValid = await bcrypt.compare(currentPassword, admin.password)
+    if (!isValid) {
+      return res.status(401).json({ message: 'Invalid current password' })
+    }
+
+    const hashed = await bcrypt.hash(newPassword, 10)
+    await prisma.user.update({
+      where: { id: req.adminId },
+      data: { password: hashed }
+    })
+
+    res.json({ message: 'Password updated successfully' })
+  } catch (err) {
+    res.status(500).json({ message: err.message })
+  }
 }

@@ -1,14 +1,51 @@
 import prisma from '../config/prismaClient.js'
+import { validateCity, validatePageNumber, validatePageSize, validateGuestCount, validateDateFormat, validatePrice } from '../utils/validation.js'
 
 export const searchFlights = async (req, res) => {
   try {
+    const { from, to, date, passengers, page = 1, limit = 20, minPrice, maxPrice } = req.query
+
+    const errors = {}
+    if (from && !validateCity(from)) errors.from = 'Invalid departure city'
+    if (to && !validateCity(to)) errors.to = 'Invalid arrival city'
+    if (date && !validateDateFormat(date)) errors.date = 'Invalid date format (YYYY-MM-DD)'
+    if (passengers && !validateGuestCount(passengers).valid) errors.passengers = 'Invalid passenger count'
+    if (minPrice && !validatePrice(minPrice).valid) errors.minPrice = 'Invalid minimum price'
+    if (maxPrice && !validatePrice(maxPrice).valid) errors.maxPrice = 'Invalid maximum price'
+
+    if (Object.keys(errors).length > 0) {
+      return res.status(400).json({ message: 'Validation failed', errors })
+    }
+
+    const pageNum = validatePageNumber(page)
+    const pageSize = validatePageSize(limit)
+    const skip = (pageNum - 1) * pageSize
+
+    const whereClause = { isActive: true }
+    if (from) whereClause.from = { contains: from, mode: 'insensitive' }
+    if (to) whereClause.to = { contains: to, mode: 'insensitive' }
+
     const flights = await prisma.flight.findMany({
-      where: { isActive: true },
-      orderBy: { price: 'asc' }
+      where: whereClause,
+      orderBy: { price: 'asc' },
+      skip,
+      take: pageSize
     })
-    res.json({ data: flights })
+
+    const filtered = flights
+      .filter(f => !passengers || f.seatsAvailable >= parseInt(passengers))
+      .filter(f => !minPrice || f.price >= parseFloat(minPrice))
+      .filter(f => !maxPrice || f.price <= parseFloat(maxPrice))
+
+    const total = await prisma.flight.count({ where: whereClause })
+
+    res.json({
+      data: filtered,
+      pagination: { page: pageNum, limit: pageSize, total, pages: Math.ceil(total / pageSize) }
+    })
   } catch (err) {
-    res.status(500).json({ message: err.message })
+    console.error('Search flights error:', err)
+    res.status(500).json({ message: 'Failed to search flights' })
   }
 }
 
@@ -41,15 +78,15 @@ export const createFlight = async (req, res) => {
       return res.status(400).json({ message: 'Missing required fields' })
     }
 
-    const depStr = typeof departure === 'string' ? departure : JSON.stringify(departure)
-    const arrStr = typeof arrival === 'string' ? arrival : JSON.stringify(arrival)
+    const depObj = typeof departure === 'string' ? JSON.parse(departure) : departure
+    const arrObj = typeof arrival === 'string' ? JSON.parse(arrival) : arrival
 
     const flight = await prisma.flight.create({
       data: {
         airline,
         flightNumber,
-        departure: depStr,
-        arrival: arrStr,
+        departure: depObj,
+        arrival: arrObj,
         duration: duration || '2h',
         price: parseFloat(price),
         seats: seats || 180,
@@ -77,22 +114,22 @@ export const updateFlight = async (req, res) => {
       return res.status(404).json({ message: 'Flight not found' })
     }
 
-    let depStr = flight.departure
-    let arrStr = flight.arrival
+    let depObj = flight.departure
+    let arrObj = flight.arrival
 
     if (departure) {
-      depStr = typeof departure === 'string' ? departure : JSON.stringify(departure)
+      depObj = typeof departure === 'string' ? JSON.parse(departure) : departure
     }
     if (arrival) {
-      arrStr = typeof arrival === 'string' ? arrival : JSON.stringify(arrival)
+      arrObj = typeof arrival === 'string' ? JSON.parse(arrival) : arrival
     }
 
     const updated = await prisma.flight.update({
       where: { id },
       data: {
         airline: airline || flight.airline,
-        departure: depStr,
-        arrival: arrStr,
+        departure: depObj,
+        arrival: arrObj,
         duration: duration || flight.duration,
         price: price ? parseFloat(price) : flight.price,
         seats: seats !== undefined ? seats : flight.seats,

@@ -60,28 +60,46 @@ const AdminDashboard = () => {
 
         <div className="stats-grid">
           <StatCard
-            icon="👥"
-            label="Total Users"
-            value={stats?.summary?.totalUsers || 0}
-            color="#3b82f6"
-          />
-          <StatCard
-            icon="📋"
-            label="Total Bookings"
-            value={stats?.summary?.totalBookings || 0}
+            icon="💰"
+            label="Total Revenue"
+            value={`₹${(stats?.summary?.totalRevenue || 0).toLocaleString()}`}
             color="#10b981"
           />
           <StatCard
             icon="✈️"
-            label="Total Flights"
-            value={stats?.summary?.totalFlights || 0}
+            label="Available Flights"
+            value={stats?.active?.activeFlights || 0}
+            color="#3b82f6"
+          />
+          <StatCard
+            icon="🏨"
+            label="Total Hotels"
+            value={stats?.summary?.totalHotels || 0}
+            color="#06b6d4"
+          />
+          <StatCard
+            icon="🎫"
+            label="Flights Booked"
+            value={stats?.bookingsBreakdown?.flight || 0}
             color="#f59e0b"
           />
           <StatCard
-            icon="✅"
-            label="Active Flights"
-            value={stats?.active?.activeFlights || 0}
-            color="#06b6d4"
+            icon="🛏️"
+            label="Hotels Booked"
+            value={stats?.bookingsBreakdown?.hotel || 0}
+            color="#8b5cf6"
+          />
+          <StatCard
+            icon="🚌"
+            label="Buses Booked"
+            value={stats?.bookingsBreakdown?.bus || 0}
+            color="#ec4899"
+          />
+          <StatCard
+            icon="🚕"
+            label="Cabs Booked"
+            value={stats?.bookingsBreakdown?.cab || 0}
+            color="#f43f5e"
           />
         </div>
 
@@ -134,7 +152,7 @@ const StatCard = ({ icon, label, value, color }) => (
     <div className="stat-icon">{icon}</div>
     <div className="stat-content">
       <p className="stat-label">{label}</p>
-      <p className="stat-value">{value.toLocaleString()}</p>
+      <p className="stat-value">{typeof value === 'number' ? value.toLocaleString() : value}</p>
     </div>
   </div>
 )

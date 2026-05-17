@@ -6,25 +6,47 @@ import './AdminFlights.css'
 
 const AdminFlights = () => {
   const [flights, setFlights] = useState([])
+  const [allFlights, setAllFlights] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [search, setSearch] = useState('')
-  const [page, setPage] = useState(1)
-  const [pagination, setPagination] = useState({})
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState(null)
   const [editingFlight, setEditingFlight] = useState(null)
 
   useEffect(() => {
     fetchFlights()
-  }, [page, search])
+  }, [])
+
+  useEffect(() => {
+    if (search.trim() === '') {
+      setFlights(allFlights)
+    } else {
+      const filtered = allFlights.filter(f => {
+        const depCity = typeof f.departure === 'string' ? JSON.parse(f.departure)?.city : f.departure?.city
+        const arrCity = typeof f.arrival === 'string' ? JSON.parse(f.arrival)?.city : f.arrival?.city
+
+        return (
+          f.flightNumber.toLowerCase().includes(search.toLowerCase()) ||
+          depCity?.toLowerCase().includes(search.toLowerCase()) ||
+          arrCity?.toLowerCase().includes(search.toLowerCase())
+        )
+      })
+      setFlights(filtered)
+    }
+  }, [search, allFlights])
 
   const fetchFlights = async () => {
     try {
       setLoading(true)
-      const response = await adminFlightsService.getAll({ page, limit: 10, search })
-      setFlights(response.data.data.flights)
-      setPagination(response.data.data.pagination)
+      const response = await adminFlightsService.getAll()
+      const parsedFlights = response.data.data.flights.map(f => ({
+        ...f,
+        departure: typeof f.departure === 'string' ? JSON.parse(f.departure) : f.departure,
+        arrival: typeof f.arrival === 'string' ? JSON.parse(f.arrival) : f.arrival
+      }))
+      setAllFlights(parsedFlights)
+      setFlights(parsedFlights)
       setError('')
     } catch (err) {
       setError('Failed to load flights')
@@ -38,7 +60,7 @@ const AdminFlights = () => {
     if (window.confirm('Delete this flight? This action cannot be undone.')) {
       try {
         await adminFlightsService.delete(id)
-        setFlights(flights.filter(f => f._id !== id))
+        setFlights(flights.filter(f => f.id !== id))
       } catch (err) {
         setError('Failed to delete flight')
       }
@@ -48,7 +70,7 @@ const AdminFlights = () => {
   const handleToggleStatus = async (id) => {
     try {
       await adminFlightsService.toggleStatus(id)
-      setFlights(flights.map(f => f._id === id ? { ...f, isActive: !f.isActive } : f))
+      setFlights(flights.map(f => f.id === id ? { ...f, isActive: !f.isActive } : f))
     } catch (err) {
       setError('Failed to update status')
     }
@@ -56,7 +78,7 @@ const AdminFlights = () => {
 
   const handleEdit = (flight) => {
     setEditingFlight(flight)
-    setEditingId(flight._id)
+    setEditingId(flight.id)
     setShowForm(true)
   }
 
@@ -70,7 +92,7 @@ const AdminFlights = () => {
     try {
       if (editingId) {
         await adminFlightsService.update(editingId, formData)
-        setFlights(flights.map(f => f._id === editingId ? { ...f, ...formData } : f))
+        setFlights(flights.map(f => f.id === editingId ? { ...f, ...formData } : f))
       } else {
         const response = await adminFlightsService.create(formData)
         setFlights([response.data.data.flight, ...flights])
@@ -85,7 +107,14 @@ const AdminFlights = () => {
     <AdminLayout>
       <div className="admin-page">
         <div className="page-header">
-          <h1>Flights Management</h1>
+          <div>
+            <h1>Flights Management</h1>
+            <div style={{ display: 'flex', gap: '24px', marginTop: '8px', fontSize: '14px', color: '#64748b' }}>
+              <span>📊 Total: <strong style={{ color: '#0f172a' }}>{allFlights.length}</strong></span>
+              <span>✅ Active: <strong style={{ color: '#10b981' }}>{allFlights.filter(f => f.isActive).length}</strong></span>
+              <span>⛔ Inactive: <strong style={{ color: '#ef4444' }}>{allFlights.filter(f => !f.isActive).length}</strong></span>
+            </div>
+          </div>
           <button className="btn-primary" onClick={() => setShowForm(true)}>
             ✈️ Add New Flight
           </button>
@@ -110,10 +139,7 @@ const AdminFlights = () => {
             type="text"
             placeholder="Search flights by airline, number, or city..."
             value={search}
-            onChange={(e) => {
-              setSearch(e.target.value)
-              setPage(1)
-            }}
+            onChange={(e) => setSearch(e.target.value)}
           />
         </div>
 
@@ -140,7 +166,7 @@ const AdminFlights = () => {
                 </thead>
                 <tbody>
                   {flights.map(flight => (
-                    <tr key={flight._id}>
+                    <tr key={flight.id}>
                       <td className="font-bold">{flight.flightNumber}</td>
                       <td>{flight.airline}</td>
                       <td>{flight.departure?.city} → {flight.arrival?.city}</td>
@@ -153,34 +179,16 @@ const AdminFlights = () => {
                       </td>
                       <td className="actions">
                         <button className="btn-sm btn-edit" onClick={() => handleEdit(flight)}>✎ Edit</button>
-                        <button className="btn-sm btn-toggle" onClick={() => handleToggleStatus(flight._id)}>
+                        <button className="btn-sm btn-toggle" onClick={() => handleToggleStatus(flight.id)}>
                           {flight.isActive ? '🔒' : '🔓'}
                         </button>
-                        <button className="btn-sm btn-delete" onClick={() => handleDelete(flight._id)}>🗑️ Delete</button>
+                        <button className="btn-sm btn-delete" onClick={() => handleDelete(flight.id)}>🗑️ Delete</button>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-
-            {pagination.pages > 1 && (
-              <div className="pagination">
-                <button
-                  disabled={page === 1}
-                  onClick={() => setPage(page - 1)}
-                >
-                  ← Previous
-                </button>
-                <span>Page {page} of {pagination.pages}</span>
-                <button
-                  disabled={page === pagination.pages}
-                  onClick={() => setPage(page + 1)}
-                >
-                  Next →
-                </button>
-              </div>
-            )}
           </>
         )}
       </div>

@@ -27,15 +27,15 @@ export default function HeroSearch() {
   const [tripType, setTripType] = useState('one-way')
   const [activeTab, setActiveTab] = useState('flights')
   const [activeFare, setActiveFare] = useState('regular')
+  const TODAY = new Date().toISOString().slice(0, 10)
+
   const [form, setForm] = useState({ 
     from: 'Delhi', 
     to: 'Bengaluru', 
-    date: '', 
+    date: TODAY, 
     returnDate: '', 
     passengers: 1 
   })
-
-  const TODAY = new Date().toISOString().slice(0, 10)
 
   const swap = () => setForm((f) => ({ ...f, from: f.to, to: f.from }))
 
@@ -170,7 +170,14 @@ export default function HeroSearch() {
                   type="date"
                   value={form.date}
                   min={TODAY}
-                  onChange={(e) => setForm({ ...form, date: e.target.value })}
+                  onChange={(e) => {
+                    const newDate = e.target.value
+                    setForm(f => {
+                      let newReturn = f.returnDate
+                      if (newReturn && newReturn < newDate) newReturn = ''
+                      return { ...f, date: newDate, returnDate: newReturn }
+                    })
+                  }}
                   required
                 />
               </div>

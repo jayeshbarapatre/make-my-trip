@@ -1,26 +1,45 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import api from '../services/api';
 import '../styles/HotelPaymentPage.css';
 
 export default function HotelPaymentPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
 
-  // Retrieve state or fallback values
+  useEffect(() => {
+    if (!user) {
+      navigate('/login?returnTo=' + encodeURIComponent(location.pathname), { replace: true });
+    }
+  }, [user, navigate, location.pathname]);
+
+  const defaultImage = "https://images.unsplash.com/photo-1542314831-c53cd4b85d05?auto=format&fit=crop&w=240&h=180&q=80";
   const hotel = location.state?.hotel || {
     id: "hotel-fallback",
     name: "Axiom Resort Luxury Cottages, Arambol",
     locality: "Arambol, Goa",
     price: 5000,
-    img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=240&h=180&q=80"
+    images: [defaultImage]
+  };
+
+  const getImageUrl = (h) => {
+    if (h.images && h.images.length > 0) return h.images[0].includes('unsplash.com') ? h.images[0] : `https://images.unsplash.com/photo-${h.images[0]}?auto=format&fit=crop&w=240&h=180&q=80`;
+    if (h.seed && h.seed.length > 0) return h.seed[0].includes('unsplash.com') ? h.seed[0] : `https://images.unsplash.com/photo-${h.seed[0]}?auto=format&fit=crop&w=240&h=180&q=80`;
+    if (h.img) return h.img;
+    return defaultImage;
   };
 
   const roomName = location.state?.roomName || "Premium room with Pool view";
   const checkIn = location.state?.checkIn || "2026-05-15";
   const checkOut = location.state?.checkOut || "2026-05-16";
   const guests = location.state?.guests || "2 Adults | 1 Room";
+  const guestsObj = location.state?.guestsObj || { adults: 2, rooms: 1 };
+  const nights = location.state?.nights || 1;
+  const rooms = location.state?.rooms || guestsObj.rooms || 1;
   const totalAmount = location.state?.totalAmount || 4760;
 
   const [secureAdded, setSecureAdded] = useState(false);
@@ -28,28 +47,79 @@ export default function HotelPaymentPage() {
 
   const finalDue = secureAdded ? totalAmount + 59 : totalAmount;
 
-  const handleProcessPayment = (methodName) => {
-    // Generate confirmed booking payload
-    const newBooking = {
-      id: "bkg_hotel_" + Date.now(),
+  // Price breakdown (consistent with Review page: 18% GST)
+  const basePrice      = location.state?.basePrice      || Math.round(finalDue / (1 - 0.15 + 0.18) * (1 - 0.15));
+  const taxesBreakdown = Math.round(finalDue * 0.18 / 1.18) || Math.round(finalDue * 0.18);
+  const serviceFees    = Math.round(finalDue * 0.005) || 297;
+  const hotelFare      = finalDue - serviceFees;
+
+  const handleProcessPayment = async (methodName) => {
+    // Build a rich booking payload carrying all fields the Success page needs
+    const payload = {
       userId: user?.id || 'usr_1111-2222-3333-4444',
       type: "hotel",
-      fromCity: `${hotel.name} - ${roomName}`,
-      toCity: `${hotel.locality}`,
+      fromCity: hotel.name,
+      toCity: hotel.locality || hotel.location || '',
       departureDate: checkIn,
       returnDate: checkOut,
-      travellers: { guests, rooms: 1, adults: 2, method: methodName || selectedMethod },
+      travellers: {
+        guests,
+        rooms,
+        adults: guestsObj.adults,
+        method: methodName || selectedMethod,
+        roomName
+      },
       totalAmount: finalDue,
-      status: "confirmed",
-      bookingId: "MMT-HT-" + Math.floor(100000 + Math.random() * 900000),
-      pnr: "HTL-" + Math.floor(100000 + Math.random() * 900000),
-      createdAt: new Date().toISOString()
+      hotelName: hotel.name,
+      hotelLocality: hotel.locality || hotel.location || '',
+      roomName,
+      checkIn,
+      checkOut,
+      nights,
+      rooms
     };
 
-    const existing = JSON.parse(localStorage.getItem('user_bookings_hotel') || '[]');
-    localStorage.setItem('user_bookings_hotel', JSON.stringify([newBooking, ...existing]));
+    // Generate mock IDs for demo / API-unavailable fallback
+    const makeMockBooking = () => ({
+      pnr:       'HTL-' + Math.floor(100000 + Math.random() * 900000),
+      bookingId: 'MMT-HT-' + Math.floor(100000 + Math.random() * 900000),
+      totalAmount: finalDue,
+      type: 'hotel',
+      fromCity: hotel.name,
+      toCity: hotel.locality || hotel.location || '',
+      departureDate: checkIn,
+      returnDate: checkOut,
+      travellers: { guests, rooms, adults: guestsObj.adults, method: methodName || selectedMethod, roomName }
+    });
 
-    navigate('/hotels/success', { state: { booking: newBooking, hotel } });
+    const goToSuccess = (bookingData) => {
+      navigate('/hotels/success', {
+        state: {
+          booking: bookingData,
+          hotel,
+          roomName,
+          checkIn,
+          checkOut,
+          guests,
+          guestsObj,
+          nights,
+          rooms,
+          totalAmount: finalDue
+        }
+      });
+    };
+
+    setIsProcessing(true);
+    try {
+      const response = await api.post('/bookings', payload);
+      goToSuccess(response.data);
+    } catch (err) {
+      console.error('Booking error:', err);
+      setToastMessage(err.message || 'Booking failed. Please try again.');
+      setTimeout(() => setToastMessage(''), 3500);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -65,10 +135,10 @@ export default function HotelPaymentPage() {
               <div className="pmt-summary-box">
                 <div className="pmt-summary-top">
                   <div className="pmt-prop-info">
-                    <img src={hotel.img} alt={hotel.name} className="pmt-prop-thumb" />
+                    <img src={getImageUrl(hotel)} alt={hotel.name} className="pmt-prop-thumb" />
                     <div className="pmt-prop-text">
                       <h3>{hotel.name}</h3>
-                      <p className="pmt-meta">{checkIn} - {checkOut} · {guests}</p>
+                      <p className="pmt-meta">{checkIn} - {checkOut} · {nights} Night{nights !== 1 ? 's' : ''} · {rooms} Room{rooms !== 1 ? 's' : ''} · {guests}</p>
                     </div>
                   </div>
                   <span className="pmt-toggle">VIEW DETAILS ∨</span>
@@ -186,18 +256,18 @@ export default function HotelPaymentPage() {
               </div>
 
               <div className="pmt-due-row">
-                <span>Hotel Fare</span>
-                <span>₹ {(finalDue - 510).toLocaleString("en-IN")}</span>
+                <span>Hotel Fare ({rooms} Room{rooms !== 1 ? 's' : ''} × {nights} Night{nights !== 1 ? 's' : ''})</span>
+                <span>₹ {hotelFare.toLocaleString("en-IN")}</span>
               </div>
 
               <div className="pmt-due-row">
                 <span>Service Fees</span>
-                <span>₹ 297</span>
+                <span>₹ {serviceFees.toLocaleString("en-IN")}</span>
               </div>
 
               <div className="pmt-due-row" style={{ marginBottom: 0 }}>
                 <span>Taxes</span>
-                <span>₹ 213</span>
+                <span>₹ {taxesBreakdown.toLocaleString("en-IN")}</span>
               </div>
             </div>
 

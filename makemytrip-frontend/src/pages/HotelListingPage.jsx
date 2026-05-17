@@ -4,6 +4,7 @@ import { UDAIPUR_HOTELS, HOTEL_PINS } from '../data/udaipurHotelsData'
 import { useAuth } from '../context/AuthContext'
 import { authService } from '../services/authService'
 import CustomCalendarPicker from '../components/CustomCalendarPicker'
+import { searchHotels } from '../services/hotelService'
 import '../styles/UdaipurListing.css'
 
 /* ─────────── SVGs & Icons ─────────── */
@@ -38,8 +39,22 @@ function SearchBar({ onSearch, city, checkIn, checkOut, guests }) {
   const g = guests ? JSON.parse(guests) : { adults: 2, rooms: 1 };
   const [inDate, setInDate] = useState(checkIn || '');
   const [outDate, setOutDate] = useState(checkOut || '');
+
+  useEffect(() => {
+    setInDate(checkIn || '');
+    setOutDate(checkOut || '');
+  }, [checkIn, checkOut]);
   const [showInCal, setShowInCal] = useState(false);
   const [showOutCal, setShowOutCal] = useState(false);
+
+  const getGuestDisplay = () => {
+    let display = `${g.adults} Adults`;
+    if (g.children && g.children > 0) {
+      display += ` · ${g.children} ${g.children === 1 ? 'Child' : 'Children'}`;
+    }
+    display += ` · ${g.rooms} Room${g.rooms !== 1 ? 's' : ''}`;
+    return display;
+  };
 
   const fmtD = (s) => {
     if (!s) return 'Select Date';
@@ -79,7 +94,7 @@ function SearchBar({ onSearch, city, checkIn, checkOut, guests }) {
       </div>
       <div className="sb-field">
         <div className="sb-lbl">GUESTS</div>
-        <div className="sb-val">{g.adults} Adults · {g.rooms} Room</div>
+        <div className="sb-val">{getGuestDisplay()}</div>
       </div>
       <button className="sb-search" onClick={() => onSearch && onSearch(city, inDate, outDate)}>SEARCH</button>
     </div>
@@ -281,7 +296,7 @@ function PhotoCarousel({ seeds, photos, hotelId }) {
           <div key={s} className="carousel-slide" style={{ minWidth: '100%', height: '100%' }}>
             {/* Beautiful hotel imagery placeholders styled with rich Unsplash images */}
             <img 
-              src={`https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&h=420&q=80&sig=${s}`} 
+              src={s.includes('unsplash.com') ? s : `https://images.unsplash.com/photo-${s}?auto=format&fit=crop&w=600&h=420&q=80`} 
               alt="Udaipur Luxury Stay" 
               loading="lazy"
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
@@ -347,7 +362,7 @@ function HotelCard({ h, density, wishlist, toggleWishlist, onSelectHotel }) {
               <div className="price">₹ {h.price.toLocaleString("en-IN")}</div>
               <div className="taxes">+ ₹ {h.taxes} taxes &amp; fees</div>
               <div className="per-night">Per Night</div>
-              <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+              <div style={{ display: 'flex', gap: '8px', marginTop: '12px', justifyContent: "end" }}>
                 <button
                   className="hp-hc-btn"
                   onClick={(e) => {
@@ -494,14 +509,37 @@ function MapOverlay({ open, onClose, pins, hotels, wishlist, toggleWishlist }) {
 }
 
 /* ─────────── Mobile shell Simulator ─────────── */
-function MobileApp({ hotels, wishlist, toggleWishlist, onOpenFilter, onSelectHotel }) {
+function MobileApp({ hotels, wishlist, toggleWishlist, onOpenFilter, onSelectHotel, checkIn, checkOut, guests }) {
+  const getGuestDisplay = () => {
+    try {
+      const g = guests ? JSON.parse(guests) : { adults: 2, rooms: 1 };
+      let display = `${g.adults || 0} Guest${(g.adults || 0) !== 1 ? 's' : ''}`;
+      if (g.children && g.children > 0) {
+        display += ` · ${g.children} Child${g.children > 1 ? 'ren' : ''}`;
+      }
+      return display;
+    } catch {
+      return '2 Guests';
+    }
+  };
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '';
+    const d = new Date(dateStr + 'T00:00:00');
+    return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+  };
+
+  const metaDisplay = checkIn && checkOut
+    ? `${formatDate(checkIn)} - ${formatDate(checkOut)} · ${getGuestDisplay()}`
+    : '14 May - 7 Jun · 2 Guests';
+
   return (
     <div className="mobile-shell">
       <div className="m-top">
         <button className="m-back">{I.chevronL}</button>
         <div className="m-title">
           <div className="m-loc">Udaipur, India</div>
-          <div className="m-meta">14 May - 7 Jun · 2 Guests</div>
+          <div className="m-meta">{metaDisplay}</div>
         </div>
         <button className="m-edit">EDIT</button>
       </div>
@@ -592,7 +630,9 @@ const generateHotels = (cityName) => {
     amenities: ['Airport Transfer', 'Free WiFi', 'Swimming Pool'],
     review: "Stunning lake view from balcony, hosts were warm and the rooftop sunset is unreal.",
     longStay: ["Complimentary Breakfast", "Free Laundry"],
-    seed: [i + 1, i + 2, i + 3],
+    seed: [
+      "1542314831-c53cd4b85d05", "1566073771259-6a8506099945", "1582719478250-c89cae4dc85b", "1512918728675-ed5a9ecdebfd", "1520250497591-112f2f40a3f4", "1540541338287-41700207dee6", "1611892440504-42a792e24d32", "1590050752117-238cb061271f", "1578683010236-d716f9a3f461", "1551882547-ff40c0d589rx", "1535827841776-24afc1e255ac", "1445019980597-93fa8acb246c"
+    ].sort(() => Math.random() - 0.5).slice(0, 5),
     photos: 234,
     starHost: i % 4 === 0,
     coupleFriendly: true,
@@ -608,7 +648,55 @@ export default function HotelListingPage() {
   const checkOut = searchParams.get('checkOut');
   const guests = searchParams.get('guests');
 
-  const DYNAMIC_HOTELS = useMemo(() => generateHotels(cityQuery), [cityQuery]);
+  const [realHotels, setRealHotels] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [apiError, setApiError] = useState(null);
+
+  useEffect(() => {
+    const fetchRealHotels = async () => {
+      try {
+        setLoading(true);
+        setApiError(null);
+        const res = await searchHotels({ city: cityQuery, checkIn, checkOut, guests });
+
+        // Map backend response to match expected frontend structure if needed
+        const mapped = (res.data || []).map((h, i) => ({
+          ...h,
+          id: h.id,
+          locality: h.location || h.city,
+          distance: '2.0 km from City Center',
+          ratingLabel: h.rating >= 4.5 ? 'Excellent' : h.rating >= 4 ? 'Very Good' : 'Good',
+          strike: h.price + 1000,
+          taxes: h.price * 0.18,
+          roomType: 'Deluxe Room',
+          amenities: h.amenities || ['Free WiFi'],
+          review: h.description || "A wonderful stay.",
+          longStay: [],
+          seed: h.images?.length > 0 ? h.images : [
+            "1542314831-c53cd4b85d05", "1566073771259-6a8506099945", "1582719478250-c89cae4dc85b", "1512918728675-ed5a9ecdebfd", "1520250497591-112f2f40a3f4", "1540541338287-41700207dee6", "1611892440504-42a792e24d32", "1590050752117-238cb061271f", "1578683010236-d716f9a3f461", "1551882547-ff40c0d589rx", "1535827841776-24afc1e255ac", "1445019980597-93fa8acb246c"
+          ].sort(() => Math.random() - 0.5).slice(0, 5),
+          photos: 10,
+          starHost: h.rating >= 4.5,
+          coupleFriendly: true,
+          promo: ""
+        }));
+
+        if (mapped.length > 0) {
+          setRealHotels(mapped);
+        } else {
+          setRealHotels(generateHotels(cityQuery));
+        }
+      } catch (err) {
+        setApiError(err.message || 'Failed to load hotels. Using fallback properties.');
+        setRealHotels(generateHotels(cityQuery));
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchRealHotels();
+  }, [cityQuery, checkIn, checkOut, guests]);
+
+  const DYNAMIC_HOTELS = useMemo(() => realHotels, [realHotels]);
 
 
   const { user, verifyOtpLogin } = useAuth()
@@ -628,7 +716,14 @@ export default function HotelListingPage() {
       setSelectedHotel(hotel)
       return
     }
-    navigate(`/hotels/detail/${hotel.id}`, { state: { hotel } })
+    navigate(`/hotels/detail/${hotel.id}`, {
+      state: {
+        hotel,
+        checkIn,
+        checkOut,
+        guests
+      }
+    })
   }
 
   const handleSendOtp = async (e) => {
@@ -639,10 +734,14 @@ export default function HotelListingPage() {
     }
     setLoginError('')
     try {
-      await authService.sendMobileOtp(mobilePhone)
-      setOtpSent(true)
+      const res = await authService.sendMobileOtp(mobilePhone)
+      if (res && (res.data || res.message)) {
+        setOtpSent(true)
+      } else {
+        setLoginError('Failed to send OTP. Please try again.')
+      }
     } catch (err) {
-      setOtpSent(true)
+      setLoginError(err.message || 'Failed to send OTP. Please try again.')
     }
   }
 
@@ -657,7 +756,7 @@ export default function HotelListingPage() {
       await verifyOtpLogin(mobilePhone, otpCode)
       setShowLoginModal(false)
       if (selectedHotel) {
-        navigate(`/hotels/detail/${selectedHotel.id}`, { state: { hotel: selectedHotel } })
+        navigate(`/hotels/detail/${selectedHotel.id}`, { state: { hotel: selectedHotel, checkIn, checkOut, guests } })
       }
     } catch (err) {
       setLoginError(err.message || 'Verification failed. Try 123456.')
@@ -766,14 +865,18 @@ export default function HotelListingPage() {
       });
     }
 
+    if (filters.luxe) {
+      list = list.filter(h => h.promo === "MMT LUXE SELECTION" || h.rating >= 4.7);
+    }
+
     // Sort order logic
     if (sort === "low") list.sort((a,b) => a.price - b.price);
     else if (sort === "high") list.sort((a,b) => b.price - a.price);
     else if (sort === "rating") list.sort((a,b) => b.rating - a.rating);
     else if (sort === "best") list.sort((a,b) => (b.rating - a.rating) || (a.price - b.price));
-    
+
     return list;
-  }, [filters, sort]);
+  }, [filters, sort, DYNAMIC_HOTELS]);
 
   const perPage = 6;
   const visible = filtered.slice(0, page * perPage);
@@ -826,7 +929,26 @@ export default function HotelListingPage() {
 
         {/* Right Search Results Column */}
         <main className="results">
-          
+
+          {/* Error Banner */}
+          {apiError && (
+            <div style={{
+              backgroundColor: '#fff3cd',
+              border: '1px solid #ffc107',
+              borderRadius: '4px',
+              padding: '12px 16px',
+              marginBottom: '16px',
+              fontSize: '14px',
+              color: '#856404',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <span>⚠️ {apiError}</span>
+              <button onClick={() => setApiError(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '18px' }}>✕</button>
+            </div>
+          )}
+
           {/* Breadcrumbs */}
           <div className="breadcrumb">
             <span style={{ cursor: 'pointer' }} onClick={() => navigate('/hotels')}>Hotels</span> 
@@ -860,12 +982,15 @@ export default function HotelListingPage() {
           {view === 'mobile' ? (
             <div className="mobile-wrap">
               <div className="mobile-frame">
-                <MobileApp 
-                  hotels={filtered} 
-                  wishlist={wishlist} 
+                <MobileApp
+                  hotels={filtered}
+                  wishlist={wishlist}
                   toggleWishlist={toggleWishlist}
                   onOpenFilter={() => {}}
                   onSelectHotel={handleSelectHotel}
+                  checkIn={checkIn}
+                  checkOut={checkOut}
+                  guests={guests}
                 />
               </div>
             </div>
@@ -874,7 +999,7 @@ export default function HotelListingPage() {
               {/* Sort Tabs navigation strip */}
               <SortTabs sort={sort} setSort={setSort}/>
 
-              <div className="showing-h">Showing Stays in Udaipur</div>
+              <div className="showing-h">Showing Stays in {cityQuery}</div>
 
               {/* Active Results List */}
               <div className="results-list">
@@ -948,7 +1073,12 @@ export default function HotelListingPage() {
                       type="tel"
                       placeholder="10-digit mobile number"
                       value={mobilePhone}
-                      onChange={(e) => setMobilePhone(e.target.value)}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                        setMobilePhone(val);
+                      }}
+                      maxLength="10"
+                      inputMode="numeric"
                       autoFocus
                       required
                     />
@@ -966,14 +1096,13 @@ export default function HotelListingPage() {
                   <input
                     type="text"
                     maxLength="6"
-                    placeholder="e.g. 123456"
+                    placeholder="Enter 6-digit OTP"
                     value={otpCode}
                     onChange={(e) => setOtpCode(e.target.value)}
                     className="custom-otp-input"
                     autoFocus
                     required
                   />
-                  <span className="custom-otp-hint">✓ Simulated OTP sent! (Use test OTP: 123456)</span>
                 </div>
                 <button type="submit" className="custom-verify-btn">VERIFY & RESUME BOOKING</button>
               </form>

@@ -44,23 +44,210 @@
   flex: 1;
 }
 
-.admin-info {
+.admin-dropdown-container {
+  position: relative;
+}
+
+.admin-info-trigger {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 14px 6px 6px;
+  background: #f9fafb;
+  border-radius: 30px;
+  cursor: pointer;
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s ease;
+}
+
+.admin-info-trigger:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+.admin-avatar {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #1a73e8, #667eea);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.admin-text {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 16px;
-  background: #f3f4f6;
-  border-radius: 8px;
 }
 
 .admin-name {
   font-weight: 600;
   color: #1a1f36;
+  font-size: 14px;
 }
 
-.admin-role {
+.dropdown-arrow {
+  font-size: 10px;
   color: #6b7280;
-  font-size: 12px;
-  text-transform: uppercase;
+}
+
+.admin-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  width: 240px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+  z-index: 1000;
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.dropdown-header {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  background: #f9fafb;
+}
+
+.dropdown-header strong {
+  font-size: 15px;
+  color: #1a1f36;
+  margin-bottom: 4px;
+}
+
+.dropdown-header span {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: #e5e7eb;
+}
+
+.dropdown-item {
+  width: 100%;
+  text-align: left;
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  font-size: 14px;
+  color: #ef4444;
   font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.2s ease;
+}
+
+.dropdown-item:hover {
+  background: #fef2f2;
+}
+
+.password-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.password-modal {
+  background: white;
+  padding: 24px;
+  border-radius: 8px;
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.password-modal h3 {
+  margin: 0 0 16px 0;
+  color: #1a1f36;
+}
+
+.password-modal .form-group {
+  margin-bottom: 16px;
+}
+
+.password-modal label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #4b5563;
+}
+
+.password-modal input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.modal-actions button {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+}
+
+.cancel-btn {
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
+.save-btn {
+  background: #1a73e8;
+  color: white;
+}
+
+.save-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.error-text {
+  color: #dc2626;
+  font-size: 13px;
+  background: #fef2f2;
+  padding: 8px;
+  border-radius: 4px;
+}
+
+.success-text {
+  color: #059669;
+  font-size: 13px;
+  background: #ecfdf5;
+  padding: 8px;
+  border-radius: 4px;
 }

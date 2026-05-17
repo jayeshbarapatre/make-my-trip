@@ -96,8 +96,13 @@ const HotelForm = ({ hotel, onSubmit, onClose }) => {
           <h3>Images & Other Details</h3>
 
           <div className="form-group full-width">
-            <label>Image URL</label>
+            <label>Main Image URL</label>
             <input type="text" name="image" value={formData.image} onChange={handleChange} placeholder="Main image URL" />
+          </div>
+
+          <div className="form-group full-width">
+            <label>Gallery Images (comma separated URLs)</label>
+            <textarea name="images" value={Array.isArray(formData.images) ? formData.images.join(', ') : ''} onChange={(e) => setFormData(prev => ({ ...prev, images: e.target.value.split(',').map(a => a.trim()).filter(Boolean) }))} placeholder="https://..., https://..."></textarea>
           </div>
 
           <div className="form-group full-width">

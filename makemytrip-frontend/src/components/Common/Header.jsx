@@ -17,6 +17,21 @@ export default function Header() {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const dropdownRef = useRef(null)
 
+  // Detect if this is a mobile OTP user (no real name yet)
+  const isMobileUser = user && (user.name?.startsWith('Traveller_') || (!user.name && user.phone))
+  // Friendly display: real name for normal users, phone number for OTP users
+  const displayName = user
+    ? isMobileUser
+      ? `+91 ${user.phone}`
+      : `Hi, ${user.name?.split(' ')[0] || 'User'}`
+    : null
+  // Avatar initials or icon
+  const avatarText = user
+    ? isMobileUser
+      ? '📱'
+      : (user.name?.slice(0, 2).toUpperCase() || '?')
+    : null
+
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -64,12 +79,12 @@ export default function Header() {
 
           {user ? (
             <div ref={dropdownRef} className="common-user-container" style={{ position: 'relative', cursor: 'pointer' }} onClick={() => setDropdownOpen(!dropdownOpen)}>
-              <div className="common-user-avatar" title={user.name || user.phone}>
-                {user.name ? user.name.slice(0, 2).toUpperCase() : '👤'}
+              <div className="common-user-avatar" title={user.name || user.phone} style={{ background: isMobileUser ? '#0ea5e9' : undefined }}>
+                {avatarText}
               </div>
               <div className="common-user-details" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '6px' }}>
                 <span className="common-user-name" style={{ color: '#fff', fontSize: '14px', fontWeight: 700, whiteSpace: 'nowrap' }}>
-                  {user.name ? `Hi, ${user.name.split(' ')[0]}` : `+91 ${user.phone}`}
+                  {displayName}
                 </span>
                 <span style={{ color: '#94a3b8', fontSize: '11px', display: 'flex', alignItems: 'center' }}>▼</span>
               </div>
@@ -85,7 +100,7 @@ export default function Header() {
                     borderRadius: '12px',
                     boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
                     border: '1px solid #e2e8f0',
-                    minWidth: '200px',
+                    minWidth: '220px',
                     padding: '8px 0',
                     zIndex: 1500,
                     display: 'flex',
@@ -93,9 +108,32 @@ export default function Header() {
                     textShadow: 'none'
                   }}
                 >
+                  {/* Login method indicator */}
+                  <div style={{ padding: '10px 20px 6px', borderBottom: '1px solid #f1f5f9', marginBottom: '4px' }}>
+                    <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+                      {isMobileUser ? '📱 Logged in via Mobile' : '📧 Logged in via Email'}
+                    </div>
+                    <div style={{ fontSize: '13px', color: '#0f172a', fontWeight: 800, marginTop: '2px' }}>
+                      {isMobileUser ? `+91 ${user.phone}` : (user.email || user.name)}
+                    </div>
+                  </div>
+
+                  {/* Complete Profile prompt for mobile users */}
+                  {isMobileUser && (
+                    <div
+                      onClick={(e) => { e.stopPropagation(); setDropdownOpen(false); navigate('/profile'); }}
+                      style={{ padding: '10px 20px', background: '#fef9c3', color: '#854d0e', fontSize: '13px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', borderBottom: '1px solid #fef08a' }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = '#fef08a'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = '#fef9c3'}
+                    >
+                      ✏️ Complete your Profile
+                      <span style={{ marginLeft: 'auto', background: '#eab308', color: '#fff', borderRadius: '10px', padding: '1px 8px', fontSize: '10px', fontWeight: 800 }}>NEW</span>
+                    </div>
+                  )}
+
                   <div
                     onClick={(e) => { e.stopPropagation(); setDropdownOpen(false); navigate('/profile'); }}
-                    style={{ padding: '12px 20px', color: '#0f172a', fontSize: '14px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '10px', transition: 'background 0.2s' }}
+                    style={{ padding: '12px 20px', color: '#0f172a', fontSize: '14px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '10px', transition: 'background 0.2s', cursor: 'pointer' }}
                     onMouseEnter={(e) => e.currentTarget.style.background = '#f1f5f9'}
                     onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                   >
@@ -103,7 +141,7 @@ export default function Header() {
                   </div>
                   <div
                     onClick={(e) => { e.stopPropagation(); setDropdownOpen(false); navigate('/my-trips'); }}
-                    style={{ padding: '12px 20px', color: '#0f172a', fontSize: '14px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '10px', transition: 'background 0.2s' }}
+                    style={{ padding: '12px 20px', color: '#0f172a', fontSize: '14px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '10px', transition: 'background 0.2s', cursor: 'pointer' }}
                     onMouseEnter={(e) => e.currentTarget.style.background = '#f1f5f9'}
                     onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                   >
@@ -112,7 +150,7 @@ export default function Header() {
                   <div style={{ borderTop: '1px solid #e2e8f0', margin: '4px 0' }} />
                   <div
                     onClick={(e) => { e.stopPropagation(); setDropdownOpen(false); handleLogout(); }}
-                    style={{ padding: '12px 20px', color: '#eb2026', fontSize: '14px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '10px', transition: 'background 0.2s' }}
+                    style={{ padding: '12px 20px', color: '#eb2026', fontSize: '14px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '10px', transition: 'background 0.2s', cursor: 'pointer' }}
                     onMouseEnter={(e) => e.currentTarget.style.background = '#fef2f2'}
                     onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                   >

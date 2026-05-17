@@ -131,6 +131,7 @@ export default function Signup({ onSwitchTab }) {
               placeholder="10-digit mobile number"
               value={form.phone}
               onChange={handleChange('phone')}
+              maxLength={10}
               required
             />
           </div>

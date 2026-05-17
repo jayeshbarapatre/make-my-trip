@@ -91,7 +91,7 @@
   background: var(--clr-primary);
   color: var(--clr-text-inverse);
   border: none;
-  padding: 0 var(--sp-l);
+  padding: 0 16px;
   font-size: var(--fs-small);
   font-weight: var(--fw-bold);
   cursor: pointer;
@@ -116,7 +116,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 0 var(--sp-m);
+  padding: 0 10px;
   font-size: var(--fs-small);
   font-weight: var(--fw-bold);
   border-right: 1px solid rgba(255,255,255,0.15);
@@ -255,17 +255,17 @@
   margin: var(--sp-s) auto var(--sp-xl);
   padding: 0 var(--sp-l);
   display: flex;
-  gap: var(--sp-s);
+  gap: 12px;
   align-items: flex-start;
 }
 
 /* ═══════════════ FILTER SIDEBAR ═══════════════════════════ */
 .fr-sidebar {
-  width: var(--sidebar-w);
+  width: 260px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--sp-s);
+  gap: 10px;
 }
 .fr-filter-section {
   background: var(--clr-bg-white);
@@ -274,7 +274,7 @@
   overflow: hidden;
 }
 .fr-filter-title {
-  padding: var(--sp-s) var(--sp-m) 10px;
+  padding: 10px var(--sp-m) 8px;
   font-size: var(--fs-caption);
   font-weight: var(--fw-bold);
   color: var(--clr-text-dark);
@@ -295,11 +295,11 @@
   padding: 0;
 }
 .fr-clear-all:hover { text-decoration: underline; }
-.fr-filter-body { padding: var(--sp-xs) var(--sp-m) var(--sp-s); }
+.fr-filter-body { padding: 8px var(--sp-m) 10px; }
 .fr-checkbox-item {
   display: flex;
   align-items: center;
-  padding: 6px 0;
+  padding: 4px 0;
   cursor: pointer;
   gap: var(--sp-s);
   user-select: none;
@@ -384,12 +384,12 @@
 }
 
 /* Travel Hacks */
-.fr-travel-hacks { padding: var(--sp-xs) var(--sp-m) var(--sp-s); }
+.fr-travel-hacks { padding: 8px var(--sp-m) 10px; }
 .fr-hack-item {
   display: flex;
   align-items: flex-start;
   gap: var(--sp-s);
-  padding: 6px 0;
+  padding: 4px 0;
   border-bottom: 1px solid var(--clr-divider);
 }
 .fr-hack-item:last-child { border-bottom: none; }
