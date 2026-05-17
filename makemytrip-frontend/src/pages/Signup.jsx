@@ -72,7 +72,11 @@ export default function Signup({ onSwitchTab }) {
       })
       navigate('/')
     } catch (err) {
-      setError(err || 'Failed to register account. User might already exist.')
+      console.error('Registration error:', err)
+      const errorMessage = err?.response?.data?.message ||
+                          err?.message ||
+                          'Failed to register account. User might already exist.'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }

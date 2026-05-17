@@ -26,14 +26,18 @@ export default function ForgotPassword({ onBackToLogin }) {
     try {
       const res = await authService.forgotPassword(email)
       setMessage(res?.message || 'Verification OTP code dispatched successfully!')
-      
+
       // Save simulated OTP for extremely easy testing/copying!
       if (res?.simulatedOtp) {
         setSimulatedCode(res.simulatedOtp)
       }
       setStage(2)
     } catch (err) {
-      setError(err || 'No registered user found with this email address.')
+      console.error('Forgot password error:', err)
+      const errorMessage = err?.response?.data?.message ||
+                          err?.message ||
+                          'No registered user found with this email address.'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -54,7 +58,11 @@ export default function ForgotPassword({ onBackToLogin }) {
       setMessage(res?.message || 'OTP Verified!')
       setStage(3)
     } catch (err) {
-      setError(err || 'Invalid or expired OTP code. Please try again.')
+      console.error('OTP verification error:', err)
+      const errorMessage = err?.response?.data?.message ||
+                          err?.message ||
+                          'Invalid or expired OTP code. Please try again.'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -79,7 +87,11 @@ export default function ForgotPassword({ onBackToLogin }) {
       setMessage(res?.message || 'Password updated successfully!')
       setStage(4)
     } catch (err) {
-      setError(err || 'Failed to reset password. OTP may have expired.')
+      console.error('Password reset error:', err)
+      const errorMessage = err?.response?.data?.message ||
+                          err?.message ||
+                          'Failed to reset password. OTP may have expired.'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }

@@ -73,6 +73,9 @@ export function AuthProvider({ children }) {
         return newUser
       }
       throw new Error('Registration succeeded but did not return credential tokens.')
+    } catch (err) {
+      // Re-throw the error so the Signup component can display it
+      throw err
     } finally {
       setLoading(false)
     }
