@@ -322,15 +322,19 @@ export default function BookingPage() {
           setPaymentLoading(false)
 
           const departureObj = typeof flight.departure === 'object' ? flight.departure : { date: '2026-05-20' }
+          const arrivalObj = typeof flight.arrival === 'object' ? flight.arrival : {}
           const bookingPayload = {
             type: 'flight',
+            flightId: flight.id,
             fromCity: flight.source || (typeof flight.departure === 'object' ? flight.departure.city : ''),
             toCity: flight.destination || (typeof flight.arrival === 'object' ? flight.arrival.city : ''),
             departureDate: departureObj.date || '2026-05-20',
+            returnDate: arrivalObj.date,
             travellers: travellerDetails,
             totalAmount: totalAmount,
             contact: passenger,
-            userEmail: passenger?.email
+            userEmail: passenger?.email,
+            userName: user?.name
           }
 
           bookingService.createBooking(bookingPayload).then((res) => {
@@ -888,7 +892,21 @@ export default function BookingPage() {
                                     placeholder="MM/YY"
                                     maxLength="5"
                                     value={cardDetails.expiry}
-                                    onChange={(e) => setCardDetails({ ...cardDetails, expiry: e.target.value })}
+                                    onChange={(e) => {
+                                      let value = e.target.value.replace(/\D/g, '')
+                                      if (value.length > 4) value = value.slice(0, 4)
+                                      if (value.length >= 2) {
+                                        const month = value.slice(0, 2)
+                                        const year = value.slice(2)
+                                        const monthNum = parseInt(month)
+                                        if (monthNum > 12) {
+                                          value = month.slice(0, 1)
+                                        } else {
+                                          value = month + (year ? '/' + year : '')
+                                        }
+                                      }
+                                      setCardDetails({ ...cardDetails, expiry: value })
+                                    }}
                                     required
                                   />
                                 </div>

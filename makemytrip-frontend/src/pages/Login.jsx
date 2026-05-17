@@ -50,7 +50,11 @@ export default function Login({ onSwitchTab, onForgotPassword }) {
         navigate('/')
       }
     } catch (err) {
-      setError(err || 'Invalid credentials. Please verify your email and password.')
+      console.error('Login error:', err)
+      const errorMessage = err?.response?.data?.message ||
+                          err?.message ||
+                          'Invalid credentials. Please verify your email and password.'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }

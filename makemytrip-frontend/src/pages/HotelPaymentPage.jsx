@@ -76,7 +76,9 @@ export default function HotelPaymentPage() {
       checkIn,
       checkOut,
       nights,
-      rooms
+      rooms,
+      userEmail: user?.email,
+      userName: user?.name
     };
 
     // Generate mock IDs for demo / API-unavailable fallback

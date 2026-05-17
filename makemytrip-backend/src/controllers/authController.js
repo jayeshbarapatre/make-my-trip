@@ -147,14 +147,15 @@ export const verifyOtp = async (req, res) => {
     const user = await prisma.user.findUnique({ where: { email } })
     if (!user) return res.status(404).json({ message: 'User not found.' })
 
-    if (user.otp !== otp) {
+    // Allow static OTP '123456' in development mode for testing
+    const isStaticOtpValid = process.env.NODE_ENV !== 'production' && otp === '123456'
+    const isStoredOtpValid = user.otp === otp && new Date() <= user.otpExpiry
+
+    if (!isStaticOtpValid && !isStoredOtpValid) {
       return res.status(400).json({ message: 'Invalid OTP code. Please double-check and try again.' })
     }
 
-    if (new Date() > user.otpExpiry) {
-      return res.status(400).json({ message: 'The verification OTP code has expired. Please request a new one.' })
-    }
-
+    console.log(`✅ OTP verified for ${email}${isStaticOtpValid ? ' (using static OTP for testing)' : ''}`)
     res.json({ message: 'OTP verified successfully! You may proceed to reset your password.' })
   } catch (err) {
     console.error('Verify OTP error:', err)
@@ -258,12 +259,12 @@ export const verifyMobileOtp = async (req, res) => {
       return res.status(404).json({ message: 'No account found with this phone number.' })
     }
 
-    if (user.otp !== otp) {
-      return res.status(400).json({ message: 'Invalid OTP code.' })
-    }
+    // Allow static OTP '123456' in development mode for testing
+    const isStaticOtpValid = process.env.NODE_ENV !== 'production' && otp === '123456'
+    const isStoredOtpValid = user.otp === otp && (!user.otpExpiry || new Date() <= user.otpExpiry)
 
-    if (user.otpExpiry && new Date() > user.otpExpiry) {
-      return res.status(400).json({ message: 'OTP code has expired.' })
+    if (!isStaticOtpValid && !isStoredOtpValid) {
+      return res.status(400).json({ message: 'Invalid OTP code.' })
     }
 
     await prisma.user.update({
@@ -272,6 +273,7 @@ export const verifyMobileOtp = async (req, res) => {
     })
 
     const token = signToken(user.id)
+    console.log(`✅ Mobile OTP verified for ${phone}${isStaticOtpValid ? ' (using static OTP for testing)' : ''}`)
     res.json({
       data: { user: { id: user.id, name: user.name, email: user.email, phone: user.phone }, token }
     })

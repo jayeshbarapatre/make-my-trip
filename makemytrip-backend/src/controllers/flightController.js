@@ -22,8 +22,6 @@ export const searchFlights = async (req, res) => {
     const skip = (pageNum - 1) * pageSize
 
     const whereClause = { isActive: true }
-    if (from) whereClause.from = { contains: from, mode: 'insensitive' }
-    if (to) whereClause.to = { contains: to, mode: 'insensitive' }
 
     const flights = await prisma.flight.findMany({
       where: whereClause,
@@ -33,11 +31,16 @@ export const searchFlights = async (req, res) => {
     })
 
     const filtered = flights
+      .filter(f => !from || (f.departure && f.departure.city && f.departure.city.toLowerCase().includes(from.toLowerCase())))
+      .filter(f => !to || (f.arrival && f.arrival.city && f.arrival.city.toLowerCase().includes(to.toLowerCase())))
       .filter(f => !passengers || f.seatsAvailable >= parseInt(passengers))
       .filter(f => !minPrice || f.price >= parseFloat(minPrice))
       .filter(f => !maxPrice || f.price <= parseFloat(maxPrice))
 
-    const total = await prisma.flight.count({ where: whereClause })
+    const total = flights.filter(f =>
+      (!from || (f.departure && f.departure.city && f.departure.city.toLowerCase().includes(from.toLowerCase()))) &&
+      (!to || (f.arrival && f.arrival.city && f.arrival.city.toLowerCase().includes(to.toLowerCase())))
+    ).length
 
     res.json({
       data: filtered,

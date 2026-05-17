@@ -22,7 +22,9 @@ export const createBooking = async (req, res) => {
       travellers,
       rooms,
       nights,
-      totalAmount
+      totalAmount,
+      userEmail,
+      userName
     } = req.body
 
     if (!type || !totalAmount) {
@@ -35,29 +37,41 @@ export const createBooking = async (req, res) => {
     let newBooking
     let seatsCabsRoomsToDecrement = 0
 
-    if (type === 'flight' && flightId) {
-      const flight = await prisma.flight.findUnique({ where: { id: flightId } })
-      if (!flight) {
-        return res.status(404).json({ message: 'Flight not found' })
+    if (type === 'flight') {
+      let bookingFromCity = fromCity
+      let bookingToCity = toCity
+
+      if (flightId) {
+        const flight = await prisma.flight.findUnique({ where: { id: flightId } })
+        if (!flight) {
+          return res.status(404).json({ message: 'Flight not found' })
+        }
+
+        const passengerCount = Array.isArray(travellers) ? travellers.length : (travellers?.adults || 1) + (travellers?.children || 0) + (travellers?.infants || 0)
+
+        if (flight.seatsAvailable < passengerCount) {
+          return res.status(400).json({ message: `Only ${flight.seatsAvailable} seats available` })
+        }
+
+        const dep = typeof flight.departure === 'string' ? JSON.parse(flight.departure) : flight.departure
+        const arr = typeof flight.arrival === 'string' ? JSON.parse(flight.arrival) : flight.arrival
+        bookingFromCity = dep?.city || fromCity
+        bookingToCity = arr?.city || toCity
+
+        await prisma.flight.update({
+          where: { id: flightId },
+          data: { seatsAvailable: { decrement: passengerCount } }
+        })
       }
-
-      const passengerCount = Array.isArray(travellers) ? travellers.length : (travellers?.adults || 1) + (travellers?.children || 0) + (travellers?.infants || 0)
-
-      if (flight.seatsAvailable < passengerCount) {
-        return res.status(400).json({ message: `Only ${flight.seatsAvailable} seats available` })
-      }
-
-      seatsCabsRoomsToDecrement = passengerCount
 
       newBooking = await prisma.booking.create({
         data: {
           userId,
           type,
-          flightId,
-          fromCity: flight.from,
-          toCity: flight.to,
-          departureDate,
-          returnDate,
+          fromCity: bookingFromCity || 'Unknown',
+          toCity: bookingToCity || 'Unknown',
+          departureDate: departureDate || checkIn || new Date().toISOString().split('T')[0],
+          returnDate: returnDate || checkOut || null,
           travellers,
           totalAmount,
           bookingId,
@@ -65,50 +79,67 @@ export const createBooking = async (req, res) => {
           status: 'confirmed'
         }
       })
-
-      await prisma.flight.update({
-        where: { id: flightId },
-        data: { seatsAvailable: { decrement: passengerCount } }
-      })
-    } else if (type === 'hotel' && hotelId) {
-      const hotel = await prisma.hotel.findUnique({ where: { id: hotelId } })
-      if (!hotel) {
-        return res.status(404).json({ message: 'Hotel not found' })
-      }
-
+    } else if (type === 'hotel') {
       const roomsNeeded = rooms || 1
-      if (hotel.roomsAvailable < roomsNeeded) {
-        return res.status(400).json({ message: `Only ${hotel.roomsAvailable} rooms available` })
-      }
 
-      newBooking = await prisma.booking.create({
-        data: {
-          userId,
-          type,
-          hotelId,
-          fromCity: hotel.city,
-          toCity: hotel.city,
-          checkIn,
-          checkOut,
-          travellers,
-          rooms: roomsNeeded,
-          nights,
-          totalAmount,
-          bookingId,
-          pnr,
-          status: 'confirmed'
+      // If hotelId provided, validate availability
+      if (hotelId) {
+        const hotel = await prisma.hotel.findUnique({ where: { id: hotelId } })
+        if (!hotel) {
+          return res.status(404).json({ message: 'Hotel not found' })
         }
-      })
 
-      await prisma.hotel.update({
-        where: { id: hotelId },
-        data: { roomsAvailable: { decrement: roomsNeeded } }
-      })
+        if (hotel.roomsAvailable < roomsNeeded) {
+          return res.status(400).json({ message: `Only ${hotel.roomsAvailable} rooms available` })
+        }
+
+        newBooking = await prisma.booking.create({
+          data: {
+            userId,
+            type,
+            fromCity: hotel.name || hotel.city,
+            toCity: hotel.city,
+            departureDate: checkIn || departureDate,
+            returnDate: checkOut || returnDate,
+            travellers: { ...travellers, rooms: roomsNeeded, nights },
+            totalAmount,
+            bookingId,
+            pnr,
+            status: 'confirmed'
+          }
+        })
+
+        await prisma.hotel.update({
+          where: { id: hotelId },
+          data: { roomsAvailable: { decrement: roomsNeeded } }
+        })
+      } else {
+        // Create booking without hotel lookup (for payment page flow)
+        newBooking = await prisma.booking.create({
+          data: {
+            userId,
+            type,
+            fromCity: fromCity || 'Unknown Hotel',
+            toCity: toCity || '',
+            departureDate: checkIn || departureDate,
+            returnDate: checkOut || returnDate,
+            travellers,
+            totalAmount,
+            bookingId,
+            pnr,
+            status: 'confirmed'
+          }
+        })
+      }
     } else {
-      return res.status(400).json({ message: 'Valid flightId or hotelId required for the booking type' })
+      return res.status(400).json({ message: 'Valid booking type (flight or hotel) required' })
     }
 
-    sendBookingConfirmationEmail(newBooking)
+    sendBookingConfirmationEmail({
+      ...newBooking,
+      userEmail: userEmail || newBooking.userEmail,
+      userName: userName || newBooking.userName
+    })
 
     res.status(201).json({ success: true, data: newBooking })
   } catch (err) {
@@ -186,20 +217,6 @@ export const cancelBooking = async (req, res) => {
       where: { id },
       data: { status: 'cancelled' }
     })
-
-    if (booking.type === 'flight' && booking.flightId) {
-      const passengerCount = Array.isArray(booking.travellers) ? booking.travellers.length : (booking.travellers?.adults || 1) + (booking.travellers?.children || 0) + (booking.travellers?.infants || 0)
-      await prisma.flight.update({
-        where: { id: booking.flightId },
-        data: { seatsAvailable: { increment: passengerCount } }
-      })
-    } else if (booking.type === 'hotel' && booking.hotelId) {
-      const roomsBooked = booking.rooms || 1
-      await prisma.hotel.update({
-        where: { id: booking.hotelId },
-        data: { roomsAvailable: { increment: roomsBooked } }
-      })
-    }
 
     res.json({ success: true, data: updated, message: 'Booking cancelled successfully' })
   } catch (err) {

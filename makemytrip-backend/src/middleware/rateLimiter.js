@@ -6,8 +6,7 @@ export const authLimiter = rateLimit({
   message: 'Too many login attempts, please try again later',
   standardHeaders: true,
   legacyHeaders: false,
-  skip: (req) => process.env.NODE_ENV === 'test',
-  keyGenerator: (req) => req.ip || req.socket.remoteAddress
+  skip: (req) => process.env.NODE_ENV === 'test'
 })
 
 export const otpLimiter = rateLimit({

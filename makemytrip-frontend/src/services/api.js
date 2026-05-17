@@ -18,7 +18,10 @@ api.interceptors.response.use(
     const message = err.response?.data?.message || err.message || 'An error occurred'
     const error = new Error(message)
     error.status = err.response?.status || 500
-    error.data = err.response?.data
+    error.response = {
+      data: err.response?.data,
+      status: err.response?.status
+    }
     return Promise.reject(error)
   }
 )

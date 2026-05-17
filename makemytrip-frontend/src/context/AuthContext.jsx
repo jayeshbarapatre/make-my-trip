@@ -54,6 +54,9 @@ export function AuthProvider({ children }) {
         return userData
       }
       throw new Error('Invalid login payload returned from server.')
+    } catch (err) {
+      // Re-throw the error so the Login component can display it
+      throw err
     } finally {
       setLoading(false)
     }

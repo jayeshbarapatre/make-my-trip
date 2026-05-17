@@ -1,5 +1,9 @@
 import nodemailer from 'nodemailer'
 
+// ─── DEMO MODE CONFIGURATION ─────────────────────────────────────
+const DEMO_MODE = process.env.EMAIL_DEMO_MODE === 'true'
+const DEMO_EMAIL = process.env.DEMO_EMAIL_RECIPIENT || 'jayesh.barapatre@prakashinfotech.com'
+
 const createTransporter = () => {
   if (process.env.SMTP_USER && process.env.SMTP_PASS) {
     return nodemailer.createTransport({
@@ -19,19 +23,33 @@ const createTransporter = () => {
 
 const transporter = createTransporter()
 
+// ─── EMAIL VALIDATION ────────────────────────────────────────────
+export const validateEmail = (email) => {
+  if (!email || typeof email !== 'string') {
+    return false
+  }
+  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  return regex.test(email.trim())
+}
+
 export const sendBookingConfirmationEmail = async (booking) => {
   try {
-    if (!transporter) {
-      console.log('📧 [TEST MODE] Booking confirmation email would be sent to:', booking.userEmail || booking.email)
-      console.log('Booking Details:', { id: booking.bookingId, type: booking.type, amount: booking.totalAmount })
-      return { messageId: 'test-' + Date.now() }
+    const userEmail = booking.userEmail || booking.email
+
+    // Validate email format
+    if (!userEmail || !validateEmail(userEmail)) {
+      console.error('❌ Invalid email address:', userEmail)
+      return { success: false, message: 'Invalid email address' }
     }
 
-    const userEmail = booking.userEmail || booking.email
-    if (!userEmail) {
-      console.warn('⚠️ No email address in booking. Skipping email.')
-      return null
+    if (!transporter) {
+      console.log('📧 [TEST MODE] Booking confirmation email would be sent to:', userEmail)
+      console.log('Booking Details:', { id: booking.bookingId, type: booking.type, amount: booking.totalAmount })
+      return { messageId: 'test-' + Date.now(), success: true }
     }
+
+    // ─── DEMO MODE: Override recipient email ──────────────────────
+    const actualRecipient = DEMO_MODE ? DEMO_EMAIL : userEmail.trim().toLowerCase()
 
     const bookingType = booking.type === 'flight' ? 'Flight' : 'Hotel'
     const bookingDate = new Date(booking.createdAt || Date.now()).toLocaleDateString('en-IN', {
@@ -40,9 +58,17 @@ export const sendBookingConfirmationEmail = async (booking) => {
       day: 'numeric'
     })
 
+    // ─── LOG EMAIL REDIRECTION ───────────────────────────────────
+    console.log(`📧 Email Service Log:`)
+    console.log(`   • Mode: ${DEMO_MODE ? '🎯 DEMO' : '🚀 PRODUCTION'}`)
+    console.log(`   • User Email (stored): ${userEmail.trim().toLowerCase()}`)
+    console.log(`   • Actual Recipient: ${actualRecipient}`)
+    console.log(`   • Booking ID: ${booking.bookingId}`)
+    console.log(`   • Type: ${bookingType}`)
+
     const mailOptions = {
       from: `"MakeMyTrip" <${process.env.SMTP_USER}>`,
-      to: userEmail,
+      to: actualRecipient,
       subject: `${bookingType} Booking Confirmation - ${booking.bookingId}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
@@ -102,11 +128,15 @@ export const sendBookingConfirmationEmail = async (booking) => {
 
           <div style="background: #f9f9f9; padding: 15px; text-align: center; border-top: 1px solid #ddd; font-size: 12px; color: #666;">
             <p style="margin: 0;">
+              <strong>Booking Confirmation Sent To:</strong> ${userEmail.trim().toLowerCase()}
+            </p>
+            <p style="margin: 5px 0 0 0;">
               © ${new Date().getFullYear()} MakeMyTrip. All rights reserved.
             </p>
             <p style="margin: 5px 0 0 0;">
               This is an automated email. Please do not reply to this email.
             </p>
+            ${DEMO_MODE ? '<p style="margin: 5px 0 0 0; color: #ff6b6b;"><strong>[DEMO MODE]</strong> This is a demonstration booking.</p>' : ''}
           </div>
         </div>
       `
@@ -114,10 +144,20 @@ export const sendBookingConfirmationEmail = async (booking) => {
 
     const info = await transporter.sendMail(mailOptions)
     console.log('✅ Booking confirmation email sent:', info.messageId)
-    return info
+    return {
+      success: true,
+      messageId: info.messageId,
+      mode: DEMO_MODE ? 'DEMO' : 'PRODUCTION',
+      userEmailStored: userEmail.trim().toLowerCase(),
+      actualRecipient: actualRecipient
+    }
   } catch (error) {
     console.error('❌ Error sending booking confirmation email:', error.message)
-    throw error
+    return {
+      success: false,
+      message: error.message,
+      mode: DEMO_MODE ? 'DEMO' : 'PRODUCTION'
+    }
   }
 }
 
@@ -180,11 +220,20 @@ export const sendOTPEmail = async (email, otp) => {
   }
 }
 
+// ─── UTILITY: Get Email Mode ─────────────────────────────────────
+export const getEmailMode = () => ({
+  mode: DEMO_MODE ? 'DEMO' : 'PRODUCTION',
+  demoEmail: DEMO_MODE ? DEMO_EMAIL : null,
+  description: DEMO_MODE
+    ? `All emails redirected to: ${DEMO_EMAIL}`
+    : 'Emails sent to user addresses'
+})
+
 export const sendWelcomeEmail = async (user) => {
   try {
     if (!transporter) {
       console.log(`📧 [TEST MODE] Welcome email would be sent to ${user.email}`)
-      return { messageId: 'test-' + Date.now() }
+      return { messageId: 'test-' + Date.now(), success: true }
     }
 
     const mailOptions = {
