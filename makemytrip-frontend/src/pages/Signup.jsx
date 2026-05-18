@@ -1,10 +1,12 @@
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useToast } from '../hooks/useToast'
 
 export default function Signup({ onSwitchTab }) {
   const navigate = useNavigate()
   const { register } = useAuth()
+  const toast = useToast()
 
   const [form, setForm] = useState({ name: '', email: '', phone: '', password: '', confirmPassword: '' })
   const [error, setError] = useState('')
@@ -70,12 +72,16 @@ export default function Signup({ onSwitchTab }) {
         phone: form.phone,
         password: form.password
       })
-      navigate('/')
+      toast.success(`Welcome, ${form.name}! 🚀 Your account has been created successfully.`)
+      setTimeout(() => {
+        navigate('/')
+      }, 500)
     } catch (err) {
       console.error('Registration error:', err)
       const errorMessage = err?.response?.data?.message ||
                           err?.message ||
                           'Failed to register account. User might already exist.'
+      toast.error(errorMessage)
       setError(errorMessage)
     } finally {
       setLoading(false)

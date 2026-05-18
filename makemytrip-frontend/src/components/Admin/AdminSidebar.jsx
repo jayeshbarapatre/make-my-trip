@@ -5,16 +5,31 @@ import './AdminSidebar.css'
 const AdminSidebar = ({ isOpen, toggleSidebar }) => {
   const location = useLocation()
   const navigate = useNavigate()
-  const { logout } = useAdmin()
+  const { admin, logout } = useAdmin()
 
-  const menuItems = [
-    { path: '/admin/dashboard', label: 'Dashboard', icon: '📊' },
-    { path: '/admin/flights', label: 'Flights', icon: '✈️' },
-    { path: '/admin/hotels', label: 'Hotels', icon: '🏨' },
-    { path: '/admin/buses', label: 'Buses', icon: '🚌' },
-    { path: '/admin/cabs', label: 'Cabs', icon: '🚕' },
-    { path: '/admin/bookings', label: 'Bookings', icon: '📋' },
-    { path: '/admin/users', label: 'Users', icon: '👥' }
+  const menuSections = [
+    {
+      title: 'MAIN MENU',
+      items: [
+        { path: '/admin/dashboard', label: 'Dashboard', icon: 'fas fa-home' },
+        { path: '/admin/flights', label: 'Flights', icon: 'fas fa-plane' },
+        { path: '/admin/hotels', label: 'Hotels', icon: 'fas fa-hotel' }
+      ]
+    },
+    {
+      title: 'OPERATIONS',
+      items: [
+        { path: '/admin/buses', label: 'Buses', icon: 'fas fa-bus' },
+        { path: '/admin/cabs', label: 'Cabs', icon: 'fas fa-taxi' }
+      ]
+    },
+    {
+      title: 'MANAGEMENT',
+      items: [
+        { path: '/admin/bookings', label: 'Bookings', icon: 'fas fa-calendar-check' },
+        { path: '/admin/users', label: 'Users', icon: 'fas fa-users' }
+      ]
+    }
   ]
 
   const isActive = (path) => location.pathname === path
@@ -36,26 +51,43 @@ const AdminSidebar = ({ isOpen, toggleSidebar }) => {
               <span className="admin-logo-sub">Admin</span>
             </div>
           </div>
-          <button className="sidebar-close" onClick={toggleSidebar}>✕</button>
+          <button className="sidebar-close" onClick={toggleSidebar}>
+            <i className="fas fa-times"></i>
+          </button>
         </div>
 
         <nav className="sidebar-nav">
-          {menuItems.map(item => (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={`nav-item ${isActive(item.path) ? 'active' : ''}`}
-              onClick={toggleSidebar}
-            >
-              <span className="nav-icon">{item.icon}</span>
-              <span className="nav-label">{item.label}</span>
-            </Link>
+          {menuSections.map((section, idx) => (
+            <div key={idx} className="nav-section">
+              <div className="nav-section-label">{section.title}</div>
+              {section.items.map((item) => (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={`nav-item ${isActive(item.path) ? 'active' : ''}`}
+                  onClick={toggleSidebar}
+                >
+                  <i className={`nav-icon ${item.icon}`}></i>
+                  <span className="nav-label">{item.label}</span>
+                </Link>
+              ))}
+            </div>
           ))}
         </nav>
 
         <div className="sidebar-footer">
+          <div className="admin-user-info">
+            <div className="admin-avatar-small">
+              {admin?.name?.charAt(0).toUpperCase() || 'A'}
+            </div>
+            <div>
+              <div className="admin-name-small">{admin?.name || 'Admin'}</div>
+              <div className="admin-role">Administrator</div>
+            </div>
+          </div>
           <button className="logout-btn" onClick={handleLogout}>
-            🚪 Logout
+            <i className="fas fa-sign-out-alt"></i>
+            <span>Logout</span>
           </button>
         </div>
       </aside>

@@ -5,6 +5,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { logout as reduxLogout } from '../../store/reducers/authReducer'
 import { useAuth } from '../../context/AuthContext'
+import { useToast } from '../../hooks/useToast'
 import '../../styles/Hero.css' // Reuse typography and basic styling
 
 export default function Header() {
@@ -14,6 +15,7 @@ export default function Header() {
   const { user: reduxUser } = useSelector((s) => s.auth)
   const user = contextUser || reduxUser
   const dispatch = useDispatch()
+  const toast = useToast()
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const dropdownRef = useRef(null)
 
@@ -46,10 +48,13 @@ export default function Header() {
     try {
       if (contextLogout) await contextLogout()
       dispatch(reduxLogout())
+      toast.success('See you soon! Logged out successfully 👋')
+      setTimeout(() => {
+        navigate('/')
+      }, 500)
     } catch (e) {
       console.error(e)
-    } finally {
-      navigate('/')
+      toast.error('Failed to logout. Please try again.')
     }
   }
 

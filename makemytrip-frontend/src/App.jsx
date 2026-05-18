@@ -1,5 +1,6 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
+import { Toaster } from 'react-hot-toast'
 import AOS from 'aos'
 import 'aos/dist/aos.css'
 import Header from './components/Common/Header'
@@ -32,6 +33,7 @@ import VisaPage from './pages/VisaPage'
 import MyTrips from './pages/MyTrips'
 import Profile from './pages/Profile'
 import { AdminProvider } from './context/AdminContext'
+import { ThemeProvider } from './context/ThemeContext'
 import AdminLoginPage from './pages/AdminLoginPage'
 import AdminDashboard from './pages/AdminDashboard'
 import AdminFlights from './pages/AdminFlights'
@@ -54,12 +56,56 @@ function NotFound() {
   )
 }
 
+function RouteLoader() {
+  const location = useLocation()
+  const [isLoading, setIsLoading] = useState(false)
+
+  useEffect(() => {
+    setIsLoading(true)
+    const timer = setTimeout(() => setIsLoading(false), 500)
+    return () => clearTimeout(timer)
+  }, [location])
+
+  if (!isLoading) return null
+
+  return (
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(255, 255, 255, 0.8)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 9999,
+      animation: 'fadeIn 0.3s ease-out'
+    }}>
+      <style>{`
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .route-loader { animation: spin 1s linear infinite; }
+      `}</style>
+      <div className="route-loader" style={{
+        width: '50px',
+        height: '50px',
+        border: '4px solid #f3f3f3',
+        borderTop: '4px solid #003580',
+        borderRadius: '50%'
+      }} />
+    </div>
+  )
+}
+
 function AppContent() {
   const location = useLocation()
   const isAdminRoute = location.pathname.startsWith('/admin')
 
   return (
-    <AdminProvider>
+    <ThemeProvider>
+      <AdminProvider>
+      <RouteLoader />
       {!isAdminRoute && <Header />}
       <Routes>
         <Route path="/" element={<HomePage />} />
@@ -102,6 +148,7 @@ function AppContent() {
       </Routes>
       {!isAdminRoute && <Footer />}
     </AdminProvider>
+    </ThemeProvider>
   )
 }
 
@@ -117,6 +164,39 @@ function App() {
 
   return (
     <BrowserRouter>
+      <Toaster
+        position="top-center"
+        reverseOrder={false}
+        gutter={8}
+        containerClassName=""
+        containerStyle={{}}
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#fff',
+            color: '#333',
+            borderRadius: '8px',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+            fontSize: '14px',
+            fontWeight: '500',
+            padding: '12px 16px'
+          },
+          success: {
+            duration: 3000,
+            style: {
+              background: '#10b981',
+              color: 'white'
+            }
+          },
+          error: {
+            duration: 4000,
+            style: {
+              background: '#ef4444',
+              color: 'white'
+            }
+          }
+        }}
+      />
       <AppContent />
     </BrowserRouter>
   )

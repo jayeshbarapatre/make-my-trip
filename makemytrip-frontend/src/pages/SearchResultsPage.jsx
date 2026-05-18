@@ -640,6 +640,8 @@ export default function SearchResultsPage() {
                   <div
                     className="fc-card"
                     onClick={() => handleSelectFlight(flight)}
+                    data-aos="fade-up"
+                    data-aos-delay={idx * 50}
                   >
                     <div className="fc-main-row">
                       {/* Airline */}

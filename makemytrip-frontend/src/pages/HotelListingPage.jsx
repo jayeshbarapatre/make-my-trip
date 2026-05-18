@@ -1003,15 +1003,16 @@ export default function HotelListingPage() {
 
               {/* Active Results List */}
               <div className="results-list">
-                {visible.map(h => (
-                  <HotelCard 
-                    key={h.id} 
-                    h={h} 
-                    density={density} 
-                    wishlist={wishlist} 
-                    toggleWishlist={toggleWishlist}
-                    onSelectHotel={handleSelectHotel}
-                  />
+                {visible.map((h, idx) => (
+                  <div key={h.id} data-aos="fade-up" data-aos-delay={idx * 50}>
+                    <HotelCard
+                      h={h}
+                      density={density}
+                      wishlist={wishlist}
+                      toggleWishlist={toggleWishlist}
+                      onSelectHotel={handleSelectHotel}
+                    />
+                  </div>
                 ))}
 
                 {/* Shimmer loading list items */}
