@@ -669,22 +669,68 @@
 }
 
 /* ── Offers ─────────────────────────────────────────────────── */
-.hp-offers-scroll {
+.hp-offers-controls {
   display: flex;
-  gap: 24px;
-  overflow-x: auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.hp-offer-nav {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.hp-offer-nav-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 2px solid var(--hp-muted);
+  background: #fff;
+  color: var(--hp-dark);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 0;
+  line-height: 1;
+}
+
+.hp-offer-nav-icon {
+  width: 20px;
+  height: 20px;
+  display: block;
+  pointer-events: none;
+}
+
+.hp-offer-nav-btn:hover {
+  background: var(--hp-dark);
+  border-color: var(--hp-dark);
+  transform: scale(1.08);
+}
+
+.hp-offer-nav-btn:hover .hp-offer-nav-icon {
+  filter: brightness(0) invert(1);
+}
+
+.hp-offer-nav-btn:active {
+  transform: scale(0.96);
+}
+
+.hp-offers-swiper {
+  overflow: visible;
   padding-bottom: 20px;
-  scroll-snap-type: x mandatory;
-  scrollbar-width: thin;
 }
 
-.hp-offers-scroll::-webkit-scrollbar {
-  height: 8px;
+.hp-offers-swiper .swiper-slide {
+  width: auto;
+  height: auto;
 }
 
-.hp-offers-scroll::-webkit-scrollbar-thumb {
-  background: var(--hp-muted);
-  border-radius: 4px;
+.hp-offer-slide {
+  display: flex;
 }
 
 .hp-offer-card {
@@ -2258,6 +2304,26 @@
   .hp-hotels-list {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  .hp-sec-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .hp-offers-controls {
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+  }
+
+  .hp-offer-nav {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .hp-offer-card {
+    flex: 0 0 280px;
+  }
 }
 
 @media (max-width: 560px) {
@@ -2268,5 +2334,15 @@
 
   .hp-hotels-list {
     grid-template-columns: 1fr;
+  }
+
+  .hp-offer-nav-btn {
+    width: 38px;
+    height: 38px;
+    font-size: 20px;
+  }
+
+  .hp-offer-card {
+    flex: 0 0 calc(100vw - 56px);
   }
 }

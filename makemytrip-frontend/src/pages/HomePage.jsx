@@ -5,11 +5,17 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import AOS from 'aos'
 import 'aos/dist/aos.css'
+import { Swiper, SwiperSlide } from 'swiper/react'
+import { Navigation } from 'swiper/modules'
+import 'swiper/css'
+import 'swiper/css/navigation'
 import { setCriteria } from '../store/reducers/searchReducer'
 import { SERVICE_TABS } from '../data/homepageData'
 import { CITIES } from '../data/cities'
 import { flightService } from '../services/flightService'
 import CustomCalendarPicker from '../components/CustomCalendarPicker'
+import ChevronLeft from '../assets/chevron-left.svg'
+import ChevronRight from '../assets/chevron-right.svg'
 import '../styles/HomePage.css'
 import '../styles/Hero.css'
 
@@ -747,22 +753,43 @@ export default function HomePage() {
               <h2>Offers &amp; deals</h2>
               <div className="hp-sec-sub">Limited-time savings curated for you</div>
             </div>
-            <a href="#offers" className="hp-see-all">View all offers →</a>
-          </div>
-          <div className="hp-offers-scroll">
-            {OFFERS.map((o, idx) => (
-              <div key={o.type} className="hp-offer-card" data-aos="fade-up" data-aos-delay={idx * 100}>
-                <div className={`hp-offer-img hp-offer-${o.type}`}>
-                  <span className="hp-offer-tag">{o.tag}</span>
-                </div>
-                <div className="hp-offer-body">
-                  <h3>{o.title}</h3>
-                  <p>{o.desc}</p>
-                  <button className="hp-offer-btn">{o.cta}</button>
-                </div>
+            <div className="hp-offers-controls">
+              <a href="#offers" className="hp-see-all">View all offers →</a>
+              <div className="hp-offer-nav">
+                <button className="hp-offer-nav-btn hp-offer-prev" aria-label="Previous offer">
+                  <img src={ChevronLeft} alt="Previous" className="hp-offer-nav-icon" />
+                </button>
+                <button className="hp-offer-nav-btn hp-offer-next" aria-label="Next offer">
+                  <img src={ChevronRight} alt="Next" className="hp-offer-nav-icon" />
+                </button>
               </div>
-            ))}
+            </div>
           </div>
+          <Swiper
+            modules={[Navigation]}
+            navigation={{
+              nextEl: '.hp-offer-next',
+              prevEl: '.hp-offer-prev',
+            }}
+            spaceBetween={24}
+            slidesPerView="auto"
+            className="hp-offers-swiper"
+          >
+            {OFFERS.map((o, idx) => (
+              <SwiperSlide key={o.type} className="hp-offer-slide">
+                <div className="hp-offer-card" data-aos="fade-up" data-aos-delay={idx * 100}>
+                  <div className={`hp-offer-img hp-offer-${o.type}`}>
+                    <span className="hp-offer-tag">{o.tag}</span>
+                  </div>
+                  <div className="hp-offer-body">
+                    <h3>{o.title}</h3>
+                    <p>{o.desc}</p>
+                    <button className="hp-offer-btn">{o.cta}</button>
+                  </div>
+                </div>
+              </SwiperSlide>
+            ))}
+          </Swiper>
         </div>
       </section>
 
