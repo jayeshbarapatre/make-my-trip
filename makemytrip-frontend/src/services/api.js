@@ -1,4 +1,4 @@
-import axios from 'axios'
+﻿import axios from 'axios'
 import { API_BASE_URL, API_TIMEOUT } from '../config/api.config'
 
 const api = axios.create({
@@ -27,3 +27,4 @@ api.interceptors.response.use(
 )
 
 export default api
+

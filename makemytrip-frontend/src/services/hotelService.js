@@ -1,4 +1,4 @@
-import api from './api'
+﻿import api from './api'
 
 export const searchHotels = async (params) => {
   return await api.get('/hotels/search', { params })
@@ -15,3 +15,4 @@ export const getHotelImages = async (hotelId) => {
 export const updateHotelImages = async (hotelId, imageUrls) => {
   return await api.put(`/admin/hotels/${hotelId}/images`, { imageUrls })
 }
+

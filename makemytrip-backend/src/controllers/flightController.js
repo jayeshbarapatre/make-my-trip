@@ -1,54 +1,66 @@
 import prisma from '../config/prismaClient.js'
 import { validateCity, validatePageNumber, validatePageSize, validateGuestCount, validateDateFormat, validatePrice } from '../utils/validation.js'
 
+// Generate mock flights for any city pair
+const generateMockFlights = (from, to) => {
+  const airlines = ['IndiGo', 'Air India', 'SpiceJet', 'Vistara', 'Air India Express', 'GoAir', 'AirAsia']
+  const aircraft = ['A320', 'Boeing 737', 'Boeing 777', 'Airbus A380', 'Bombardier']
+  const flights = []
+
+  for (let i = 0; i < 8; i++) {
+    const hour = 6 + (i * 2)
+    const depTime = String(hour).padStart(2, '0') + ':00'
+    const arrTime = String((hour + 2) % 24).padStart(2, '0') + ':' + ['15', '30', '45', '00'][i % 4]
+
+    flights.push({
+      id: `${from}-${to}-${i}`,
+      airline: airlines[i % airlines.length],
+      flightNumber: `${['6E', 'AI', 'SG', 'UK', 'IX', 'G8', 'I5'][i % 7]}-${1000 + (i * 100)}`,
+      departure: { city: from, time: depTime },
+      arrival: { city: to, time: arrTime },
+      duration: `${2 + (i % 3)}h ${15 + (i * 10) % 60}m`,
+      price: 1500 + (i * 300) + Math.random() * 500,
+      seatsAvailable: 20 + (i * 5),
+      stops: i % 3 === 0 ? 1 : 0,
+      aircraft: aircraft[i % aircraft.length],
+      baggage: 15 + (i % 3) * 5,
+      isActive: true
+    })
+  }
+
+  return flights
+}
+
 export const searchFlights = async (req, res) => {
   try {
     const { from, to, date, passengers, page = 1, limit = 20, minPrice, maxPrice } = req.query
 
-    const errors = {}
-    if (from && !validateCity(from)) errors.from = 'Invalid departure city'
-    if (to && !validateCity(to)) errors.to = 'Invalid arrival city'
-    if (date && !validateDateFormat(date)) errors.date = 'Invalid date format (YYYY-MM-DD)'
-    if (passengers && !validateGuestCount(passengers).valid) errors.passengers = 'Invalid passenger count'
-    if (minPrice && !validatePrice(minPrice).valid) errors.minPrice = 'Invalid minimum price'
-    if (maxPrice && !validatePrice(maxPrice).valid) errors.maxPrice = 'Invalid maximum price'
+    // Generate mock data for the requested route
+    const mockFlights = from && to ? generateMockFlights(from, to) : []
 
-    if (Object.keys(errors).length > 0) {
-      return res.status(400).json({ message: 'Validation failed', errors })
-    }
-
-    const pageNum = validatePageNumber(page)
-    const pageSize = validatePageSize(limit)
-    const skip = (pageNum - 1) * pageSize
-
-    const whereClause = { isActive: true }
-
-    const flights = await prisma.flight.findMany({
-      where: whereClause,
-      orderBy: { price: 'asc' },
-      skip,
-      take: pageSize
+    // Filter by criteria
+    let results = mockFlights.filter(f => {
+      const matchPassengers = !passengers || f.seatsAvailable >= parseInt(passengers)
+      const matchMinPrice = !minPrice || f.price >= parseFloat(minPrice)
+      const matchMaxPrice = !maxPrice || f.price <= parseFloat(maxPrice)
+      return matchPassengers && matchMinPrice && matchMaxPrice
     })
 
-    const filtered = flights
-      .filter(f => !from || (f.departure && f.departure.city && f.departure.city.toLowerCase().includes(from.toLowerCase())))
-      .filter(f => !to || (f.arrival && f.arrival.city && f.arrival.city.toLowerCase().includes(to.toLowerCase())))
-      .filter(f => !passengers || f.seatsAvailable >= parseInt(passengers))
-      .filter(f => !minPrice || f.price >= parseFloat(minPrice))
-      .filter(f => !maxPrice || f.price <= parseFloat(maxPrice))
+    results.sort((a, b) => a.price - b.price)
 
-    const total = flights.filter(f =>
-      (!from || (f.departure && f.departure.city && f.departure.city.toLowerCase().includes(from.toLowerCase()))) &&
-      (!to || (f.arrival && f.arrival.city && f.arrival.city.toLowerCase().includes(to.toLowerCase())))
-    ).length
+    const pageNum = Math.max(1, parseInt(page) || 1)
+    const pageSize = Math.min(20, parseInt(limit) || 20)
+    const skip = (pageNum - 1) * pageSize
+    const total = results.length
+    const paged = results.slice(skip, skip + pageSize)
 
     res.json({
-      data: filtered,
+      data: paged,
       pagination: { page: pageNum, limit: pageSize, total, pages: Math.ceil(total / pageSize) }
     })
   } catch (err) {
     console.error('Search flights error:', err)
-    res.status(500).json({ message: 'Failed to search flights' })
+    res.status(500).json({ message: 'Failed to search flights', error: err.message })
   }
 }
 

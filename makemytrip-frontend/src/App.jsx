@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import AOS from 'aos'
@@ -47,9 +47,9 @@ import ProtectedAdminRoute from './components/Admin/ProtectedAdminRoute'
 function NotFound() {
   return (
     <div style={{ padding: '40px', textAlign: 'center', minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-      <h1>404 — Page Not Found</h1>
+      <h1>404 â€” Page Not Found</h1>
       <p>Sorry, the page you're looking for doesn't exist.</p>
-      <a href="/" style={{ marginTop: '20px', padding: '10px 20px', backgroundColor: '#003580', color: 'white', textDecoration: 'none', borderRadius: '4px' }}>
+      <a href="/" style={{ marginTop: '20px', padding: '10px 20px', backgroundColor: 'hsl(var(--p))', color: 'hsl(var(--pc))', textDecoration: 'none', borderRadius: '4px' }}>
         Return to Home
       </a>
     </div>
@@ -90,8 +90,8 @@ function RouteLoader() {
       <div className="route-loader" style={{
         width: '50px',
         height: '50px',
-        border: '4px solid #f3f3f3',
-        borderTop: '4px solid #003580',
+        border: '4px solid hsl(var(--b2))',
+        borderTop: '4px solid hsl(var(--p))',
         borderRadius: '50%'
       }} />
     </div>
@@ -101,6 +101,12 @@ function RouteLoader() {
 function AppContent() {
   const location = useLocation()
   const isAdminRoute = location.pathname.startsWith('/admin')
+
+  // Initialize theme on mount
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('daisyui-theme') || 'business'
+    document.documentElement.setAttribute('data-theme', savedTheme)
+  }, [])
 
   return (
     <ThemeProvider>
@@ -173,8 +179,8 @@ function App() {
         toastOptions={{
           duration: 4000,
           style: {
-            background: '#fff',
-            color: '#333',
+            background: 'hsl(var(--b1))',
+            color: 'hsl(var(--bc))',
             borderRadius: '8px',
             boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
             fontSize: '14px',
@@ -184,15 +190,15 @@ function App() {
           success: {
             duration: 3000,
             style: {
-              background: '#10b981',
-              color: 'white'
+              background: 'hsl(var(--su))',
+              color: 'hsl(var(--pc))'
             }
           },
           error: {
             duration: 4000,
             style: {
-              background: '#ef4444',
-              color: 'white'
+              background: 'hsl(var(--er))',
+              color: 'hsl(var(--pc))'
             }
           }
         }}
@@ -203,6 +209,8 @@ function App() {
 }
 
 export default App
+
+
 
 
 

@@ -1,12 +1,12 @@
-/* ═══════════════════════════════════════════════════════════
-   Flight Search Results Page — FlightResults.css
+﻿/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   Flight Search Results Page â€” FlightResults.css
    All values via design-tokens.css (loaded in index.css)
-═══════════════════════════════════════════════════════════ */
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
-/* ── Page shell ─────────────────────────────────────────── */
+/* â”€â”€ Page shell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .fr-page { background: var(--clr-bg-base); min-height: 100vh; }
 
-/* ═══════════════ COMPACT SEARCH BAR ═══════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• COMPACT SEARCH BAR â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 .fr-search-bar-wrapper {
   background: var(--clr-primary-dark);
   padding: var(--sp-s) 0;
@@ -103,7 +103,7 @@
 }
 .fr-search-btn:hover { background: var(--clr-primary-hover); }
 
-/* ── Trip-type dropdown ──────────────────────────────────── */
+/* â”€â”€ Trip-type dropdown â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .fr-trip-type-wrapper {
   position: relative;
   flex-shrink: 0;
@@ -132,7 +132,7 @@
   position: absolute;
   top: calc(100% + 6px);
   left: 0;
-  background: #fff;
+  background: hsl(var(--b1));
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);
   z-index: 200;
@@ -153,14 +153,14 @@
 .fr-qty-btn {
   width: 28px; height: 28px; border-radius: 50%;
   border: 1.5px solid var(--clr-primary);
-  background: #fff; color: var(--clr-primary);
+  background: hsl(var(--b1)); color: var(--clr-primary);
   font-size: 16px; font-weight: 700;
   cursor: pointer; display: flex; align-items: center; justify-content: center;
   line-height: 1; transition: var(--transition-fast);
 }
-.fr-qty-btn:hover { background: var(--clr-primary); color: #fff; }
+.fr-qty-btn:hover { background: var(--clr-primary); color: hsl(var(--b1)); }
 
-/* ── City field with inline input ───────────────────────── */
+/* â”€â”€ City field with inline input â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .fr-city-field { position: relative; }
 .fr-field-input {
   border: none;
@@ -181,7 +181,7 @@
   top: calc(100% + 4px);
   left: 0;
   min-width: 320px;
-  background: #fff;
+  background: hsl(var(--b1));
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);
   border: 1px solid var(--clr-border);
@@ -211,7 +211,7 @@
   flex-shrink: 0;
 }
 
-/* ── Date field ─────────────────────────────────────────── */
+/* â”€â”€ Date field â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .fr-date-field { flex: 0 0 auto; }
 .fr-date-input {
   border: none;
@@ -228,7 +228,7 @@
 }
 .fr-date-input::-webkit-calendar-picker-indicator { cursor: pointer; opacity: 0.6; }
 
-/* ═══════════════ ROUTE HEADING ════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• ROUTE HEADING â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 .fr-route-section {
   background: var(--clr-primary-dark);
   padding: var(--sp-xs) 0 var(--sp-s);
@@ -249,7 +249,7 @@
   color: rgba(255,255,255,0.72);
 }
 
-/* ═══════════════ MAIN LAYOUT ══════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• MAIN LAYOUT â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 .fr-layout {
   max-width: var(--max-width);
   margin: var(--sp-s) auto var(--sp-xl);
@@ -259,7 +259,7 @@
   align-items: flex-start;
 }
 
-/* ═══════════════ FILTER SIDEBAR ═══════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• FILTER SIDEBAR â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 .fr-sidebar {
   width: 260px;
   flex-shrink: 0;
@@ -407,7 +407,7 @@
   margin-top: 2px;
 }
 
-/* ═══════════════ MAIN CONTENT ═════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• MAIN CONTENT â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 .fr-main { flex: 1; min-width: 0; }
 .fr-results-header {
   display: flex;
@@ -421,7 +421,7 @@
 }
 .fr-results-count strong { color: var(--clr-text-primary); }
 
-/* ═══════════════ SORT BAR ═════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• SORT BAR â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 .fr-sort-bar {
   display: flex;
   background: var(--clr-bg-white);
@@ -464,7 +464,7 @@
 }
 .fr-sort-tab.active .fr-sort-value { color: var(--clr-primary); }
 
-/* ═══════════════ FLIGHT CARDS ═════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• FLIGHT CARDS â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 .fr-flights-list { display: flex; flex-direction: column; gap: 1px; }
 
 .fc-card {
@@ -722,7 +722,7 @@
   font-weight: var(--fw-bold);
 }
 
-/* ═══════════════ PROMO BANNERS ════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• PROMO BANNERS â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 .fr-promo-wrapper { margin: var(--sp-xs) 0; }
 .fr-promo-banner {
   border-radius: var(--radius-sm);
@@ -817,7 +817,7 @@
 }
 .fr-coupon:hover { background: rgba(255,255,255,0.24); }
 
-/* ═══════════════ RESPONSIVE ════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• RESPONSIVE â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 @media (max-width: 1024px) {
   .fr-sidebar      { width: 240px; }
   .fc-airline-col  { width: 120px; }
@@ -848,7 +848,7 @@
   .fr-layout { padding: var(--sp-s); }
 }
 
-/* ── Custom Dropdown Styles ── */
+/* â”€â”€ Custom Dropdown Styles â”€â”€ */
 .fr-trip-type-wrapper:hover .fr-trip-type-dropdown-trigger {
   background: rgba(255,255,255,0.2);
 }
@@ -864,7 +864,7 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* ── Custom Modals (Login & Alerts) ─────────────────────── */
+/* â”€â”€ Custom Modals (Login & Alerts) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .custom-modal-overlay {
   position: fixed;
   inset: 0;
@@ -878,7 +878,7 @@
 }
 
 .custom-login-card, .custom-alert-card {
-  background: #fff;
+  background: hsl(var(--b1));
   border-radius: 20px;
   width: 90%;
   max-width: 440px;
@@ -940,7 +940,7 @@
   margin-bottom: 24px;
   text-align: center;
   font-weight: 600;
-  border: 1px solid #fee2e2;
+  border: 1px solid hsl(var(--erc));
 }
 
 .custom-input-group { margin-bottom: 24px; }
@@ -983,7 +983,7 @@
 .custom-login-btn, .custom-verify-btn, .custom-alert-btn-confirm {
   width: 100%;
   background: var(--clr-primary);
-  color: #fff;
+  color: hsl(var(--b1));
   border: none;
   border-radius: 12px;
   padding: 16px;
@@ -1031,7 +1031,7 @@
   display: block;
   text-align: center;
   font-size: 12px;
-  color: #059669;
+  color: hsl(var(--su));
   margin-top: 10px;
   font-weight: 600;
 }
@@ -1066,3 +1066,5 @@
   from { opacity: 0; transform: translateY(30px) scale(0.95); }
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
+
+

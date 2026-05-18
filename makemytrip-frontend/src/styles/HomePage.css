@@ -1,26 +1,26 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap');
 
-/* ── Root + design tokens (Awwwards Premium Masterpiece) ─────── */
+/* ── Root + design tokens (DaisyUI Theme-Responsive) ─────── */
 :root,
 .hp-root {
-  --hp-dark: #0A1128;
-  --hp-dark-2: #1C2541;
-  --hp-accent: #FFB703;
-  --hp-accent-2: #FB8500;
-  --hp-primary: #EB2026;
-  --hp-primary-glow: rgba(235, 32, 38, 0.35);
-  --hp-muted: #64748B;
-  --hp-line: #E2E8F0;
-  --hp-bg: #F8FAFC;
+  --hp-dark: hsl(var(--b2));
+  --hp-dark-2: hsl(var(--b3));
+  --hp-accent: hsl(var(--a));
+  --hp-accent-2: hsl(var(--p));
+  --hp-primary: hsl(var(--p));
+  --hp-primary-glow: hsla(var(--p), 0.35);
+  --hp-muted: hsl(var(--bc) / 0.6);
+  --hp-line: hsl(var(--b3));
+  --hp-bg: hsl(var(--b1));
   --hp-r: 20px;
-  --hp-sh-sm: 0 4px 16px rgba(10, 17, 40, 0.06);
-  --hp-sh-md: 0 10px 30px rgba(10, 17, 40, 0.1);
-  --hp-sh-lg: 0 25px 60px rgba(10, 17, 40, 0.16);
-  --hp-sh-glass: 0 30px 80px rgba(10, 17, 40, 0.22);
+  --hp-sh-sm: 0 4px 16px hsla(var(--b2) / 0.06);
+  --hp-sh-md: 0 10px 30px hsla(var(--b2) / 0.1);
+  --hp-sh-lg: 0 25px 60px hsla(var(--b2) / 0.16);
+  --hp-sh-glass: 0 30px 80px hsla(var(--b2) / 0.22);
 
   font-family: "Space Grotesk", -apple-system, BlinkMacSystemFont, sans-serif;
   background: var(--hp-bg);
-  color: var(--hp-dark);
+  color: hsl(var(--bc));
   font-size: 14px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
@@ -38,12 +38,12 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(10, 17, 40, 0.85);
+  background: hsla(var(--b1), 0.85);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  color: #fff;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  color: hsl(var(--bc));
+  border-bottom: 1px solid hsl(var(--b3));
+  box-shadow: 0 10px 30px hsla(var(--b2) / 0.2);
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -60,7 +60,7 @@
   gap: 12px;
   margin-right: 32px;
   text-decoration: none;
-  color: #fff;
+  color: hsl(var(--bc));
   transition: transform 0.2s ease;
 }
 
@@ -73,7 +73,7 @@
   height: 40px;
   border-radius: 12px;
   background: linear-gradient(135deg, var(--hp-accent), var(--hp-accent-2));
-  color: #0A1128;
+  color: hsl(var(--b1));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -81,7 +81,7 @@
   font-size: 20px;
   letter-spacing: -1px;
   position: relative;
-  box-shadow: 0 6px 16px rgba(251, 133, 0, 0.35);
+  box-shadow: 0 6px 16px hsla(var(--p), 0.35);
 }
 
 .hp-logo-mark::after {
@@ -93,14 +93,14 @@
   height: 14px;
   border-radius: 50%;
   background: var(--hp-primary);
-  box-shadow: 0 0 0 3px #0A1128;
+  box-shadow: 0 0 0 3px hsl(var(--b1));
 }
 
 .hp-logo-text {
   line-height: 1.15;
   font-weight: 800;
   font-size: 16px;
-  color: #fff;
+  color: hsl(var(--bc));
   letter-spacing: -0.02em;
 }
 
@@ -124,21 +124,21 @@
   border-radius: 8px;
   font-size: 13.5px;
   font-weight: 600;
-  color: rgba(255, 255, 255, .75);
+  color: hsl(var(--bc) / 0.75);
   transition: all .2s cubic-bezier(0.16, 1, 0.3, 1);
   text-decoration: none;
 }
 
 .hp-nav-menu a:hover {
-  color: #fff;
-  background: rgba(255, 255, 255, .1);
+  color: hsl(var(--bc));
+  background: hsl(var(--b2) / 0.1);
   transform: translateY(-1px);
 }
 
 .hp-nav-menu a.hp-active {
   color: var(--hp-accent);
-  background: rgba(255, 183, 3, .12);
-  border: 1px solid rgba(255, 183, 3, .2);
+  background: hsla(var(--a) / 0.12);
+  border: 1px solid hsla(var(--a) / 0.2);
 }
 
 .hp-nav-right {
@@ -152,14 +152,14 @@
   border-radius: 8px;
   font-size: 13px;
   font-weight: 600;
-  color: rgba(255, 255, 255, .8);
+  color: hsl(var(--bc) / 0.8);
   transition: all .2s ease;
   text-decoration: none;
 }
 
 .hp-nav-right a:hover {
-  color: #fff;
-  background: rgba(255, 255, 255, .1);
+  color: hsl(var(--bc));
+  background: hsl(var(--b2) / 0.1);
 }
 
 .hp-lang-btn {
@@ -167,7 +167,7 @@
   align-items: center;
   gap: 8px;
   padding: 8px 14px !important;
-  border: 1px solid rgba(255, 255, 255, .2) !important;
+  border: 1px solid hsl(var(--b3)) !important;
   border-radius: 8px;
   font-size: 12px !important;
   font-weight: 600;
@@ -175,17 +175,17 @@
 
 .hp-nav-cta {
   background: linear-gradient(135deg, var(--hp-accent), var(--hp-accent-2)) !important;
-  color: #0A1128 !important;
+  color: hsl(var(--b1)) !important;
   font-weight: 800 !important;
   padding: 10px 20px !important;
   border-radius: 8px;
-  box-shadow: 0 6px 15px rgba(251, 133, 0, 0.25);
+  box-shadow: 0 6px 15px hsla(var(--p), 0.25);
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .hp-nav-cta:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(251, 133, 0, 0.4);
+  box-shadow: 0 10px 20px hsla(var(--p), 0.4);
 }
 
 .hp-flag {
@@ -199,9 +199,9 @@
 /* ── Hero ───────────────────────────────────────────────────── */
 .hp-hero {
   position: relative;
-  color: #fff;
+  color: hsl(var(--bc));
   background:
-    linear-gradient(180deg, rgba(10, 17, 40, 0.88) 0%, rgba(10, 17, 40, 0.65) 50%, rgba(248, 250, 252, 1) 100%),
+    linear-gradient(180deg, hsla(var(--b1), 0.88) 0%, hsla(var(--b1), 0.65) 50%, hsl(var(--b1)) 100%),
     url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=1920&q=80') center / cover no-repeat;
   padding: 60px 0 140px;
   overflow: visible;
@@ -213,11 +213,11 @@
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(3px 3px at 15% 20%, rgba(255, 255, 255, .7), transparent),
-    radial-gradient(2px 2px at 80% 30%, rgba(255, 255, 255, .5), transparent),
-    radial-gradient(2.5px 2.5px at 38% 12%, rgba(255, 255, 255, .6), transparent),
-    radial-gradient(2px 2px at 88% 18%, rgba(255, 255, 255, .65), transparent),
-    radial-gradient(3px 3px at 25% 35%, rgba(255, 183, 3, .45), transparent);
+    radial-gradient(3px 3px at 15% 20%, hsla(var(--bc), 0.7), transparent),
+    radial-gradient(2px 2px at 80% 30%, hsla(var(--bc), 0.5), transparent),
+    radial-gradient(2.5px 2.5px at 38% 12%, hsla(var(--bc), 0.6), transparent),
+    radial-gradient(2px 2px at 88% 18%, hsla(var(--bc), 0.65), transparent),
+    radial-gradient(3px 3px at 25% 35%, hsla(var(--a), 0.45), transparent);
 }
 
 .hp-plane {
@@ -246,7 +246,7 @@
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  background: rgba(255, 255, 255, .1);
+  background: hsl(var(--b2) / 0.1);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   padding: 8px 18px;
@@ -255,10 +255,10 @@
   font-weight: 700;
   letter-spacing: .1em;
   text-transform: uppercase;
-  border: 1px solid rgba(255, 255, 255, .2);
+  border: 1px solid hsl(var(--b3));
   margin-bottom: 20px;
-  color: #fff;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  color: hsl(var(--bc));
+  box-shadow: 0 8px 20px hsla(var(--b2) / 0.15);
 }
 
 .hp-dot-gold {
@@ -275,16 +275,16 @@
   font-weight: 800;
   line-height: 1.12;
   letter-spacing: -.03em;
-  color: #fff;
-  text-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  color: hsl(var(--bc));
+  text-shadow: 0 10px 30px hsla(var(--b2) / 0.3);
 }
 
 .hp-hero h1 span {
-  background: linear-gradient(135deg, #FFB703 0%, #FF7B00 100%);
+  background: linear-gradient(135deg, var(--hp-accent) 0%, var(--hp-accent-2) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  filter: drop-shadow(0 4px 12px rgba(255,183,3,0.3));
+  filter: drop-shadow(0 4px 12px hsla(var(--a), 0.3));
 }
 
 .hp-hero-sub {
@@ -292,29 +292,29 @@
   opacity: .9;
   max-width: 680px;
   margin: 0 auto 40px;
-  color: #E2E8F0;
+  color: hsl(var(--bc) / 0.8);
   font-weight: 400;
   line-height: 1.5;
 }
 
 /* ── Booking widget (Floating Glassmorphic Slab) ────────────── */
 .hp-booker {
-  background: rgba(255, 255, 255, 0.96);
+  background: hsl(var(--b1) / 0.96);
   backdrop-filter: blur(30px);
   -webkit-backdrop-filter: blur(30px);
-  color: var(--hp-dark);
+  color: hsl(var(--bc));
   border-radius: 24px;
-  box-shadow: var(--hp-sh-glass), 0 0 0 1px rgba(255, 255, 255, 0.8) inset;
+  box-shadow: var(--hp-sh-glass), 0 0 0 1px hsl(var(--b2) / 0.8) inset;
   max-width: 1180px;
   margin: 0 auto;
   text-align: left;
-  border: 1px solid rgba(226, 232, 240, 0.8);
+  border: 1px solid hsl(var(--b3));
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .hp-booker:hover {
   transform: translateY(-4px);
-  box-shadow: 0 35px 90px rgba(10, 17, 40, 0.28), 0 0 0 1px rgba(255, 255, 255, 0.95) inset;
+  box-shadow: 0 35px 90px hsla(var(--b2) / 0.28), 0 0 0 1px hsl(var(--b2) / 0.95) inset;
 }
 
 .hp-booker-tabs {
@@ -388,15 +388,15 @@
 }
 
 .hp-trip-btn:hover {
-  color: var(--hp-dark);
-  background: rgba(241, 245, 249, 0.8);
+  color: hsl(var(--bc));
+  background: hsl(var(--b2) / 0.8);
 }
 
 .hp-radio-dot {
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  border: 2px solid #CBD5E1;
+  border: 2px solid hsl(var(--b3));
   display: inline-block;
   position: relative;
   flex-shrink: 0;
@@ -404,8 +404,8 @@
 }
 
 .hp-trip-btn.hp-trip-on {
-  color: var(--hp-dark);
-  background: rgba(235, 32, 38, 0.06);
+  color: hsl(var(--bc));
+  background: hsl(var(--p) / 0.06);
 }
 
 .hp-trip-btn.hp-trip-on .hp-radio-dot {
@@ -426,14 +426,14 @@
   grid-template-columns: 1.4fr 1.4fr 1fr 1fr 1.2fr auto;
   border: 1px solid var(--hp-line);
   border-radius: 16px;
-  background: #fff;
-  box-shadow: 0 8px 24px rgba(10, 17, 40, 0.04);
+  background: hsl(var(--b1));
+  box-shadow: 0 8px 24px hsla(var(--b2) / 0.04);
   transition: all 0.3s ease;
 }
 
 .hp-grid:hover {
-  box-shadow: 0 12px 32px rgba(10, 17, 40, 0.08);
-  border-color: #CBD5E1;
+  box-shadow: 0 12px 32px hsla(var(--b2) / 0.08);
+  border-color: hsl(var(--b3));
 }
 
 .hp-field:first-of-type {
@@ -763,13 +763,7 @@
 }
 
 .hp-offer-flight::before {
-  content: '✈';
-  position: absolute;
-  top: 60px;
-  left: 40px;
-  font-size: 80px;
-  color: rgba(255, 255, 255, .25);
-  transform: rotate(-25deg);
+  display: none;
 }
 
 .hp-offer-hotel {
@@ -777,13 +771,7 @@
 }
 
 .hp-offer-hotel::before {
-  content: '🏨';
-  position: absolute;
-  top: 50px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 64px;
-  opacity: .4;
+  display: none;
 }
 
 .hp-offer-luxury {
@@ -791,11 +779,7 @@
 }
 
 .hp-offer-luxury::before {
-  content: '🌅';
-  position: absolute;
-  top: 30px;
-  right: 20px;
-  font-size: 48px;
+  display: none;
 }
 
 .hp-offer-beach {
@@ -803,11 +787,7 @@
 }
 
 .hp-offer-beach::before {
-  content: '🌴';
-  position: absolute;
-  bottom: 10px;
-  left: 30px;
-  font-size: 64px;
+  display: none;
 }
 
 .hp-offer-cab {
@@ -815,12 +795,7 @@
 }
 
 .hp-offer-cab::before {
-  content: '🚖';
-  position: absolute;
-  top: 50px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 72px;
+  display: none;
 }
 
 .hp-offer-tag {

@@ -135,7 +135,7 @@ export default function SearchResultsPage() {
   }
 
   // Auto-sync search criteria for the booking details wizard
-  useState(() => {
+  useEffect(() => {
     try {
       const totalCount = parseInt(criteria.passengers, 10) || 1
       const savedTravellers = {
@@ -148,7 +148,7 @@ export default function SearchResultsPage() {
     } catch (e) {
       console.error(e)
     }
-  })
+  }, [criteria.passengers, criteria.travelClass])
 
   const handleSelectFlight = (flight) => {
     if (!user) {
@@ -199,25 +199,38 @@ export default function SearchResultsPage() {
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['flights', criteria.from, criteria.to, criteria.date],
-    queryFn:  () => flightService.search({
-      from: criteria.from,
-      to: criteria.to,
-      date: criteria.date
-    }),
+    queryFn:  () => {
+      console.log('🔍 Querying flights with criteria:', criteria)
+      return flightService.search({
+        from: criteria.from,
+        to: criteria.to,
+        date: criteria.date
+      })
+    },
   })
 
+  console.log('📊 Query state:', { isLoading, isError, data })
   const apiFlights = data?.data || []
+  console.log('✈️ API flights:', apiFlights.length, apiFlights)
 
   if (isError) {
+    console.error('❌ Query error:', isError)
     return <ErrorState message="Unable to fetch flights. Please try again." onRetry={refetch} />
   }
-  const parsedFlights = apiFlights.map(f => ({
-    ...f,
-    departure: typeof f.departure === 'string' ? JSON.parse(f.departure) : f.departure,
-    arrival: typeof f.arrival === 'string' ? JSON.parse(f.arrival) : f.arrival,
-    refundable: f.refundable !== undefined ? f.refundable : true,
-    class: f.class || 'Economy'
-  }))
+  const parsedFlights = apiFlights.map(f => {
+    try {
+      return {
+        ...f,
+        departure: typeof f.departure === 'string' ? JSON.parse(f.departure) : f.departure,
+        arrival: typeof f.arrival === 'string' ? JSON.parse(f.arrival) : f.arrival,
+        refundable: f.refundable !== undefined ? f.refundable : true,
+        class: f.class || 'Economy'
+      }
+    } catch (e) {
+      console.error('Error parsing flight:', f, e)
+      return f
+    }
+  })
 
   const allFlights = parsedFlights.filter(f =>
     f?.departure?.city?.toLowerCase().includes(criteria.from.toLowerCase()) &&

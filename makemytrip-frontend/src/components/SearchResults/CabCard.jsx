@@ -15,11 +15,11 @@ export default function CabCard({ cab, onSelect }) {
 
   const getBadge = (provider) => {
     const badges = {
-      uber: { text: 'Uber', color: '#000' },
-      ola: { text: 'Ola', color: '#ffd60a' },
-      mock: { text: 'Available', color: '#34a853' }
+      uber: { text: 'Uber', color: 'hsl(var(--bc))' },
+      ola: { text: 'Ola', color: 'hsl(var(--wa))' },
+      mock: { text: 'Available', color: 'hsl(var(--su))' }
     }
-    return badges[provider] || { text: provider, color: '#666' }
+    return badges[provider] || { text: provider, color: 'hsl(var(--bc) / 0.6)' }
   }
 
   const badge = getBadge(cab.provider)
@@ -37,7 +37,7 @@ export default function CabCard({ cab, onSelect }) {
           </div>
         </div>
 
-        <span className="provider-badge" style={{ backgroundColor: badge.color, color: badge.color === '#ffd60a' ? '#000' : '#fff' }}>
+        <span className="provider-badge" style={{ backgroundColor: badge.color, color: badge.color.includes('--wa') ? 'hsl(var(--bc))' : 'hsl(var(--bc))' }}>
           {badge.text}
         </span>
       </div>

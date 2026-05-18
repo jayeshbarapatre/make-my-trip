@@ -1,4 +1,4 @@
-.form {
+﻿.form {
   background: white;
   border-radius: 12px;
   padding: 32px;
@@ -15,7 +15,7 @@
 .title h2 {
   font-size: 28px;
   font-weight: 700;
-  color: #003580;
+  color: hsl(var(--p));
   margin: 0 0 8px;
 }
 
@@ -42,7 +42,7 @@
   font-size: 14px;
   font-weight: 600;
   margin-bottom: 8px;
-  color: #003580;
+  color: hsl(var(--p));
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -58,7 +58,7 @@
 }
 
 .input:focus {
-  border-color: #003580;
+  border-color: hsl(var(--p));
   box-shadow: 0 0 0 3px rgba(0, 53, 128, 0.1);
 }
 
@@ -80,7 +80,7 @@
 .submitBtn {
   width: 100%;
   padding: 14px 24px;
-  background: linear-gradient(135deg, #003580 0%, #1a73e8 100%);
+  background: linear-gradient(135deg, hsl(var(--p)) 0%, #1a73e8 100%);
   color: white;
   border: none;
   border-radius: 8px;
@@ -195,3 +195,5 @@
     font-size: 12px;
   }
 }
+
+

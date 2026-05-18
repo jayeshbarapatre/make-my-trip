@@ -15,11 +15,11 @@ export default function FlightCard({ flight, onSelect }) {
 
   const getBadge = (provider) => {
     const badges = {
-      amadeus: { text: 'Amadeus', color: '#1a73e8' },
-      skyscanner: { text: 'Skyscanner', color: '#ff7d0a' },
-      mock: { text: 'Best Price', color: '#34a853' }
+      amadeus: { text: 'Amadeus', color: 'hsl(var(--p))' },
+      skyscanner: { text: 'Skyscanner', color: 'hsl(var(--wa))' },
+      mock: { text: 'Best Price', color: 'hsl(var(--su))' }
     }
-    return badges[provider] || { text: provider, color: '#666' }
+    return badges[provider] || { text: provider, color: 'hsl(var(--bc) / 0.6)' }
   }
 
   const badge = getBadge(flight.provider)

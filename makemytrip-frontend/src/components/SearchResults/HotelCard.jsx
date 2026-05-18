@@ -17,12 +17,12 @@ export default function HotelCard({ hotel, onSelect }) {
 
   const getBadge = (provider) => {
     const badges = {
-      booking: { text: 'Booking.com', color: '#003580' },
-      agoda: { text: 'Agoda', color: '#ff6d00' },
-      expedia: { text: 'Expedia', color: '#fff3cd' },
-      mock: { text: 'Featured', color: '#34a853' }
+      booking: { text: 'Booking.com', color: 'hsl(var(--p))' },
+      agoda: { text: 'Agoda', color: 'hsl(var(--wa))' },
+      expedia: { text: 'Expedia', color: 'hsl(var(--b2))' },
+      mock: { text: 'Featured', color: 'hsl(var(--su))' }
     }
-    return badges[provider] || { text: provider, color: '#666' }
+    return badges[provider] || { text: provider, color: 'hsl(var(--bc) / 0.6)' }
   }
 
   const badge = getBadge(hotel.provider)

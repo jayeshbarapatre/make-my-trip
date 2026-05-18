@@ -16,11 +16,11 @@ export default function BusCard({ bus, onSelect }) {
 
   const getBadge = (provider) => {
     const badges = {
-      goibibo: { text: 'GoIbibo', color: '#ff6d00' },
-      '12go': { text: '12Go', color: '#00a699' },
-      mock: { text: 'Featured', color: '#34a853' }
+      goibibo: { text: 'GoIbibo', color: 'hsl(var(--wa))' },
+      '12go': { text: '12Go', color: 'hsl(var(--su))' },
+      mock: { text: 'Featured', color: 'hsl(var(--su))' }
     }
-    return badges[provider] || { text: provider, color: '#666' }
+    return badges[provider] || { text: provider, color: 'hsl(var(--bc) / 0.6)' }
   }
 
   const badge = getBadge(bus.provider)

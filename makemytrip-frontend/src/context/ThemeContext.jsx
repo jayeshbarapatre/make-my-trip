@@ -1,13 +1,13 @@
-import { createContext, useContext, useState, useEffect } from 'react'
+﻿import { createContext, useContext, useState, useEffect } from 'react'
 
 const ThemeContext = createContext()
 
 export const ACCENT_PRESETS = [
   { name: 'Blue', hex: '#1a73e8' },
-  { name: 'Green', hex: '#10b981' },
+  { name: 'Green', hex: 'hsl(var(--su))' },
   { name: 'Purple', hex: '#8b5cf6' },
   { name: 'Amber', hex: '#f59e0b' },
-  { name: 'Red', hex: '#ef4444' },
+  { name: 'Red', hex: 'hsl(var(--er))' },
   { name: 'Cyan', hex: '#06b6d4' },
   { name: 'Indigo', hex: '#6366f1' },
   { name: 'Pink', hex: '#ec4899' }
@@ -57,3 +57,5 @@ export const useTheme = () => {
   }
   return context
 }
+
+

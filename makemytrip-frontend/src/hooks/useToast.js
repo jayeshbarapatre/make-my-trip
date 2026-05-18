@@ -1,4 +1,4 @@
-import toast from 'react-hot-toast'
+﻿import toast from 'react-hot-toast'
 
 export const useToast = () => {
   return {
@@ -10,3 +10,4 @@ export const useToast = () => {
     custom: (message, options) => toast.custom(message, options)
   }
 }
+

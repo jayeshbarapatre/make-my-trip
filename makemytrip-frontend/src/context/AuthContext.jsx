@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react'
+﻿import { createContext, useContext, useState, useEffect } from 'react'
 import { authService } from '../services/authService'
 
 // Reads locally-saved profile for a mobile OTP user
@@ -123,3 +123,4 @@ export function useAuth() {
   if (!ctx) throw new Error('useAuth must be executed within an AuthProvider wrapper.')
   return ctx
 }
+

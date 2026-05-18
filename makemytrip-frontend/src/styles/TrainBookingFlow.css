@@ -1,9 +1,9 @@
-.train-flow-wrapper {
+﻿.train-flow-wrapper {
   background-color: #f4f6f9;
   min-height: 100vh;
   padding: 32px 0 80px;
   font-family: 'Space Grotesk', sans-serif;
-  color: #0f172a;
+  color: hsl(var(--b3));
 }
 
 .train-flow-container {
@@ -16,7 +16,7 @@
 .train-steps-bar {
   width: 100%;
   box-sizing: border-box;
-  background: #fff;
+  background: hsl(var(--b1));
   border-radius: 12px;
   padding: 20px 32px;
   display: flex;
@@ -24,7 +24,7 @@
   align-items: center;
   box-shadow: 0 2px 10px rgba(0,0,0,0.05);
   margin-bottom: 28px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid hsl(var(--b2));
   overflow-x: auto;
 }
 
@@ -33,24 +33,24 @@
   align-items: center;
   gap: 12px;
   font-weight: 700;
-  color: #64748b;
+  color: hsl(var(--nc));
   font-size: 14px;
   white-space: nowrap;
 }
 
 .train-step.active {
-  color: #eb2026;
+  color: hsl(var(--er));
 }
 
 .train-step.completed {
-  color: #10b981;
+  color: hsl(var(--su));
 }
 
 .train-step-num {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: #f1f5f9;
+  background: hsl(var(--b2));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -59,17 +59,17 @@
 }
 
 .train-step.active .train-step-num {
-  background: #eb2026;
-  color: #fff;
+  background: hsl(var(--er));
+  color: hsl(var(--b1));
 }
 
 .train-step.completed .train-step-num {
-  background: #10b981;
-  color: #fff;
+  background: hsl(var(--su));
+  color: hsl(var(--b1));
 }
 
 .train-step-sep {
-  color: #cbd5e1;
+  color: hsl(var(--b2));
   font-weight: 900;
 }
 
@@ -77,8 +77,8 @@
 .train-route-banner {
   width: 100%;
   box-sizing: border-box;
-  background: #0f172a;
-  color: #fff;
+  background: hsl(var(--b3));
+  color: hsl(var(--b1));
   padding: 24px 32px;
   border-radius: 12px;
   margin-bottom: 24px;
@@ -96,18 +96,18 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  color: #ffffff;
+  color: hsl(var(--b1));
 }
 
 .train-rb-left p {
-  color: #94a3b8;
+  color: hsl(var(--nb));
   margin: 0;
   font-size: 14px;
 }
 
 .train-rb-badge {
-  background: #eb2026;
-  color: #fff;
+  background: hsl(var(--er));
+  color: hsl(var(--b1));
   font-size: 12px;
   font-weight: 800;
   padding: 4px 12px;
@@ -123,10 +123,10 @@
 }
 
 .train-res-card {
-  background: #fff;
+  background: hsl(var(--b1));
   border-radius: 12px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-  border: 1px solid #cbd5e1;
+  border: 1px solid hsl(var(--b2));
   overflow: hidden;
   transition: transform 0.15s ease;
 }
@@ -140,7 +140,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid hsl(var(--b2));
   flex-wrap: wrap;
   gap: 20px;
 }
@@ -149,13 +149,13 @@
   font-size: 20px;
   font-weight: 800;
   margin: 0 0 4px;
-  color: #0f172a;
+  color: hsl(var(--b3));
 }
 
 .train-name-col p {
   margin: 0;
   font-size: 13px;
-  color: #64748b;
+  color: hsl(var(--nc));
 }
 
 .train-time-col {
@@ -171,12 +171,12 @@
 .train-time-val {
   font-size: 20px;
   font-weight: 800;
-  color: #0f172a;
+  color: hsl(var(--b3));
 }
 
 .train-time-lbl {
   font-size: 12px;
-  color: #64748b;
+  color: hsl(var(--nc));
   font-weight: 700;
 }
 
@@ -186,13 +186,13 @@
 
 .train-time-dur {
   font-size: 13px;
-  color: #475569;
+  color: hsl(var(--nc));
   font-weight: 700;
 }
 
 .train-time-line {
   height: 2px;
-  background: #cbd5e1;
+  background: hsl(var(--b2));
   width: 80px;
   margin: 4px 0;
 }
@@ -203,12 +203,12 @@
   display: flex;
   gap: 16px;
   overflow-x: auto;
-  background: #f8fafc;
+  background: hsl(var(--b1));
 }
 
 .train-cls-box {
-  background: #fff;
-  border: 2px solid #cbd5e1;
+  background: hsl(var(--b1));
+  border: 2px solid hsl(var(--b2));
   border-radius: 8px;
   padding: 16px 20px;
   min-width: 140px;
@@ -222,8 +222,8 @@
 }
 
 .train-cls-box.selected {
-  border-color: #eb2026;
-  background: #fffbfa;
+  border-color: hsl(var(--er));
+  background: hsl(var(--b1))bfa;
 }
 
 .train-cls-hdr {
@@ -237,7 +237,7 @@
 
 .train-cls-price {
   font-size: 15px;
-  color: #0f172a;
+  color: hsl(var(--b3));
   font-weight: 800;
 }
 
@@ -251,7 +251,7 @@
 
 /* Color Coding Availability */
 .status-green {
-  background: #dcfce7;
+  background: hsl(var(--suc));
   color: #15803d;
 }
 
@@ -261,22 +261,22 @@
 }
 
 .status-red {
-  background: #fee2e2;
+  background: hsl(var(--erc));
   color: #b91c1c;
 }
 
 .train-res-action {
   padding: 16px 32px;
-  background: #fff;
-  border-top: 1px solid #cbd5e1;
+  background: hsl(var(--b1));
+  border-top: 1px solid hsl(var(--b2));
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
 .train-select-btn {
-  background: #eb2026;
-  color: #fff;
+  background: hsl(var(--er));
+  color: hsl(var(--b1));
   border: none;
   padding: 12px 28px;
   border-radius: 8px;
@@ -303,11 +303,11 @@
 }
 
 .train-form-card {
-  background: #fff;
+  background: hsl(var(--b1));
   border-radius: 12px;
   padding: 32px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-  border: 1px solid #cbd5e1;
+  border: 1px solid hsl(var(--b2));
   margin-bottom: 24px;
 }
 
@@ -316,22 +316,22 @@
   font-weight: 800;
   margin: 0 0 20px;
   padding-bottom: 12px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid hsl(var(--b2));
 }
 
 .train-pass-item {
-  border: 1px solid #e2e8f0;
+  border: 1px solid hsl(var(--b2));
   border-radius: 8px;
   padding: 20px;
   margin-bottom: 20px;
-  background: #f8fafc;
+  background: hsl(var(--b1));
   position: relative;
 }
 
 .train-pass-item-hdr {
   font-size: 15px;
   font-weight: 800;
-  color: #0f172a;
+  color: hsl(var(--b3));
   margin-bottom: 16px;
   display: flex;
   justify-content: space-between;
@@ -339,7 +339,7 @@
 }
 
 .train-rem-btn {
-  color: #eb2026;
+  color: hsl(var(--er));
   background: none;
   border: none;
   font-size: 13px;
@@ -367,23 +367,23 @@
 .train-input-grp label {
   font-size: 12px;
   font-weight: 700;
-  color: #475569;
+  color: hsl(var(--nc));
   margin-bottom: 6px;
 }
 
 .train-input {
-  border: 1px solid #cbd5e1;
+  border: 1px solid hsl(var(--b2));
   border-radius: 6px;
   padding: 10px 14px;
   font-size: 14px;
   outline: none;
-  background: #fff;
+  background: hsl(var(--b1));
 }
 
 .train-add-pass-btn {
-  background: #f1f5f9;
+  background: hsl(var(--b2));
   color: #008cff;
-  border: 1px solid #cbd5e1;
+  border: 1px solid hsl(var(--b2));
   padding: 12px 24px;
   border-radius: 8px;
   font-size: 14px;
@@ -396,18 +396,18 @@
 
 /* Sidebar Fare Card */
 .train-fare-side {
-  background: #fff;
+  background: hsl(var(--b1));
   border-radius: 12px;
   padding: 24px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-  border: 1px solid #cbd5e1;
+  border: 1px solid hsl(var(--b2));
 }
 
 .train-fare-row {
   display: flex;
   justify-content: space-between;
   font-size: 14px;
-  color: #475569;
+  color: hsl(var(--nc));
   margin-bottom: 12px;
 }
 
@@ -416,8 +416,10 @@
   justify-content: space-between;
   font-size: 20px;
   font-weight: 900;
-  color: #0f172a;
-  border-top: 1px solid #cbd5e1;
+  color: hsl(var(--b3));
+  border-top: 1px solid hsl(var(--b2));
   padding-top: 16px;
   margin-top: 16px;
 }
+
+

@@ -6,19 +6,19 @@ export const EmptyState = ({ title, message, icon = '✈️', onRetry = null }) 
     justifyContent: 'center',
     padding: '60px 20px',
     textAlign: 'center',
-    backgroundColor: '#f9f9f9',
+    backgroundColor: 'hsl(var(--b2))',
     borderRadius: '8px',
     minHeight: '300px'
   }}>
     <div style={{ fontSize: '48px', marginBottom: '16px' }}>{icon}</div>
-    <h3 style={{ fontSize: '20px', marginBottom: '8px', color: '#333' }}>{title}</h3>
-    <p style={{ fontSize: '14px', color: '#666', marginBottom: '24px', maxWidth: '400px' }}>{message}</p>
+    <h3 style={{ fontSize: '20px', marginBottom: '8px', color: 'hsl(var(--bc))' }}>{title}</h3>
+    <p style={{ fontSize: '14px', color: 'hsl(var(--bc) / 0.6)', marginBottom: '24px', maxWidth: '400px' }}>{message}</p>
     {onRetry && (
       <button
         onClick={onRetry}
         style={{
-          backgroundColor: '#003580',
-          color: 'white',
+          backgroundColor: 'hsl(var(--p))',
+          color: 'hsl(var(--pc))',
           border: 'none',
           padding: '10px 24px',
           borderRadius: '4px',
@@ -63,11 +63,11 @@ export const LoadingState = () => (
       width: '40px',
       height: '40px',
       borderRadius: '50%',
-      border: '4px solid #f0f0f0',
-      borderTop: '4px solid #003580',
+      border: '4px solid hsl(var(--b3))',
+      borderTop: '4px solid hsl(var(--p))',
       animation: 'spin 0.8s linear infinite'
     }}></div>
-    <p style={{ marginTop: '16px', color: '#666', fontSize: '14px' }}>Loading your results...</p>
+    <p style={{ marginTop: '16px', color: 'hsl(var(--bc) / 0.6)', fontSize: '14px' }}>Loading your results...</p>
   </div>
 )
 

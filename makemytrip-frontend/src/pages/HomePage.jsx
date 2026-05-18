@@ -28,11 +28,11 @@ const TRIP_TYPES = [
 const FARES = ['Regular', 'Student', 'Armed Forces', 'Senior Citizen', 'Doctors & Nurses']
 
 const OFFERS = [
-  { type: 'flight',  tag: 'FLIGHTS',  title: 'Flat 25% off domestic flights',  desc: 'Save up to ₹3,000 on bookings made with HDFC credit cards. Code: MMTHDFC',          cta: 'Book Now' },
-  { type: 'hotel',   tag: 'HOTELS',   title: 'Hotels at ₹999 per night',        desc: 'Verified 3-star+ stays across 80 Indian cities. Free cancellation included.',        cta: 'View Deals' },
-  { type: 'luxury',  tag: 'LUXURY',   title: 'Premium escapes, up to 40% off',  desc: 'Curated 5-star resorts in Maldives, Bali, and the Andamans for your dream getaway.', cta: 'Explore' },
-  { type: 'beach',   tag: 'PACKAGES', title: 'Goa long weekend bundle',          desc: 'Flights + hotel + airport transfer from ₹14,499 per person. 3N / 4D.',              cta: 'Book Now' },
-  { type: 'cab',     tag: 'CABS',     title: 'Flat ₹200 off airport cabs',       desc: 'Reliable airport transfers in 60+ cities. Pay only when you ride.',                  cta: 'Book Cab' },
+  { type: 'flight',  tag: 'FLIGHTS',  title: 'Flat 25% off domestic flights',  desc: 'Save up to ₹3,000 on bookings made with HDFC credit cards. Code: MMTHDFC',          cta: 'Book Now', image: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=400&h=250&q=80' },
+  { type: 'hotel',   tag: 'HOTELS',   title: 'Hotels at ₹999 per night',        desc: 'Verified 3-star+ stays across 80 Indian cities. Free cancellation included.',        cta: 'View Deals', image: 'https://images.unsplash.com/photo-1566073771259-1b7e4634a69b?auto=format&fit=crop&w=400&h=250&q=80' },
+  { type: 'luxury',  tag: 'LUXURY',   title: 'Premium escapes, up to 40% off',  desc: 'Curated 5-star resorts in Maldives, Bali, and the Andamans for your dream getaway.', cta: 'Explore', image: 'https://images.unsplash.com/photo-1506929113675-b5b42d069b2d?auto=format&fit=crop&w=400&h=250&q=80' },
+  { type: 'beach',   tag: 'PACKAGES', title: 'Goa long weekend bundle',          desc: 'Flights + hotel + airport transfer from ₹14,499 per person. 3N / 4D.',              cta: 'Book Now', image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=400&h=250&q=80' },
+  { type: 'cab',     tag: 'CABS',     title: 'Flat ₹200 off airport cabs',       desc: 'Reliable airport transfers in 60+ cities. Pay only when you ride.',                  cta: 'Book Cab', image: 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=400&h=250&q=80' },
 ]
 
 const CATEGORIES = [
@@ -778,7 +778,7 @@ export default function HomePage() {
             {OFFERS.map((o, idx) => (
               <SwiperSlide key={o.type} className="hp-offer-slide">
                 <div className="hp-offer-card" data-aos="fade-up" data-aos-delay={idx * 100}>
-                  <div className={`hp-offer-img hp-offer-${o.type}`}>
+                  <div className={`hp-offer-img hp-offer-${o.type}`} style={{ backgroundImage: `url(${o.image})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
                     <span className="hp-offer-tag">{o.tag}</span>
                   </div>
                   <div className="hp-offer-body">

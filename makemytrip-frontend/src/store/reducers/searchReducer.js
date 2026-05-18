@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit'
+﻿import { createSlice } from '@reduxjs/toolkit'
 
 const initialState = {
   results: [],
@@ -35,3 +35,4 @@ const searchSlice = createSlice({
 
 export const { searchStart, searchSuccess, searchFailure, setCriteria, clearResults } = searchSlice.actions
 export default searchSlice.reducer
+

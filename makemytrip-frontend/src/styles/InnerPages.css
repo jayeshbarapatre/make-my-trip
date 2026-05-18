@@ -1,8 +1,8 @@
-/* ═══════════════════════════════════════════════════════════════
-   MakeMyTrip — Inner Pages Modern Award-Level Stylesheet
-   ═══════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   MakeMyTrip â€” Inner Pages Modern Award-Level Stylesheet
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
-/* ── Hero Backdrop Gradients ─────────────────────────────────── */
+/* â”€â”€ Hero Backdrop Gradients â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 body {
   overflow-x: clip;
 }
@@ -146,7 +146,7 @@ body {
 }
 
 .phero .crumb-link:hover {
-  color: #ffffff !important;
+  color: hsl(var(--b1)) !important;
   text-decoration: underline !important;
 }
 
@@ -160,20 +160,20 @@ body {
   font-weight: 500;
 }
 
-/* ── Integrated Search Widgets ────────────────────────────────── */
+/* â”€â”€ Integrated Search Widgets â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .inner-search-bcard {
-  background: var(--clr-bg-white);
+  background: #ffffff;
   border-radius: 20px;
   padding: 24px;
   box-shadow: 0 15px 35px rgba(0,0,0,0.12), 0 1px 3px rgba(0,0,0,0.02);
-  border: 1px solid rgba(255,255,255,0.8);
+  border: 1px solid #e5e7eb;
 }
 
 .inner-search-grid {
   display: grid;
-  border: 1px solid var(--clr-border);
+  border: 1px solid #e5e7eb;
   border-radius: 12px;
-  background: var(--clr-bg-white);
+  background: #ffffff;
 }
 .inner-search-field:first-of-type {
   border-top-left-radius: 11px;
@@ -207,7 +207,7 @@ body {
 }
 
 .inner-search-field:hover {
-  background: var(--clr-bg-hover);
+  background: #f9fafb;
 }
 
 .inner-field-lbl {
@@ -244,7 +244,7 @@ body {
 
 /* Giant Search button inside grid */
 .inner-search-cta {
-  background: linear-gradient(135deg, var(--clr-primary) 0%, #1557A0 100%);
+  background: linear-gradient(135deg, var(--clr-primary) 0%, #2563eb 100%);
   color: var(--clr-text-inverse);
   border: none;
   font-size: 16px;
@@ -295,7 +295,7 @@ body {
   box-shadow: 0 4px 10px rgba(0, 35, 80, 0.15);
 }
 
-/* ── Sections Common Layout ──────────────────────────────────── */
+/* â”€â”€ Sections Common Layout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .inner-page-section {
   max-width: var(--max-width);
   margin: 0 auto;
@@ -338,7 +338,7 @@ body {
   text-decoration: underline;
 }
 
-/* ── Hotels Page Components ──────────────────────────────────── */
+/* â”€â”€ Hotels Page Components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .hotels-deals-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -521,7 +521,7 @@ body {
   margin-top: 2px;
 }
 
-/* ── Trains Page Components ──────────────────────────────────── */
+/* â”€â”€ Trains Page Components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .trains-quick-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -557,9 +557,9 @@ body {
   flex-shrink: 0;
 }
 
-.trains-quick-card[data-c="pnr"] .trains-quick-ico-box { background: #fff5e0; color: #ff9800; }
-.trains-quick-card[data-c="live"] .trains-quick-ico-box { background: #e8f5e9; color: #2e7d32; }
-.trains-quick-card[data-c="sched"] .trains-quick-ico-box { background: #f3eefa; color: #5c2d91; }
+.trains-quick-card[data-c="pnr"] .trains-quick-ico-box { background: hsl(var(--wac)); color: #f59e0b; }
+.trains-quick-card[data-c="live"] .trains-quick-ico-box { background: #f0fdf4; color: #22c55e; }
+.trains-quick-card[data-c="sched"] .trains-quick-ico-box { background: #f3e8ff; color: #7c3aed; }
 .trains-quick-card[data-c="book"] .trains-quick-ico-box { background: #fef2f2; color: var(--clr-error); }
 
 .trains-quick-details h4 {
@@ -709,7 +709,7 @@ body {
 
 .train-class-pill.wl {
   background: var(--clr-warning-bg);
-  color: #7a4a00;
+  color: hsl(var(--wa));
 }
 
 .train-row-action {
@@ -728,7 +728,7 @@ body {
 .train-row-action button {
   margin-top: 8px;
   background: var(--clr-primary);
-  color: #fff;
+  color: hsl(var(--b1));
   border: none;
   padding: 8px 24px;
   border-radius: 30px;
@@ -788,7 +788,7 @@ body {
   font-weight: 800;
 }
 
-/* ── Holidays Page Components ────────────────────────────────── */
+/* â”€â”€ Holidays Page Components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .holidays-themes-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
@@ -875,7 +875,7 @@ body {
   top: 16px;
   left: 16px;
   background: var(--clr-gold);
-  color: #1a1a1a;
+  color: #1f2937;
   font-size: 10px;
   font-weight: 800;
   padding: 4px 10px;
@@ -946,7 +946,7 @@ body {
 
 .holiday-pkg-action-btn {
   background: var(--clr-primary);
-  color: #fff;
+  color: hsl(var(--b1));
   border: none;
   padding: 8px 20px;
   border-radius: 8px;
@@ -1027,7 +1027,7 @@ body {
   color: var(--clr-gold);
 }
 
-/* ── Tablet & Mobile Responsiveness overrides ────────────────── */
+/* â”€â”€ Tablet & Mobile Responsiveness overrides â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @media (max-width: 1024px) {
   .hotels-grid, .trains-grid, .holidays-grid {
     grid-template-columns: 1fr;
@@ -1070,7 +1070,7 @@ body {
   }
 }
 
-/* ── Live weather forecast badge widget ──────────────────────── */
+/* â”€â”€ Live weather forecast badge widget â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .live-weather-badge {
   display: inline-flex;
   align-items: center;
@@ -1099,7 +1099,7 @@ body {
 .live-weather-pulse {
   width: 6px;
   height: 6px;
-  background: #4CAF50;
+  background: #22c55e;
   border-radius: 50%;
   box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7);
   animation: pulse-ring 1.5s infinite;
@@ -1111,7 +1111,7 @@ body {
   100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
 }
 
-/* ── Homestays Page Components ───────────────────────────────── */
+/* â”€â”€ Homestays Page Components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 /* Overriding rules removed to enforce top image backgrounds */
 
 .homestays-grid {
@@ -1224,8 +1224,8 @@ body {
   display: flex;
   align-items: center;
   gap: 4px;
-  background: #0A8043;
-  color: #fff;
+  background: #22c55e;
+  color: hsl(var(--b1));
   font-size: 11px;
   font-weight: 700;
   padding: 3px 8px;
@@ -1267,8 +1267,8 @@ body {
 }
 
 .homestays-host-banner {
-  background: linear-gradient(135deg, var(--clr-primary-dark) 0%, #1f2b3e 100%);
-  color: #fff;
+  background: linear-gradient(135deg, var(--clr-primary-dark) 0%, #2d3748 100%);
+  color: hsl(var(--b1));
   border-radius: 20px;
   padding: 40px;
   display: grid;
@@ -1282,7 +1282,7 @@ body {
   margin: 0 0 10px;
   font-size: 28px;
   font-weight: 800;
-  color: #fff;
+  color: hsl(var(--b1));
   letter-spacing: -0.5px;
 }
 
@@ -1310,7 +1310,7 @@ body {
 }
 
 .host-banner-left button:hover {
-  background: #ffb300;
+  background: #fbbf24;
   box-shadow: 0 4px 14px rgba(255, 179, 0, 0.25);
 }
 
@@ -1342,7 +1342,7 @@ body {
   }
 }
 
-/* ── Cabs Page Components ────────────────────────────────────── */
+/* â”€â”€ Cabs Page Components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 /* Overriding rules removed to enforce top image backgrounds */
 
 .cabs-grid {
@@ -1401,7 +1401,7 @@ body {
   font-size: 12px;
   font-weight: 700;
   background: rgba(10, 128, 67, 0.1);
-  color: #0A8043;
+  color: #22c55e;
   padding: 2px 8px;
   border-radius: 4px;
 }
@@ -1460,7 +1460,7 @@ body {
 
 .cab-card-price-action small {
   font-size: 11px;
-  color: #0A8043;
+  color: #22c55e;
   font-weight: 600;
   margin-top: 2px;
 }
@@ -1547,6 +1547,8 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+
 
 
 
