@@ -164,6 +164,31 @@ const AdminVendors = () => {
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   <div>
                     <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', fontSize: '13px', color: '#374151' }}>
+                      Vendor Type *
+                    </label>
+                    <select
+                      name="vendorType"
+                      value={formData.vendorType}
+                      onChange={handleInputChange}
+                      required
+                      style={{
+                        width: '100%',
+                        padding: '10px 12px',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '6px',
+                        fontSize: '14px',
+                        fontFamily: 'inherit',
+                        boxSizing: 'border-box'
+                      }}
+                    >
+                      <option value="hotel">Hotel Vendor</option>
+                      <option value="flight">Flight Vendor</option>
+                      <option value="multi">Multi-Service</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', fontSize: '13px', color: '#374151' }}>
                       Vendor Name *
                     </label>
                     <input
@@ -171,7 +196,7 @@ const AdminVendors = () => {
                       name="name"
                       value={formData.name}
                       onChange={handleInputChange}
-                      placeholder="e.g., Paradise Hotels"
+                      placeholder="e.g., SkyAirways Airlines"
                       required
                       style={{
                         width: '100%',
@@ -229,31 +254,6 @@ const AdminVendors = () => {
                         boxSizing: 'border-box'
                       }}
                     />
-                  </div>
-
-                  <div>
-                    <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', fontSize: '13px', color: '#374151' }}>
-                      Vendor Type *
-                    </label>
-                    <select
-                      name="vendorType"
-                      value={formData.vendorType}
-                      onChange={handleInputChange}
-                      required
-                      style={{
-                        width: '100%',
-                        padding: '10px 12px',
-                        border: '1px solid #e5e7eb',
-                        borderRadius: '6px',
-                        fontSize: '14px',
-                        fontFamily: 'inherit',
-                        boxSizing: 'border-box'
-                      }}
-                    >
-                      <option value="hotel">Hotel Vendor</option>
-                      <option value="flight">Flight Vendor</option>
-                      <option value="multi">Multi-Service</option>
-                    </select>
                   </div>
 
                   <div>
