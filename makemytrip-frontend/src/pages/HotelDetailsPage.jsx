@@ -137,6 +137,7 @@ export default function HotelDetailsPage() {
   };
   const guestsDisplay = buildGuestsDisplay(guestsObj)
   const [guests, setGuests] = useState(guestsDisplay)
+  const [bookEntireHotel, setBookEntireHotel] = useState(false)
 
   // Calculate nights dynamically from check-in and check-out
   const calculateNights = () => {
@@ -148,8 +149,10 @@ export default function HotelDetailsPage() {
   }
 
   const nights = calculateNights()
-  const rooms = guestsObj.rooms || 1
-  const basePriceForStay = hotel.price * nights * rooms
+  const rooms = bookEntireHotel ? 10 : (guestsObj.rooms || 1)
+  const basePriceForStay = hotel 
+    ? (bookEntireHotel ? Math.round(hotel.price * 4.5 * nights) : hotel.price * nights * (guestsObj.rooms || 1))
+    : 0
   // Taxes = 18% of base price (GST standard rate)
   const taxesForStay = Math.round(basePriceForStay * 0.18)
   const totalForStay = basePriceForStay + taxesForStay
@@ -199,14 +202,16 @@ export default function HotelDetailsPage() {
 
   // Trigger Booking flow -> Review Page
   const handleReserve = (roomName) => {
+    const isEntire = roomName === "Entire Property Takeover (All Rooms)" || bookEntireHotel;
     navigate('/hotels/review', {
       state: {
         hotel,
-        roomName: roomName || hotel.roomType || 'Deluxe Room',
+        roomName: roomName || (isEntire ? 'Entire Property Takeover (All Rooms)' : hotel.roomType || 'Deluxe Room'),
         checkIn,
         checkOut,
-        guests: guestsDisplay,
-        guestsObj
+        guests: isEntire ? 'Entire Property Takeover' : guestsDisplay,
+        guestsObj: isEntire ? { adults: 20, rooms: 10 } : guestsObj,
+        bookEntireHotel: isEntire
       }
     });
   };
@@ -254,11 +259,11 @@ export default function HotelDetailsPage() {
         <>
       {/* Breadcrumbs */}
       <div className="hd-breadcrumb">
-        <span style={{ cursor: 'pointer', color: '#003580', fontWeight: 600 }} onClick={() => navigate('/hotels')}>Hotels</span>
+        <span style={{ cursor: 'pointer', color: 'hsl(var(--p))', fontWeight: 600 }} onClick={() => navigate('/hotels')}>Hotels</span>
         <span>›</span>
-        <span style={{ cursor: 'pointer', color: '#003580', fontWeight: 600 }} onClick={() => navigate('/hotels/results?city=Udaipur')}>Udaipur Stays</span>
+        <span style={{ cursor: 'pointer', color: 'hsl(var(--p))', fontWeight: 600 }} onClick={() => navigate(`/hotels/results?city=${hotel.city}`)}>{hotel.city} Stays</span>
         <span>›</span>
-        <span style={{ color: '#0f172a', fontWeight: 700 }}>{hotel.name}</span>
+        <span style={{ color: 'hsl(var(--bc))', fontWeight: 700 }}>{hotel.name}</span>
       </div>
 
       {/* Header Info */}
@@ -267,10 +272,10 @@ export default function HotelDetailsPage() {
           <div className="hd-badge-row">
             <span className="hd-star-badge">⭐ {hotel.rating.toFixed(1)} {hotel.ratingLabel}</span>
             {hotel.starHost && <span className="hd-luxe-tag">★ MMT Luxe Selection</span>}
-            {hotel.coupleFriendly && <span style={{ background: '#dcfce7', color: '#10b981', fontSize: '11px', fontWeight: 800, padding: '3px 10px', borderRadius: '4px' }}>✓ Couple Friendly</span>}
+            {hotel.coupleFriendly && <span style={{ background: 'hsl(var(--su) / 0.08)', color: 'hsl(var(--su))', fontSize: '11px', fontWeight: 800, padding: '3px 10px', borderRadius: '4px' }}>✓ Couple Friendly</span>}
           </div>
           <h1 className="hd-name">{hotel.name}</h1>
-          <div className="hd-location">📍 {hotel.locality}, Udaipur · <span style={{ color: '#003580', fontWeight: 600 }}>{hotel.distance}</span></div>
+          <div className="hd-location">📍 {hotel.locality}, {hotel.city} · <span style={{ color: 'hsl(var(--p))', fontWeight: 600 }}>{hotel.distance}</span></div>
         </div>
 
         <div className="hd-action-row">
@@ -352,9 +357,9 @@ export default function HotelDetailsPage() {
               {hotel.review || "Experience authentic Mewari hospitality paired with state-of-the-art luxury. Featuring expansive private balconies overlooking the serene lakes, curated gourmet dining, and absolute royal elegance. Perfectly situated for both leisure getaways and heritage explorations."}
             </p>
             {hotel.longStay && hotel.longStay.length > 0 && (
-              <div style={{ marginTop: '20px', padding: '16px', background: '#f8fafc', borderRadius: '12px', borderLeft: '4px solid #003580' }}>
-                <h4 style={{ margin: '0 0 8px', color: '#0f172a', fontSize: '15px', fontWeight: 800 }}>✨ Exclusive Member Benefits</h4>
-                <ul style={{ margin: 0, paddingLeft: '18px', color: '#475569', fontSize: '14px', lineHeight: 1.6 }}>
+              <div style={{ marginTop: '20px', padding: '16px', background: 'hsl(var(--b2))', borderRadius: '12px', borderLeft: '4px solid hsl(var(--p))' }}>
+                <h4 style={{ margin: '0 0 8px', color: 'hsl(var(--bc))', fontSize: '15px', fontWeight: 800 }}>✨ Exclusive Member Benefits</h4>
+                <ul style={{ margin: 0, paddingLeft: '18px', color: 'hsl(var(--bc) / 0.65)', fontSize: '14px', lineHeight: 1.6 }}>
                   {hotel.longStay.map((benefit, bIdx) => (
                     <li key={bIdx}>{benefit}</li>
                   ))}
@@ -383,6 +388,45 @@ export default function HotelDetailsPage() {
             <h2 className="hd-section-title">🛏️ Choose Your Room</h2>
             <div className="hd-rooms-list">
               
+              {/* Book Entire Property Option */}
+              <div className="hd-room-card" style={{
+                background: 'linear-gradient(135deg, hsl(var(--b1)) 0%, hsl(var(--a) / 0.03) 100%)',
+                border: '2px dashed hsl(var(--a) / 0.6)',
+                boxShadow: '0 4px 20px rgba(251, 191, 36, 0.05)'
+              }}>
+                <div className="hd-room-image-side">
+                  <img src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=400&h=300&q=80" alt="Entire Property Takeover" />
+                </div>
+                <div className="hd-room-info">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', flexWrap: 'wrap' }}>
+                    <h4 style={{ margin: 0, color: 'hsl(var(--a))' }}>👑 Entire Property Takeover (All Rooms)</h4>
+                    <span style={{ background: 'hsl(var(--a) / 0.15)', color: 'hsl(var(--a))', fontSize: '10px', fontWeight: 800, padding: '2px 8px', borderRadius: '4px', textTransform: 'uppercase' }}>Exclusive Takeover</span>
+                  </div>
+                  <div className="hd-room-tags">
+                    <span className="hd-room-tag">🏰 Private Resort Takeover</span>
+                    <span className="hd-room-tag">👥 Accommodates up to 30 Guests</span>
+                    <span className="hd-room-tag">🛎️ Exclusive Dedicated Staff</span>
+                    <span className="hd-room-tag">🍽️ All Meals &amp; Events Included</span>
+                  </div>
+                  <span className="hd-room-status" style={{ color: 'hsl(var(--a))', background: 'hsl(var(--a) / 0.1)' }}>✓ Guaranteed Exclusive Access (No other guests)</span>
+                </div>
+                <div className="hd-room-price-area" style={{ background: 'hsl(var(--a) / 0.02)' }}>
+                  <div className="hd-room-sub" style={{ color: 'hsl(var(--a))' }}>Takeover Price / Night</div>
+                  <div className="hd-room-price" style={{ color: 'hsl(var(--a))' }}>₹ {(hotel.price * 4.5).toLocaleString("en-IN")}</div>
+                  <div style={{ fontSize: '11px', color: 'hsl(var(--bc) / 0.55)', marginBottom: '8px' }}>+ ₹{Math.round((hotel.price * 4.5) * 0.18).toLocaleString('en-IN')} taxes &amp; fees</div>
+                  <button 
+                    className="btn-primary hd-btn-compact" 
+                    style={{ background: 'linear-gradient(135deg, hsl(var(--a)) 0%, hsl(var(--wa)) 100%)', color: 'white', border: 'none', boxShadow: '0 4px 12px rgba(251, 191, 36, 0.3)' }}
+                    onClick={() => {
+                      setBookEntireHotel(true);
+                      handleReserve("Entire Property Takeover (All Rooms)");
+                    }}
+                  >
+                    BOOK TAKEOVER
+                  </button>
+                </div>
+              </div>
+
               <div className="hd-room-card">
                 <div className="hd-room-image-side">
                   <img src="https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=400&h=300&q=80" alt="Luxury Heritage Suite" />
@@ -399,7 +443,7 @@ export default function HotelDetailsPage() {
                 <div className="hd-room-price-area">
                   <div className="hd-room-sub">Base Price / Night</div>
                   <div className="hd-room-price">₹ {hotel.price.toLocaleString("en-IN")}</div>
-                  <div style={{ fontSize: '11px', color: '#64748b', marginBottom: '8px' }}>+ ₹{Math.round(hotel.price * 0.18).toLocaleString('en-IN')} taxes & fees</div>
+                  <div style={{ fontSize: '11px', color: 'hsl(var(--bc) / 0.55)', marginBottom: '8px' }}>+ ₹{Math.round(hotel.price * 0.18).toLocaleString('en-IN')} taxes & fees</div>
                   <button className="btn-primary hd-btn-compact" onClick={() => handleReserve(hotel.roomType || "Luxury Heritage Suite")}>
                     BOOK NOW
                   </button>
@@ -422,7 +466,7 @@ export default function HotelDetailsPage() {
                 <div className="hd-room-price-area">
                   <div className="hd-room-sub">Base Price / Night</div>
                   <div className="hd-room-price">₹ {(hotel.price + 3200).toLocaleString("en-IN")}</div>
-                  <div style={{ fontSize: '11px', color: '#64748b', marginBottom: '8px' }}>+ ₹{Math.round((hotel.price + 3200) * 0.18).toLocaleString('en-IN')} taxes & fees</div>
+                  <div style={{ fontSize: '11px', color: 'hsl(var(--bc) / 0.55)', marginBottom: '8px' }}>+ ₹{Math.round((hotel.price + 3200) * 0.18).toLocaleString('en-IN')} taxes & fees</div>
                   <button className="btn-primary hd-btn-compact" onClick={() => handleReserve("Royal Maharaja Suite with Private Terrace")}>
                     BOOK NOW
                   </button>
@@ -446,7 +490,7 @@ export default function HotelDetailsPage() {
                       <div className="hd-review-date">Checked in · Family Trip</div>
                     </div>
                   </div>
-                  <span style={{ background: '#0f172a', color: '#fbb52c', padding: '4px 10px', borderRadius: '8px', fontWeight: 800, fontSize: '13px' }}>
+                  <span style={{ background: 'hsl(var(--bc))', color: 'hsl(var(--wa))', padding: '4px 10px', borderRadius: '8px', fontWeight: 800, fontSize: '13px' }}>
                     ★ 5.0
                   </span>
                 </div>
@@ -464,7 +508,7 @@ export default function HotelDetailsPage() {
                       <div className="hd-review-date">Checked in · Couple Stay</div>
                     </div>
                   </div>
-                  <span style={{ background: '#0f172a', color: '#fbb52c', padding: '4px 10px', borderRadius: '8px', fontWeight: 800, fontSize: '13px' }}>
+                  <span style={{ background: 'hsl(var(--bc))', color: 'hsl(var(--wa))', padding: '4px 10px', borderRadius: '8px', fontWeight: 800, fontSize: '13px' }}>
                     ★ 4.8
                   </span>
                 </div>
@@ -491,6 +535,54 @@ export default function HotelDetailsPage() {
             </div>
 
             <div className="hd-bc-form">
+              {/* Book Entire Hotel Option Switch */}
+              <div style={{
+                background: 'linear-gradient(135deg, hsl(var(--a) / 0.12) 0%, hsl(var(--p) / 0.04) 100%)',
+                border: '1px solid hsl(var(--a) / 0.3)',
+                borderRadius: '16px',
+                padding: '14px 18px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: '4px'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <span style={{ fontSize: '24px' }}>🏢</span>
+                  <div>
+                    <div style={{ fontWeight: 800, fontSize: '14px', color: 'hsl(var(--bc))' }}>Book Entire Hotel</div>
+                    <div style={{ fontSize: '11px', color: 'hsl(var(--bc) / 0.6)' }}>Exclusive resort takeover</div>
+                  </div>
+                </div>
+                <label className="switch" style={{ position: 'relative', display: 'inline-block', width: '46px', height: '24px', cursor: 'pointer' }}>
+                  <input 
+                    type="checkbox" 
+                    checked={bookEntireHotel}
+                    onChange={(e) => setBookEntireHotel(e.target.checked)}
+                    style={{ opacity: 0, width: 0, height: 0, position: 'absolute' }}
+                  />
+                  <span style={{
+                    position: 'absolute',
+                    cursor: 'pointer',
+                    top: 0, left: 0, right: 0, bottom: 0,
+                    backgroundColor: bookEntireHotel ? 'hsl(var(--a))' : 'hsl(var(--b3))',
+                    transition: '.3s ease',
+                    borderRadius: '34px',
+                    boxShadow: bookEntireHotel ? '0 0 8px hsl(var(--a) / 0.4)' : 'none'
+                  }}>
+                    <span style={{
+                      position: 'absolute',
+                      height: '18px', width: '18px',
+                      left: bookEntireHotel ? '25px' : '3px',
+                      bottom: '3px',
+                      backgroundColor: 'white',
+                      transition: '.3s ease',
+                      borderRadius: '50%',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                    }} />
+                  </span>
+                </label>
+              </div>
+
               <div className="hd-input-box" style={{ position: 'relative', cursor: 'pointer' }}
                 onClick={() => { setShowCheckInCal(p => !p); setShowCheckOutCal(false) }}>
                 <label>Check-In Date</label>
@@ -521,27 +613,38 @@ export default function HotelDetailsPage() {
                 />
               </div>
 
-              <div className="hd-input-box">
+              <div className="hd-input-box" style={{ opacity: bookEntireHotel ? 0.7 : 1 }}>
                 <label>Guests &amp; Rooms</label>
                 <input 
                   type="text" 
                   className="hd-input-field" 
-                  value={guests} 
+                  value={bookEntireHotel ? 'Entire Hotel (10 Rooms, All Guests)' : guests} 
                   onChange={(e) => setGuests(e.target.value)} 
+                  disabled={bookEntireHotel}
+                  style={{ cursor: bookEntireHotel ? 'not-allowed' : 'text' }}
                 />
               </div>
             </div>
 
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: '#475569', marginBottom: '8px' }}>
-                <span>₹ {hotel.price.toLocaleString("en-IN")} × {nights} night{nights !== 1 ? 's' : ''} × {rooms} room{rooms !== 1 ? 's' : ''}</span>
-                <span>₹ {basePriceForStay.toLocaleString("en-IN")}</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: 'hsl(var(--bc) / 0.65)', marginBottom: '8px' }}>
+                {bookEntireHotel ? (
+                  <>
+                    <span>🏢 Resort Takeover Rate × {nights} Night{nights !== 1 ? 's' : ''}</span>
+                    <span>₹ {basePriceForStay.toLocaleString("en-IN")}</span>
+                  </>
+                ) : (
+                  <>
+                    <span>₹ {hotel.price.toLocaleString("en-IN")} × {nights} night{nights !== 1 ? 's' : ''} × {rooms} room{rooms !== 1 ? 's' : ''}</span>
+                    <span>₹ {basePriceForStay.toLocaleString("en-IN")}</span>
+                  </>
+                )}
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: '#475569', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: 'hsl(var(--bc) / 0.65)', marginBottom: '16px' }}>
                 <span>Taxes &amp; Service fees</span>
                 <span>₹ {taxesForStay.toLocaleString("en-IN")}</span>
               </div>
-              <div style={{ borderTop: '1px solid #cbd5e1', paddingTop: '16px', display: 'flex', justifyContent: 'space-between', fontSize: '20px', fontWeight: 900, color: '#0f172a' }}>
+              <div style={{ borderTop: '1px solid hsl(var(--b3))', paddingTop: '16px', display: 'flex', justifyContent: 'space-between', fontSize: '20px', fontWeight: 900, color: 'hsl(var(--bc))' }}>
                 <span>Total Billed</span>
                 <span>₹ {totalForStay.toLocaleString("en-IN")}</span>
               </div>
@@ -550,7 +653,7 @@ export default function HotelDetailsPage() {
             <button 
               className="hd-btn-primary btn-primary" 
               style={{ padding: '16px', fontSize: '18px', width: '100%', borderRadius: '16px' }}
-              onClick={() => handleReserve(hotel.roomType)}
+              onClick={() => handleReserve(bookEntireHotel ? 'Entire Property Takeover (All Rooms)' : hotel.roomType)}
             >
               ⚡ Instant Reserve Now
             </button>
@@ -571,41 +674,41 @@ export default function HotelDetailsPage() {
       {showLoginModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
           <div style={{ background: '#fff', borderRadius: '16px', width: '90%', maxWidth: '420px', padding: '32px 28px', boxShadow: '0 24px 48px rgba(0,0,0,0.2)', position: 'relative', boxSizing: 'border-box' }}>
-            <button onClick={() => setShowLoginModal(false)} style={{ position: 'absolute', top: '20px', right: '20px', background: '#f3f4f6', border: 'none', width: '32px', height: '32px', borderRadius: '50%', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }}>✕</button>
+            <button onClick={() => setShowLoginModal(false)} style={{ position: 'absolute', top: '20px', right: '20px', background: 'hsl(var(--b2))', border: 'none', width: '32px', height: '32px', borderRadius: '50%', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }}>✕</button>
 
             <div style={{ textAlign: 'center', marginBottom: '24px' }}>
               <span style={{ fontSize: '36px', display: 'block', marginBottom: '8px' }}>🔐</span>
-              <h3 style={{ margin: '0 0 8px', fontSize: '22px', fontWeight: 900, color: '#111827' }}>Login to Continue</h3>
-              <p style={{ margin: 0, fontSize: '13px', color: '#6b7280' }}>MakeMyTrip requires verification before booking. Enter your mobile number to instantly login.</p>
+              <h3 style={{ margin: '0 0 8px', fontSize: '22px', fontWeight: 900, color: 'hsl(var(--bc) / 0.9)' }}>Login to Continue</h3>
+              <p style={{ margin: 0, fontSize: '13px', color: 'hsl(var(--bc) / 0.6)' }}>MakeMyTrip requires verification before booking. Enter your mobile number to instantly login.</p>
             </div>
 
-            {loginError && <div style={{ background: '#fee2e2', color: '#991b1b', padding: '10px 14px', borderRadius: '8px', fontSize: '12px', marginBottom: '16px', textAlign: 'center', fontWeight: 600 }}>{loginError}</div>}
+            {loginError && <div style={{ background: 'hsl(var(--er) / 0.08)', color: 'hsl(var(--er) / 0.7)', padding: '10px 14px', borderRadius: '8px', fontSize: '12px', marginBottom: '16px', textAlign: 'center', fontWeight: 600 }}>{loginError}</div>}
 
             {!otpSent ? (
               <form onSubmit={handleSendOtp}>
                 <div style={{ marginBottom: '20px' }}>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#374151', marginBottom: '6px' }}>MOBILE NUMBER</label>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'hsl(var(--bc) / 0.65)', marginBottom: '6px' }}>MOBILE NUMBER</label>
                   <div style={{ display: 'flex', gap: '10px' }}>
-                    <span style={{ background: '#f3f4f6', border: '1px solid #d1d5db', borderRadius: '8px', padding: '10px 14px', fontSize: '14px', fontWeight: 700, color: '#4b5563', display: 'flex', alignItems: 'center' }}>+91</span>
+                    <span style={{ background: 'hsl(var(--b2))', border: '1px solid hsl(var(--b3))', borderRadius: '8px', padding: '10px 14px', fontSize: '14px', fontWeight: 700, color: 'hsl(var(--bc) / 0.7)', display: 'flex', alignItems: 'center' }}>+91</span>
                     <input type="tel" placeholder="10-digit mobile number" maxLength={10} value={mobilePhone} onChange={(e) => {
                       const val = e.target.value.replace(/\D/g, '').slice(0, 10);
                       setMobilePhone(val);
-                    }} maxLength="10" inputMode="numeric" style={{ flex: 1, border: '1px solid #d1d5db', borderRadius: '8px', padding: '10px 14px', fontSize: '14px', fontWeight: 600, outline: 'none', width: '100%', boxSizing: 'border-box' }} autoFocus required />
+                    }} maxLength="10" inputMode="numeric" style={{ flex: 1, border: '1px solid hsl(var(--b3))', borderRadius: '8px', padding: '10px 14px', fontSize: '14px', fontWeight: 600, outline: 'none', width: '100%', boxSizing: 'border-box' }} autoFocus required />
                   </div>
                 </div>
-                <button type="submit" style={{ width: '100%', background: '#eb2026', color: '#fff', border: 'none', borderRadius: '8px', padding: '14px', fontSize: '15px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(235,32,38,0.3)' }}>GET ONE TIME PASSWORD (OTP)</button>
+                <button type="submit" style={{ width: '100%', background: 'hsl(var(--er))', color: '#fff', border: 'none', borderRadius: '8px', padding: '14px', fontSize: '15px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(235,32,38,0.3)' }}>GET ONE TIME PASSWORD (OTP)</button>
               </form>
             ) : (
               <form onSubmit={handleVerifyOtp}>
                 <div style={{ marginBottom: '20px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                    <label style={{ fontSize: '12px', fontWeight: 700, color: '#374151' }}>ENTER 6-DIGIT OTP</label>
-                    <button type="button" onClick={() => setOtpSent(false)} style={{ background: 'none', border: 'none', color: '#eb2026', fontSize: '12px', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }}>Change Number</button>
+                    <label style={{ fontSize: '12px', fontWeight: 700, color: 'hsl(var(--bc) / 0.65)' }}>ENTER 6-DIGIT OTP</label>
+                    <button type="button" onClick={() => setOtpSent(false)} style={{ background: 'none', border: 'none', color: 'hsl(var(--er))', fontSize: '12px', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }}>Change Number</button>
                   </div>
-                  <input type="text" maxLength="6" placeholder="e.g. 123456" value={otpCode} onChange={(e) => setOtpCode(e.target.value)} style={{ width: '100%', border: '2px solid #eb2026', borderRadius: '8px', padding: '12px 14px', fontSize: '18px', fontWeight: 800, letterSpacing: '4px', textAlign: 'center', outline: 'none', boxSizing: 'border-box' }} autoFocus required />
-                  <span style={{ display: 'block', textAlign: 'center', fontSize: '11px', color: '#10b981', marginTop: '8px', fontWeight: 600 }}>✓ Simulated OTP sent! (Use test OTP: 123456)</span>
+                  <input type="text" maxLength="6" placeholder="e.g. 123456" value={otpCode} onChange={(e) => setOtpCode(e.target.value)} style={{ width: '100%', border: '2px solid hsl(var(--er))', borderRadius: '8px', padding: '12px 14px', fontSize: '18px', fontWeight: 800, letterSpacing: '4px', textAlign: 'center', outline: 'none', boxSizing: 'border-box' }} autoFocus required />
+                  <span style={{ display: 'block', textAlign: 'center', fontSize: '11px', color: 'hsl(var(--su))', marginTop: '8px', fontWeight: 600 }}>✓ Simulated OTP sent! (Use test OTP: 123456)</span>
                 </div>
-                <button type="submit" style={{ width: '100%', background: '#10b981', color: '#fff', border: 'none', borderRadius: '8px', padding: '14px', fontSize: '15px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(16,185,129,0.3)' }}>VERIFY &amp; CONFIRM BOOKING</button>
+                <button type="submit" style={{ width: '100%', background: 'hsl(var(--su))', color: '#fff', border: 'none', borderRadius: '8px', padding: '14px', fontSize: '15px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(16,185,129,0.3)' }}>VERIFY &amp; CONFIRM BOOKING</button>
               </form>
             )}
           </div>

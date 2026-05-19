@@ -10,12 +10,12 @@ import '../styles/UdaipurListing.css'
 /* ─────────── SVGs & Icons ─────────── */
 const I = {
   heart: (filled, c) => (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill={filled ? (c || "#eb2226") : "none"} stroke={filled ? (c || "#eb2226") : "#666"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill={filled ? (c || "hsl(var(--er))") : "none"} stroke={filled ? (c || "hsl(var(--er))") : "#666"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
     </svg>
   ),
   check: (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0db981" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--su))" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
       <polyline points="20 6 9 17 4 12"/>
     </svg>
   ),
@@ -26,12 +26,12 @@ const I = {
   photo: <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM8.9 13.98l2.1 2.53 3.1-3.99L18.5 18H5.5l3.4-4.02z"/></svg>,
   play: <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>,
   pin: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>,
-  star: <svg width="11" height="11" viewBox="0 0 24 24" fill="#fbb52c"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
+  star: <svg width="11" height="11" viewBox="0 0 24 24" fill="hsl(var(--wa))"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
   starHostBadge: (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="#eb2226"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="hsl(var(--er))"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
   ),
-  bulb: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5c33b3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.9.7 1.5 1.7 1.5 2.8V18h5v-.5c0-1.1.6-2.1 1.5-2.8A7 7 0 0 0 12 2z"/></svg>,
-  airport: <svg width="14" height="14" viewBox="0 0 24 24" fill="#0084ff"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg>,
+  bulb: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--a))" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.9.7 1.5 1.7 1.5 2.8V18h5v-.5c0-1.1.6-2.1 1.5-2.8A7 7 0 0 0 12 2z"/></svg>,
+  airport: <svg width="14" height="14" viewBox="0 0 24 24" fill="hsl(var(--p))"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg>,
 };
 
 /* ─────────── SearchBar Component ─────────── */
@@ -143,30 +143,30 @@ function MapPreview({ onOpen, pins }) {
     <div className="map-preview" onClick={onOpen}>
       <svg viewBox="0 0 200 130" className="map-svg" preserveAspectRatio="none">
         {/* Lake Pichola - irregular shape */}
-        <path d="M 30 50 Q 25 70 45 85 Q 70 95 85 80 Q 95 65 80 50 Q 60 40 45 45 Z" fill="#cfe4f0" stroke="#a3c7da" strokeWidth="0.4"/>
-        <path d="M 120 30 Q 110 45 125 60 Q 145 65 155 50 Q 150 35 135 28 Z" fill="#cfe4f0" stroke="#a3c7da" strokeWidth="0.4"/>
+        <path d="M 30 50 Q 25 70 45 85 Q 70 95 85 80 Q 95 65 80 50 Q 60 40 45 45 Z" fill="hsl(var(--p) / 0.15)" stroke="hsl(var(--p) / 0.25)" strokeWidth="0.4"/>
+        <path d="M 120 30 Q 110 45 125 60 Q 145 65 155 50 Q 150 35 135 28 Z" fill="hsl(var(--p) / 0.15)" stroke="hsl(var(--p) / 0.25)" strokeWidth="0.4"/>
         {/* roads */}
-        <g stroke="#e6e1d8" strokeWidth="1.2" fill="none">
+        <g stroke="hsl(var(--b3))" strokeWidth="1.2" fill="none">
           <path d="M 0 30 L 200 35"/>
           <path d="M 10 70 L 190 90"/>
           <path d="M 50 0 L 65 130"/>
           <path d="M 110 0 L 130 130"/>
           <path d="M 160 10 L 180 130"/>
         </g>
-        <g stroke="#efece4" strokeWidth="0.6" fill="none">
+        <g stroke="hsl(var(--b2))" strokeWidth="0.6" fill="none">
           <path d="M 0 50 L 200 55"/>
           <path d="M 20 100 L 200 115"/>
           <path d="M 90 0 L 100 130"/>
           <path d="M 140 0 L 155 130"/>
         </g>
         {/* land blocks */}
-        <rect x="100" y="70" width="35" height="25" fill="#eaf3df" opacity="0.55"/>
-        <rect x="155" y="65" width="40" height="40" fill="#eaf3df" opacity="0.45"/>
-        <rect x="5" y="5" width="40" height="25" fill="#f4efe2" opacity="0.6"/>
+        <rect x="100" y="70" width="35" height="25" fill="hsl(var(--su) / 0.08)" opacity="0.55"/>
+        <rect x="155" y="65" width="40" height="40" fill="hsl(var(--su) / 0.08)" opacity="0.45"/>
+        <rect x="5" y="5" width="40" height="25" fill="hsl(var(--b2))" opacity="0.6"/>
         {/* pins */}
         {pins.slice(0, 6).map((p, i) => (
           <g key={i} transform={`translate(${p.x*200} ${p.y*130})`}>
-            <circle r="3" fill="#0084ff" stroke="#fff" strokeWidth="0.8"/>
+            <circle r="3" fill="hsl(var(--p))" stroke="#fff" strokeWidth="0.8"/>
           </g>
         ))}
       </svg>
@@ -335,7 +335,7 @@ function HotelCard({ h, density, wishlist, toggleWishlist, onSelectHotel }) {
             <h3 className="hc-name">
               {h.coupleFriendly && <span className="cf-tick">{I.check}</span>}
               {h.name}
-              {h.likeStars > 0 && <span className="like-stars"> ❪ Like a {h.likeStars}<span style={{color:"#fbb52c"}}>★</span> ❫</span>}
+              {h.likeStars > 0 && <span className="like-stars"> ❪ Like a {h.likeStars}<span style={{color:"hsl(var(--wa))"}}>★</span> ❫</span>}
             </h3>
             <div className="hc-loc"><a href="#locality" onClick={(e) => e.stopPropagation()}>{h.locality}</a> <span className="dot">|</span> {h.distance}</div>
             <div className="hc-room">{h.roomType}</div>
@@ -369,7 +369,7 @@ function HotelCard({ h, density, wishlist, toggleWishlist, onSelectHotel }) {
                     e.stopPropagation();
                     onSelectHotel && onSelectHotel(h);
                   }}
-                  style={{ padding: '6px 12px', fontSize: '11px', borderRadius: '6px', background: '#eb2026', border: 'none', color: '#fff', fontWeight: 800 }}
+                  style={{ padding: '6px 12px', fontSize: '11px', borderRadius: '6px', background: 'hsl(var(--er))', border: 'none', color: '#fff', fontWeight: 800 }}
                 >
                   Book Stay
                 </button>
@@ -428,15 +428,15 @@ function MapOverlay({ open, onClose, pins, hotels, wishlist, toggleWishlist }) {
         <button className="map-close" onClick={onClose}>✕</button>
         <div className="map-canvas">
           <svg viewBox="0 0 1000 700" className="map-bg" preserveAspectRatio="xMidYMid slice">
-            <rect width="1000" height="700" fill="#f5f1e7"/>
+            <rect width="1000" height="700" fill="hsl(var(--b2))"/>
             {/* Lake Pichola */}
-            <path d="M 120 220 Q 90 320 220 400 Q 360 440 430 380 Q 480 310 400 230 Q 280 180 200 200 Z" fill="#cfe4f0" stroke="#a3c7da" strokeWidth="1.2"/>
+            <path d="M 120 220 Q 90 320 220 400 Q 360 440 430 380 Q 480 310 400 230 Q 280 180 200 200 Z" fill="hsl(var(--p) / 0.15)" stroke="hsl(var(--p) / 0.25)" strokeWidth="1.2"/>
             {/* Fateh Sagar */}
-            <path d="M 620 110 Q 580 200 660 280 Q 780 310 820 220 Q 800 130 720 90 Z" fill="#cfe4f0" stroke="#a3c7da" strokeWidth="1.2"/>
+            <path d="M 620 110 Q 580 200 660 280 Q 780 310 820 220 Q 800 130 720 90 Z" fill="hsl(var(--p) / 0.15)" stroke="hsl(var(--p) / 0.25)" strokeWidth="1.2"/>
             {/* Badi Lake / Small Lake */}
-            <path d="M 760 480 Q 720 540 800 600 Q 880 610 900 540 Q 880 470 820 460 Z" fill="#cfe4f0" stroke="#a3c7da" strokeWidth="1.2"/>
+            <path d="M 760 480 Q 720 540 800 600 Q 880 610 900 540 Q 880 470 820 460 Z" fill="hsl(var(--p) / 0.15)" stroke="hsl(var(--p) / 0.25)" strokeWidth="1.2"/>
             {/* Roads vector lines */}
-            <g stroke="#e6e1d8" strokeWidth="6" fill="none">
+            <g stroke="hsl(var(--b3))" strokeWidth="6" fill="none">
               <path d="M 0 120 L 1000 140"/>
               <path d="M 50 340 L 980 410"/>
               <path d="M 30 560 L 980 620"/>
@@ -444,7 +444,7 @@ function MapOverlay({ open, onClose, pins, hotels, wishlist, toggleWishlist }) {
               <path d="M 560 0 L 640 700"/>
               <path d="M 870 0 L 920 700"/>
             </g>
-            <g stroke="#efece4" strokeWidth="3" fill="none">
+            <g stroke="hsl(var(--b2))" strokeWidth="3" fill="none">
               <path d="M 0 200 L 1000 230"/>
               <path d="M 0 450 L 1000 480"/>
               <path d="M 150 0 L 200 700"/>
@@ -452,15 +452,15 @@ function MapOverlay({ open, onClose, pins, hotels, wishlist, toggleWishlist }) {
               <path d="M 720 0 L 770 700"/>
             </g>
             {/* land parks and blocks */}
-            <rect x="500" y="450" width="180" height="100" fill="#dbeac8" opacity="0.7"/>
-            <rect x="60" y="50" width="120" height="110" fill="#dbeac8" opacity="0.5"/>
-            <rect x="850" y="280" width="120" height="140" fill="#dbeac8" opacity="0.5"/>
+            <rect x="500" y="450" width="180" height="100" fill="hsl(var(--su) / 0.12)" opacity="0.7"/>
+            <rect x="60" y="50" width="120" height="110" fill="hsl(var(--su) / 0.12)" opacity="0.5"/>
+            <rect x="850" y="280" width="120" height="140" fill="hsl(var(--su) / 0.12)" opacity="0.5"/>
             {/* map city annotations */}
-            <text x="200" y="300" fontSize="14" fill="#7a8c98" fontStyle="italic" fontWeight="600">Lake Pichola</text>
-            <text x="680" y="200" fontSize="14" fill="#7a8c98" fontStyle="italic" fontWeight="600">Fateh Sagar</text>
-            <text x="80" y="105" fontSize="11" fill="#9c8b67">Sukhadia Circle</text>
-            <text x="500" y="80" fontSize="11" fill="#9c8b67">Old City Udaipur</text>
-            <text x="900" y="350" fontSize="11" fill="#9c8b67">Sajjangarh Fort</text>
+            <text x="200" y="300" fontSize="14" fill="hsl(var(--bc) / 0.55)" fontStyle="italic" fontWeight="600">Lake Pichola</text>
+            <text x="680" y="200" fontSize="14" fill="hsl(var(--bc) / 0.55)" fontStyle="italic" fontWeight="600">Fateh Sagar</text>
+            <text x="80" y="105" fontSize="11" fill="hsl(var(--wa) / 0.5)">Sukhadia Circle</text>
+            <text x="500" y="80" fontSize="11" fill="hsl(var(--wa) / 0.5)">Old City Udaipur</text>
+            <text x="900" y="350" fontSize="11" fill="hsl(var(--wa) / 0.5)">Sajjangarh Fort</text>
           </svg>
           {pins.map((p) => {
             const h = hotels.find(x => x.id === p.id);
@@ -591,7 +591,7 @@ function MobileApp({ hotels, wishlist, toggleWishlist, onOpenFilter, onSelectHot
                     e.stopPropagation();
                     onSelectHotel && onSelectHotel(h);
                   }}
-                  style={{ padding: '6px 12px', fontSize: '11px', borderRadius: '6px', background: '#eb2026', border: 'none', color: '#fff', fontWeight: 800 }}
+                  style={{ padding: '6px 12px', fontSize: '11px', borderRadius: '6px', background: 'hsl(var(--er))', border: 'none', color: '#fff', fontWeight: 800 }}
                 >
                   Book Stay
                 </button>
@@ -681,14 +681,10 @@ export default function HotelListingPage() {
           promo: ""
         }));
 
-        if (mapped.length > 0) {
-          setRealHotels(mapped);
-        } else {
-          setRealHotels(generateHotels(cityQuery));
-        }
+        setRealHotels(mapped);
       } catch (err) {
-        setApiError(err.message || 'Failed to load hotels. Using fallback properties.');
-        setRealHotels(generateHotels(cityQuery));
+        setApiError(err.message || 'Failed to load hotels. Please try again.');
+        setRealHotels([]);
       } finally {
         setLoading(false);
       }
@@ -933,13 +929,13 @@ export default function HotelListingPage() {
           {/* Error Banner */}
           {apiError && (
             <div style={{
-              backgroundColor: '#fff3cd',
-              border: '1px solid #ffc107',
+              backgroundColor: 'hsl(var(--wa) / 0.1)',
+              border: '1px solid hsl(var(--wa))',
               borderRadius: '4px',
               padding: '12px 16px',
               marginBottom: '16px',
               fontSize: '14px',
-              color: '#856404',
+              color: 'hsl(var(--wa) / 0.6)',
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center'
@@ -960,7 +956,7 @@ export default function HotelListingPage() {
 
           {/* Results Heading Area */}
           <div className="results-head">
-            <h1>{filtered.length.toLocaleString("en-IN")}{filtered.length === UDAIPUR_HOTELS.length ? ",278" : ""} Properties in {cityQuery}</h1>
+            <h1>{filtered.length.toLocaleString("en-IN")} Properties in {cityQuery}</h1>
             <button className="travel-tips">💡 Explore Travel Tips →</button>
             
             {/* Design Controls floating widget inside search area for incredible Premium feel */}
@@ -1000,6 +996,14 @@ export default function HotelListingPage() {
               <SortTabs sort={sort} setSort={setSort}/>
 
               <div className="showing-h">Showing Stays in {cityQuery}</div>
+
+              {/* Empty state when no results */}
+              {!loading && filtered.length === 0 && (
+                <div className="empty-state" style={{ padding: '60px 20px', textAlign: 'center', color: '#666' }}>
+                  <p style={{ fontSize: '18px', marginBottom: '10px' }}>No hotels found in <strong>{cityQuery}</strong></p>
+                  <p style={{ fontSize: '14px', color: '#999' }}>Try searching for a different city, area, or hotel name.</p>
+                </div>
+              )}
 
               {/* Active Results List */}
               <div className="results-list">

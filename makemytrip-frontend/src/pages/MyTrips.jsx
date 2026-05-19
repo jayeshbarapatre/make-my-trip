@@ -145,12 +145,12 @@ export default function MyTrips() {
   })
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f8fafc', padding: '40px 0', }}>
+    <div style={{ minHeight: '100vh', background: 'hsl(var(--b2))', padding: '40px 0', }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px', boxSizing: 'border-box' }}>
 
         {/* Top Header Banner & Wallet Balance */}
         <div style={{
-          background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+          background: 'linear-gradient(135deg, hsl(var(--bc)) 0%, hsl(var(--bc) / 0.6) 100%)',
           color: '#fff',
           borderRadius: '16px',
           padding: '32px 40px',
@@ -164,18 +164,18 @@ export default function MyTrips() {
         }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-              <span style={{ fontSize: '14px', color: '#94a3b8' }}>Secure Traveller History</span>
+              <span style={{ fontSize: '14px', color: 'hsl(var(--bc) / 0.5)' }}>Secure Traveller History</span>
             </div>
-            <h1 style={{ margin: 0, fontSize: '32px', fontWeight: 900, letterSpacing: '-0.5px', color: '#ffffff' }}>My Trips & Bookings</h1>
-            <p style={{ margin: '6px 0 0', color: '#cbd5e1', fontSize: '15px' }}>Manage all your flight and hotel bookings, download e-tickets, and simulate refunds.</p>
+            <h1 style={{ margin: 0, fontSize: '32px', fontWeight: 900, letterSpacing: '-0.5px', color: 'hsl(var(--b1))' }}>My Trips & Bookings</h1>
+            <p style={{ margin: '6px 0 0', color: 'hsl(var(--b3))', fontSize: '15px' }}>Manage all your flight and hotel bookings, download e-tickets, and simulate refunds.</p>
           </div>
 
           <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
             {/* User Info */}
             {user && (
               <div style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', padding: '12px 20px', borderRadius: '12px' }}>
-                <div style={{ fontSize: '12px', color: '#cbd5e1', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Welcome</div>
-                <div style={{ fontSize: '16px', fontWeight: 700, color: '#38bdf8', marginTop: '2px' }}>{user.name || user.email || 'Traveller'}</div>
+                <div style={{ fontSize: '12px', color: 'hsl(var(--b3))', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Welcome</div>
+                <div style={{ fontSize: '16px', fontWeight: 700, color: 'hsl(var(--p))', marginTop: '2px' }}>{user.name || user.email || 'Traveller'}</div>
               </div>
             )}
           </div>
@@ -192,9 +192,9 @@ export default function MyTrips() {
               key={type.id}
               onClick={() => setTypeFilter(type.id)}
               style={{
-                background: typeFilter === type.id ? '#eb2026' : '#fff',
-                color: typeFilter === type.id ? '#fff' : '#0f172a',
-                border: typeFilter === type.id ? '1px solid #eb2026' : '1px solid #cbd5e1',
+                background: typeFilter === type.id ? 'hsl(var(--er))' : '#fff',
+                color: typeFilter === type.id ? '#fff' : 'hsl(var(--bc))',
+                border: typeFilter === type.id ? '1px solid hsl(var(--er))' : '1px solid hsl(var(--b3))',
                 padding: '10px 20px',
                 borderRadius: '8px',
                 fontSize: '14px',
@@ -214,7 +214,7 @@ export default function MyTrips() {
         </div>
 
         {/* Tab Selection Navigation */}
-        <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', borderBottom: '1px solid #e2e8f0', paddingBottom: '16px' }}>
+        <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', borderBottom: '1px solid hsl(var(--b3))', paddingBottom: '16px' }}>
           {[
             { id: 'upcoming', label: '⏳ Upcoming Trips' },
             { id: 'completed', label: '✓ Completed' },
@@ -224,9 +224,9 @@ export default function MyTrips() {
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               style={{
-                background: activeTab === tab.id ? '#0f172a' : '#fff',
-                color: activeTab === tab.id ? '#fff' : '#475569',
-                border: activeTab === tab.id ? '1px solid #0f172a' : '1px solid #cbd5e1',
+                background: activeTab === tab.id ? 'hsl(var(--bc))' : '#fff',
+                color: activeTab === tab.id ? '#fff' : 'hsl(var(--bc) / 0.65)',
+                border: activeTab === tab.id ? '1px solid hsl(var(--bc))' : '1px solid hsl(var(--b3))',
                 padding: '12px 24px',
                 borderRadius: '30px',
                 fontSize: '15px',
@@ -243,14 +243,14 @@ export default function MyTrips() {
 
         {/* Bookings List Container */}
         {loading ? (
-          <div style={{ padding: '60px 20px', textAlign: 'center', fontSize: '18px', color: '#64748b', fontWeight: 600 }}>
+          <div style={{ padding: '60px 20px', textAlign: 'center', fontSize: '18px', color: 'hsl(var(--bc) / 0.55)', fontWeight: 600 }}>
             ⏳ Loading your trips...
           </div>
         ) : filteredBookings.length === 0 ? (
-          <div style={{ background: '#fff', borderRadius: '16px', padding: '80px 20px', textAlign: 'center', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', border: '1px solid #e2e8f0' }}>
+          <div style={{ background: '#fff', borderRadius: '16px', padding: '80px 20px', textAlign: 'center', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', border: '1px solid hsl(var(--b3))' }}>
             <div style={{ fontSize: '48px', marginBottom: '16px' }}>🧳</div>
-            <h3 style={{ margin: '0 0 8px', fontSize: '22px', fontWeight: 800, color: '#0f172a' }}>No {activeTab} bookings found</h3>
-            <p style={{ margin: 0, color: '#64748b', fontSize: '15px' }}>Plan your next vacation or flight search from the MakeMyTrip homepage.</p>
+            <h3 style={{ margin: '0 0 8px', fontSize: '22px', fontWeight: 800, color: 'hsl(var(--bc))' }}>No {activeTab} bookings found</h3>
+            <p style={{ margin: 0, color: 'hsl(var(--bc) / 0.55)', fontSize: '15px' }}>Plan your next vacation or flight search from the MakeMyTrip homepage.</p>
           </div>
         ) : (
           filteredBookings.map(b => (
@@ -273,34 +273,34 @@ export default function MyTrips() {
       {selectedBooking && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px' }}>
           <div style={{ background: '#fff', width: '100%', maxWidth: '650px', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}>
-            <div style={{ background: '#0f172a', color: '#fff', padding: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ background: 'hsl(var(--bc))', color: '#fff', padding: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 800, color: '#ffffff' }}>Trip Reference Sheet</h3>
-                <div style={{ fontSize: '13px', color: '#94a3b8', marginTop: '4px' }}>PNR: {selectedBooking.pnr}</div>
+                <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 800, color: 'hsl(var(--b1))' }}>Trip Reference Sheet</h3>
+                <div style={{ fontSize: '13px', color: 'hsl(var(--bc) / 0.5)', marginTop: '4px' }}>PNR: {selectedBooking.pnr}</div>
               </div>
               <button onClick={() => setSelectedBooking(null)} style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer' }}>✕</button>
             </div>
 
             <div style={{ padding: '28px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', background: '#f8fafc', padding: '16px', borderRadius: '8px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', background: 'hsl(var(--b2))', padding: '16px', borderRadius: '8px' }}>
                 <div>
-                  <div style={{ fontSize: '12px', color: '#64748b' }}>From City / Origin</div>
-                  <div style={{ fontSize: '16px', fontWeight: 700, color: '#0f172a' }}>{selectedBooking.fromCity}</div>
+                  <div style={{ fontSize: '12px', color: 'hsl(var(--bc) / 0.55)' }}>From City / Origin</div>
+                  <div style={{ fontSize: '16px', fontWeight: 700, color: 'hsl(var(--bc))' }}>{selectedBooking.fromCity}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '12px', color: '#64748b' }}>Destination / Property</div>
-                  <div style={{ fontSize: '16px', fontWeight: 700, color: '#0f172a' }}>{selectedBooking.toCity}</div>
+                  <div style={{ fontSize: '12px', color: 'hsl(var(--bc) / 0.55)' }}>Destination / Property</div>
+                  <div style={{ fontSize: '16px', fontWeight: 700, color: 'hsl(var(--bc))' }}>{selectedBooking.toCity}</div>
                 </div>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #e2e8f0', paddingTop: '20px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid hsl(var(--b3))', paddingTop: '20px' }}>
                 <div>
-                  <div style={{ fontSize: '12px', color: '#64748b' }}>Total Billed Amount</div>
-                  <div style={{ fontSize: '24px', fontWeight: 900, color: '#0f172a' }}>₹{selectedBooking.totalAmount?.toLocaleString()}</div>
+                  <div style={{ fontSize: '12px', color: 'hsl(var(--bc) / 0.55)' }}>Total Billed Amount</div>
+                  <div style={{ fontSize: '24px', fontWeight: 900, color: 'hsl(var(--bc))' }}>₹{selectedBooking.totalAmount?.toLocaleString()}</div>
                 </div>
                 <button
                   onClick={() => { alert("E-ticket receipt downloaded."); setSelectedBooking(null); }}
-                  style={{ background: '#eb2026', color: '#fff', border: 'none', padding: '12px 24px', borderRadius: '8px', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }}
+                  style={{ background: 'hsl(var(--er))', color: '#fff', border: 'none', padding: '12px 24px', borderRadius: '8px', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }}
                 >
                   Confirm & Download
                 </button>
@@ -316,29 +316,29 @@ export default function MyTrips() {
           <div style={{ background: '#fff', width: '100%', maxWidth: '500px', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 25px 50px rgba(0,0,0,0.3)' }}>
 
             {/* Razorpay Brand Header */}
-            <div style={{ background: '#0284c7', color: '#fff', padding: '24px', textAlign: 'center', position: 'relative' }}>
+            <div style={{ background: 'hsl(var(--p))', color: '#fff', padding: '24px', textAlign: 'center', position: 'relative' }}>
               <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '2px', fontWeight: 800, opacity: 0.9 }}>TEST MODE SECURE CHECKOUT</div>
-              <h2 style={{ margin: '6px 0 0', fontSize: '28px', fontWeight: 900, color: '#ffffff' }}>Razorpay</h2>
+              <h2 style={{ margin: '6px 0 0', fontSize: '28px', fontWeight: 900, color: 'hsl(var(--b1))' }}>Razorpay</h2>
               <button onClick={() => setShowRazorpay(false)} style={{ position: 'absolute', right: '20px', top: '20px', background: 'rgba(0,0,0,0.2)', border: 'none', color: '#fff', width: '32px', height: '32px', borderRadius: '50%', cursor: 'pointer', fontWeight: 'bold' }}>✕</button>
             </div>
 
             <div style={{ padding: '32px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '14px', color: '#64748b' }}>Order ID Generated from Backend</div>
-                <div style={{ fontSize: '15px', fontWeight: 700, color: '#0f172a', background: '#f1f5f9', padding: '8px', borderRadius: '6px', marginTop: '4px', fontFamily: 'monospace' }}>
+                <div style={{ fontSize: '14px', color: 'hsl(var(--bc) / 0.55)' }}>Order ID Generated from Backend</div>
+                <div style={{ fontSize: '15px', fontWeight: 700, color: 'hsl(var(--bc))', background: 'hsl(var(--b2))', padding: '8px', borderRadius: '6px', marginTop: '4px', fontFamily: 'monospace' }}>
                   {razorpayOrder.id}
                 </div>
               </div>
 
-              <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', padding: '20px', borderRadius: '12px', textAlign: 'center' }}>
-                <div style={{ fontSize: '13px', color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 700 }}>Amount Due</div>
-                <div style={{ fontSize: '36px', fontWeight: 900, color: '#0f172a', marginTop: '4px' }}>
+              <div style={{ background: 'hsl(var(--b2))', border: '1px solid hsl(var(--b3))', padding: '20px', borderRadius: '12px', textAlign: 'center' }}>
+                <div style={{ fontSize: '13px', color: 'hsl(var(--bc) / 0.55)', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 700 }}>Amount Due</div>
+                <div style={{ fontSize: '36px', fontWeight: 900, color: 'hsl(var(--bc))', marginTop: '4px' }}>
                   ₹{(razorpayOrder.amount / 100).toLocaleString()}
                 </div>
               </div>
 
               {paymentSuccess ? (
-                <div style={{ background: '#dcfce7', color: '#15803d', padding: '20px', borderRadius: '12px', textAlign: 'center', fontWeight: 700 }}>
+                <div style={{ background: 'hsl(var(--su) / 0.08)', color: 'hsl(var(--su))', padding: '20px', borderRadius: '12px', textAlign: 'center', fontWeight: 700 }}>
                   🎉 Payment Verified Successfully! Confirmation Sent.
                 </div>
               ) : (
@@ -351,14 +351,14 @@ export default function MyTrips() {
                         alert("Razorpay Payment verified successfully! Your trip upgrade is fully confirmed.")
                       }, 1500)
                     }}
-                    style={{ background: '#10b981', color: '#fff', border: 'none', padding: '16px', borderRadius: '12px', fontSize: '16px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(16,185,129,0.3)', transition: 'transform 0.1s' }}
+                    style={{ background: 'hsl(var(--su))', color: '#fff', border: 'none', padding: '16px', borderRadius: '12px', fontSize: '16px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(16,185,129,0.3)', transition: 'transform 0.1s' }}
                   >
                     💳 Simulate UPI / Card Payment
                   </button>
 
                   <button
                     onClick={() => setShowRazorpay(false)}
-                    style={{ background: '#f1f5f9', color: '#64748b', border: 'none', padding: '14px', borderRadius: '12px', fontSize: '15px', fontWeight: 700, cursor: 'pointer' }}
+                    style={{ background: 'hsl(var(--b2))', color: 'hsl(var(--bc) / 0.55)', border: 'none', padding: '14px', borderRadius: '12px', fontSize: '15px', fontWeight: 700, cursor: 'pointer' }}
                   >
                     Cancel Checkout
                   </button>
@@ -375,9 +375,9 @@ export default function MyTrips() {
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1200, padding: '20px' }}>
           <div style={{ background: '#fff', width: '100%', maxWidth: '440px', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 25px 50px rgba(0,0,0,0.3)' }}>
 
-            <div style={{ background: '#0f172a', color: '#fff', padding: '28px 28px 20px', position: 'relative' }}>
-              <h2 style={{ margin: 0, fontSize: '24px', fontWeight: 800, color: '#ffffff' }}>Mobile OTP Login</h2>
-              <p style={{ margin: '4px 0 0', color: '#94a3b8', fontSize: '14px' }}>Razorpay Wallet Style 6-digit secure authentication</p>
+            <div style={{ background: 'hsl(var(--bc))', color: '#fff', padding: '28px 28px 20px', position: 'relative' }}>
+              <h2 style={{ margin: 0, fontSize: '24px', fontWeight: 800, color: 'hsl(var(--b1))' }}>Mobile OTP Login</h2>
+              <p style={{ margin: '4px 0 0', color: 'hsl(var(--bc) / 0.5)', fontSize: '14px' }}>Razorpay Wallet Style 6-digit secure authentication</p>
               <button onClick={() => setShowOtpModal(false)} style={{ position: 'absolute', right: '20px', top: '24px', background: 'transparent', border: 'none', color: '#fff', fontSize: '22px', cursor: 'pointer' }}>✕</button>
             </div>
 
@@ -385,9 +385,9 @@ export default function MyTrips() {
               {!otpSent ? (
                 <form onSubmit={handleSendOtp} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                   <div>
-                    <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '8px' }}>Enter 10-Digit Mobile Number</label>
-                    <div style={{ display: 'flex', borderRadius: '10px', overflow: 'hidden', border: '1px solid #cbd5e1' }}>
-                      <span style={{ background: '#f1f5f9', padding: '14px 16px', color: '#64748b', fontWeight: 700, borderRight: '1px solid #cbd5e1' }}>+91</span>
+                    <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: 'hsl(var(--bc) / 0.6)', marginBottom: '8px' }}>Enter 10-Digit Mobile Number</label>
+                    <div style={{ display: 'flex', borderRadius: '10px', overflow: 'hidden', border: '1px solid hsl(var(--b3))' }}>
+                      <span style={{ background: 'hsl(var(--b2))', padding: '14px 16px', color: 'hsl(var(--bc) / 0.55)', fontWeight: 700, borderRight: '1px solid hsl(var(--b3))' }}>+91</span>
                       <input
                         type="tel"
                         maxLength="10"
@@ -402,34 +402,34 @@ export default function MyTrips() {
 
                   <button
                     type="submit"
-                    style={{ background: '#eb2026', color: '#fff', border: 'none', padding: '16px', borderRadius: '10px', fontSize: '16px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(235,32,38,0.3)' }}
+                    style={{ background: 'hsl(var(--er))', color: '#fff', border: 'none', padding: '16px', borderRadius: '10px', fontSize: '16px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(235,32,38,0.3)' }}
                   >
                     Send One-Time Password (OTP)
                   </button>
                 </form>
               ) : (
                 <form onSubmit={handleVerifyOtp} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                  <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '10px', textAlign: 'center' }}>
-                    <div style={{ fontSize: '13px', color: '#64748b' }}>Simulated SMS sent to</div>
-                    <div style={{ fontSize: '16px', fontWeight: 800, color: '#0f172a', marginTop: '2px' }}>+91 {mobilePhone}</div>
+                  <div style={{ background: 'hsl(var(--b2))', padding: '16px', borderRadius: '10px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '13px', color: 'hsl(var(--bc) / 0.55)' }}>Simulated SMS sent to</div>
+                    <div style={{ fontSize: '16px', fontWeight: 800, color: 'hsl(var(--bc))', marginTop: '2px' }}>+91 {mobilePhone}</div>
                   </div>
 
                   <div>
-                    <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '8px' }}>Enter 6-Digit OTP Code</label>
+                    <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: 'hsl(var(--bc) / 0.6)', marginBottom: '8px' }}>Enter 6-Digit OTP Code</label>
                     <input
                       type="text"
                       maxLength="6"
                       placeholder="••••••"
                       value={otpCode}
                       onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
-                      style={{ border: '1px solid #cbd5e1', padding: '16px', borderRadius: '10px', fontSize: '24px', letterSpacing: '12px', textAlign: 'center', fontWeight: 800, width: '100%', outline: 'none' }}
+                      style={{ border: '1px solid hsl(var(--b3))', padding: '16px', borderRadius: '10px', fontSize: '24px', letterSpacing: '12px', textAlign: 'center', fontWeight: 800, width: '100%', outline: 'none' }}
                       autoFocus
                     />
                   </div>
 
                   <button
                     type="submit"
-                    style={{ background: '#10b981', color: '#fff', border: 'none', padding: '16px', borderRadius: '10px', fontSize: '16px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(16,185,129,0.3)' }}
+                    style={{ background: 'hsl(var(--su))', color: '#fff', border: 'none', padding: '16px', borderRadius: '10px', fontSize: '16px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(16,185,129,0.3)' }}
                   >
                     Verify OTP & Log In
                   </button>
@@ -437,7 +437,7 @@ export default function MyTrips() {
                   <button
                     type="button"
                     onClick={() => setOtpSent(false)}
-                    style={{ background: 'transparent', border: 'none', color: '#eb2026', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }}
+                    style={{ background: 'transparent', border: 'none', color: 'hsl(var(--er))', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }}
                   >
                     ← Edit Mobile Number
                   </button>
@@ -455,7 +455,7 @@ export default function MyTrips() {
           position: 'fixed',
           bottom: '24px',
           right: '24px',
-          backgroundColor: notification.type === 'success' ? '#10b981' : '#ef4444',
+          backgroundColor: notification.type === 'success' ? 'hsl(var(--su))' : 'hsl(var(--er))',
           color: 'white',
           padding: '16px 20px',
           borderRadius: '8px',
@@ -489,8 +489,8 @@ export default function MyTrips() {
             textAlign: 'center'
           }}>
             <div style={{ fontSize: '48px', marginBottom: '16px' }}>⚠️</div>
-            <h3 style={{ margin: '0 0 12px', fontSize: '20px', fontWeight: 700, color: '#0f172a' }}>Cancel Booking?</h3>
-            <p style={{ margin: '0 0 20px', color: '#64748b', fontSize: '14px' }}>
+            <h3 style={{ margin: '0 0 12px', fontSize: '20px', fontWeight: 700, color: 'hsl(var(--bc))' }}>Cancel Booking?</h3>
+            <p style={{ margin: '0 0 20px', color: 'hsl(var(--bc) / 0.55)', fontSize: '14px' }}>
               Standard cancellation charges (20%) will apply. Are you sure you want to proceed?
             </p>
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
@@ -500,8 +500,8 @@ export default function MyTrips() {
                   setCancelBookingId(null)
                 }}
                 style={{
-                  background: '#f1f5f9',
-                  color: '#0f172a',
+                  background: 'hsl(var(--b2))',
+                  color: 'hsl(var(--bc))',
                   border: 'none',
                   padding: '10px 24px',
                   borderRadius: '6px',
@@ -516,7 +516,7 @@ export default function MyTrips() {
                   handleCancelBooking(cancelBookingId)
                 }}
                 style={{
-                  background: '#ef4444',
+                  background: 'hsl(var(--er))',
                   color: 'white',
                   border: 'none',
                   padding: '10px 24px',

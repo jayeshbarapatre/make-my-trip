@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import AdminLayout from '../components/Admin/AdminLayout'
 import { adminBusesService } from '../services/adminService'
 import BusForm from '../components/Admin/BusForm'
+import Icons from '../utils/icons'
 import './AdminFlights.css'
 
 const AdminBuses = () => {
@@ -84,8 +85,8 @@ const AdminBuses = () => {
       <div className="admin-page">
         <div className="page-header">
           <h1>Buses Management</h1>
-          <button className="btn-primary" onClick={() => setShowForm(true)}>
-            🚌 Add New Bus
+          <button className="btn-primary" onClick={() => setShowForm(true)} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {Icons.bus({ size: 16 })} Add New Bus
           </button>
         </div>
 
@@ -134,9 +135,15 @@ const AdminBuses = () => {
                       <td>{bus.seatsAvailable}/{bus.seats}</td>
                       <td><span className={`badge ${bus.isActive ? 'badge-active' : 'badge-inactive'}`}>{bus.isActive ? 'Active' : 'Inactive'}</span></td>
                       <td className="actions">
-                        <button className="btn-sm btn-edit" onClick={() => handleEdit(bus)}>✎ Edit</button>
-                        <button className="btn-sm btn-toggle" onClick={() => handleToggleStatus(bus._id)}>{bus.isActive ? '🔒' : '🔓'}</button>
-                        <button className="btn-sm btn-delete" onClick={() => handleDelete(bus._id)}>🗑️ Delete</button>
+                        <button className="btn-sm btn-edit" onClick={() => handleEdit(bus)} title="Edit" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                          {Icons.edit({ size: 14 })} Edit
+                        </button>
+                        <button className="btn-sm btn-toggle" onClick={() => handleToggleStatus(bus._id)} title={bus.isActive ? 'Deactivate' : 'Activate'} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          {bus.isActive ? Icons.toggleOn({ size: 14 }) : Icons.toggleOff({ size: 14 })}
+                        </button>
+                        <button className="btn-sm btn-delete" onClick={() => handleDelete(bus._id)} title="Delete" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                          {Icons.delete({ size: 14 })} Delete
+                        </button>
                       </td>
                     </tr>
                   ))}

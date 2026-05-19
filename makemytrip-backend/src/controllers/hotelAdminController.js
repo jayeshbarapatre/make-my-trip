@@ -35,7 +35,8 @@ export const createHotel = async (req, res) => {
         roomsAvailable: rooms || 50,
         amenities: amenities || [],
         checkin,
-        checkout
+        checkout,
+        isActive: true
       }
     })
 

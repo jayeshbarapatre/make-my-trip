@@ -7,7 +7,7 @@
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, hsl(var(--p)) 0%, #0052a3 100%);
+  background: linear-gradient(135deg, hsl(var(--p)) 0%, hsl(var(--p)) 100%);
   padding: 20px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
 }
@@ -37,7 +37,7 @@
 }
 
 .login-left {
-  background: linear-gradient(135deg, hsl(var(--p)) 0%, #0052a3 100%);
+  background: linear-gradient(135deg, hsl(var(--p)) 0%, hsl(var(--p)) 100%);
   color: white;
   padding: 60px 40px;
   display: flex;
@@ -80,7 +80,7 @@
 }
 
 .login-right button[type="submit"]:hover:not(:disabled) {
-  background: #0052a3;
+  background: hsl(var(--p));
 }
 
 .login-right button[type="submit"]:disabled {
@@ -94,7 +94,7 @@
   justify-content: center;
   align-items: center;
   min-height: calc(100vh - 70px);
-  background: #050e1f;
+  background: hsl(var(--bc));
   padding: 24px var(--sp-m, 16px);
   position: relative;
   overflow: hidden;
@@ -305,7 +305,7 @@
 }
 
 .brand-trip {
-  color: #ffb347;
+  color: hsl(var(--wa) / 0.65);
 }
 
 /* â”€â”€ Center hero editorial content â”€â”€ */
@@ -337,7 +337,7 @@
 .dest-badge-dot {
   width: 7px;
   height: 7px;
-  background: #4ade80;
+  background: hsl(var(--su));
   border-radius: 50%;
   flex-shrink: 0;
   animation: live-pulse 2.2s ease-in-out infinite;
@@ -365,7 +365,7 @@
   line-height: 1.13;
   margin: 0 0 14px;
   letter-spacing: -1px;
-  background: linear-gradient(130deg, hsl(var(--b1)) 40%, #ffe082 100%);
+  background: linear-gradient(130deg, hsl(var(--b1)) 40%, hsl(var(--wa) / 0.4) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -465,7 +465,7 @@
 .dep-status {
   font-size: 10px;
   font-weight: 800;
-  color: #4ade80;
+  color: hsl(var(--su));
   letter-spacing: 0.6px;
   padding: 3px 11px;
   background: rgba(74, 222, 128, 0.13);
@@ -475,7 +475,7 @@
 }
 
 .dep-status.boarding {
-  color: #fbbf24;
+  color: hsl(var(--wa));
   background: rgba(251, 191, 36, 0.13);
   animation: boarding-blink 1.4s ease-in-out infinite;
 }
@@ -547,7 +547,7 @@
   position: absolute;
   top: 9px;
   right: 9px;
-  background: linear-gradient(135deg, #ff3d5a, #ff7b3a);
+  background: linear-gradient(135deg, hsl(var(--er)), hsl(var(--wa)));
   color: hsl(var(--b1));
   font-size: 8px;
   font-weight: 900;
@@ -560,7 +560,7 @@
 }
 
 .dest-card-badge.trending {
-  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  background: linear-gradient(135deg, hsl(var(--a)), hsl(var(--a) / 0.8));
   box-shadow: 0 2px 8px rgba(124, 58, 237, 0.38);
 }
 
@@ -584,7 +584,7 @@
 .dest-card-price {
   display: block;
   font-size: 10px;
-  color: #fde68a;
+  color: hsl(var(--wa) / 0.3);
   font-weight: 700;
   margin-top: 2px;
 }
@@ -657,7 +657,7 @@
 /* Ocean-to-sky gradient accent bar at top of form panel */
 .form-accent-bar {
   height: 3px;
-  background: linear-gradient(90deg, hsl(var(--p)) 0%, #1a73e8 55%, #00c4e0 100%);
+  background: linear-gradient(90deg, hsl(var(--p)) 0%, hsl(var(--p)) 55%, hsl(var(--in)) 100%);
   border-radius: 2px;
   margin-bottom: 30px;
   flex-shrink: 0;
@@ -687,7 +687,7 @@
 .form-main-title {
   font-size: 26px;
   font-weight: 800;
-  color: #0a1628;
+  color: hsl(var(--bc));
   margin-bottom: 6px;
   letter-spacing: -0.5px;
   line-height: 1.2;
@@ -758,7 +758,7 @@
 
 /* Label turns blue when any child is focused */
 .login-input-group:focus-within label {
-  color: #1a73e8;
+  color: hsl(var(--p));
 }
 
 .login-input-wrapper {
@@ -772,7 +772,7 @@
   width: 100%;
   height: 50px;
   padding: 12px 16px 12px 46px;
-  border: 1.5px solid #e8edf5;
+  border: 1.5px solid hsl(var(--b2));
   border-radius: 12px;
   font-size: 14px;
   color: hsl(var(--bc));
@@ -784,7 +784,7 @@
 }
 
 .login-input-field::placeholder {
-  color: #b0bec5;
+  color: hsl(var(--bc) / 0.4);
   font-size: 13.5px;
 }
 
@@ -794,7 +794,7 @@
   background-color: hsl(var(--b1));
   background-image:
     linear-gradient(hsl(var(--b1)), hsl(var(--b1))),
-    linear-gradient(135deg, hsl(var(--p)), #1a73e8, #00c4e0);
+    linear-gradient(135deg, hsl(var(--p)), hsl(var(--p)), hsl(var(--in)));
   background-origin: border-box;
   background-clip: padding-box, border-box;
   box-shadow: 0 0 0 4px rgba(26, 115, 232, 0.09);
@@ -812,7 +812,7 @@
 
 /* Icon turns accent-blue when input is focused */
 .login-input-group:focus-within .input-icon-left {
-  color: #1a73e8;
+  color: hsl(var(--p));
 }
 
 /* â”€â”€ Error card â”€â”€ */
@@ -820,9 +820,9 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #b91c1c;
+  background: hsl(var(--er) / 0.05);
+  border: 1px solid hsl(var(--er) / 0.3);
+  color: hsl(var(--er));
   padding: 12px 16px;
   border-radius: 11px;
   font-size: 13px;
@@ -858,7 +858,7 @@
 .forgot-password-link {
   background: none;
   border: none;
-  color: #1a73e8;
+  color: hsl(var(--p));
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -876,7 +876,7 @@
 .login-submit-btn {
   width: 100%;
   height: 52px;
-  background: linear-gradient(135deg, hsl(var(--p)) 0%, #1565c0 50%, #1a73e8 100%);
+  background: linear-gradient(135deg, hsl(var(--p)) 0%, hsl(var(--p)) 50%, hsl(var(--p)) 100%);
   background-size: 200% 100%;
   background-position: right center;
   color: hsl(var(--b1));
@@ -979,7 +979,7 @@
 }
 
 .form-footer-switch-btn:hover {
-  color: #1a73e8;
+  color: hsl(var(--p));
   text-decoration: underline;
 }
 
@@ -987,14 +987,14 @@
   text-align: center;
   margin-top: 18px;
   font-size: 11px;
-  color: #b0bec5;
+  color: hsl(var(--bc) / 0.4);
   line-height: 1.65;
   position: relative;
   z-index: 1;
 }
 
 .legal-highlight-link {
-  color: #1a73e8;
+  color: hsl(var(--p));
   cursor: pointer;
   font-weight: 500;
 }

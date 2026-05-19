@@ -1,23 +1,23 @@
 /* Udaipur Listing Scope styles */
 .udaipur-page-wrapper {
-  --mmt-blue: var(--clr-primary, #003580);
-  --mmt-blue-d: var(--clr-primary-dark, #002244);
+  --mmt-blue: var(--clr-primary, hsl(var(--p)));
+  --mmt-blue-d: var(--clr-primary-dark, hsl(var(--bc)));
   --mmt-blue-l: rgba(0, 53, 128, 0.08);
-  --mmt-red: #d32f2f;
-  --mmt-orange: #ff9800;
-  --mmt-yellow: #fbc02d;
-  --mmt-green: #388e3c;
-  --mmt-purple: #7b1fa2;
+  --mmt-red: hsl(var(--er));
+  --mmt-orange: hsl(var(--wa));
+  --mmt-yellow: hsl(var(--wa));
+  --mmt-green: hsl(var(--su));
+  --mmt-purple: hsl(var(--a));
   --mmt-purple-l: rgba(123, 31, 162, 0.08);
-  --rating-blue: #003580;
-  --bg: #f3f4f6;
-  --card: #ffffff;
-  --border: #e5e7eb;
-  --border-l: #e5e7eb;
-  --text: #1f2937;
-  --text-2: #4b5563;
-  --text-3: #6b7280;
-  --text-4: #9ca3af;
+  --rating-blue: hsl(var(--p));
+  --bg: hsl(var(--b2));
+  --card: hsl(var(--b1));
+  --border: hsl(var(--b3));
+  --border-l: hsl(var(--b3));
+  --text: hsl(var(--bc));
+  --text-2: hsl(var(--bc) / 0.7);
+  --text-3: hsl(var(--bc) / 0.6);
+  --text-4: hsl(var(--bc) / 0.5);
 
   font-family: "Space Grotesk", sans-serif;
   font-size: 13px;
@@ -132,7 +132,7 @@
 }
 
 .udaipur-page-wrapper .sidebar::-webkit-scrollbar-thumb {
-  background: #d0d0d0;
+  background: hsl(var(--b3));
   border-radius: 3px;
 }
 
@@ -143,7 +143,7 @@
   border-radius: 6px;
   overflow: hidden;
   cursor: pointer;
-  background: #f5f1e7;
+  background: hsl(var(--b2) / 0.8);
   border: 1px solid var(--border-l);
 }
 
@@ -218,7 +218,7 @@
 .udaipur-page-wrapper .filt-h {
   font-size: 13px;
   font-weight: 700;
-  color: #1c1c1c;
+  color: hsl(var(--bc));
   margin-bottom: 10px;
 }
 
@@ -240,7 +240,7 @@
 .udaipur-page-wrapper .fc-box {
   width: 14px;
   height: 14px;
-  border: 1.5px solid #b5b5b5;
+  border: 1.5px solid hsl(var(--bc) / 0.45);
   border-radius: 2px;
   display: flex;
   align-items: center;
@@ -257,7 +257,7 @@
 .udaipur-page-wrapper .fc-radio {
   width: 14px;
   height: 14px;
-  border: 1.5px solid #b5b5b5;
+  border: 1.5px solid hsl(var(--bc) / 0.45);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -308,7 +308,7 @@
 }
 
 .udaipur-page-wrapper .amen-ic {
-  color: #0db981;
+  color: hsl(var(--su));
   font-size: 9px;
 }
 
@@ -418,12 +418,12 @@
   font-size: 18px;
   font-weight: 700;
   margin: 0;
-  color: #1c1c1c;
+  color: hsl(var(--bc));
 }
 
 .udaipur-page-wrapper .travel-tips {
-  background: linear-gradient(135deg, #efeaff, #f5f3ff);
-  border: 1px solid #d4c5f5;
+  background: linear-gradient(135deg, hsl(var(--a) / 0.1), hsl(var(--a) / 0.08));
+  border: 1px solid hsl(var(--a) / 0.2);
   border-radius: 20px;
   padding: 5px 12px;
   font-size: 11px;
@@ -693,8 +693,8 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  border: 1px solid #f4c8ca;
-  background: #fff5f5;
+  border: 1px solid hsl(var(--er) / 0.2);
+  background: hsl(var(--er) / 0.03);
   color: var(--mmt-red);
   font-size: 9.5px;
   font-weight: 700;
@@ -708,7 +708,7 @@
   font-size: 15px;
   font-weight: 700;
   margin: 0 0 4px;
-  color: #1c1c1c;
+  color: hsl(var(--bc));
   line-height: 1.3;
   display: flex;
   align-items: center;
@@ -728,7 +728,7 @@
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: #e8f8f1;
+  background: hsl(var(--su) / 0.08);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -759,7 +759,7 @@
 
 .udaipur-page-wrapper .hc-room {
   font-size: 11.5px;
-  color: #1c1c1c;
+  color: hsl(var(--bc));
   border-left: 2px solid var(--text-3);
   padding-left: 6px;
   margin: 6px 0;
@@ -768,7 +768,7 @@
 .udaipur-page-wrapper .couple-pill {
   display: inline-block;
   font-size: 10px;
-  border: 1px solid #d8d8d8;
+  border: 1px solid hsl(var(--b3));
   padding: 2px 8px;
   border-radius: 3px;
   color: var(--text-2);
@@ -878,7 +878,7 @@
 .udaipur-page-wrapper .price {
   font-size: 19px;
   font-weight: 700;
-  color: #1c1c1c;
+  color: hsl(var(--bc));
   margin-top: 1px;
 }
 
@@ -899,7 +899,7 @@
 .udaipur-page-wrapper .long-stay {
   margin-top: 10px;
   border: 1px solid var(--mmt-purple-l);
-  background: #faf8ff;
+  background: hsl(var(--a) / 0.05);
   border-radius: 4px;
   padding: 7px 10px;
 }
@@ -988,7 +988,7 @@
 }
 
 .udaipur-page-wrapper .lc-photo {
-  background: linear-gradient(90deg, #eee 0%, #f5f5f5 50%, #eee 100%);
+  background: linear-gradient(90deg, #eee 0%, hsl(var(--b2)) 50%, #eee 100%);
   background-size: 200% 100%;
   animation: shimmer 1.4s infinite;
 }
@@ -1002,7 +1002,7 @@
 
 .udaipur-page-wrapper .lc-line {
   height: 12px;
-  background: linear-gradient(90deg, #eee 0%, #f5f5f5 50%, #eee 100%);
+  background: linear-gradient(90deg, #eee 0%, hsl(var(--b2)) 50%, #eee 100%);
   background-size: 200% 100%;
   animation: shimmer 1.4s infinite;
   border-radius: 4px;
@@ -1275,7 +1275,7 @@
 
 .udaipur-page-wrapper .control-btn:hover {
   color: var(--text);
-  background: #f0f0f0;
+  background: hsl(var(--b2));
 }
 
 .udaipur-page-wrapper .control-btn.active {
@@ -1301,7 +1301,7 @@
 
 .udaipur-page-wrapper .mobile-frame {
   width: 390px;
-  background: #f3f3f3;
+  background: hsl(var(--b2));
   border-radius: 36px;
   border: 8px solid #333;
   overflow: hidden;

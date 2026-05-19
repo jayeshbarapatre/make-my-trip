@@ -35,18 +35,21 @@ export const searchFlights = async (req, res) => {
   try {
     const { from, to, date, passengers, page = 1, limit = 20, minPrice, maxPrice } = req.query
 
-    // Generate mock data for the requested route
-    const mockFlights = from && to ? generateMockFlights(from, to) : []
+    // Fetch active flights from database
+    const allFlights = await prisma.flight.findMany({
+      where: { isActive: true },
+      orderBy: { price: 'asc' }
+    })
 
-    // Filter by criteria
-    let results = mockFlights.filter(f => {
+    // Filter by route and criteria
+    let results = allFlights.filter(f => {
+      const fromMatch = !from || (f.departure && f.departure.city && f.departure.city.toLowerCase() === from.toLowerCase())
+      const toMatch = !to || (f.arrival && f.arrival.city && f.arrival.city.toLowerCase() === to.toLowerCase())
       const matchPassengers = !passengers || f.seatsAvailable >= parseInt(passengers)
       const matchMinPrice = !minPrice || f.price >= parseFloat(minPrice)
       const matchMaxPrice = !maxPrice || f.price <= parseFloat(maxPrice)
-      return matchPassengers && matchMinPrice && matchMaxPrice
+      return fromMatch && toMatch && matchPassengers && matchMinPrice && matchMaxPrice
     })
-
-    results.sort((a, b) => a.price - b.price)
 
     const pageNum = Math.max(1, parseInt(page) || 1)
     const pageSize = Math.min(20, parseInt(limit) || 20)

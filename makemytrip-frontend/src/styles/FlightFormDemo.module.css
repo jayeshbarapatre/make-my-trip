@@ -1,6 +1,6 @@
 ﻿.container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: linear-gradient(135deg, hsl(var(--b2)) 0%, hsl(var(--b3)) 100%);
   padding: 40px 20px;
 }
 
@@ -89,7 +89,7 @@
   position: fixed;
   top: 20px;
   right: 20px;
-  background: #4caf50;
+  background: hsl(var(--su));
   color: white;
   padding: 16px 24px;
   border-radius: 8px;
@@ -126,7 +126,7 @@
 }
 
 .submittedData pre {
-  background: #f5f5f5;
+  background: hsl(var(--b2));
   padding: 16px;
   border-radius: 8px;
   overflow-x: auto;
@@ -162,9 +162,9 @@
 .apiEndpoints li {
   padding: 12px;
   margin-bottom: 8px;
-  background: #f5f5f5;
+  background: hsl(var(--b2));
   border-radius: 6px;
-  border-left: 4px solid #1a73e8;
+  border-left: 4px solid hsl(var(--p));
   font-family: 'Courier New', monospace;
   font-size: 13px;
   color: #333;

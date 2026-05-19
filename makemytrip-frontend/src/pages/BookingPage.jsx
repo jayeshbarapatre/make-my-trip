@@ -290,7 +290,7 @@ export default function BookingPage() {
     }
   }
 
-  const handlePaymentSubmit = (e) => {
+  const handlePaymentSubmit = async (e) => {
     e.preventDefault()
     if (!user) {
       showToastMsg("Please login to continue booking", "info")
@@ -299,6 +299,7 @@ export default function BookingPage() {
       return
     }
 
+    // Validate form inputs
     if (payMethod === 'upi' && !upiDetails.vpa.includes('@')) {
       showToastMsg('Please enter a valid UPI ID (e.g. name@okhdfc)', 'error')
       return
@@ -309,62 +310,187 @@ export default function BookingPage() {
     }
 
     setPaymentLoading(true)
-    setLoadingMessage('Contacting payment gateway...')
+    setLoadingMessage('Creating payment order...')
 
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-    const generateRandomString = (len) => Array.from({ length: len }, () => characters.charAt(Math.floor(Math.random() * characters.length))).join('')
-
-    setTimeout(() => {
-      setLoadingMessage('Authorizing transaction with bank secure server...')
-      setTimeout(() => {
-        setLoadingMessage('Generating confirmed itinerary and PNR ticket...')
-        setTimeout(() => {
-          setPaymentLoading(false)
-
-          const departureObj = typeof flight.departure === 'object' ? flight.departure : { date: '2026-05-20' }
-          const arrivalObj = typeof flight.arrival === 'object' ? flight.arrival : {}
-          const bookingPayload = {
-            type: 'flight',
+    try {
+      // Step 1: Create order on backend
+      console.log('📋 Creating Razorpay order...')
+      const orderResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/payment/create-order`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          amount: totalAmount,
+          currency: 'INR',
+          notes: {
+            bookingType: 'flight',
             flightId: flight.id,
-            fromCity: flight.source || (typeof flight.departure === 'object' ? flight.departure.city : ''),
-            toCity: flight.destination || (typeof flight.arrival === 'object' ? flight.arrival.city : ''),
-            departureDate: departureObj.date || '2026-05-20',
-            returnDate: arrivalObj.date,
-            travellers: travellerDetails,
-            totalAmount: totalAmount,
-            contact: passenger,
-            userEmail: passenger?.email,
-            userName: user?.name
+            totalPassengers: totalPassengers
           }
+        })
+      })
 
-          bookingService.createBooking(bookingPayload).then((res) => {
-            const confirmedData = res?.data || {}
-            setBookingDetails({
-              bookingId: confirmedData.bookingId || 'MMT' + Math.floor(10000000 + Math.random() * 90000000),
-              pnr: confirmedData.pnr || generateRandomString(6),
-              flight,
-              travellers: travellerDetails,
-              contact: passenger,
-              amount: totalAmount,
-              date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+      if (!orderResponse.ok) {
+        throw new Error('Failed to create payment order')
+      }
+
+      const orderData = await orderResponse.json()
+      console.log('✓ Order created:', orderData.data)
+
+      if (!orderData.success || !orderData.data?.orderId) {
+        throw new Error('Invalid order response')
+      }
+
+      // Step 2: Check if Razorpay script is loaded
+      if (!window.Razorpay) {
+        throw new Error('Razorpay SDK not loaded. Please refresh the page.')
+      }
+
+      setLoadingMessage('Opening Razorpay checkout...')
+
+      // Step 3: Open Razorpay checkout
+      const razorpayOptions = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        order_id: orderData.data.orderId,
+        amount: orderData.data.amount,
+        currency: orderData.data.currency,
+        name: 'MakeMyTrip',
+        description: `Flight booking for ${totalPassengers} passenger(s)`,
+
+        handler: async (response) => {
+          console.log('✓ Payment successful!', response)
+          console.log('💳 Payment ID:', response.razorpay_payment_id)
+          console.log('📋 Order ID:', response.razorpay_order_id)
+          console.log('🔐 Signature:', response.razorpay_signature)
+
+          try {
+            // Step 4: Verify payment on backend
+            setLoadingMessage('Verifying payment...')
+
+            const verifyResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/payment/verify`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                orderId: response.razorpay_order_id,
+                paymentId: response.razorpay_payment_id,
+                signature: response.razorpay_signature
+              })
             })
-            setStep(4)
-          }).catch(err => {
-            console.error(err)
-            setBookingDetails({
-              bookingId: 'MMT' + Math.floor(10000000 + Math.random() * 90000000),
-              pnr: generateRandomString(6),
-              flight,
+
+            if (!verifyResponse.ok) {
+              throw new Error('Payment verification failed')
+            }
+
+            const verifyData = await verifyResponse.json()
+            console.log('✓ Payment verified!', verifyData)
+
+            if (!verifyData.success) {
+              throw new Error(verifyData.message || 'Payment verification failed')
+            }
+
+            // Step 5: Create booking after successful payment
+            setLoadingMessage('Creating booking...')
+
+            const departureObj = typeof flight.departure === 'object' ? flight.departure : { date: '2026-05-20' }
+            const arrivalObj = typeof flight.arrival === 'object' ? flight.arrival : {}
+            const bookingPayload = {
+              type: 'flight',
+              flightId: flight.id,
+              fromCity: flight.source || (typeof flight.departure === 'object' ? flight.departure.city : ''),
+              toCity: flight.destination || (typeof flight.arrival === 'object' ? flight.arrival.city : ''),
+              departureDate: departureObj.date || '2026-05-20',
+              returnDate: arrivalObj.date,
               travellers: travellerDetails,
+              totalAmount: totalAmount,
+              paymentId: response.razorpay_payment_id,
+              orderId: response.razorpay_order_id,
               contact: passenger,
-              amount: totalAmount,
-              date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
-            })
-            setStep(4)
-          })
-        }, 1000)
-      }, 1000)
-    }, 1000)
+              userEmail: passenger?.email,
+              userName: user?.name
+            }
+
+            console.log('📝 Creating booking with payment details...')
+
+            bookingService.createBooking(bookingPayload)
+              .then((res) => {
+                console.log('✓ Booking created!', res)
+                setPaymentLoading(false)
+                const confirmedData = res?.data || {}
+                setBookingDetails({
+                  bookingId: confirmedData.bookingId || 'MMT' + Math.floor(10000000 + Math.random() * 90000000),
+                  pnr: confirmedData.pnr || 'PNR' + Math.random().toString(36).substring(2, 8).toUpperCase(),
+                  flight,
+                  travellers: travellerDetails,
+                  contact: passenger,
+                  amount: totalAmount,
+                  paymentId: response.razorpay_payment_id,
+                  date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+                })
+                setStep(4)
+                showToastMsg('🎉 Booking confirmed! Your ticket has been sent to your email.', 'success')
+              })
+              .catch((err) => {
+                console.error('Booking creation error:', err)
+                // Even if booking creation fails, payment was successful
+                setPaymentLoading(false)
+                setBookingDetails({
+                  bookingId: 'MMT' + Math.floor(10000000 + Math.random() * 90000000),
+                  pnr: 'PNR' + Math.random().toString(36).substring(2, 8).toUpperCase(),
+                  flight,
+                  travellers: travellerDetails,
+                  contact: passenger,
+                  amount: totalAmount,
+                  paymentId: response.razorpay_payment_id,
+                  date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+                })
+                setStep(4)
+                showToastMsg('✓ Payment successful! Your booking is being processed.', 'success')
+              })
+          } catch (err) {
+            console.error('Payment verification error:', err)
+            setPaymentLoading(false)
+            showToastMsg('Payment verified but booking failed: ' + err.message, 'error')
+          }
+        },
+
+        prefill: {
+          name: travellerDetails[0]?.firstName + ' ' + travellerDetails[0]?.lastName,
+          email: passenger.email,
+          contact: passenger.phone
+        },
+
+        notes: {
+          bookingType: 'flight',
+          passengers: totalPassengers,
+          flightId: flight.id
+        },
+
+        theme: {
+          color: '#003580'
+        },
+
+        modal: {
+          ondismiss: () => {
+            console.log('❌ Payment cancelled by user')
+            setPaymentLoading(false)
+            showToastMsg('Payment cancelled. Please try again.', 'info')
+          }
+        }
+      }
+
+      console.log('🔓 Opening Razorpay checkout with options:', razorpayOptions)
+      const razorpay = new window.Razorpay(razorpayOptions)
+      razorpay.open()
+
+    } catch (err) {
+      console.error('❌ Payment error:', err)
+      setPaymentLoading(false)
+      showToastMsg('Payment failed: ' + err.message, 'error')
+    }
   }
 
   const handleDownloadPDF = async () => {
@@ -376,7 +502,7 @@ export default function BookingPage() {
         scale: 2,
         useCORS: true,
         logging: false,
-        backgroundColor: '#ffffff'
+        backgroundColor: 'hsl(var(--b1))'
       })
       const imgData = canvas.toDataURL('image/png')
       const pdf = new jsPDF({
@@ -499,10 +625,10 @@ export default function BookingPage() {
                 </div>
 
                 <div style={s.refundableTerms}>
-                  <p style={{ margin: 0, fontWeight: 700, color: flight.refundable ? '#2e7d32' : '#c62828' }}>
+                  <p style={{ margin: 0, fontWeight: 700, color: flight.refundable ? 'hsl(var(--su))' : 'hsl(var(--er) / 0.8)' }}>
                     {flight.refundable ? '✓ Refundable Ticket' : '✗ Cancellation penalties apply (Non-refundable)'}
                   </p>
-                  <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#6b7280' }}>
+                  <p style={{ margin: '4px 0 0', fontSize: '12px', color: 'hsl(var(--bc) / 0.6)' }}>
                     Standard cancellation charges of the airline will apply if cancelled before departure.
                   </p>
                 </div>
@@ -566,8 +692,8 @@ export default function BookingPage() {
                             showToastMsg(`Traveller #${index + 1} removed`, 'success')
                           }}
                           style={{
-                            background: '#fee2e2',
-                            color: '#991b1b',
+                            background: 'hsl(var(--er) / 0.08)',
+                            color: 'hsl(var(--er) / 0.7)',
                             border: 'none',
                             borderRadius: '6px',
                             padding: '8px 14px',
@@ -580,10 +706,10 @@ export default function BookingPage() {
                             transition: 'all 0.2s ease'
                           }}
                           onMouseOver={(e) => {
-                            e.target.style.background = '#fca5a5'
+                            e.target.style.background = 'hsl(var(--er) / 0.4)'
                           }}
                           onMouseOut={(e) => {
-                            e.target.style.background = '#fee2e2'
+                            e.target.style.background = 'hsl(var(--er) / 0.08)'
                           }}
                         >
                           🗑️ Delete
@@ -709,7 +835,7 @@ export default function BookingPage() {
                 {/* Contact Card */}
                 <div style={s.cardPanel}>
                   <h3 style={s.travellerFormTitle}>📞 Contact Information</h3>
-                  <p style={{ fontSize: '12px', color: '#6b7280', margin: '-10px 0 16px' }}>
+                  <p style={{ fontSize: '12px', color: 'hsl(var(--bc) / 0.6)', margin: '-10px 0 16px' }}>
                     Your ticket details and flight updates will be sent to these details.
                   </p>
 
@@ -759,7 +885,7 @@ export default function BookingPage() {
                   <h3 style={s.summaryTitle}>Itinerary Overview</h3>
                   <div style={s.overviewMiniCard}>
                     <div style={{ fontWeight: 800 }}>{flight.source} → {flight.destination}</div>
-                    <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>
+                    <div style={{ fontSize: '12px', color: 'hsl(var(--bc) / 0.6)', marginTop: '4px' }}>
                       {fmtDateTime(flight.departure)} · {flight.airline}
                     </div>
                   </div>
@@ -832,7 +958,7 @@ export default function BookingPage() {
                         {payMethod === 'upi' && (
                           <div>
                             <h4 style={{ margin: '0 0 12px' }}>Pay using Unified Payments Interface</h4>
-                            <p style={{ fontSize: '12px', color: '#6b7280', marginBottom: '20px' }}>
+                            <p style={{ fontSize: '12px', color: 'hsl(var(--bc) / 0.6)', marginBottom: '20px' }}>
                               Enter your Virtual Private Address (VPA) or scan the generated QR code below.
                             </p>
 
@@ -849,7 +975,7 @@ export default function BookingPage() {
 
                             <div style={s.qrWrapper}>
                               <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=make-my-trip-upi-payment-gateway" alt="UPI Payment QR Code" style={s.qrImage} />
-                              <p style={{ fontSize: '11px', color: '#6b7280', margin: '8px 0 0' }}>
+                              <p style={{ fontSize: '11px', color: 'hsl(var(--bc) / 0.6)', margin: '8px 0 0' }}>
                                 Scan this QR code to pay instantly with any UPI app.
                               </p>
                             </div>
@@ -930,7 +1056,7 @@ export default function BookingPage() {
                         {payMethod === 'netbanking' && (
                           <div>
                             <h4 style={{ margin: '0 0 12px' }}>Pay using Net Banking</h4>
-                            <p style={{ fontSize: '12px', color: '#6b7280', marginBottom: '20px' }}>
+                            <p style={{ fontSize: '12px', color: 'hsl(var(--bc) / 0.6)', marginBottom: '20px' }}>
                               Select your bank from the popular banks list below.
                             </p>
 
@@ -989,7 +1115,7 @@ export default function BookingPage() {
                       <div style={s.passengerRosterBlock}>
                         <div style={{ fontWeight: 800, fontSize: '12.5px', marginBottom: '6px' }}>PASSENGERS</div>
                         {travellerDetails.map((t, index) => (
-                          <div key={index} style={{ fontSize: '12px', color: '#4b5563', marginBottom: '4px' }}>
+                          <div key={index} style={{ fontSize: '12px', color: 'hsl(var(--bc) / 0.7)', marginBottom: '4px' }}>
                             • {t.firstName} {t.lastName} ({t.type})
                           </div>
                         ))}
@@ -1007,7 +1133,7 @@ export default function BookingPage() {
           {step === 4 && bookingDetails && (
             <div style={s.confirmationWrapper}>
               {/* This ID is targeted by html2canvas for PDF generation */}
-              <div id="e-ticket-content" style={{ background: '#fff', borderRadius: '16px', overflow: 'hidden', border: '1px solid #e5e7eb' }}>
+              <div id="e-ticket-content" style={{ background: '#fff', borderRadius: '16px', overflow: 'hidden', border: '1px solid hsl(var(--b3))' }}>
                 <div style={s.successBannerPremium}>
                   <div style={s.successBadgePremium}>
                     <span style={s.successIcon}>✓</span>
@@ -1040,7 +1166,7 @@ export default function BookingPage() {
                           <div style={{ ...s.logoBox, background: airlineColor, width: '40px', height: '40px' }}>{airlineCode}</div>
                           <div>
                             <div style={{ fontWeight: 800, fontSize: '16px' }}>{flight.airline}</div>
-                            <div style={{ fontSize: '12px', color: '#6b7280' }}>{flight.flightNumber} · Economy</div>
+                            <div style={{ fontSize: '12px', color: 'hsl(var(--bc) / 0.6)' }}>{flight.flightNumber} · Economy</div>
                           </div>
                         </div>
                         
@@ -1106,10 +1232,10 @@ export default function BookingPage() {
                         ))}
                       </div>
 
-                      <div style={{ ...s.ticketInfoRow, marginTop: '24px', borderTop: '1px dashed #e5e7eb', paddingTop: '16px' }}>
+                      <div style={{ ...s.ticketInfoRow, marginTop: '24px', borderTop: '1px dashed hsl(var(--b3))', paddingTop: '16px' }}>
                         <div style={s.tiBlock}>
                           <span style={s.tiLabel}>Payment Status</span>
-                          <span style={{ ...s.tiVal, color: '#059669' }}>SUCCESS</span>
+                          <span style={{ ...s.tiVal, color: 'hsl(var(--su))' }}>SUCCESS</span>
                         </div>
                         <div style={s.tiBlock}>
                           <span style={s.tiLabel}>Total Paid</span>
@@ -1191,7 +1317,7 @@ export default function BookingPage() {
                 position: 'absolute',
                 top: '20px',
                 right: '20px',
-                background: '#f3f4f6',
+                background: 'hsl(var(--b2))',
                 border: 'none',
                 width: '32px',
                 height: '32px',
@@ -1206,16 +1332,16 @@ export default function BookingPage() {
 
             <div style={{ textAlign: 'center', marginBottom: '24px' }}>
               <span style={{ fontSize: '36px', display: 'block', marginBottom: '8px' }}>🔐</span>
-              <h3 style={{ margin: '0 0 8px', fontSize: '22px', fontWeight: 900, color: '#111827' }}>
+              <h3 style={{ margin: '0 0 8px', fontSize: '22px', fontWeight: 900, color: 'hsl(var(--bc) / 0.9)' }}>
                 Login to Continue
               </h3>
-              <p style={{ margin: 0, fontSize: '13px', color: '#6b7280' }}>
+              <p style={{ margin: 0, fontSize: '13px', color: 'hsl(var(--bc) / 0.6)' }}>
                 MakeMyTrip requires verification before booking. Enter your mobile number to instantly login.
               </p>
             </div>
 
             {loginError && (
-              <div style={{ background: '#fee2e2', color: '#991b1b', padding: '10px 14px', borderRadius: '8px', fontSize: '12px', marginBottom: '16px', textAlign: 'center', fontWeight: 600 }}>
+              <div style={{ background: 'hsl(var(--er) / 0.08)', color: 'hsl(var(--er) / 0.7)', padding: '10px 14px', borderRadius: '8px', fontSize: '12px', marginBottom: '16px', textAlign: 'center', fontWeight: 600 }}>
                 {loginError}
               </div>
             )}
@@ -1223,11 +1349,11 @@ export default function BookingPage() {
             {!otpSent ? (
               <form onSubmit={handleSendOtp}>
                 <div style={{ marginBottom: '20px' }}>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#374151', marginBottom: '6px' }}>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'hsl(var(--bc) / 0.65)', marginBottom: '6px' }}>
                     MOBILE NUMBER
                   </label>
                   <div style={{ display: 'flex', gap: '10px' }}>
-                    <span style={{ background: '#f3f4f6', border: '1px solid #d1d5db', borderRadius: '8px', padding: '10px 14px', fontSize: '14px', fontWeight: 700, color: '#4b5563', display: 'flex', alignItems: 'center' }}>
+                    <span style={{ background: 'hsl(var(--b2))', border: '1px solid hsl(var(--b3))', borderRadius: '8px', padding: '10px 14px', fontSize: '14px', fontWeight: 700, color: 'hsl(var(--bc) / 0.7)', display: 'flex', alignItems: 'center' }}>
                       +91
                     </span>
                     <input
@@ -1236,7 +1362,7 @@ export default function BookingPage() {
                       value={mobilePhone}
                       maxLength={10}
                       onChange={(e) => setMobilePhone(e.target.value)}
-                      style={{ flex: 1, border: '1px solid #d1d5db', borderRadius: '8px', padding: '10px 14px', fontSize: '14px', fontWeight: 600, outline: 'none', width: '100%', boxSizing: 'border-box' }}
+                      style={{ flex: 1, border: '1px solid hsl(var(--b3))', borderRadius: '8px', padding: '10px 14px', fontSize: '14px', fontWeight: 600, outline: 'none', width: '100%', boxSizing: 'border-box' }}
                       autoFocus
                       required
                     />
@@ -1244,7 +1370,7 @@ export default function BookingPage() {
                 </div>
                 <button
                   type="submit"
-                  style={{ width: '100%', background: 'var(--clr-primary, #ef4444)', color: '#fff', border: 'none', borderRadius: '8px', padding: '14px', fontSize: '15px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(239,68,68,0.3)' }}
+                  style={{ width: '100%', background: 'var(--clr-primary, hsl(var(--er)))', color: '#fff', border: 'none', borderRadius: '8px', padding: '14px', fontSize: '15px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(239,68,68,0.3)' }}
                 >
                   GET ONE TIME PASSWORD (OTP)
                 </button>
@@ -1253,13 +1379,13 @@ export default function BookingPage() {
               <form onSubmit={handleVerifyOtp}>
                 <div style={{ marginBottom: '20px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                    <label style={{ fontSize: '12px', fontWeight: 700, color: '#374151' }}>
+                    <label style={{ fontSize: '12px', fontWeight: 700, color: 'hsl(var(--bc) / 0.65)' }}>
                       ENTER 6-DIGIT OTP
                     </label>
                     <button
                       type="button"
                       onClick={() => setOtpSent(false)}
-                      style={{ background: 'none', border: 'none', color: 'var(--clr-primary, #ef4444)', fontSize: '12px', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }}
+                      style={{ background: 'none', border: 'none', color: 'var(--clr-primary, hsl(var(--er)))', fontSize: '12px', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }}
                     >
                       Change Number
                     </button>
@@ -1270,17 +1396,17 @@ export default function BookingPage() {
                     placeholder="e.g. 123456"
                     value={otpCode}
                     onChange={(e) => setOtpCode(e.target.value)}
-                    style={{ width: '100%', border: '2px solid var(--clr-primary, #ef4444)', borderRadius: '8px', padding: '12px 14px', fontSize: '18px', fontWeight: 800, letterSpacing: '4px', textAlign: 'center', outline: 'none', boxSizing: 'border-box' }}
+                    style={{ width: '100%', border: '2px solid var(--clr-primary, hsl(var(--er)))', borderRadius: '8px', padding: '12px 14px', fontSize: '18px', fontWeight: 800, letterSpacing: '4px', textAlign: 'center', outline: 'none', boxSizing: 'border-box' }}
                     autoFocus
                     required
                   />
-                  <span style={{ display: 'block', textAlign: 'center', fontSize: '11px', color: '#10b981', marginTop: '8px', fontWeight: 600 }}>
+                  <span style={{ display: 'block', textAlign: 'center', fontSize: '11px', color: 'hsl(var(--su))', marginTop: '8px', fontWeight: 600 }}>
                     ✓ Simulated OTP sent! (Use test OTP: 123456)
                   </span>
                 </div>
                 <button
                   type="submit"
-                  style={{ width: '100%', background: '#10b981', color: '#fff', border: 'none', borderRadius: '8px', padding: '14px', fontSize: '15px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(16,185,129,0.3)' }}
+                  style={{ width: '100%', background: 'hsl(var(--su))', color: '#fff', border: 'none', borderRadius: '8px', padding: '14px', fontSize: '15px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(16,185,129,0.3)' }}
                 >
                   VERIFY &amp; RESUME BOOKING
                 </button>
@@ -1300,8 +1426,8 @@ export default function BookingPage() {
           animation: 'slideInUp 0.3s ease-out'
         }}>
           <div style={{
-            background: toastType === 'error' ? '#fee2e2' : toastType === 'success' ? '#dcfce7' : '#dbeafe',
-            border: `1.5px solid ${toastType === 'error' ? '#fca5a5' : toastType === 'success' ? '#86efac' : '#93c5fd'}`,
+            background: toastType === 'error' ? 'hsl(var(--er) / 0.08)' : toastType === 'success' ? 'hsl(var(--su) / 0.08)' : 'hsl(var(--p) / 0.1)',
+            border: `1.5px solid ${toastType === 'error' ? 'hsl(var(--er) / 0.4)' : toastType === 'success' ? 'hsl(var(--su) / 0.6)' : 'hsl(var(--p) / 0.3)'}`,
             borderRadius: '12px',
             padding: '16px 20px',
             boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
@@ -1315,7 +1441,7 @@ export default function BookingPage() {
               {toastType === 'error' ? '✕' : toastType === 'success' ? '✓' : 'ℹ'}
             </span>
             <span style={{
-              color: toastType === 'error' ? '#991b1b' : toastType === 'success' ? '#15803d' : '#1e40af',
+              color: toastType === 'error' ? 'hsl(var(--er) / 0.7)' : toastType === 'success' ? 'hsl(var(--su))' : 'hsl(var(--p))',
               fontWeight: 600,
               fontSize: '14px',
               flex: 1
@@ -1328,7 +1454,7 @@ export default function BookingPage() {
                 background: 'none',
                 border: 'none',
                 fontSize: '16px',
-                color: toastType === 'error' ? '#991b1b' : toastType === 'success' ? '#15803d' : '#1e40af',
+                color: toastType === 'error' ? 'hsl(var(--er) / 0.7)' : toastType === 'success' ? 'hsl(var(--su))' : 'hsl(var(--p))',
                 cursor: 'pointer',
                 padding: 0,
                 display: 'flex',
@@ -1363,12 +1489,12 @@ export default function BookingPage() {
 // ── Booking page Inline Styles ──
 const s = {
   page: {
-    background: '#f4f6f8',
+    background: 'hsl(var(--b2))',
     minHeight: '100vh',
     paddingBottom: '56px',
   },
   wizardBar: {
-    background: '#0a1118',
+    background: 'hsl(var(--bc))',
     borderBottom: '1px solid rgba(255,255,255,0.1)',
     padding: '16px 0',
     color: '#fff'
@@ -1403,12 +1529,12 @@ const s = {
     color: 'rgba(255,255,255,0.6)'
   },
   wizardNumActive: {
-    background: '#EB2026',
+    background: 'hsl(var(--er))',
     color: '#fff',
     boxShadow: '0 0 12px rgba(235,32,38,0.5)'
   },
   wizardNumDone: {
-    background: '#2e7d32',
+    background: 'hsl(var(--su))',
     color: '#fff'
   },
   wizardLabel: {
@@ -1439,7 +1565,7 @@ const s = {
   breadcrumbLink: {
     background: 'none',
     border: 'none',
-    color: '#EB2026',
+    color: 'hsl(var(--er))',
     fontSize: '13px',
     fontWeight: 700,
     cursor: 'pointer',
@@ -1469,11 +1595,11 @@ const s = {
     margin: 0,
     fontSize: '22px',
     fontWeight: 900,
-    color: '#131921'
+    color: 'hsl(var(--bc))'
   },
   cardPanel: {
     background: '#fff',
-    border: '1px solid #e5e7eb',
+    border: '1px solid hsl(var(--b3))',
     borderRadius: '12px',
     padding: '24px',
     boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
@@ -1484,7 +1610,7 @@ const s = {
     gap: '12px',
     marginBottom: '20px',
     paddingBottom: '16px',
-    borderBottom: '1px solid #e5e7eb'
+    borderBottom: '1px solid hsl(var(--b3))'
   },
   logoBox: {
     width: 36,
@@ -1500,12 +1626,12 @@ const s = {
   airlineLabel: {
     fontSize: '15px',
     fontWeight: 800,
-    color: '#131921',
+    color: 'hsl(var(--bc))',
     margin: 0
   },
   flightSub: {
     fontSize: '11.5px',
-    color: '#6b7280',
+    color: 'hsl(var(--bc) / 0.6)',
     margin: '2px 0 0'
   },
   itineraryRow: {
@@ -1522,18 +1648,18 @@ const s = {
   itineraryTime: {
     fontSize: '26px',
     fontWeight: 900,
-    color: '#131921',
+    color: 'hsl(var(--bc))',
     lineHeight: 1
   },
   itineraryCity: {
     fontSize: '14px',
     fontWeight: 700,
-    color: '#131921',
+    color: 'hsl(var(--bc))',
     marginTop: '6px'
   },
   itinerarySub: {
     fontSize: '11px',
-    color: '#6b7280',
+    color: 'hsl(var(--bc) / 0.6)',
     marginTop: '3px'
   },
   itineraryMiddle: {
@@ -1545,7 +1671,7 @@ const s = {
   },
   itineraryDuration: {
     fontSize: '11.5px',
-    color: '#6b7280',
+    color: 'hsl(var(--bc) / 0.6)',
     fontWeight: 600
   },
   itineraryLineBlock: {
@@ -1556,34 +1682,34 @@ const s = {
   lineDot: {
     width: '4px',
     height: '4px',
-    background: '#9ca3af',
+    background: 'hsl(var(--bc) / 0.5)',
     borderRadius: '50%'
   },
   lineBar: {
     flex: 1,
     height: '1px',
-    background: '#cbd5e1'
+    background: 'hsl(var(--b3))'
   },
   linePlaneIcon: {
     fontSize: '12px',
-    color: '#9ca3af',
+    color: 'hsl(var(--bc) / 0.5)',
     margin: '0 4px'
   },
   itineraryStops: {
     fontSize: '10.5px',
     fontWeight: 700,
-    color: '#2e7d32',
-    background: '#e8f5e9',
+    color: 'hsl(var(--su))',
+    background: 'hsl(var(--su) / 0.1)',
     padding: '2px 8px',
     borderRadius: '10px'
   },
   layoverBadge: {
-    background: '#fff9db',
-    border: '1px solid #ffe3e3',
+    background: 'hsl(var(--wa) / 0.08)',
+    border: '1px solid hsl(var(--er) / 0.12)',
     padding: '10px',
     borderRadius: '6px',
     fontSize: '11px',
-    color: '#b05a00',
+    color: 'hsl(var(--wa) / 0.65)',
     marginTop: '16px',
     fontWeight: 600
   },
@@ -1592,21 +1718,21 @@ const s = {
     gap: '24px',
     marginTop: '20px',
     paddingTop: '16px',
-    borderTop: '1px solid #f3f4f6'
+    borderTop: '1px solid hsl(var(--b2))'
   },
   baggageItem: {
     fontSize: '12.5px',
-    color: '#4b5563'
+    color: 'hsl(var(--bc) / 0.7)'
   },
   refundableTerms: {
-    background: '#f9fafb',
-    border: '1px solid #e5e7eb',
+    background: 'hsl(var(--b2))',
+    border: '1px solid hsl(var(--b3))',
     borderRadius: '10px',
     padding: '16px 20px'
   },
   fareSummaryCard: {
     background: '#fff',
-    border: '1px solid #e5e7eb',
+    border: '1px solid hsl(var(--b3))',
     borderRadius: '12px',
     padding: '24px',
     boxShadow: '0 4px 12px rgba(0,0,0,0.03)'
@@ -1615,7 +1741,7 @@ const s = {
     margin: '0 0 16px',
     fontSize: '16px',
     fontWeight: 900,
-    color: '#131921',
+    color: 'hsl(var(--bc))',
     textTransform: 'uppercase',
     letterSpacing: '0.5px'
   },
@@ -1623,12 +1749,12 @@ const s = {
     display: 'flex',
     justifyContent: 'space-between',
     fontSize: '13.5px',
-    color: '#4b5563',
+    color: 'hsl(var(--bc) / 0.7)',
     marginBottom: '12px'
   },
   dividerLine: {
     height: '1px',
-    background: '#e5e7eb',
+    background: 'hsl(var(--b3))',
     margin: '16px 0'
   },
   totalAmountRow: {
@@ -1637,14 +1763,14 @@ const s = {
     alignItems: 'baseline',
     fontSize: '16px',
     fontWeight: 900,
-    color: '#131921',
+    color: 'hsl(var(--bc))',
     marginBottom: '20px'
   },
   btnPrimary: {
     width: '100%',
     padding: '14px',
-    background: 'linear-gradient(180deg, #ffc878, #f3a847)',
-    color: '#131921',
+    background: 'linear-gradient(180deg, hsl(var(--wa) / 0.6), hsl(var(--wa)))',
+    color: 'hsl(var(--bc))',
     border: 'none',
     borderRadius: '8px',
     fontSize: '13.5px',
@@ -1657,8 +1783,8 @@ const s = {
   btnSecondary: {
     padding: '12px 24px',
     background: 'none',
-    border: '1.5px solid #EB2026',
-    color: '#EB2026',
+    border: '1.5px solid hsl(var(--er))',
+    color: 'hsl(var(--er))',
     borderRadius: '8px',
     fontSize: '13px',
     fontWeight: 700,
@@ -1673,7 +1799,7 @@ const s = {
     gap: '16px'
   },
   statusText: {
-    color: '#6b7280',
+    color: 'hsl(var(--bc) / 0.6)',
     fontSize: '15px'
   },
 
@@ -1682,7 +1808,7 @@ const s = {
     margin: '0 0 16px',
     fontSize: '15px',
     fontWeight: 800,
-    color: '#131921'
+    color: 'hsl(var(--bc))'
   },
   formGrid: {
     display: 'grid',
@@ -1697,13 +1823,13 @@ const s = {
   inputLabel: {
     fontSize: '11.5px',
     fontWeight: 700,
-    color: '#4b5563',
+    color: 'hsl(var(--bc) / 0.7)',
     textTransform: 'uppercase',
     letterSpacing: '0.3px'
   },
   textInput: {
     padding: '10px 12px',
-    border: '1px solid #d1d5db',
+    border: '1px solid hsl(var(--b3))',
     borderRadius: '6px',
     fontSize: '13.5px',
     outline: 'none',
@@ -1711,18 +1837,18 @@ const s = {
     transition: 'border-color 0.15s'
   },
   inputErrorBorder: {
-    borderColor: '#ef4444',
-    background: '#fffbfb'
+    borderColor: 'hsl(var(--er))',
+    background: 'hsl(var(--b1) / 0.98)'
   },
   errorLabelText: {
     fontSize: '11px',
-    color: '#ef4444',
+    color: 'hsl(var(--er))',
     marginTop: '2px',
     fontWeight: 500
   },
   selectInput: {
     padding: '10px 12px',
-    border: '1px solid #d1d5db',
+    border: '1px solid hsl(var(--b3))',
     borderRadius: '6px',
     fontSize: '13.5px',
     outline: 'none',
@@ -1731,32 +1857,32 @@ const s = {
   addonsBlock: {
     marginTop: '20px',
     paddingTop: '16px',
-    borderTop: '1px solid #f3f4f6'
+    borderTop: '1px solid hsl(var(--b2))'
   },
   addonsTitle: {
     margin: '0 0 12px',
     fontSize: '12px',
     fontWeight: 800,
-    color: '#6b7280',
+    color: 'hsl(var(--bc) / 0.6)',
     textTransform: 'uppercase'
   },
   addonLabel: {
     fontSize: '10.5px',
     fontWeight: 600,
-    color: '#6b7280'
+    color: 'hsl(var(--bc) / 0.6)'
   },
   addonSelect: {
     width: '100%',
     padding: '8px 10px',
-    border: '1px solid #e5e7eb',
+    border: '1px solid hsl(var(--b3))',
     borderRadius: '6px',
     fontSize: '12.5px',
     marginTop: '4px',
-    background: '#f9fafb'
+    background: 'hsl(var(--b2))'
   },
   overviewMiniCard: {
-    background: '#f9fafb',
-    border: '1px solid #e5e7eb',
+    background: 'hsl(var(--b2))',
+    border: '1px solid hsl(var(--b3))',
     padding: '12px',
     borderRadius: '8px'
   },
@@ -1765,14 +1891,14 @@ const s = {
   paymentPanelLayout: {
     display: 'flex',
     background: '#fff',
-    border: '1px solid #e5e7eb',
+    border: '1px solid hsl(var(--b3))',
     borderRadius: '12px',
     overflow: 'hidden'
   },
   paymentModesCol: {
     flex: '0 0 240px',
-    background: '#f9fafb',
-    borderRight: '1px solid #e5e7eb',
+    background: 'hsl(var(--b2))',
+    borderRight: '1px solid hsl(var(--b3))',
     display: 'flex',
     flexDirection: 'column'
   },
@@ -1780,11 +1906,11 @@ const s = {
     padding: '16px 20px',
     background: 'none',
     border: 'none',
-    borderBottom: '1px solid #f3f4f6',
+    borderBottom: '1px solid hsl(var(--b2))',
     textAlign: 'left',
     fontSize: '13px',
     fontWeight: 700,
-    color: '#4b5563',
+    color: 'hsl(var(--bc) / 0.7)',
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
@@ -1792,8 +1918,8 @@ const s = {
   },
   paymentModeBtnActive: {
     background: '#fff',
-    color: '#EB2026',
-    borderLeft: '4px solid #EB2026'
+    color: 'hsl(var(--er))',
+    borderLeft: '4px solid hsl(var(--er))'
   },
   paymentBodyCol: {
     flex: 1,
@@ -1806,7 +1932,7 @@ const s = {
   btnPrimaryPay: {
     width: '100%',
     padding: '14px',
-    background: '#EB2026',
+    background: 'hsl(var(--er))',
     color: '#fff',
     border: 'none',
     borderRadius: '6px',
@@ -1826,14 +1952,14 @@ const s = {
   qrMock: {
     width: '140px',
     height: '140px',
-    border: '2px dashed #9ca3af',
-    background: '#f3f4f6',
+    border: '2px dashed hsl(var(--bc) / 0.5)',
+    background: 'hsl(var(--b2))',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     fontSize: '11px',
     fontWeight: 800,
-    color: '#6b7280',
+    color: 'hsl(var(--bc) / 0.6)',
     borderRadius: '8px'
   },
   qrImage: {
@@ -1845,7 +1971,7 @@ const s = {
   paymentLoadingOverlay: {
     flex: 1,
     background: '#fff',
-    border: '1px solid #e5e7eb',
+    border: '1px solid hsl(var(--b3))',
     borderRadius: '12px',
     padding: '56px 24px',
     display: 'flex',
@@ -1857,19 +1983,19 @@ const s = {
   paymentSpinner: {
     width: '56px',
     height: '56px',
-    border: '5px solid #f3f4f6',
-    borderTopColor: '#EB2026',
+    border: '5px solid hsl(var(--b2))',
+    borderTopColor: 'hsl(var(--er))',
     borderRadius: '50%',
     animation: 'hp-spin-anim 1s infinite linear'
   },
   summaryBreakdown: {
     fontSize: '13px',
-    color: '#4b5563'
+    color: 'hsl(var(--bc) / 0.7)'
   },
   passengerRosterBlock: {
     marginTop: '16px',
     paddingTop: '16px',
-    borderTop: '1px solid #f3f4f6'
+    borderTop: '1px solid hsl(var(--b2))'
   },
 
   /* Confirmation */
@@ -1882,7 +2008,7 @@ const s = {
     gap: '24px'
   },
   successBanner: {
-    background: 'linear-gradient(135deg, #1d4ed8, #1e40af)',
+    background: 'linear-gradient(135deg, hsl(var(--p)), hsl(var(--p)))',
     color: '#fff',
     borderRadius: '12px',
     padding: '36px 24px',
@@ -1907,18 +2033,18 @@ const s = {
   receiptLabel: {
     fontSize: '10px',
     fontWeight: 700,
-    color: '#9ca3af',
+    color: 'hsl(var(--bc) / 0.5)',
     textTransform: 'uppercase'
   },
   receiptVal: {
     fontSize: '14px',
     fontWeight: 800,
-    color: '#131921',
+    color: 'hsl(var(--bc))',
     marginTop: '2px'
   },
   passengerDetailRow: {
-    background: '#f9fafb',
-    border: '1px solid #e5e7eb',
+    background: 'hsl(var(--b2))',
+    border: '1px solid hsl(var(--b3))',
     borderRadius: '8px',
     padding: '12px 14px'
   },
@@ -1940,8 +2066,8 @@ const s = {
     flex: '1 1 200px',
     padding: '16px',
     background: '#fff',
-    border: '1.5px solid #EB2026',
-    color: '#EB2026',
+    border: '1.5px solid hsl(var(--er))',
+    color: 'hsl(var(--er))',
     borderRadius: '8px',
     fontSize: '13px',
     fontWeight: 700,
@@ -1950,7 +2076,7 @@ const s = {
   actionBtnHome: {
     flex: '1 1 200px',
     padding: '16px',
-    background: '#131921',
+    background: 'hsl(var(--bc))',
     color: '#fff',
     border: 'none',
     borderRadius: '8px',
@@ -1961,7 +2087,7 @@ const s = {
 
   /* Premium Confirmation Styles */
   successBannerPremium: {
-    background: 'linear-gradient(135deg, #0a1118 0%, #1c2b3d 100%)',
+    background: 'linear-gradient(135deg, hsl(var(--bc)) 0%, hsl(var(--bc) / 0.7) 100%)',
     color: '#fff',
     padding: '48px 24px',
     textAlign: 'center',
@@ -1971,7 +2097,7 @@ const s = {
   successBadgePremium: {
     width: '64px',
     height: '64px',
-    background: '#059669',
+    background: 'hsl(var(--su))',
     borderRadius: '50%',
     display: 'flex',
     alignItems: 'center',
@@ -2038,7 +2164,7 @@ const s = {
   ticketSecTitle: {
     fontSize: '14px',
     fontWeight: 800,
-    color: '#111827',
+    color: 'hsl(var(--bc) / 0.9)',
     textTransform: 'uppercase',
     letterSpacing: '1px',
     margin: '0 0 20px',
@@ -2047,8 +2173,8 @@ const s = {
     gap: '8px'
   },
   ticketFlightCard: {
-    background: '#f9fafb',
-    border: '1px solid #e5e7eb',
+    background: 'hsl(var(--b2))',
+    border: '1px solid hsl(var(--b3))',
     borderRadius: '12px',
     padding: '20px'
   },
@@ -2070,7 +2196,7 @@ const s = {
   tfTime: {
     fontSize: '28px',
     fontWeight: 900,
-    color: '#111827'
+    color: 'hsl(var(--bc) / 0.9)'
   },
   tfCity: {
     fontSize: '15px',
@@ -2079,7 +2205,7 @@ const s = {
   },
   tfDate: {
     fontSize: '12px',
-    color: '#6b7280',
+    color: 'hsl(var(--bc) / 0.6)',
     marginTop: '2px'
   },
   tfMid: {
@@ -2089,31 +2215,31 @@ const s = {
   },
   tfDuration: {
     fontSize: '12px',
-    color: '#6b7280',
+    color: 'hsl(var(--bc) / 0.6)',
     marginBottom: '8px'
   },
   tfLine: {
     display: 'flex',
     alignItems: 'center',
     gap: '4px',
-    color: '#cbd5e1'
+    color: 'hsl(var(--b3))'
   },
   tfDot: {
     width: '6px',
     height: '6px',
-    background: '#cbd5e1',
+    background: 'hsl(var(--b3))',
     borderRadius: '50%'
   },
   tfLineBar: {
     flex: 1,
     height: '1px',
-    background: '#cbd5e1'
+    background: 'hsl(var(--b3))'
   },
   tfStops: {
     marginTop: '8px',
     fontSize: '11px',
     fontWeight: 700,
-    color: '#059669'
+    color: 'hsl(var(--su))'
   },
   ticketInfoRow: {
     display: 'flex',
@@ -2127,14 +2253,14 @@ const s = {
   },
   tiLabel: {
     fontSize: '11px',
-    color: '#6b7280',
+    color: 'hsl(var(--bc) / 0.6)',
     fontWeight: 600,
     marginBottom: '4px'
   },
   tiVal: {
     fontSize: '14px',
     fontWeight: 700,
-    color: '#111827'
+    color: 'hsl(var(--bc) / 0.9)'
   },
   passengerList: {
     display: 'flex',
@@ -2145,47 +2271,47 @@ const s = {
     display: 'flex',
     alignItems: 'center',
     gap: '12px',
-    background: '#f9fafb',
+    background: 'hsl(var(--b2))',
     padding: '12px',
     borderRadius: '10px',
-    border: '1px solid #e5e7eb'
+    border: '1px solid hsl(var(--b3))'
   },
   pNum: {
     width: '24px',
     height: '24px',
-    background: '#e5e7eb',
+    background: 'hsl(var(--b3))',
     borderRadius: '50%',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     fontSize: '12px',
     fontWeight: 800,
-    color: '#4b5563'
+    color: 'hsl(var(--bc) / 0.7)'
   },
   pName: {
     fontSize: '14px',
     fontWeight: 800,
-    color: '#111827'
+    color: 'hsl(var(--bc) / 0.9)'
   },
   pMeta: {
     fontSize: '11px',
-    color: '#6b7280',
+    color: 'hsl(var(--bc) / 0.6)',
     marginTop: '2px'
   },
   ticketFooter: {
     marginTop: '40px',
-    borderTop: '1px solid #f3f4f6',
+    borderTop: '1px solid hsl(var(--b2))',
     paddingTop: '20px',
     textAlign: 'center'
   },
   tfContact: {
     fontSize: '12px',
-    color: '#4b5563',
+    color: 'hsl(var(--bc) / 0.7)',
     marginBottom: '8px'
   },
   tfNote: {
     fontSize: '11px',
-    color: '#9ca3af',
+    color: 'hsl(var(--bc) / 0.5)',
     margin: 0,
     fontStyle: 'italic'
   }

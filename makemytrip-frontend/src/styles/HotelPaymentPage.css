@@ -1,9 +1,9 @@
 ﻿.pmt-wrapper {
-  background-color: #eef1f5;
+  background-color: hsl(var(--b2));
   min-height: 100vh;
   padding: 24px 0 60px;
   font-family: 'Space Grotesk', sans-serif;
-  color: hsl(var(--b3));
+  color: hsl(var(--bc));
 }
 
 .pmt-top-bar {
@@ -20,7 +20,7 @@
   font-size: 22px;
   font-weight: 900;
   letter-spacing: -0.5px;
-  color: hsl(var(--b3));
+  color: hsl(var(--bc));
   display: flex;
   align-items: center;
   gap: 8px;
@@ -101,7 +101,7 @@
 }
 
 .pmt-toggle {
-  color: #008cff;
+  color: hsl(var(--p));
   font-size: 12px;
   font-weight: 800;
   cursor: pointer;
@@ -120,7 +120,7 @@
 
 .pmt-traveller-lbl {
   font-weight: 700;
-  color: hsl(var(--b3));
+  color: hsl(var(--bc));
 }
 
 .pmt-login-promo {
@@ -144,7 +144,7 @@
 }
 
 .pmt-login-btn {
-  background: #008cff;
+  background: hsl(var(--p));
   color: hsl(var(--b1));
   border: none;
   padding: 8px 20px;
@@ -157,14 +157,14 @@
 /* Trip Secure Banner */
 .pmt-secure-banner {
   padding: 20px 24px;
-  background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 100%);
+  background: linear-gradient(135deg, hsl(var(--p) / 0.08) 0%, hsl(var(--p) / 0.08) 100%);
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
 .pmt-sec-badge {
-  background: #3b82f6;
+  background: hsl(var(--p));
   color: hsl(var(--b1));
   font-size: 10px;
   font-weight: 800;
@@ -178,18 +178,18 @@
 .pmt-sec-hdr {
   font-size: 16px;
   font-weight: 800;
-  color: #1e3a8a;
+  color: hsl(var(--p) / 0.8);
   margin: 0 0 4px;
 }
 
 .pmt-sec-desc {
   font-size: 12px;
-  color: #3b82f6;
+  color: hsl(var(--p));
   margin: 0;
 }
 
 .pmt-sec-add {
-  background: #2563eb;
+  background: hsl(var(--p));
   color: hsl(var(--b1));
   border: none;
   padding: 8px 16px;
@@ -338,7 +338,7 @@
 }
 
 .pmt-qr-overlay-btn {
-  background: #008cff;
+  background: hsl(var(--p));
   color: hsl(var(--b1));
   border: none;
   padding: 10px 24px;

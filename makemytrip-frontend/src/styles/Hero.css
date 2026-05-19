@@ -1,16 +1,16 @@
 /* â”€â”€ CSS Custom Properties & DaisyUI Design Tokens â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 :root {
   /* DaisyUI Business Theme Colors */
-  --color-primary-blue: #1f2937;
-  --color-accent-blue: #3b82f6;
-  --color-accent-hover: #2563eb;
+  --color-primary-blue: hsl(var(--bc));
+  --color-accent-blue: hsl(var(--p));
+  --color-accent-hover: hsl(var(--p));
   --color-accent-red: hsl(var(--er));
-  --color-accent-yellow: #f59e0b;
-  --color-bg-light: #f9fafb;
+  --color-accent-yellow: hsl(var(--wa));
+  --color-bg-light: hsl(var(--b2));
   --color-bg-card: hsl(var(--b1));
-  --color-text-dark: #1f2937;
-  --color-text-gray: #6b7280;
-  --color-text-muted: #9ca3af;
+  --color-text-dark: hsl(var(--bc));
+  --color-text-gray: hsl(var(--bc) / 0.6);
+  --color-text-muted: hsl(var(--bc) / 0.5);
   --border-radius-lg: 20px;
   --border-radius-md: 12px;
   --border-radius-sm: 8px;
@@ -206,9 +206,9 @@
   overflow-x: auto;
   scrollbar-width: none;
   border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
-  background: #ffffff;
+  background: hsl(var(--b1));
   padding: 10px 24px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid hsl(var(--b3));
   gap: 12px;
 }
 
@@ -223,7 +223,7 @@
   cursor: pointer;
   position: relative;
   flex-shrink: 0;
-  color: #4b5563 !important; /* Premium dark gray */
+  color: hsl(var(--bc) / 0.7) !important; /* Premium dark gray */
   border: none;
   background: none;
   gap: 6px;
@@ -232,12 +232,12 @@
 }
 
 .service-tab:hover {
-  color: #1F6DB8 !important; /* Premium active blue */
+  color: hsl(var(--p)) !important; /* Premium active blue */
   transform: translateY(-2px);
 }
 
 .service-tab.active {
-  color: #1F6DB8 !important; /* Premium active blue */
+  color: hsl(var(--p)) !important; /* Premium active blue */
 }
 
 .service-tab .tab-icon {
@@ -285,7 +285,7 @@
 /* â”€â”€ AI Assistant recommendation banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .ai-banner {
   margin: 16px 24px 0;
-  background: linear-gradient(90deg, #f0fdf4, #f0fdf4);
+  background: linear-gradient(90deg, hsl(var(--su) / 0.05), hsl(var(--su) / 0.05));
   border: 1px solid hsl(var(--suc));
   border-radius: var(--border-radius-sm);
   padding: 12px 20px;
@@ -307,7 +307,7 @@
 
 .ai-banner .ai-text {
   font-size: 13px;
-  color: #22c55e;
+  color: hsl(var(--su));
   font-weight: 500;
   flex: 1;
 }
@@ -317,7 +317,7 @@
 }
 
 .ai-banner .ai-arrow {
-  color: #22c55e;
+  color: hsl(var(--su));
   font-weight: 700;
   font-size: 18px;
   transition: var(--transition-smooth);
@@ -397,7 +397,7 @@
   display: grid;
   grid-template-columns: 2fr auto 2fr 1px 1.5fr 1px 1.5fr 1px 1.5fr;
   align-items: stretch;
-  border: 1.5px solid #f3f4f6;
+  border: 1.5px solid hsl(var(--b2));
   border-radius: var(--border-radius-md);
   margin: 16px 24px 0;
   overflow: visible; /* Swap button overlap requires this */
@@ -416,7 +416,7 @@
 }
 
 .input-cell:hover {
-  background: #f0f9ff;
+  background: hsl(var(--p) / 0.05);
 }
 
 .input-cell:first-child:hover {
@@ -480,7 +480,7 @@
 }
 
 .input-value.date-val.placeholder {
-  color: #bbb;
+  color: var(--clr-text-hint);
   font-size: 16px;
   font-weight: 600;
 }
@@ -512,14 +512,14 @@
 }
 
 .input-sub.muted {
-  color: #bbb;
+  color: var(--clr-text-hint);
   line-height: 1.4;
   white-space: normal;
 }
 
 .input-divider {
   width: 1px;
-  background: #f3f4f6;
+  background: hsl(var(--b2));
   align-self: stretch;
   margin: 12px 0;
 }
@@ -528,7 +528,7 @@
 .swap-btn {
   align-self: center;
   background: var(--color-bg-card);
-  border: 1px solid #d1d5db;
+  border: 1px solid hsl(var(--b3));
   color: var(--color-accent-blue);
   width: 36px;
   height: 36px;
@@ -615,7 +615,7 @@
   display: flex;
   flex-direction: column;
   padding: 8px 16px;
-  border: 1.5px solid #f3f4f6;
+  border: 1.5px solid hsl(var(--b2));
   border-radius: var(--border-radius-sm);
   font-size: 13px;
   font-weight: 700;
@@ -628,12 +628,12 @@
 
 .fare-chip:hover {
   border-color: var(--color-accent-blue);
-  background: #f0f9ff;
+  background: hsl(var(--p) / 0.05);
 }
 
 .fare-chip.active {
   border-color: var(--color-accent-blue);
-  background: #f0f9ff;
+  background: hsl(var(--p) / 0.05);
   color: var(--color-accent-blue);
 }
 
@@ -677,7 +677,7 @@
   align-items: center;
   gap: 8px;
   padding: 10px 18px;
-  border: 1.5px solid #f3f4f6;
+  border: 1.5px solid hsl(var(--b2));
   border-radius: var(--border-radius-sm);
   background: var(--color-bg-card);
   cursor: pointer;
@@ -691,7 +691,7 @@
 .tool-btn:hover {
   border-color: var(--color-accent-blue);
   color: var(--color-accent-blue);
-  background: #f0f9ff;
+  background: hsl(var(--p) / 0.05);
 }
 
 .tool-btn .tool-badge {
@@ -777,7 +777,7 @@
 /* â”€â”€ Quick Services Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .quicklinks-bar {
   background: var(--color-bg-card);
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid hsl(var(--b2));
   padding: 20px 24px;
 }
 
@@ -804,7 +804,7 @@
   padding: 10px 24px;
   cursor: pointer;
   transition: var(--transition-smooth);
-  border: 1px solid #f3f4f6;
+  border: 1px solid hsl(var(--b2));
 }
 
 .quick-pill:hover {
@@ -858,7 +858,7 @@
   }
   .input-divider { display: none; }
   .input-cell {
-    border-bottom: 1px solid #f3f4f6;
+    border-bottom: 1px solid hsl(var(--b2));
   }
   .input-cell:first-child:hover,
   .input-cell:last-child:hover {

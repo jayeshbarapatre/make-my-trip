@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import AdminLayout from '../components/Admin/AdminLayout'
+import Icons from '../utils/icons'
 import './AdminFlights.css'
 
 const AdminUsers = () => {
@@ -54,8 +55,12 @@ const AdminUsers = () => {
                   <td>{user.bookings}</td>
                   <td>{user.joinDate}</td>
                   <td className="actions">
-                    <button className="btn-sm btn-edit">✎ View</button>
-                    <button className="btn-sm btn-delete">🗑️ Delete</button>
+                    <button className="btn-sm btn-edit" title="View" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                      {Icons.eye({ size: 14 })} View
+                    </button>
+                    <button className="btn-sm btn-delete" title="Delete" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                      {Icons.delete({ size: 14 })} Delete
+                    </button>
                   </td>
                 </tr>
               ))}

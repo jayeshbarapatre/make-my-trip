@@ -479,7 +479,7 @@ export default function HomePage() {
                         </button>
                       )}
                     </div>
-                    {fromError && <div style={{ color: '#e63946', fontSize: '12px', marginTop: '4px' }}>{fromError}</div>}
+                    {fromError && <div style={{ color: 'hsl(var(--er))', fontSize: '12px', marginTop: '4px' }}>{fromError}</div>}
                     <div className="hp-sub">Departure city</div>
 
                     {showFromSuggestions && fromSuggestions.length > 0 && (
@@ -546,7 +546,7 @@ export default function HomePage() {
                         </button>
                       )}
                     </div>
-                    {toError && <div style={{ color: '#e63946', fontSize: '12px', marginTop: '4px' }}>{toError}</div>}
+                    {toError && <div style={{ color: 'hsl(var(--er))', fontSize: '12px', marginTop: '4px' }}>{toError}</div>}
                     <div className="hp-sub">Arrival city</div>
 
                     {showToSuggestions && toSuggestions.length > 0 && (
@@ -616,7 +616,7 @@ export default function HomePage() {
                         />
                       </div>
                     ) : (
-                      <div className="hp-tap-hint" onClick={() => setTripType('roundtrip')} style={{ marginTop: '10px', fontSize: '12px', color: '#0084ff', fontWeight: 600 }}>
+                      <div className="hp-tap-hint" onClick={() => setTripType('roundtrip')} style={{ marginTop: '10px', fontSize: '12px', color: 'hsl(var(--p))', fontWeight: 600 }}>
                         Tap to add for bigger discounts
                       </div>
                     )}

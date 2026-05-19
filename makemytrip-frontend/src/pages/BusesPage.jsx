@@ -208,14 +208,14 @@ export default function BusesPage() {
                 </div>
                 <h3>{bus.name}</h3>
                 <p className="cab-type">{bus.type}</p>
-                <p className="cab-desc" style={{ color: '#0A8043', fontWeight: 600 }}>{bus.features}</p>
+                <p className="cab-desc" style={{ color: 'hsl(var(--su))', fontWeight: 600 }}>{bus.features}</p>
                 <p className="cab-desc" style={{ marginTop: 6 }}>⏱️ Timings: {bus.depTime} - {bus.arrTime} ({bus.duration})</p>
               </div>
               <div className="cab-card-price-action">
                 <div className="price-box">
                   <span className="old-price">₹{bus.oldPrice}</span>
                   <span className="price">₹{bus.price}</span>
-                  <small style={{ color: '#d32f2f' }}>{bus.seats}</small>
+                  <small style={{ color: 'hsl(var(--er))' }}>{bus.seats}</small>
                 </div>
                 <button onClick={() => alert(`Initiating seat selection for ${bus.name}`)}>
                   SELECT SEAT

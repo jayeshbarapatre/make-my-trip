@@ -1,45 +1,10 @@
-import { useRef, useEffect, useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useTheme } from '../../hooks/useTheme'
-import { IoSettingsOutline } from 'react-icons/io5'
-
-const THEME_COLORS = {
-  light: { base: '#ffffff', primary: '#0284c7', secondary: '#64748b', accent: '#06b6d4' },
-  dark: { base: '#1f2937', primary: '#38bdf8', secondary: '#64748b', accent: '#06b6d4' },
-  cupcake: { base: '#faf7f5', primary: '#65c3c8', secondary: '#f1c40f', accent: '#f5a5c9' },
-  bumblebee: { base: '#fffbeb', primary: '#fbbf24', secondary: '#78350f', accent: '#f59e0b' },
-  emerald: { base: '#f8fafc', primary: '#66cc8a', secondary: '#06b6d4', accent: '#ec4899' },
-  corporate: { base: '#f8fafc', primary: '#4b6bfb', secondary: '#06b6d4', accent: '#ec4899' },
-  synthwave: { base: '#1a103c', primary: '#e0a82e', secondary: '#ff006e', accent: '#00d9ff' },
-  retro: { base: '#ece3ca', primary: '#ef9995', secondary: '#f1dcc3', accent: '#c471ed' },
-  cyberpunk: { base: '#ffee00', primary: '#ff007f', secondary: '#00ffff', accent: '#00d4ff' },
-  valentine: { base: '#efeae6', primary: '#e96d7b', secondary: '#8b5fbf', accent: '#fbbf24' },
-  halloween: { base: '#1f1d1b', primary: '#d97706', secondary: '#7c3aed', accent: '#f1f5f9' },
-  garden: { base: '#f2f4f1', primary: '#16a34a', secondary: '#059669', accent: '#d946ef' },
-  forest: { base: '#171212', primary: '#1eb854', secondary: '#16a34a', accent: '#ec4899' },
-  aqua: { base: '#0f172a', primary: '#09ecf3', secondary: '#06b6d4', accent: '#34d399' },
-  lofi: { base: '#f8f9fa', primary: '#000000', secondary: '#808080', accent: '#c0c0c0' },
-  pastel: { base: '#fdf5f7', primary: '#f471b6', secondary: '#00d4d4', accent: '#ffc0cb' },
-  fantasy: { base: '#f9f5ff', primary: '#a78bfa', secondary: '#f472b6', accent: '#22d3ee' },
-  wireframe: { base: '#ffffff', primary: '#000000', secondary: '#808080', accent: '#404040' },
-  black: { base: '#000000', primary: '#ffffff', secondary: '#808080', accent: '#c0c0c0' },
-  luxury: { base: '#09090b', primary: '#c5a880', secondary: '#3a2d29', accent: '#fbbf24' },
-  dracula: { base: '#282a36', primary: '#ff79c6', secondary: '#8be9fd', accent: '#50fa7b' },
-  cmyk: { base: '#ffffff', primary: '#0284c7', secondary: '#fbbf24', accent: '#ec4899' },
-  autumn: { base: '#f8f4f0', primary: '#ea580c', secondary: '#dc2626', accent: '#f59e0b' },
-  business: { base: '#1a2e40', primary: '#1f6db8', secondary: '#3b82f6', accent: '#1e40af' },
-  acid: { base: '#ffff00', primary: '#00ff00', secondary: '#ff00ff', accent: '#00ffff' },
-  lemonade: { base: '#fffbeb', primary: '#fbbf24', secondary: '#0369a1', accent: '#ec4899' },
-  night: { base: '#0f172a', primary: '#38bdf8', secondary: '#0284c7', accent: '#06b6d4' },
-  coffee: { base: '#1c1415', primary: '#a89968', secondary: '#6f4e37', accent: '#d4a574' },
-  winter: { base: '#f8fafc', primary: '#0284c7', secondary: '#06b6d4', accent: '#0369a1' },
-  dim: { base: '#2a303c', primary: '#93c5fd', secondary: '#60a5fa', accent: '#34d399' },
-  nord: { base: '#2e3440', primary: '#88c0d0', secondary: '#81a1c1', accent: '#8fbcbb' },
-  sunset: { base: '#120c18', primary: '#ff9e2c', secondary: '#ff006e', accent: '#fbbf24' }
-}
 
 export default function ThemeSwitcher() {
   const { currentTheme, changeTheme, themes } = useTheme()
   const [isOpen, setIsOpen] = useState(false)
+  const [isHovered, setIsHovered] = useState(false)
   const dropdownRef = useRef(null)
 
   useEffect(() => {
@@ -52,80 +17,179 @@ export default function ThemeSwitcher() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  const handleThemeChange = (theme) => {
-    changeTheme(theme)
-    setIsOpen(false)
-  }
-
   return (
-    <div className="relative" ref={dropdownRef}>
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="btn btn-ghost btn-sm gap-2"
-        title="Theme settings"
+    <div
+      ref={dropdownRef}
+      className="dropdown dropdown-end"
+      title="Change Theme"
+      style={{ position: 'relative', display: 'inline-block', zIndex: 1000 }}
+    >
+      {/* Theme Switcher Toggle Button (Screenshot 2) */}
+      <div
+        tabIndex={0}
+        role="button"
+        aria-label="Change Theme"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          padding: '4px 8px',
+          borderRadius: '8px',
+          border: '1px solid hsl(var(--b3))',
+          backgroundColor: isHovered || isOpen ? 'hsl(var(--b3))' : 'hsl(var(--b1))',
+          cursor: 'pointer',
+          transition: 'all 0.2s ease',
+          height: '36px',
+        }}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        onClick={(e) => {
+          e.preventDefault()
+          setIsOpen(!isOpen)
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            setIsOpen(!isOpen)
+          }
+        }}
       >
-        <IoSettingsOutline className="w-5 h-5" />
-        <span className="text-sm font-medium">Theme</span>
-      </button>
+        {/* 2x2 Grid representing the active theme's colors - 26x26 size with 6px right space */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(2, 1fr)',
+          gap: '2px',
+          width: '26px',
+          height: '26px',
+          padding: '4px',
+          borderRadius: '6px',
+          border: '1px solid hsl(var(--bc) / 0.1)',
+          backgroundColor: 'hsl(var(--b1))',
+          boxSizing: 'border-box',
+          marginRight: '6px',
+        }}>
+          <div style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: 'hsl(var(--p))' }}></div>
+          <div style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: 'hsl(var(--s))' }}></div>
+          <div style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: 'hsl(var(--a))' }}></div>
+          <div style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: 'hsl(var(--bc))' }}></div>
+        </div>
 
+        {/* Down Arrow / Chevron */}
+        <svg
+          width="11"
+          height="11"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          style={{
+            opacity: 0.7,
+            transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+            transition: 'transform 0.2s ease',
+          }}
+        >
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </div>
+
+      {/* Theme List Dropdown (Screenshot 3) */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-72 bg-base-200 rounded-lg shadow-2xl z-50 border border-base-300">
-          <div className="p-4">
-            <h3 className="text-sm font-bold mb-4 text-base-content">Choose theme</h3>
-            <div className="grid grid-cols-2 gap-3 max-h-96 overflow-y-auto">
-              {themes.map((theme) => {
-                const colors = THEME_COLORS[theme] || THEME_COLORS.light
-                const isSelected = currentTheme === theme
-
-                return (
-                  <label
-                    key={theme}
-                    className={`relative flex items-center gap-2 p-3 rounded-lg cursor-pointer transition-all ${
-                      isSelected
-                        ? 'bg-primary/20 border-2 border-primary'
-                        : 'bg-base-100 border border-base-300 hover:border-base-content/20'
+        <div
+          className="dropdown-content bg-base-200 text-base-content rounded-box border-white/5 shadow-2xl outline-black/5"
+          style={{
+            position: 'absolute',
+            top: '100%',
+            right: 0,
+            marginTop: '8px',
+            height: '30.5rem',
+            maxHeight: 'calc(100vh - 8.6rem)',
+            overflowY: 'auto',
+            border: '1px solid hsl(var(--b3))',
+            zIndex: 9999,
+          }}
+        >
+          <ul className="menu w-64 p-2 bg-base-200">
+            <li className="menu-title text-xs text-base-content/60 font-semibold mb-2" style={{ textTransform: 'uppercase', letterSpacing: '0.5px' }}>Theme</li>
+            {themes.map((themeName) => {
+              const isActive = currentTheme === themeName
+              return (
+                <li key={themeName} className="mb-0.5">
+                  <button
+                    className={`gap-3 px-2 flex items-center justify-between w-full hover:bg-base-300 rounded-lg text-left transition-colors duration-150 ${
+                      isActive ? 'bg-base-300 font-bold' : ''
                     }`}
+                    style={{
+                      border: 'none',
+                      outline: 'none',
+                      boxShadow: 'none',
+                      background: isActive ? 'hsl(var(--b3))' : 'transparent',
+                      color: 'hsl(var(--bc))',
+                      padding: '8px 12px',
+                      width: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                    }}
+                    onClick={() => {
+                      changeTheme(themeName)
+                      setIsOpen(false)
+                    }}
                   >
-                    <input
-                      type="radio"
-                      name="theme"
-                      value={theme}
-                      checked={isSelected}
-                      onChange={() => handleThemeChange(theme)}
-                      className="radio radio-sm"
-                    />
-                    <div className="flex-1">
-                      <span className="text-xs font-semibold text-base-content capitalize block">
-                        {theme}
-                      </span>
-                      <div className="flex gap-1 mt-1">
-                        <div
-                          className="w-4 h-4 rounded-full border border-base-content/20"
-                          style={{ backgroundColor: colors.base }}
-                          title={colors.base}
-                        />
-                        <div
-                          className="w-4 h-4 rounded-full border border-base-content/20"
-                          style={{ backgroundColor: colors.primary }}
-                          title={colors.primary}
-                        />
-                        <div
-                          className="w-4 h-4 rounded-full border border-base-content/20"
-                          style={{ backgroundColor: colors.secondary }}
-                          title={colors.secondary}
-                        />
-                        <div
-                          className="w-4 h-4 rounded-full border border-base-content/20"
-                          style={{ backgroundColor: colors.accent }}
-                          title={colors.accent}
-                        />
+                    <div className="flex items-center">
+                      {/* Scoped color palette display - 26x26 size with 6px right space */}
+                      <div
+                        data-theme={themeName}
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: 'repeat(2, 1fr)',
+                          gap: '2px',
+                          width: '26px',
+                          height: '26px',
+                          padding: '4px',
+                          borderRadius: '6px',
+                          border: '1px solid hsl(var(--bc) / 0.1)',
+                          backgroundColor: 'hsl(var(--b1))',
+                          boxSizing: 'border-box',
+                          marginRight: '6px',
+                        }}
+                      >
+                        <div style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: 'hsl(var(--p))' }}></div>
+                        <div style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: 'hsl(var(--s))' }}></div>
+                        <div style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: 'hsl(var(--a))' }}></div>
+                        <div style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: 'hsl(var(--bc))' }}></div>
+                      </div>
+                      <div className="w-32 truncate text-sm font-medium text-left" style={{ textTransform: 'capitalize' }}>
+                        {themeName}
                       </div>
                     </div>
-                  </label>
-                )
-              })}
-            </div>
-          </div>
+                    
+                    {/* Active Tick indicator */}
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      style={{
+                        color: 'hsl(var(--p))',
+                        visibility: isActive ? 'visible' : 'hidden',
+                        marginRight: '4px',
+                      }}
+                    >
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
         </div>
       )}
     </div>

@@ -63,15 +63,15 @@
 }
 
 .inputError {
-  border-color: #e63946;
+  border-color: hsl(var(--er));
 }
 
 .input::placeholder {
-  color: #999;
+  color: var(--clr-text-secondary);
 }
 
 .error {
-  color: #e63946;
+  color: hsl(var(--er));
   font-size: 12px;
   margin-top: 4px;
   display: block;
@@ -80,7 +80,7 @@
 .submitBtn {
   width: 100%;
   padding: 14px 24px;
-  background: linear-gradient(135deg, hsl(var(--p)) 0%, #1a73e8 100%);
+  background: linear-gradient(135deg, hsl(var(--p)) 0%, hsl(var(--p)) 100%);
   color: white;
   border: none;
   border-radius: 8px;

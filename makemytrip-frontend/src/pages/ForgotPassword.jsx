@@ -154,12 +154,12 @@ export default function ForgotPassword({ onBackToLogin }) {
 
           {simulatedCode && (
             <div style={{
-              background: '#e0f2fe',
-              border: '1px solid #bae6fd',
+              background: 'hsl(var(--p) / 0.08)',
+              border: '1px solid hsl(var(--p) / 0.15)',
               borderRadius: '8px',
               padding: '12px',
               fontSize: '12.5px',
-              color: '#0369a1',
+              color: 'hsl(var(--p))',
               marginBottom: '16px',
               fontWeight: 600
             }}>
@@ -199,7 +199,7 @@ export default function ForgotPassword({ onBackToLogin }) {
             </button>
           </form>
           
-          <p style={{ fontSize: '12px', textAlign: 'center', marginTop: '16px', color: '#64748b' }}>
+          <p style={{ fontSize: '12px', textAlign: 'center', marginTop: '16px', color: 'hsl(var(--bc) / 0.55)' }}>
             Didn't receive code?{' '}
             <button
               onClick={handleRequestOtp}
@@ -273,14 +273,14 @@ export default function ForgotPassword({ onBackToLogin }) {
       {stage === 4 && (
         <div style={{ textAlign: 'center', padding: '10px 0' }}>
           <div style={{ fontSize: '48px', marginBottom: '12px' }}>🎉</div>
-          <h2 style={{ margin: '0 0 8px', fontSize: '20px', fontWeight: 900, color: '#10b981' }}>
+          <h2 style={{ margin: '0 0 8px', fontSize: '20px', fontWeight: 900, color: 'hsl(var(--su))' }}>
             Password Reset Success!
           </h2>
           <p style={{ margin: '0 0 24px', fontSize: '13.5px', color: 'var(--clr-text-secondary)', lineHeight: 1.5 }}>
             Your account credentials have been updated securely. You can now log in using your new password.
           </p>
 
-          <button onClick={onBackToLogin} className="login-submit-btn btn-primary" style={{ background: '#10b981', boxShadow: 'none' }}>
+          <button onClick={onBackToLogin} className="login-submit-btn btn-primary" style={{ background: 'hsl(var(--su))', boxShadow: 'none' }}>
             Sign In Now
           </button>
         </div>

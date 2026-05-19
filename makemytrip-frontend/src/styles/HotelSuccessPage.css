@@ -1,9 +1,9 @@
 ﻿.succ-wrapper {
-  background-color: #f0f3f6;
+  background-color: hsl(var(--b2));
   min-height: 100vh;
   padding: 40px 20px 80px;
   font-family: var(--font-family, 'Space Grotesk', sans-serif);
-  color: #111827;
+  color: hsl(var(--bc));
 }
 
 .succ-container {
@@ -19,7 +19,7 @@
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-  border: 1px solid #e5e7eb;
+  border: 1px solid hsl(var(--b3));
 }
 
 .succ-premium-header {
@@ -101,15 +101,15 @@
 .succ-sec-title {
   font-size: 13px;
   font-weight: 800;
-  color: #6b7280;
+  color: hsl(var(--bc) / 0.6);
   text-transform: uppercase;
   letter-spacing: 1px;
   margin-bottom: 16px;
 }
 
 .succ-prop-card {
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
+  background: hsl(var(--b2));
+  border: 1px solid hsl(var(--b3));
   padding: 20px;
   border-radius: 12px;
   margin-bottom: 24px;
@@ -118,12 +118,12 @@
 .succ-prop-name {
   font-size: 18px;
   font-weight: 800;
-  color: #111827;
+  color: hsl(var(--bc));
 }
 
 .succ-prop-loc {
   font-size: 14px;
-  color: #4b5563;
+  color: hsl(var(--bc) / 0.7);
   margin-top: 4px;
 }
 
@@ -139,8 +139,8 @@
   grid-template-columns: repeat(3, 1fr);
   gap: 20px;
   padding: 24px 0;
-  border-top: 1px dashed #e5e7eb;
-  border-bottom: 1px dashed #e5e7eb;
+  border-top: 1px dashed hsl(var(--b3));
+  border-bottom: 1px dashed hsl(var(--b3));
 }
 
 .succ-info-item {
@@ -151,7 +151,7 @@
 
 .succ-info-lbl {
   font-size: 11px;
-  color: #6b7280;
+  color: hsl(var(--bc) / 0.6);
   font-weight: 600;
 }
 
@@ -164,7 +164,7 @@
   margin-top: 32px;
   text-align: center;
   font-size: 12px;
-  color: #9ca3af;
+  color: hsl(var(--bc) / 0.5);
   line-height: 1.6;
 }
 
@@ -204,7 +204,7 @@
 }
 
 .succ-action-home {
-  background: #111827;
+  background: hsl(var(--bc));
   color: hsl(var(--b1));
   border: none;
 }
@@ -250,8 +250,8 @@
 
 /* â”€â”€ Price Breakdown Table â”€â”€ */
 .succ-price-table {
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
+  background: hsl(var(--b2));
+  border: 1px solid hsl(var(--b3));
   border-radius: 12px;
   overflow: hidden;
 }
@@ -263,8 +263,8 @@
   align-items: center;
   padding: 12px 20px;
   font-size: 14px;
-  color: #374151;
-  border-bottom: 1px solid #f3f4f6;
+  color: hsl(var(--bc) / 0.65);
+  border-bottom: 1px solid hsl(var(--b2));
 }
 
 .succ-price-row:last-child {
@@ -273,7 +273,7 @@
 
 .succ-price-row .succ-price-sub {
   font-size: 12px;
-  color: #6b7280;
+  color: hsl(var(--bc) / 0.6);
 }
 
 .succ-price-row.discount {
@@ -295,7 +295,7 @@
 }
 
 .succ-price-row.total span:last-child {
-  color: #fbbf24;
+  color: hsl(var(--wa));
   font-size: 18px;
 }
 

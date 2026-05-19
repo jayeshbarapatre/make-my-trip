@@ -162,18 +162,18 @@ body {
 
 /* â”€â”€ Integrated Search Widgets â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .inner-search-bcard {
-  background: #ffffff;
+  background: hsl(var(--b1));
   border-radius: 20px;
   padding: 24px;
   box-shadow: 0 15px 35px rgba(0,0,0,0.12), 0 1px 3px rgba(0,0,0,0.02);
-  border: 1px solid #e5e7eb;
+  border: 1px solid hsl(var(--b3));
 }
 
 .inner-search-grid {
   display: grid;
-  border: 1px solid #e5e7eb;
+  border: 1px solid hsl(var(--b3));
   border-radius: 12px;
-  background: #ffffff;
+  background: hsl(var(--b1));
 }
 .inner-search-field:first-of-type {
   border-top-left-radius: 11px;
@@ -207,7 +207,7 @@ body {
 }
 
 .inner-search-field:hover {
-  background: #f9fafb;
+  background: hsl(var(--b2));
 }
 
 .inner-field-lbl {
@@ -244,7 +244,7 @@ body {
 
 /* Giant Search button inside grid */
 .inner-search-cta {
-  background: linear-gradient(135deg, var(--clr-primary) 0%, #2563eb 100%);
+  background: linear-gradient(135deg, var(--clr-primary) 0%, hsl(var(--p)) 100%);
   color: var(--clr-text-inverse);
   border: none;
   font-size: 16px;
@@ -557,10 +557,10 @@ body {
   flex-shrink: 0;
 }
 
-.trains-quick-card[data-c="pnr"] .trains-quick-ico-box { background: hsl(var(--wac)); color: #f59e0b; }
-.trains-quick-card[data-c="live"] .trains-quick-ico-box { background: #f0fdf4; color: #22c55e; }
-.trains-quick-card[data-c="sched"] .trains-quick-ico-box { background: #f3e8ff; color: #7c3aed; }
-.trains-quick-card[data-c="book"] .trains-quick-ico-box { background: #fef2f2; color: var(--clr-error); }
+.trains-quick-card[data-c="pnr"] .trains-quick-ico-box { background: hsl(var(--wac)); color: hsl(var(--wa)); }
+.trains-quick-card[data-c="live"] .trains-quick-ico-box { background: hsl(var(--su) / 0.05); color: hsl(var(--su)); }
+.trains-quick-card[data-c="sched"] .trains-quick-ico-box { background: hsl(var(--a) / 0.1); color: hsl(var(--a)); }
+.trains-quick-card[data-c="book"] .trains-quick-ico-box { background: hsl(var(--er) / 0.05); color: var(--clr-error); }
 
 .trains-quick-details h4 {
   font-size: 14px;
@@ -875,7 +875,7 @@ body {
   top: 16px;
   left: 16px;
   background: var(--clr-gold);
-  color: #1f2937;
+  color: hsl(var(--bc));
   font-size: 10px;
   font-weight: 800;
   padding: 4px 10px;
@@ -1099,7 +1099,7 @@ body {
 .live-weather-pulse {
   width: 6px;
   height: 6px;
-  background: #22c55e;
+  background: hsl(var(--su));
   border-radius: 50%;
   box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7);
   animation: pulse-ring 1.5s infinite;
@@ -1224,7 +1224,7 @@ body {
   display: flex;
   align-items: center;
   gap: 4px;
-  background: #22c55e;
+  background: hsl(var(--su));
   color: hsl(var(--b1));
   font-size: 11px;
   font-weight: 700;
@@ -1267,7 +1267,7 @@ body {
 }
 
 .homestays-host-banner {
-  background: linear-gradient(135deg, var(--clr-primary-dark) 0%, #2d3748 100%);
+  background: linear-gradient(135deg, var(--clr-primary-dark) 0%, hsl(var(--bc) / 0.65) 100%);
   color: hsl(var(--b1));
   border-radius: 20px;
   padding: 40px;
@@ -1310,7 +1310,7 @@ body {
 }
 
 .host-banner-left button:hover {
-  background: #fbbf24;
+  background: hsl(var(--wa));
   box-shadow: 0 4px 14px rgba(255, 179, 0, 0.25);
 }
 
@@ -1401,7 +1401,7 @@ body {
   font-size: 12px;
   font-weight: 700;
   background: rgba(10, 128, 67, 0.1);
-  color: #22c55e;
+  color: hsl(var(--su));
   padding: 2px 8px;
   border-radius: 4px;
 }
@@ -1460,7 +1460,7 @@ body {
 
 .cab-card-price-action small {
   font-size: 11px;
-  color: #22c55e;
+  color: hsl(var(--su));
   font-weight: 600;
   margin-top: 2px;
 }

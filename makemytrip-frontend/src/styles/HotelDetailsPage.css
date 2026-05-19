@@ -60,7 +60,7 @@
 
 .hd-star-badge {
   background: hsl(var(--wa));
-  color: hsl(var(--b3));
+  color: hsl(var(--bc));
   font-size: 12px;
   font-weight: 800;
   padding: 4px 12px;
@@ -86,7 +86,7 @@
 .hd-name {
   font-size: 36px;
   font-weight: 900;
-  color: hsl(var(--b3));
+  color: hsl(var(--bc));
   margin: 0 0 8px;
   letter-spacing: -1px;
 }
@@ -109,7 +109,7 @@
 .hd-btn-secondary {
   background: hsl(var(--b1));
   border: 1px solid hsl(var(--b2));
-  color: hsl(var(--b3));
+  color: hsl(var(--bc));
   padding: 10px 18px;
   border-radius: 10px;
   font-size: 14px;
@@ -124,7 +124,7 @@
 
 .hd-btn-secondary:hover {
   background: hsl(var(--b2));
-  border-color: hsl(var(--nb));
+  border-color: hsl(var(--nc));
   transform: translateY(-1px);
 }
 
@@ -175,7 +175,7 @@
   border-radius: 50%;
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   transition: all 0.2s ease;
-  color: hsl(var(--b3));
+  color: hsl(var(--bc));
 }
 
 .hd-main-swiper .swiper-button-prev::after,
@@ -267,7 +267,7 @@
 .hd-section-title {
   font-size: 22px;
   font-weight: 800;
-  color: hsl(var(--b3));
+  color: hsl(var(--bc));
   margin: 0 0 16px;
   display: flex;
   align-items: center;
@@ -353,7 +353,7 @@
   margin: 0 0 8px;
   font-size: 16px;
   font-weight: 800;
-  color: #000;
+  color: var(--clr-text-primary);
 }
 
 .hd-room-tags {
@@ -422,20 +422,20 @@
 .hd-room-price {
   font-size: 24px;
   font-weight: 900;
-  color: #000;
+  color: var(--clr-text-primary);
   margin: 2px 0;
 }
 
 .hd-room-sub {
   font-size: 10px;
   font-weight: 800;
-  color: hsl(var(--nb));
+  color: hsl(var(--nc));
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .hd-btn-primary {
-  background: linear-gradient(135deg, hsl(var(--er)) 0%, #d91b21 100%);
+  background: linear-gradient(135deg, hsl(var(--er)) 0%, hsl(var(--er) / 0.9) 100%);
   color: hsl(var(--b1));
   border: none;
   padding: 12px 24px;
@@ -494,13 +494,13 @@
 
 .hd-reviewer-name {
   font-weight: 700;
-  color: hsl(var(--b3));
+  color: hsl(var(--bc));
   font-size: 15px;
 }
 
 .hd-review-date {
   font-size: 12px;
-  color: hsl(var(--nb));
+  color: hsl(var(--nc));
 }
 
 .hd-review-comment {
@@ -540,12 +540,12 @@
 .hd-bc-price {
   font-size: 32px;
   font-weight: 900;
-  color: hsl(var(--b3));
+  color: hsl(var(--bc));
 }
 
 .hd-bc-strike {
   font-size: 16px;
-  color: hsl(var(--nb));
+  color: hsl(var(--nc));
   text-decoration: line-through;
   margin-right: 8px;
 }
@@ -571,7 +571,7 @@
 .hd-input-box label {
   font-size: 11px;
   font-weight: 800;
-  color: hsl(var(--nb));
+  color: hsl(var(--nc));
   text-transform: uppercase;
   letter-spacing: 1px;
 }
@@ -582,7 +582,7 @@
   border-radius: 12px;
   font-size: 16px;
   font-weight: 700;
-  color: hsl(var(--b3));
+  color: hsl(var(--bc));
   background: hsl(var(--b1));
   outline: none;
   transition: all 0.3s ease;
@@ -597,7 +597,7 @@
 .hd-bc-footer {
   text-align: center;
   font-size: 12px;
-  color: hsl(var(--nb));
+  color: hsl(var(--nc));
   margin-top: 8px;
 }
 
@@ -685,7 +685,7 @@
 .alert-title {
   font-size: 22px;
   font-weight: 900;
-  color: hsl(var(--b3));
+  color: hsl(var(--bc));
   margin-bottom: 12px;
 }
 
@@ -711,7 +711,7 @@
 }
 
 .alert-btn:hover {
-  background: #285494;
+  background: hsl(var(--p));
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(50, 102, 179, 0.3);
 }

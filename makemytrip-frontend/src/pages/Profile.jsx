@@ -129,30 +129,30 @@ export default function Profile() {
   const avatarText   = displayName ? displayName.slice(0, 2).toUpperCase() : '👤'
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f8fafc', padding: '60px 0' }}>
+    <div style={{ minHeight: '100vh', background: 'hsl(var(--b2))', padding: '60px 0' }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px', boxSizing: 'border-box' }}>
         <div style={{ maxWidth: '600px', margin: '0 auto 20px auto' }}>
-          <Link to="/" style={{ textDecoration: 'none', color: '#EB2026', fontSize: '16px', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+          <Link to="/" style={{ textDecoration: 'none', color: 'hsl(var(--er))', fontSize: '16px', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
             ← Back
           </Link>
         </div>
 
-        <div style={{ maxWidth: '600px', margin: '0 auto', background: '#fff', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.08)', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+        <div style={{ maxWidth: '600px', margin: '0 auto', background: '#fff', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.08)', border: '1px solid hsl(var(--b3))', overflow: 'hidden' }}>
 
           {/* Header */}
-          <div style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', color: '#fff', padding: '32px 40px', display: 'flex', alignItems: 'center', gap: '20px' }}>
-            <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: isMobileUser ? '#0ea5e9' : '#38bdf8', color: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', fontWeight: 900 }}>
+          <div style={{ background: 'linear-gradient(135deg, hsl(var(--bc)) 0%, hsl(var(--bc) / 0.6) 100%)', color: '#fff', padding: '32px 40px', display: 'flex', alignItems: 'center', gap: '20px' }}>
+            <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: isMobileUser ? 'hsl(var(--p))' : 'hsl(var(--p))', color: 'hsl(var(--bc))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', fontWeight: 900 }}>
               {avatarText}
             </div>
             <div>
-              <h1 style={{ margin: 0, fontSize: '28px', fontWeight: 900, color: '#ffffff' }}>
+              <h1 style={{ margin: 0, fontSize: '28px', fontWeight: 900, color: 'hsl(var(--b1))' }}>
                 {displayName || 'Mobile User'}
               </h1>
-              <div style={{ color: '#94a3b8', fontSize: '15px', marginTop: '4px' }}>
+              <div style={{ color: 'hsl(var(--bc) / 0.5)', fontSize: '15px', marginTop: '4px' }}>
                 +91 {displayPhone}
               </div>
               {isMobileUser && (
-                <div style={{ marginTop: '8px', display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(14,165,233,0.2)', border: '1px solid rgba(14,165,233,0.3)', borderRadius: '20px', padding: '3px 12px', fontSize: '12px', fontWeight: 700, color: '#7dd3fc' }}>
+                <div style={{ marginTop: '8px', display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(14,165,233,0.2)', border: '1px solid rgba(14,165,233,0.3)', borderRadius: '20px', padding: '3px 12px', fontSize: '12px', fontWeight: 700, color: 'hsl(var(--p) / 0.35)' }}>
                   📱 Logged in via Mobile OTP
                 </div>
               )}
@@ -161,15 +161,15 @@ export default function Profile() {
 
           {/* Mobile user prompt banner */}
           {isMobileUser && !editing && !displayName && (
-            <div style={{ background: '#fef9c3', borderBottom: '1px solid #fef08a', padding: '16px 40px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ background: 'hsl(var(--wa) / 0.15)', borderBottom: '1px solid hsl(var(--wa) / 0.25)', padding: '16px 40px', display: 'flex', alignItems: 'center', gap: '12px' }}>
               <span style={{ fontSize: '20px' }}>✏️</span>
               <div>
-                <div style={{ fontWeight: 800, color: '#854d0e', fontSize: '14px' }}>Complete your profile</div>
-                <div style={{ color: '#92400e', fontSize: '13px' }}>Add your name and email so future logins show your real name.</div>
+                <div style={{ fontWeight: 800, color: 'hsl(var(--wa) / 0.65)', fontSize: '14px' }}>Complete your profile</div>
+                <div style={{ color: 'hsl(var(--wa) / 0.7)', fontSize: '13px' }}>Add your name and email so future logins show your real name.</div>
               </div>
               <button
                 onClick={() => setEditing(true)}
-                style={{ marginLeft: 'auto', background: '#eab308', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '13px', fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap' }}
+                style={{ marginLeft: 'auto', background: 'hsl(var(--wa))', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '13px', fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap' }}
               >
                 Add Now
               </button>
@@ -179,18 +179,18 @@ export default function Profile() {
           {/* Content / Form */}
           <div style={{ padding: '40px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-              <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 800, color: '#0f172a' }}>Personal Details</h2>
+              <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 800, color: 'hsl(var(--bc))' }}>Personal Details</h2>
               {!editing ? (
                 <button
                   onClick={() => setEditing(true)}
-                  style={{ background: '#eef2ff', color: '#4f46e5', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }}
+                  style={{ background: 'hsl(var(--p) / 0.06)', color: 'hsl(var(--p))', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }}
                 >
                   ✏️ Edit Profile
                 </button>
               ) : (
                 <button
                   onClick={() => setEditing(false)}
-                  style={{ background: '#f1f5f9', color: '#64748b', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }}
+                  style={{ background: 'hsl(var(--b2))', color: 'hsl(var(--bc) / 0.55)', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }}
                 >
                   Cancel
                 </button>
@@ -199,8 +199,8 @@ export default function Profile() {
 
             <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#475569', marginBottom: '8px' }}>
-                  Full Name {isMobileUser && !displayName && <span style={{ color: '#eb2026' }}>*</span>}
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: 'hsl(var(--bc) / 0.65)', marginBottom: '8px' }}>
+                  Full Name {isMobileUser && !displayName && <span style={{ color: 'hsl(var(--er))' }}>*</span>}
                 </label>
                 <input
                   type="text"
@@ -208,33 +208,33 @@ export default function Profile() {
                   value={nameInput}
                   onChange={e => setNameInput(e.target.value)}
                   placeholder={editing ? 'Enter your full name' : '—'}
-                  style={{ width: '100%', padding: '14px 16px', borderRadius: '10px', border: `1px solid ${editing ? '#6366f1' : '#cbd5e1'}`, fontSize: '16px', fontWeight: 600, color: editing ? '#0f172a' : '#64748b', background: editing ? '#fff' : '#f8fafc', outline: 'none', boxSizing: 'border-box' }}
+                  style={{ width: '100%', padding: '14px 16px', borderRadius: '10px', border: `1px solid ${editing ? 'hsl(var(--p))' : 'hsl(var(--b3))'}`, fontSize: '16px', fontWeight: 600, color: editing ? 'hsl(var(--bc))' : 'hsl(var(--bc) / 0.55)', background: editing ? '#fff' : 'hsl(var(--b2))', outline: 'none', boxSizing: 'border-box' }}
                 />
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#475569', marginBottom: '8px' }}>Mobile Number</label>
-                <div style={{ display: 'flex', borderRadius: '10px', overflow: 'hidden', border: '1px solid #cbd5e1' }}>
-                  <span style={{ background: '#f1f5f9', padding: '14px 16px', color: '#64748b', fontWeight: 700, borderRight: '1px solid #cbd5e1' }}>+91</span>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: 'hsl(var(--bc) / 0.65)', marginBottom: '8px' }}>Mobile Number</label>
+                <div style={{ display: 'flex', borderRadius: '10px', overflow: 'hidden', border: '1px solid hsl(var(--b3))' }}>
+                  <span style={{ background: 'hsl(var(--b2))', padding: '14px 16px', color: 'hsl(var(--bc) / 0.55)', fontWeight: 700, borderRight: '1px solid hsl(var(--b3))' }}>+91</span>
                   <input
                     type="text"
                     disabled
                     value={displayPhone}
-                    style={{ width: '100%', padding: '14px 16px', border: 'none', fontSize: '16px', fontWeight: 600, color: '#64748b', background: '#f8fafc', outline: 'none' }}
+                    style={{ width: '100%', padding: '14px 16px', border: 'none', fontSize: '16px', fontWeight: 600, color: 'hsl(var(--bc) / 0.55)', background: 'hsl(var(--b2))', outline: 'none' }}
                   />
                 </div>
-                <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>Mobile number cannot be changed after OTP login.</div>
+                <div style={{ fontSize: '11px', color: 'hsl(var(--bc) / 0.5)', marginTop: '4px' }}>Mobile number cannot be changed after OTP login.</div>
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#475569', marginBottom: '8px' }}>Email Address</label>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: 'hsl(var(--bc) / 0.65)', marginBottom: '8px' }}>Email Address</label>
                 <input
                   type="email"
                   disabled={!editing}
                   value={emailInput}
                   onChange={e => setEmailInput(e.target.value)}
                   placeholder={editing ? 'Enter your email address' : '—'}
-                  style={{ width: '100%', padding: '14px 16px', borderRadius: '10px', border: `1px solid ${editing ? '#6366f1' : '#cbd5e1'}`, fontSize: '16px', fontWeight: 600, color: editing ? '#0f172a' : '#64748b', background: editing ? '#fff' : '#f8fafc', outline: 'none', boxSizing: 'border-box' }}
+                  style={{ width: '100%', padding: '14px 16px', borderRadius: '10px', border: `1px solid ${editing ? 'hsl(var(--p))' : 'hsl(var(--b3))'}`, fontSize: '16px', fontWeight: 600, color: editing ? 'hsl(var(--bc))' : 'hsl(var(--bc) / 0.55)', background: editing ? '#fff' : 'hsl(var(--b2))', outline: 'none', boxSizing: 'border-box' }}
                 />
               </div>
 
@@ -242,7 +242,7 @@ export default function Profile() {
                 <button
                   type="submit"
                   disabled={loading}
-                  style={{ background: '#eb2026', color: '#fff', border: 'none', padding: '16px', borderRadius: '10px', fontSize: '16px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(235,32,38,0.3)', marginTop: '12px' }}
+                  style={{ background: 'hsl(var(--er))', color: '#fff', border: 'none', padding: '16px', borderRadius: '10px', fontSize: '16px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(235,32,38,0.3)', marginTop: '12px' }}
                 >
                   {loading ? 'Saving...' : 'Save Profile Changes'}
                 </button>
@@ -256,7 +256,7 @@ export default function Profile() {
       {toast.show && (
         <div style={{
           position: 'fixed', bottom: '40px', left: '50%', transform: 'translateX(-50%)',
-          background: toast.type === 'success' ? '#10b981' : '#ef4444',
+          background: toast.type === 'success' ? 'hsl(var(--su))' : 'hsl(var(--er))',
           color: '#fff', padding: '14px 28px', borderRadius: '12px', fontSize: '16px',
           fontWeight: '600', boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
           display: 'flex', alignItems: 'center', gap: '12px', zIndex: 9999,

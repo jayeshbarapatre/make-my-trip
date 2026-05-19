@@ -408,7 +408,7 @@ export default function HotelsPage() {
                   <button
                     key={`${item.city}-${idx}`}
                     className="hp-recent-chip"
-                    style={{ background: 'rgba(0,0,0,0.06)', border: '1px solid rgba(0,0,0,0.1)', color: '#131921' }}
+                    style={{ background: 'rgba(0,0,0,0.06)', border: '1px solid rgba(0,0,0,0.1)', color: 'hsl(var(--bc))' }}
                     onClick={() => {
                       setCity(item.city)
                       triggerHotelSearch(item.city)

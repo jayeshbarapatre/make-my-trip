@@ -82,14 +82,14 @@ export default function Header() {
 
           {user ? (
             <div ref={dropdownRef} className="common-user-container" style={{ position: 'relative', cursor: 'pointer' }} onClick={() => setDropdownOpen(!dropdownOpen)}>
-              <div className="common-user-avatar" title={user.name || user.phone} style={{ background: isMobileUser ? '#0ea5e9' : undefined }}>
+              <div className="common-user-avatar" title={user.name || user.phone} style={{ background: isMobileUser ? 'hsl(var(--p))' : undefined }}>
                 {avatarText}
               </div>
               <div className="common-user-details" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '6px' }}>
                 <span className="common-user-name" style={{ fontSize: '14px', fontWeight: 700, whiteSpace: 'nowrap' }}>
                   {displayName}
                 </span>
-                <span style={{ color: '#94a3b8', fontSize: '11px', display: 'flex', alignItems: 'center' }}>▼</span>
+                <span style={{ color: 'hsl(var(--bc) / 0.5)', fontSize: '11px', display: 'flex', alignItems: 'center' }}>▼</span>
               </div>
 
               {dropdownOpen && (

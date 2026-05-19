@@ -26,7 +26,7 @@ export default function HotelCard({ hotel, onSelect }) {
   }
 
   const badge = getBadge(hotel.provider)
-  const img = hotel.image || `https://images.unsplash.com/photo-1445631867551-0dbf667ef51f?auto=format&fit=crop&w=500&h=350&q=80`
+  const img = hotel.image || (hotel.images?.length > 0 ? hotel.images[0] : `https://images.unsplash.com/photo-1445631867551-0dbf667ef51f?auto=format&fit=crop&w=500&h=350&q=80`)
 
   return (
     <div className="hotel-card">

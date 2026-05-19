@@ -491,7 +491,7 @@ export default function SearchResultsPage() {
                   <span style={{ fontWeight: 700, fontSize: 16, minWidth: 20, textAlign: 'center' }}>{passengers}</span>
                   <button className="fr-qty-btn" onClick={e => { e.stopPropagation(); setPassengers(p => Math.min(9, p + 1)) }}>+</button>
                 </div>
-                <div style={{ borderTop: '1px solid #f2f2f2', padding: '8px 16px 6px', fontSize: 12, fontWeight: 700, color: '#666', textTransform: 'uppercase', letterSpacing: '0.6px' }}>Class</div>
+                <div style={{ borderTop: '1px solid hsl(var(--b2))', padding: '8px 16px 6px', fontSize: 12, fontWeight: 700, color: '#666', textTransform: 'uppercase', letterSpacing: '0.6px' }}>Class</div>
                 {['Economy', 'Premium Economy', 'Business', 'First Class'].map(cls => (
                   <div key={cls} className={`fr-trip-option${travelClass === cls ? ' fr-trip-option-active' : ''}`}
                     onMouseDown={e => { e.stopPropagation(); setTravelClass(cls); setShowTravDrop(false) }}>

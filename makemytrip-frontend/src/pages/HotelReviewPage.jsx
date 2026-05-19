@@ -40,10 +40,13 @@ function HotelReviewPage() {
   const checkInDate = new Date(checkIn + 'T00:00:00');
   const checkOutDate = new Date(checkOut + 'T00:00:00');
   const nights = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
-  const rooms = guestsObj.rooms || 1;
+  const bookEntireHotel = location.state?.bookEntireHotel || false;
+  const rooms = bookEntireHotel ? 10 : (guestsObj.rooms || 1);
 
   // Calculations matching MakeMyTrip Price Breakup
-  const basePrice = hotel.price * nights * rooms;
+  const basePrice = bookEntireHotel 
+    ? Math.round(hotel.price * 4.5 * nights)
+    : hotel.price * nights * rooms;
   const discount = Math.round(basePrice * 0.15);       // 15% property discount
   const priceAfterDiscount = basePrice - discount;
   const taxes = Math.round(basePrice * 0.18);          // 18% GST on base price
@@ -88,7 +91,8 @@ function HotelReviewPage() {
         guestsObj,
         nights,
         rooms,
-        totalAmount: finalBilled
+        totalAmount: finalBilled,
+        bookEntireHotel
       }
     });
   };
@@ -245,7 +249,11 @@ function HotelReviewPage() {
               <h3 className="rev-side-title">Price Breakup</h3>
               
               <div className="rev-price-row">
-                <span>Base Price <br/><small>{rooms} Room{rooms !== 1 ? 's' : ''} x {nights} Night{nights !== 1 ? 's' : ''}</small></span>
+                {bookEntireHotel ? (
+                  <span>Base Price (Resort Takeover) <br/><small>All Rooms x {nights} Night{nights !== 1 ? 's' : ''}</small></span>
+                ) : (
+                  <span>Base Price <br/><small>{rooms} Room{rooms !== 1 ? 's' : ''} x {nights} Night{nights !== 1 ? 's' : ''}</small></span>
+                )}
                 <span>₹ {basePrice.toLocaleString("en-IN")}</span>
               </div>
 
@@ -290,8 +298,8 @@ function HotelReviewPage() {
                 />
                 <button className="rev-coupon-btn" onClick={handleApplyCoupon}>APPLY</button>
               </div>
-              <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '12px' }}>
-                Try coupon code <strong style={{color:'#0f172a'}}>MMT500</strong> for instant ₹500 off.
+              <div style={{ fontSize: '12px', color: 'hsl(var(--bc) / 0.55)', marginBottom: '12px' }}>
+                Try coupon code <strong style={{color:'hsl(var(--bc))'}}>MMT500</strong> for instant ₹500 off.
               </div>
               <div className="rev-gift-banner">
                 MMT Gift Cards can be applied at payment step
@@ -302,9 +310,9 @@ function HotelReviewPage() {
             {!user && (
               <div className="rev-side-card">
                 <div className="rev-why-hdr">WHY <span className="rev-why-lbl">SIGN UP</span> OR <span className="rev-why-lbl">LOGIN</span></div>
-                <div className="rev-why-item">✓ <span style={{ color: '#0f172a', fontWeight: 700 }}>Get access to Secret Deals</span></div>
-                <div className="rev-why-item">✓ <span style={{ color: '#0f172a', fontWeight: 700 }}>Book Faster</span> - we'll save &amp; pre-enter your details</div>
-                <div className="rev-why-item" style={{ marginBottom: 0 }}>✓ <span style={{ color: '#0f172a', fontWeight: 700 }}>Manage your bookings</span> from one place</div>
+                <div className="rev-why-item">✓ <span style={{ color: 'hsl(var(--bc))', fontWeight: 700 }}>Get access to Secret Deals</span></div>
+                <div className="rev-why-item">✓ <span style={{ color: 'hsl(var(--bc))', fontWeight: 700 }}>Book Faster</span> - we'll save &amp; pre-enter your details</div>
+                <div className="rev-why-item" style={{ marginBottom: 0 }}>✓ <span style={{ color: 'hsl(var(--bc))', fontWeight: 700 }}>Manage your bookings</span> from one place</div>
               </div>
             )}
 
@@ -323,38 +331,38 @@ function HotelReviewPage() {
       {showLoginModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
           <div style={{ background: '#fff', borderRadius: '16px', width: '90%', maxWidth: '420px', padding: '32px 28px', boxShadow: '0 24px 48px rgba(0,0,0,0.2)', position: 'relative', boxSizing: 'border-box' }}>
-            <button onClick={() => setShowLoginModal(false)} style={{ position: 'absolute', top: '20px', right: '20px', background: '#f3f4f6', border: 'none', width: '32px', height: '32px', borderRadius: '50%', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }}>✕</button>
+            <button onClick={() => setShowLoginModal(false)} style={{ position: 'absolute', top: '20px', right: '20px', background: 'hsl(var(--b2))', border: 'none', width: '32px', height: '32px', borderRadius: '50%', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }}>✕</button>
 
             <div style={{ textAlign: 'center', marginBottom: '24px' }}>
               <span style={{ fontSize: '36px', display: 'block', marginBottom: '8px' }}>🔐</span>
-              <h3 style={{ margin: '0 0 8px', fontSize: '22px', fontWeight: 900, color: '#111827' }}>Login to Complete Booking</h3>
-              <p style={{ margin: 0, fontSize: '13px', color: '#6b7280' }}>MakeMyTrip requires verification before booking. Enter your mobile number to instantly login.</p>
+              <h3 style={{ margin: '0 0 8px', fontSize: '22px', fontWeight: 900, color: 'hsl(var(--bc) / 0.9)' }}>Login to Complete Booking</h3>
+              <p style={{ margin: 0, fontSize: '13px', color: 'hsl(var(--bc) / 0.6)' }}>MakeMyTrip requires verification before booking. Enter your mobile number to instantly login.</p>
             </div>
 
-            {loginError && <div style={{ background: '#fee2e2', color: '#991b1b', padding: '10px 14px', borderRadius: '8px', fontSize: '12px', marginBottom: '16px', textAlign: 'center', fontWeight: 600 }}>{loginError}</div>}
+            {loginError && <div style={{ background: 'hsl(var(--er) / 0.08)', color: 'hsl(var(--er) / 0.7)', padding: '10px 14px', borderRadius: '8px', fontSize: '12px', marginBottom: '16px', textAlign: 'center', fontWeight: 600 }}>{loginError}</div>}
 
             {!otpSent ? (
               <form onSubmit={handleSendOtp}>
                 <div style={{ marginBottom: '20px' }}>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#374151', marginBottom: '6px' }}>MOBILE NUMBER</label>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'hsl(var(--bc) / 0.65)', marginBottom: '6px' }}>MOBILE NUMBER</label>
                   <div style={{ display: 'flex', gap: '10px' }}>
-                    <span style={{ background: '#f3f4f6', border: '1px solid #d1d5db', borderRadius: '8px', padding: '10px 14px', fontSize: '14px', fontWeight: 700, color: '#4b5563', display: 'flex', alignItems: 'center' }}>+91</span>
-                    <input type="tel" placeholder="10-digit mobile number" maxLength={10} value={mobilePhone} onChange={(e) => setMobilePhone(e.target.value)} style={{ flex: 1, border: '1px solid #d1d5db', borderRadius: '8px', padding: '10px 14px', fontSize: '14px', fontWeight: 600, outline: 'none', width: '100%', boxSizing: 'border-box' }} autoFocus required />
+                    <span style={{ background: 'hsl(var(--b2))', border: '1px solid hsl(var(--b3))', borderRadius: '8px', padding: '10px 14px', fontSize: '14px', fontWeight: 700, color: 'hsl(var(--bc) / 0.7)', display: 'flex', alignItems: 'center' }}>+91</span>
+                    <input type="tel" placeholder="10-digit mobile number" maxLength={10} value={mobilePhone} onChange={(e) => setMobilePhone(e.target.value)} style={{ flex: 1, border: '1px solid hsl(var(--b3))', borderRadius: '8px', padding: '10px 14px', fontSize: '14px', fontWeight: 600, outline: 'none', width: '100%', boxSizing: 'border-box' }} autoFocus required />
                   </div>
                 </div>
-                <button type="submit" style={{ width: '100%', background: '#eb2026', color: '#fff', border: 'none', borderRadius: '8px', padding: '14px', fontSize: '15px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(235,32,38,0.3)' }}>GET ONE TIME PASSWORD (OTP)</button>
+                <button type="submit" style={{ width: '100%', background: 'hsl(var(--er))', color: '#fff', border: 'none', borderRadius: '8px', padding: '14px', fontSize: '15px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(235,32,38,0.3)' }}>GET ONE TIME PASSWORD (OTP)</button>
               </form>
             ) : (
               <form onSubmit={handleVerifyOtp}>
                 <div style={{ marginBottom: '20px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                    <label style={{ fontSize: '12px', fontWeight: 700, color: '#374151' }}>ENTER 6-DIGIT OTP</label>
-                    <button type="button" onClick={() => setOtpSent(false)} style={{ background: 'none', border: 'none', color: '#eb2026', fontSize: '12px', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }}>Change Number</button>
+                    <label style={{ fontSize: '12px', fontWeight: 700, color: 'hsl(var(--bc) / 0.65)' }}>ENTER 6-DIGIT OTP</label>
+                    <button type="button" onClick={() => setOtpSent(false)} style={{ background: 'none', border: 'none', color: 'hsl(var(--er))', fontSize: '12px', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }}>Change Number</button>
                   </div>
-                  <input type="text" maxLength="6" placeholder="e.g. 123456" value={otpCode} onChange={(e) => setOtpCode(e.target.value)} style={{ width: '100%', border: '2px solid #eb2026', borderRadius: '8px', padding: '12px 14px', fontSize: '18px', fontWeight: 800, letterSpacing: '4px', textAlign: 'center', outline: 'none', boxSizing: 'border-box' }} autoFocus required />
-                  <span style={{ display: 'block', textAlign: 'center', fontSize: '11px', color: '#10b981', marginTop: '8px', fontWeight: 600 }}>✓ Simulated OTP sent! (Use test OTP: 123456)</span>
+                  <input type="text" maxLength="6" placeholder="e.g. 123456" value={otpCode} onChange={(e) => setOtpCode(e.target.value)} style={{ width: '100%', border: '2px solid hsl(var(--er))', borderRadius: '8px', padding: '12px 14px', fontSize: '18px', fontWeight: 800, letterSpacing: '4px', textAlign: 'center', outline: 'none', boxSizing: 'border-box' }} autoFocus required />
+                  <span style={{ display: 'block', textAlign: 'center', fontSize: '11px', color: 'hsl(var(--su))', marginTop: '8px', fontWeight: 600 }}>✓ Simulated OTP sent! (Use test OTP: 123456)</span>
                 </div>
-                <button type="submit" style={{ width: '100%', background: '#10b981', color: '#fff', border: 'none', borderRadius: '8px', padding: '14px', fontSize: '15px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(16,185,129,0.3)' }}>VERIFY &amp; CONFIRM BOOKING</button>
+                <button type="submit" style={{ width: '100%', background: 'hsl(var(--su))', color: '#fff', border: 'none', borderRadius: '8px', padding: '14px', fontSize: '15px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(16,185,129,0.3)' }}>VERIFY &amp; CONFIRM BOOKING</button>
               </form>
             )}
           </div>

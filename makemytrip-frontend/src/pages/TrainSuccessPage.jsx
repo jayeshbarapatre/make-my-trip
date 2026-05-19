@@ -35,7 +35,7 @@ export default function TrainSuccessPage() {
         scale: 2,
         useCORS: true,
         logging: false,
-        backgroundColor: '#ffffff'
+        backgroundColor: 'hsl(var(--b1))'
       });
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF({
@@ -56,13 +56,13 @@ export default function TrainSuccessPage() {
   };
 
   return (
-    <div className="train-flow-wrapper" style={{ background: '#f0f3f6', minHeight: '100vh', padding: '40px 20px' }}>
+    <div className="train-flow-wrapper" style={{ background: 'hsl(var(--b2))', minHeight: '100vh', padding: '40px 20px' }}>
       <div className="train-flow-container" style={{ maxWidth: '860px', margin: '0 auto' }}>
 
-        <div id="train-ticket-content" style={{ background: '#fff', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', border: '1px solid #e5e7eb', marginBottom: '24px' }}>
+        <div id="train-ticket-content" style={{ background: '#fff', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', border: '1px solid hsl(var(--b3))', marginBottom: '24px' }}>
           
-          <div style={{ background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)', color: '#fff', padding: '48px 32px', textAlign: 'center' }}>
-            <div style={{ width: '64px', height: '64px', background: '#059669', color: '#fff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', margin: '0 auto 20px', boxShadow: '0 0 20px rgba(5,150,105,0.4)' }}>
+          <div style={{ background: 'linear-gradient(135deg, hsl(var(--p) / 0.8) 0%, hsl(var(--p)) 100%)', color: '#fff', padding: '48px 32px', textAlign: 'center' }}>
+            <div style={{ width: '64px', height: '64px', background: 'hsl(var(--su))', color: '#fff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', margin: '0 auto 20px', boxShadow: '0 0 20px rgba(5,150,105,0.4)' }}>
               ✓
             </div>
             <h1 style={{ fontSize: '32px', fontWeight: 900, margin: 0, letterSpacing: '-0.5px' }}>Train Ticket Confirmed!</h1>
@@ -84,48 +84,48 @@ export default function TrainSuccessPage() {
           <div style={{ padding: '32px' }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '40px' }}>
               <div>
-                <h3 style={{ fontSize: '13px', fontWeight: 800, color: '#6b7280', textTransform: 'uppercase', marginBottom: '16px' }}>Journey Information</h3>
-                <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '20px' }}>
-                  <div style={{ fontWeight: 800, fontSize: '18px', color: '#111827' }}>{train.name} ({train.number})</div>
-                  <div style={{ fontSize: '14px', color: '#4b5563', marginTop: '4px' }}>{booking.fromCity} → {booking.toCity}</div>
+                <h3 style={{ fontSize: '13px', fontWeight: 800, color: 'hsl(var(--bc) / 0.6)', textTransform: 'uppercase', marginBottom: '16px' }}>Journey Information</h3>
+                <div style={{ background: 'hsl(var(--b2))', border: '1px solid hsl(var(--b3))', borderRadius: '12px', padding: '20px' }}>
+                  <div style={{ fontWeight: 800, fontSize: '18px', color: 'hsl(var(--bc) / 0.9)' }}>{train.name} ({train.number})</div>
+                  <div style={{ fontSize: '14px', color: 'hsl(var(--bc) / 0.7)', marginTop: '4px' }}>{booking.fromCity} → {booking.toCity}</div>
                   
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px', borderTop: '1px solid #e5e7eb', paddingTop: '16px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px', borderTop: '1px solid hsl(var(--b3))', paddingTop: '16px' }}>
                     <div>
-                      <div style={{ fontSize: '11px', color: '#6b7280', fontWeight: 600 }}>Departure</div>
+                      <div style={{ fontSize: '11px', color: 'hsl(var(--bc) / 0.6)', fontWeight: 600 }}>Departure</div>
                       <div style={{ fontSize: '16px', fontWeight: 800 }}>{train.depTime}</div>
-                      <div style={{ fontSize: '12px', color: '#6b7280' }}>{booking.departureDate}</div>
+                      <div style={{ fontSize: '12px', color: 'hsl(var(--bc) / 0.6)' }}>{booking.departureDate}</div>
                     </div>
                     <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: '11px', color: '#6b7280', fontWeight: 600 }}>Arrival</div>
+                      <div style={{ fontSize: '11px', color: 'hsl(var(--bc) / 0.6)', fontWeight: 600 }}>Arrival</div>
                       <div style={{ fontSize: '16px', fontWeight: 800 }}>{train.arrTime}</div>
-                      <div style={{ fontSize: '12px', color: '#6b7280' }}>Next Day</div>
+                      <div style={{ fontSize: '12px', color: 'hsl(var(--bc) / 0.6)' }}>Next Day</div>
                     </div>
                   </div>
                 </div>
               </div>
 
               <div>
-                <h3 style={{ fontSize: '13px', fontWeight: 800, color: '#6b7280', textTransform: 'uppercase', marginBottom: '16px' }}>Passenger Roster</h3>
+                <h3 style={{ fontSize: '13px', fontWeight: 800, color: 'hsl(var(--bc) / 0.6)', textTransform: 'uppercase', marginBottom: '16px' }}>Passenger Roster</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {booking.travellers?.passengers?.map((p, idx) => (
-                    <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '12px', background: '#f9fafb', padding: '12px', borderRadius: '10px', border: '1px solid #e5e7eb' }}>
-                      <div style={{ width: '24px', height: '24px', background: '#e5e7eb', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 800 }}>{idx + 1}</div>
+                    <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'hsl(var(--b2))', padding: '12px', borderRadius: '10px', border: '1px solid hsl(var(--b3))' }}>
+                      <div style={{ width: '24px', height: '24px', background: 'hsl(var(--b3))', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 800 }}>{idx + 1}</div>
                       <div>
                         <div style={{ fontSize: '14px', fontWeight: 800 }}>{p.name}</div>
-                        <div style={{ fontSize: '11px', color: '#6b7280' }}>Age: {p.age} · {p.berth} · {booking.travellers?.classCode}</div>
+                        <div style={{ fontSize: '11px', color: 'hsl(var(--bc) / 0.6)' }}>Age: {p.age} · {p.berth} · {booking.travellers?.classCode}</div>
                       </div>
                     </div>
                   ))}
                 </div>
 
-                <div style={{ marginTop: '24px', borderTop: '1px dashed #e5e7eb', paddingTop: '16px', display: 'flex', justifyContent: 'space-between' }}>
-                  <div style={{ fontSize: '11px', color: '#6b7280', fontWeight: 600 }}>Total Paid</div>
-                  <div style={{ fontSize: '18px', fontWeight: 900, color: '#eb2026' }}>₹{booking.totalAmount?.toLocaleString("en-IN")}</div>
+                <div style={{ marginTop: '24px', borderTop: '1px dashed hsl(var(--b3))', paddingTop: '16px', display: 'flex', justifyContent: 'space-between' }}>
+                  <div style={{ fontSize: '11px', color: 'hsl(var(--bc) / 0.6)', fontWeight: 600 }}>Total Paid</div>
+                  <div style={{ fontSize: '18px', fontWeight: 900, color: 'hsl(var(--er))' }}>₹{booking.totalAmount?.toLocaleString("en-IN")}</div>
                 </div>
               </div>
             </div>
 
-            <div style={{ marginTop: '40px', borderTop: '1px solid #f3f4f6', paddingTop: '20px', textAlign: 'center', fontSize: '12px', color: '#9ca3af' }}>
+            <div style={{ marginTop: '40px', borderTop: '1px solid hsl(var(--b2))', paddingTop: '20px', textAlign: 'center', fontSize: '12px', color: 'hsl(var(--bc) / 0.5)' }}>
               <p>* Valid Identity Proof required during travel. Support: 1800 102 8747</p>
             </div>
           </div>
@@ -140,13 +140,13 @@ export default function TrainSuccessPage() {
             📥 DOWNLOAD PDF TICKET
           </button>
           <button 
-            style={{ flex: '1 1 200px', padding: '16px', background: '#fff', border: '1.5px solid #eb2026', color: '#eb2026', borderRadius: '10px', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }}
+            style={{ flex: '1 1 200px', padding: '16px', background: '#fff', border: '1.5px solid hsl(var(--er))', color: 'hsl(var(--er))', borderRadius: '10px', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }}
             onClick={() => navigate('/my-trips')}
           >
             🧳 MY BOOKINGS
           </button>
           <button 
-            style={{ flex: '1 1 200px', padding: '16px', background: '#111827', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }}
+            style={{ flex: '1 1 200px', padding: '16px', background: 'hsl(var(--bc) / 0.9)', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }}
             onClick={() => navigate('/')}
           >
             🏠 GO HOME

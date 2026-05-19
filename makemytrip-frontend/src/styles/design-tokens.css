@@ -6,52 +6,52 @@
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 :root {
   /* â”€â”€ Brand Colors â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-  --clr-primary:        #1F6DB8;   /* action CTAs, active states   */
-  --clr-primary-dark:   #003580;   /* headers, navbar              */
-  --clr-primary-hover:  #1557A0;   /* primary button hover         */
-  --clr-gold:           #FFD700;   /* ratings, highlights          */
+  --clr-primary:        hsl(var(--p));   /* action CTAs, active states   */
+  --clr-primary-dark:   hsl(var(--p));   /* headers, navbar              */
+  --clr-primary-hover:  hsl(var(--p));   /* primary button hover         */
+  --clr-gold:           hsl(var(--wa));   /* ratings, highlights          */
 
   /* â”€â”€ Semantic Colors â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-  --clr-success:        #4CAF50;
-  --clr-success-bg:     #E8F5E9;
-  --clr-error:          #F44336;
-  --clr-error-bg:       #FFEBEE;
-  --clr-warning:        #FF9800;
-  --clr-warning-bg:     #FFF3E0;
-  --clr-info:           #2196F3;
-  --clr-info-bg:        #E3F2FD;
+  --clr-success:        hsl(var(--su));
+  --clr-success-bg:     hsl(var(--su) / 0.1);
+  --clr-error:          hsl(var(--er));
+  --clr-error-bg:       hsl(var(--er) / 0.1);
+  --clr-warning:        hsl(var(--wa));
+  --clr-warning-bg:     hsl(var(--wa) / 0.08);
+  --clr-info:           hsl(var(--p));
+  --clr-info-bg:        hsl(var(--p) / 0.08);
 
   /* â”€â”€ Text Colors â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-  --clr-text-primary:   #212121;
-  --clr-text-secondary: #757575;
-  --clr-text-hint:      #9E9E9E;
-  --clr-text-inverse:   #ffffff;
-  --clr-text-dark:      #424242;
+  --clr-text-primary:   hsl(var(--bc));
+  --clr-text-secondary: hsl(var(--bc) / 0.75);
+  --clr-text-hint:      hsl(var(--bc) / 0.65);
+  --clr-text-inverse:   hsl(var(--b1));
+  --clr-text-dark:      hsl(var(--bc) / 0.85);
 
   /* â”€â”€ Backgrounds â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-  --clr-bg-base:        #F5F5F5;   /* page background              */
-  --clr-bg-white:       #ffffff;   /* card / surface               */
-  --clr-bg-hover:       #F5F5F5;
+  --clr-bg-base:        hsl(var(--b2));   /* page background              */
+  --clr-bg-white:       hsl(var(--b1));   /* card / surface               */
+  --clr-bg-hover:       hsl(var(--b2));
 
   /* â”€â”€ Borders â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-  --clr-border:         #E0E0E0;
-  --clr-border-focus:   #1F6DB8;
-  --clr-divider:        #EEEEEE;
+  --clr-border:         hsl(var(--b3));
+  --clr-border-focus:   hsl(var(--p));
+  --clr-divider:        hsl(var(--b3));
 
   /* â”€â”€ Airline Brand Colors â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-  --clr-indigo:         #00a0e2;
-  --clr-airindia:       #C8102E;
-  --clr-vistara:        #6D1F7F;
-  --clr-spicejet:       #FF7800;
-  --clr-akasa:          #E8682A;
-  --clr-aiexpress:      #CC0000;
+  --clr-indigo:         hsl(var(--p));
+  --clr-airindia:       hsl(var(--er));
+  --clr-vistara:        hsl(var(--a));
+  --clr-spicejet:       hsl(var(--wa));
+  --clr-akasa:          hsl(var(--wa));
+  --clr-aiexpress:      hsl(var(--er));
 
   /* â”€â”€ Dark Mode (surfaces) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-  --clr-dm-bg:          #121212;
-  --clr-dm-surface:     #1E1E1E;
-  --clr-dm-border:      #383838;
-  --clr-dm-text:        #ffffff;
-  --clr-dm-text-sec:    #B0B0B0;
+  --clr-dm-bg:          hsl(var(--bc));
+  --clr-dm-surface:     hsl(var(--bc));
+  --clr-dm-border:      hsl(var(--bc));
+  --clr-dm-text:        hsl(var(--b1));
+  --clr-dm-text-sec:    hsl(var(--bc) / 0.45);
 
   /* â”€â”€ Spacing (8 px base) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   --sp-xs:   4px;
@@ -130,7 +130,9 @@
   --input-pad:    12px 16px;
   --input-fs:     var(--fs-body);
   --input-h:      40px;
+}
 
+:root {
   /* Global Raw HSL Value Overrides to Fix Broken hsl(var(--...)) Syntax System-wide */
   --b1: 0 0% 100%;           /* base color 1 (white card surface) */
   --b2: 210 20% 98%;         /* base color 2 (light page background) */
@@ -143,13 +145,267 @@
   --a: 34 97% 64%;           /* accent color */
   --ac: 34 97% 64%;          /* accent content/yellow */
   --n: 215 28% 17%;          /* neutral color */
-  --nc: 215 16% 47%;         /* neutral content/gray text */
-  --nb: 210 20% 90%;         /* neutral background/border */
+  --nc: var(--bc) / 0.65;         /* neutral content/gray text */
+  --nb: var(--bc) / 0.15;         /* neutral background/border */
   --in: 200 95% 45%;         /* info blue */
   --su: 142 70% 45%;         /* success green */
   --wa: 38 92% 50%;          /* warning orange */
   --er: 0 84% 60%;           /* error red */
 }
+
+/* Robust explicit theme overrides to guarantee pixel-perfect theme rendering in all environments */
+[data-theme="light"] {
+  --b1: 0 0% 100%;
+  --b2: 210 20% 98%;
+  --b3: 210 20% 95%;
+  --bc: 215 28% 17%;
+  --p: 211 71% 42%;
+  --clr-text-secondary: hsl(215 28% 17% / 0.85);
+  --clr-text-hint: hsl(215 28% 17% / 0.70);
+  --clr-text-dark: hsl(215 28% 17% / 0.90);
+}
+[data-theme="dark"] {
+  --b1: 220 18% 13%;
+  --b2: 220 18% 10%;
+  --b3: 220 18% 7%;
+  --bc: 220 20% 97%;
+  --p: 211 100% 60%;
+  --clr-text-secondary: hsl(220 20% 97% / 0.85);
+  --clr-text-hint: hsl(220 20% 97% / 0.70);
+  --clr-text-dark: hsl(220 20% 97% / 0.90);
+}
+[data-theme="cupcake"] {
+  --b1: 300 24% 100%;
+  --b2: 300 24% 97%;
+  --b3: 300 24% 93%;
+  --bc: 300 10% 20%;
+  --p: 325 78% 72%;
+}
+[data-theme="bumblebee"] {
+  --b1: 48 100% 100%;
+  --b2: 48 100% 97%;
+  --b3: 48 100% 92%;
+  --bc: 24 80% 15%;
+  --p: 45 100% 50%;
+}
+[data-theme="emerald"] {
+  --b1: 210 40% 100%;
+  --b2: 210 40% 98%;
+  --b3: 210 40% 95%;
+  --bc: 215 28% 17%;
+  --p: 141 53% 53%;
+}
+[data-theme="corporate"] {
+  --b1: 210 40% 100%;
+  --b2: 210 40% 98%;
+  --b3: 210 40% 95%;
+  --bc: 215 28% 17%;
+  --p: 229 96% 64%;
+}
+[data-theme="synthwave"] {
+  --b1: 253 58% 15%;
+  --b2: 253 58% 11%;
+  --b3: 253 58% 8%;
+  --bc: 190 100% 80%;
+  --p: 41 73% 53%;
+}
+[data-theme="retro"] {
+  --b1: 43 36% 87%;
+  --b2: 43 36% 82%;
+  --b3: 43 36% 77%;
+  --bc: 24 10% 20%;
+  --p: 3 64% 73%;
+}
+[data-theme="cyberpunk"] {
+  --b1: 56 100% 50%;
+  --b2: 56 100% 45%;
+  --b3: 56 100% 40%;
+  --bc: 325 100% 50%;
+  --p: 325 100% 50%;
+}
+[data-theme="valentine"] {
+  --b1: 22 17% 92%;
+  --b2: 22 17% 88%;
+  --b3: 22 17% 83%;
+  --bc: 325 30% 20%;
+  --p: 353 74% 67%;
+}
+[data-theme="halloween"] {
+  --b1: 24 10% 12%;
+  --b2: 24 10% 8%;
+  --b3: 24 10% 5%;
+  --bc: 180 20% 90%;
+  --p: 35 91% 50%;
+}
+[data-theme="garden"] {
+  --b1: 96 15% 96%;
+  --b2: 96 15% 92%;
+  --b3: 96 15% 88%;
+  --bc: 120 20% 20%;
+  --p: 140 76% 36%;
+}
+[data-theme="forest"] {
+  --b1: 0 0% 11%;
+  --b2: 0 0% 8%;
+  --b3: 0 0% 5%;
+  --bc: 120 20% 90%;
+  --p: 141 72% 43%;
+}
+[data-theme="aqua"] {
+  --b1: 222 47% 11%;
+  --b2: 222 47% 8%;
+  --b3: 222 47% 5%;
+  --bc: 180 100% 80%;
+  --p: 182 92% 50%;
+}
+[data-theme="lofi"] {
+  --b1: 0 0% 100%;
+  --b2: 0 0% 98%;
+  --b3: 0 0% 95%;
+  --bc: 0 0% 0%;
+  --p: 0 0% 0%;
+}
+[data-theme="pastel"] {
+  --b1: 345 57% 98%;
+  --b2: 345 57% 95%;
+  --b3: 345 57% 92%;
+  --bc: 345 10% 20%;
+  --p: 329 86% 70%;
+}
+[data-theme="fantasy"] {
+  --b1: 266 100% 98%;
+  --b2: 266 100% 95%;
+  --b3: 266 100% 92%;
+  --bc: 266 10% 20%;
+  --p: 260 84% 77%;
+}
+[data-theme="wireframe"] {
+  --b1: 0 0% 100%;
+  --b2: 0 0% 98%;
+  --b3: 0 0% 95%;
+  --bc: 0 0% 0%;
+  --p: 0 0% 0%;
+}
+[data-theme="black"] {
+  --b1: 0 0% 0%;
+  --b2: 0 0% 5%;
+  --b3: 0 0% 10%;
+  --bc: 0 0% 100%;
+  --p: 0 0% 100%;
+}
+[data-theme="luxury"] {
+  --b1: 240 10% 6%;
+  --b2: 240 10% 3%;
+  --b3: 240 10% 1%;
+  --bc: 36 41% 64%;
+  --p: 36 41% 64%;
+}
+[data-theme="dracula"] {
+  --b1: 231 15% 18%;
+  --b2: 231 15% 15%;
+  --b3: 231 15% 12%;
+  --bc: 326 100% 74%;
+  --p: 326 100% 74%;
+}
+[data-theme="cmyk"] {
+  --b1: 0 0% 100%;
+  --b2: 0 0% 98%;
+  --b3: 0 0% 95%;
+  --bc: 215 28% 17%;
+  --p: 203 98% 40%;
+}
+[data-theme="autumn"] {
+  --b1: 30 27% 96%;
+  --b2: 30 27% 92%;
+  --b3: 30 27% 88%;
+  --bc: 20 10% 15%;
+  --p: 20 92% 48%;
+}
+[data-theme="business"] {
+  --b1: 215 28% 17%;
+  --b2: 215 28% 13%;
+  --b3: 215 28% 9%;
+  --bc: 210 20% 98%;
+  --p: 211 71% 42%;
+}
+[data-theme="acid"] {
+  --b1: 60 100% 50%;
+  --b2: 60 100% 45%;
+  --b3: 60 100% 40%;
+  --bc: 300 100% 50%;
+  --p: 120 100% 50%;
+}
+[data-theme="lemonade"] {
+  --b1: 48 100% 97%;
+  --b2: 48 100% 94%;
+  --b3: 48 100% 90%;
+  --bc: 200 95% 15%;
+  --p: 45 100% 50%;
+}
+[data-theme="night"] {
+  --b1: 222 47% 11%;
+  --b2: 222 47% 8%;
+  --b3: 222 47% 5%;
+  --bc: 198 93% 60%;
+  --p: 198 93% 60%;
+}
+[data-theme="coffee"] {
+  --b1: 350 15% 10%;
+  --b2: 350 15% 7%;
+  --b3: 350 15% 4%;
+  --bc: 36 41% 54%;
+  --p: 46 31% 54%;
+}
+[data-theme="winter"] {
+  --b1: 210 40% 98%;
+  --b2: 210 40% 95%;
+  --b3: 210 40% 92%;
+  --bc: 203 98% 25%;
+  --p: 203 98% 40%;
+}
+[data-theme="dim"] {
+  --b1: 220 18% 20%;
+  --b2: 220 18% 16%;
+  --b3: 220 18% 12%;
+  --bc: 220 18% 90%;
+  --p: 214 95% 78%;
+}
+[data-theme="nord"] {
+  --b1: 220 16% 22%;
+  --b2: 220 16% 18%;
+  --b3: 220 16% 14%;
+  --bc: 193 43% 76%;
+  --p: 193 43% 76%;
+}
+[data-theme="sunset"] {
+  --b1: 268 47% 9%;
+  --b2: 268 47% 6%;
+  --b3: 268 47% 3%;
+  --bc: 36 91% 58%;
+  --p: 350 100% 53%;
+}
+[data-theme="caramellatte"] {
+  --b1: 36 37% 91%;
+  --b2: 36 37% 87%;
+  --b3: 36 37% 82%;
+  --bc: 24 50% 25%;
+  --p: 26 43% 39%;
+}
+[data-theme="abyss"] {
+  --b1: 224 71% 4%;
+  --b2: 224 71% 2%;
+  --b3: 224 71% 1%;
+  --bc: 221 20% 90%;
+  --p: 221 83% 53%;
+}
+[data-theme="silk"] {
+  --b1: 36 43% 97%;
+  --b2: 36 43% 94%;
+  --b3: 36 43% 89%;
+  --bc: 36 20% 25%;
+  --p: 36 30% 68%;
+}
+
 
 /* â”€â”€ Utility classes used across every page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .ds-page-bg   { background: var(--clr-bg-base); min-height: 100vh; }

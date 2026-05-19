@@ -1,9 +1,9 @@
 ﻿.train-flow-wrapper {
-  background-color: #f4f6f9;
+  background-color: hsl(var(--b2));
   min-height: 100vh;
   padding: 32px 0 80px;
   font-family: 'Space Grotesk', sans-serif;
-  color: hsl(var(--b3));
+  color: hsl(var(--bc));
 }
 
 .train-flow-container {
@@ -100,7 +100,7 @@
 }
 
 .train-rb-left p {
-  color: hsl(var(--nb));
+  color: hsl(var(--nc));
   margin: 0;
   font-size: 14px;
 }
@@ -149,7 +149,7 @@
   font-size: 20px;
   font-weight: 800;
   margin: 0 0 4px;
-  color: hsl(var(--b3));
+  color: hsl(var(--bc));
 }
 
 .train-name-col p {
@@ -171,7 +171,7 @@
 .train-time-val {
   font-size: 20px;
   font-weight: 800;
-  color: hsl(var(--b3));
+  color: hsl(var(--bc));
 }
 
 .train-time-lbl {
@@ -218,7 +218,7 @@
 }
 
 .train-cls-box:hover {
-  border-color: #008cff;
+  border-color: hsl(var(--p));
 }
 
 .train-cls-box.selected {
@@ -237,7 +237,7 @@
 
 .train-cls-price {
   font-size: 15px;
-  color: hsl(var(--b3));
+  color: hsl(var(--bc));
   font-weight: 800;
 }
 
@@ -252,17 +252,17 @@
 /* Color Coding Availability */
 .status-green {
   background: hsl(var(--suc));
-  color: #15803d;
+  color: hsl(var(--su));
 }
 
 .status-yellow {
-  background: #fef9c3;
-  color: #a16207;
+  background: hsl(var(--wa) / 0.15);
+  color: hsl(var(--wa) / 0.6);
 }
 
 .status-red {
   background: hsl(var(--erc));
-  color: #b91c1c;
+  color: hsl(var(--er));
 }
 
 .train-res-action {
@@ -331,7 +331,7 @@
 .train-pass-item-hdr {
   font-size: 15px;
   font-weight: 800;
-  color: hsl(var(--b3));
+  color: hsl(var(--bc));
   margin-bottom: 16px;
   display: flex;
   justify-content: space-between;
@@ -382,7 +382,7 @@
 
 .train-add-pass-btn {
   background: hsl(var(--b2));
-  color: #008cff;
+  color: hsl(var(--p));
   border: 1px solid hsl(var(--b2));
   padding: 12px 24px;
   border-radius: 8px;
@@ -416,7 +416,7 @@
   justify-content: space-between;
   font-size: 20px;
   font-weight: 900;
-  color: hsl(var(--b3));
+  color: hsl(var(--bc));
   border-top: 1px solid hsl(var(--b2));
   padding-top: 16px;
   margin-top: 16px;

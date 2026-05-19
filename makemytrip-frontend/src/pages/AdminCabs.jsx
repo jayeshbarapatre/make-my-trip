@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import AdminLayout from '../components/Admin/AdminLayout'
 import { adminCabsService } from '../services/adminService'
 import CabForm from '../components/Admin/CabForm'
+import Icons from '../utils/icons'
 import './AdminFlights.css'
 
 const AdminCabs = () => {
@@ -84,8 +85,8 @@ const AdminCabs = () => {
       <div className="admin-page">
         <div className="page-header">
           <h1>Cabs Management</h1>
-          <button className="btn-primary" onClick={() => setShowForm(true)}>
-            🚕 Add New Cab
+          <button className="btn-primary" onClick={() => setShowForm(true)} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {Icons.taxi({ size: 16 })} Add New Cab
           </button>
         </div>
 
@@ -134,9 +135,15 @@ const AdminCabs = () => {
                       <td>{cab.cabs_available}/{cab.cabs}</td>
                       <td><span className={`badge ${cab.isActive ? 'badge-active' : 'badge-inactive'}`}>{cab.isActive ? 'Active' : 'Inactive'}</span></td>
                       <td className="actions">
-                        <button className="btn-sm btn-edit" onClick={() => handleEdit(cab)}>✎ Edit</button>
-                        <button className="btn-sm btn-toggle" onClick={() => handleToggleStatus(cab._id)}>{cab.isActive ? '🔒' : '🔓'}</button>
-                        <button className="btn-sm btn-delete" onClick={() => handleDelete(cab._id)}>🗑️ Delete</button>
+                        <button className="btn-sm btn-edit" onClick={() => handleEdit(cab)} title="Edit" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                          {Icons.edit({ size: 14 })} Edit
+                        </button>
+                        <button className="btn-sm btn-toggle" onClick={() => handleToggleStatus(cab._id)} title={cab.isActive ? 'Deactivate' : 'Activate'} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          {cab.isActive ? Icons.toggleOn({ size: 14 }) : Icons.toggleOff({ size: 14 })}
+                        </button>
+                        <button className="btn-sm btn-delete" onClick={() => handleDelete(cab._id)} title="Delete" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                          {Icons.delete({ size: 14 })} Delete
+                        </button>
                       </td>
                     </tr>
                   ))}

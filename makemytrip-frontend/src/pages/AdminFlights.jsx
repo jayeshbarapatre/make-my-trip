@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import AdminLayout from '../components/Admin/AdminLayout'
 import { adminFlightsService } from '../services/adminService'
 import FlightForm from '../components/Admin/FlightForm'
+import Icons from '../utils/icons'
 import './AdminFlights.css'
 
 const AdminFlights = () => {
@@ -109,14 +110,14 @@ const AdminFlights = () => {
         <div className="page-header">
           <div>
             <h1>Flights Management</h1>
-            <div style={{ display: 'flex', gap: '24px', marginTop: '8px', fontSize: '14px', color: '#64748b' }}>
-              <span>📊 Total: <strong style={{ color: '#0f172a' }}>{allFlights.length}</strong></span>
-              <span>✅ Active: <strong style={{ color: '#10b981' }}>{allFlights.filter(f => f.isActive).length}</strong></span>
-              <span>⛔ Inactive: <strong style={{ color: '#ef4444' }}>{allFlights.filter(f => !f.isActive).length}</strong></span>
+            <div style={{ display: 'flex', gap: '24px', marginTop: '8px', fontSize: '14px', color: 'hsl(var(--bc) / 0.55)' }}>
+              <span>📊 Total: <strong style={{ color: 'hsl(var(--bc))' }}>{allFlights.length}</strong></span>
+              <span>✅ Active: <strong style={{ color: 'hsl(var(--su))' }}>{allFlights.filter(f => f.isActive).length}</strong></span>
+              <span>⛔ Inactive: <strong style={{ color: 'hsl(var(--er))' }}>{allFlights.filter(f => !f.isActive).length}</strong></span>
             </div>
           </div>
-          <button className="btn-primary" onClick={() => setShowForm(true)}>
-            ✈️ Add New Flight
+          <button className="btn-primary" onClick={() => setShowForm(true)} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {Icons.plane({ size: 16 })} Add New Flight
           </button>
         </div>
 
@@ -178,11 +179,15 @@ const AdminFlights = () => {
                         </span>
                       </td>
                       <td className="actions">
-                        <button className="btn-sm btn-edit" onClick={() => handleEdit(flight)}>✎ Edit</button>
-                        <button className="btn-sm btn-toggle" onClick={() => handleToggleStatus(flight.id)}>
-                          {flight.isActive ? '🔒' : '🔓'}
+                        <button className="btn-sm btn-edit" onClick={() => handleEdit(flight)} title="Edit" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                          {Icons.edit({ size: 14 })} Edit
                         </button>
-                        <button className="btn-sm btn-delete" onClick={() => handleDelete(flight.id)}>🗑️ Delete</button>
+                        <button className="btn-sm btn-toggle" onClick={() => handleToggleStatus(flight.id)} title={flight.isActive ? 'Deactivate' : 'Activate'} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          {flight.isActive ? Icons.toggleOn({ size: 14 }) : Icons.toggleOff({ size: 14 })}
+                        </button>
+                        <button className="btn-sm btn-delete" onClick={() => handleDelete(flight.id)} title="Delete" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                          {Icons.delete({ size: 14 })} Delete
+                        </button>
                       </td>
                     </tr>
                   ))}

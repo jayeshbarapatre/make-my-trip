@@ -41,9 +41,9 @@ const AdminDashboard = () => {
   }
 
   const getChartColors = () => ({
-    area: theme === 'light' ? '#1a73e8' : '#3b82f6',
-    text: theme === 'light' ? '#6b7280' : '#9ca3af',
-    grid: theme === 'light' ? '#e5e7eb' : '#374151'
+    area: theme === 'light' ? 'hsl(var(--p))' : 'hsl(var(--p))',
+    text: theme === 'light' ? 'hsl(var(--bc) / 0.6)' : 'hsl(var(--bc) / 0.5)',
+    grid: theme === 'light' ? 'hsl(var(--b3))' : 'hsl(var(--bc) / 0.65)'
   })
 
   const weeklyData = [
@@ -115,28 +115,28 @@ const AdminDashboard = () => {
               icon="fas fa-dollar-sign"
               label="Total Revenue"
               value={`₹${(stats?.summary?.totalRevenue || 0).toLocaleString()}`}
-              color="#10b981"
+              color="hsl(var(--su))"
               trend="+12.5% from last month"
             />
             <KPICard
               icon="fas fa-plane"
               label="Active Flights"
               value={stats?.active?.activeFlights || 0}
-              color="#3b82f6"
+              color="hsl(var(--p))"
               trend="+8 new this month"
             />
             <KPICard
               icon="fas fa-hotel"
               label="Total Hotels"
               value={stats?.summary?.totalHotels || 0}
-              color="#06b6d4"
+              color="hsl(var(--in))"
               trend="+5 new this month"
             />
             <KPICard
               icon="fas fa-calendar-check"
               label="Total Bookings"
               value={(stats?.bookingsBreakdown?.flight || 0) + (stats?.bookingsBreakdown?.hotel || 0) + (stats?.bookingsBreakdown?.bus || 0) + (stats?.bookingsBreakdown?.cab || 0)}
-              color="#f59e0b"
+              color="hsl(var(--wa))"
               trend="+2.4% today"
             />
           </div>
@@ -170,7 +170,7 @@ const AdminDashboard = () => {
                   <YAxis stroke={chartColors.text} style={{ fontSize: '12px' }} />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: theme === 'light' ? '#fff' : '#1a1f36',
+                      backgroundColor: theme === 'light' ? '#fff' : 'hsl(var(--bc) / 0.8)',
                       border: `1px solid ${chartColors.grid}`,
                       borderRadius: '6px',
                       color: chartColors.text
@@ -191,10 +191,10 @@ const AdminDashboard = () => {
               <div className="visitor-count">1,282</div>
               <div className="visitor-avatars">
                 <div className="avatar-group">
-                  <div className="avatar" style={{ backgroundColor: '#3b82f6', zIndex: 4 }}>Y</div>
-                  <div className="avatar" style={{ backgroundColor: '#8b5cf6', zIndex: 3 }}>J</div>
-                  <div className="avatar" style={{ backgroundColor: '#ec4899', zIndex: 2 }}>K</div>
-                  <div className="avatar" style={{ backgroundColor: '#f59e0b', zIndex: 1 }}>M</div>
+                  <div className="avatar" style={{ backgroundColor: 'hsl(var(--p))', zIndex: 4 }}>Y</div>
+                  <div className="avatar" style={{ backgroundColor: 'hsl(var(--a))', zIndex: 3 }}>J</div>
+                  <div className="avatar" style={{ backgroundColor: 'hsl(var(--a))', zIndex: 2 }}>K</div>
+                  <div className="avatar" style={{ backgroundColor: 'hsl(var(--wa))', zIndex: 1 }}>M</div>
                   <div className="avatar-more">+6</div>
                 </div>
                 <span className="avatar-label">Logged Visitors</span>
@@ -245,10 +245,10 @@ const AdminDashboard = () => {
         {/* Booking Types */}
         <div className="booking-section">
           <div className="booking-grid">
-            <BookingCard icon="fas fa-plane" label="Flights Booked" value={stats?.bookingsBreakdown?.flight || 0} color="#3b82f6" />
-            <BookingCard icon="fas fa-bed" label="Hotels Booked" value={stats?.bookingsBreakdown?.hotel || 0} color="#8b5cf6" />
-            <BookingCard icon="fas fa-bus" label="Buses Booked" value={stats?.bookingsBreakdown?.bus || 0} color="#ec4899" />
-            <BookingCard icon="fas fa-taxi" label="Cabs Booked" value={stats?.bookingsBreakdown?.cab || 0} color="#f43f5e" />
+            <BookingCard icon="fas fa-plane" label="Flights Booked" value={stats?.bookingsBreakdown?.flight || 0} color="hsl(var(--p))" />
+            <BookingCard icon="fas fa-bed" label="Hotels Booked" value={stats?.bookingsBreakdown?.hotel || 0} color="hsl(var(--a))" />
+            <BookingCard icon="fas fa-bus" label="Buses Booked" value={stats?.bookingsBreakdown?.bus || 0} color="hsl(var(--a))" />
+            <BookingCard icon="fas fa-taxi" label="Cabs Booked" value={stats?.bookingsBreakdown?.cab || 0} color="hsl(var(--er))" />
           </div>
         </div>
 
@@ -327,8 +327,8 @@ const SimpleWorldMap = () => (
   <svg viewBox="0 0 960 600" className="world-map">
     <defs>
       <linearGradient id="landGradient">
-        <stop offset="0%" stopColor="#e5e7eb" stopOpacity="0.8" />
-        <stop offset="100%" stopColor="#d1d5db" stopOpacity="0.8" />
+        <stop offset="0%" stopColor="hsl(var(--b3))" stopOpacity="0.8" />
+        <stop offset="100%" stopColor="hsl(var(--b3))" stopOpacity="0.8" />
       </linearGradient>
     </defs>
 

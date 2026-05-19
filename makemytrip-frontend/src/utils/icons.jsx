@@ -1,7 +1,7 @@
 /* Icon Utility - Using react-icons with Font Awesome, Iconoir, and HugeIcons */
 
 // Font Awesome Icons
-import { FaHeart, FaStar, FaChevronLeft, FaChevronRight, FaChevronDown, FaSearch, FaCheck, FaClock, FaMapPin, FaCalendarAlt, FaUser, FaBell, FaSignOutAlt, FaShoppingCart, FaFilter, FaCreditCard, FaPhone, FaEnvelope, FaLock, FaEye, FaEyeSlash, FaHome, FaHotel, FaPlane, FaTrain, FaBus, FaTaxi, FaUmbrella, FaCompass, FaPassport, FaShip, FaShieldAlt, FaTheaterMasks } from 'react-icons/fa'
+import { FaHeart, FaStar, FaChevronLeft, FaChevronRight, FaChevronDown, FaSearch, FaCheck, FaClock, FaMapPin, FaCalendarAlt, FaUser, FaBell, FaSignOutAlt, FaShoppingCart, FaFilter, FaCreditCard, FaPhone, FaEnvelope, FaLock, FaEye, FaEyeSlash, FaHome, FaHotel, FaPlane, FaTrain, FaBus, FaTaxi, FaUmbrella, FaCompass, FaPassport, FaShip, FaShieldAlt, FaTheaterMasks, FaEdit, FaTrash, FaToggleOn, FaToggleOff, FaPlus, FaSave, FaTimes } from 'react-icons/fa'
 
 // Iconoir Icons
 import { CiHeart, CiStar, CiSearch, CiMapPin, CiCalendar, CiUser, CiLogout, CiShoppingCart, CiFilter, CiPhone, CiMail, CiLock } from 'react-icons/ci'
@@ -182,6 +182,29 @@ export const Icons = {
   // Time
   clock: (props = {}) => (
     <FaClock {...props} />
+  ),
+
+  // Admin/CRUD
+  edit: (props = {}) => (
+    <FaEdit {...props} />
+  ),
+  delete: (props = {}) => (
+    <FaTrash {...props} />
+  ),
+  toggleOn: (props = {}) => (
+    <FaToggleOn {...props} />
+  ),
+  toggleOff: (props = {}) => (
+    <FaToggleOff {...props} />
+  ),
+  plus: (props = {}) => (
+    <FaPlus {...props} />
+  ),
+  save: (props = {}) => (
+    <FaSave {...props} />
+  ),
+  close: (props = {}) => (
+    <FaTimes {...props} />
   ),
 }
 

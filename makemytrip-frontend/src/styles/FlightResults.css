@@ -51,7 +51,7 @@
   flex: 1;
   min-width: 0;
 }
-.fr-search-field:hover { background: #EEF4FF; }
+.fr-search-field:hover { background: hsl(var(--p) / 0.05); }
 .fr-search-label {
   font-size: var(--fs-caption);
   color: var(--clr-text-hint);
@@ -86,7 +86,7 @@
   flex-shrink: 0;
   transition: var(--transition-fast);
 }
-.fr-swap-btn:hover { background: #EEF4FF; }
+.fr-swap-btn:hover { background: hsl(var(--p) / 0.05); }
 .fr-search-btn {
   background: var(--clr-primary);
   color: var(--clr-text-inverse);
@@ -148,8 +148,8 @@
   cursor: pointer;
   transition: var(--transition-fast);
 }
-.fr-trip-option:hover { background: #f0f4ff; color: var(--clr-primary); }
-.fr-trip-option-active { color: var(--clr-primary); font-weight: var(--fw-bold); background: #eef4ff; }
+.fr-trip-option:hover { background: hsl(var(--p) / 0.06); color: var(--clr-primary); }
+.fr-trip-option-active { color: var(--clr-primary); font-weight: var(--fw-bold); background: hsl(var(--p) / 0.05); }
 .fr-qty-btn {
   width: 28px; height: 28px; border-radius: 50%;
   border: 1.5px solid var(--clr-primary);
@@ -197,7 +197,7 @@
   transition: background 0.1s;
   gap: 12px;
 }
-.fr-city-option:hover { background: #f0f4ff; }
+.fr-city-option:hover { background: hsl(var(--p) / 0.06); }
 .fr-city-left { display: flex; flex-direction: column; min-width: 0; flex: 1; }
 .fr-city-name { font-size: var(--fs-body); font-weight: var(--fw-bold); color: var(--clr-text-primary); }
 .fr-city-apt  { font-size: var(--fs-caption); color: var(--clr-text-secondary); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -205,7 +205,7 @@
   font-size: var(--fs-caption);
   font-weight: var(--fw-bold);
   color: var(--clr-primary);
-  background: #eef4ff;
+  background: hsl(var(--p) / 0.05);
   padding: 2px 8px;
   border-radius: var(--radius-sm);
   flex-shrink: 0;
@@ -328,7 +328,7 @@
 .fr-chip {
   background: var(--clr-info-bg);
   color: var(--clr-primary);
-  border: 1px solid #C5D9FF;
+  border: 1px solid hsl(var(--p) / 0.2);
   border-radius: var(--radius-full);
   padding: 3px 10px;
   font-size: var(--fs-caption);
@@ -339,7 +339,7 @@
   cursor: pointer;
   transition: var(--transition-fast);
 }
-.fr-chip:hover { background: #D2E3FF; }
+.fr-chip:hover { background: hsl(var(--p) / 0.15); }
 .fr-chip-x { font-size: 14px; line-height: 1; font-weight: var(--fw-regular); }
 
 /* Airline filter rows */
@@ -450,11 +450,11 @@
   border-bottom: 3px solid transparent;
 }
 .fr-sort-tab:last-child { border-right: none; }
-.fr-sort-tab:hover { background: #EEF4FF; color: var(--clr-text-secondary); }
+.fr-sort-tab:hover { background: hsl(var(--p) / 0.05); color: var(--clr-text-secondary); }
 .fr-sort-tab.active {
   color: var(--clr-primary);
   border-bottom-color: var(--clr-primary);
-  background: #EEF4FF;
+  background: hsl(var(--p) / 0.05);
 }
 .fr-sort-value {
   font-size: var(--fs-body);
@@ -683,7 +683,7 @@
   display: flex;
   gap: var(--sp-s);
   align-items: center;
-  background: #FAFAFA;
+  background: hsl(var(--b2));
 }
 .fc-tag {
   font-size: var(--fs-caption);
@@ -732,11 +732,11 @@
   gap: var(--sp-m);
 }
 .fr-promo-hdfc {
-  background: linear-gradient(135deg,#0a1f6e 0%,#1565c0 55%,#1e88e5 100%);
+  background: linear-gradient(135deg,hsl(var(--p)) 0%,hsl(var(--p)) 55%,hsl(var(--p)) 100%);
   color: var(--clr-text-inverse);
 }
 .fr-promo-cashback {
-  background: linear-gradient(135deg,#1b5e20 0%,#2e7d32 60%,#43a047 100%);
+  background: linear-gradient(135deg,hsl(var(--su)) 0%,hsl(var(--su)) 60%,hsl(var(--su)) 100%);
   color: var(--clr-text-inverse);
 }
 .fr-promo-logo {
@@ -775,7 +775,7 @@
 /* Hot Deals */
 .fr-hot-deals-wrapper {
   margin: var(--sp-xs) 0;
-  background: linear-gradient(135deg,#1a237e 0%,#283593 40%,#b71c1c 100%);
+  background: linear-gradient(135deg,hsl(var(--p)) 0%,hsl(var(--p)) 40%,hsl(var(--er)) 100%);
   border-radius: var(--radius-sm);
   padding: var(--sp-m);
   color: var(--clr-text-inverse);
@@ -853,7 +853,7 @@
   background: rgba(255,255,255,0.2);
 }
 .fr-dropdown-item:hover {
-  background: #f3f4f6;
+  background: hsl(var(--b2));
   color: var(--clr-primary) !important;
 }
 .fr-trip-type-dropdown-menu {
@@ -893,7 +893,7 @@
   position: absolute;
   top: 24px;
   right: 24px;
-  background: #f3f4f6;
+  background: hsl(var(--b2));
   border: none;
   width: 36px;
   height: 36px;
@@ -901,13 +901,13 @@
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
-  color: #4b5563;
+  color: hsl(var(--bc) / 0.7);
   transition: all 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
 }
-.custom-modal-close:hover { background: #e5e7eb; transform: rotate(90deg); }
+.custom-modal-close:hover { background: hsl(var(--b3)); transform: rotate(90deg); }
 
 .custom-login-header, .custom-alert-header {
   text-align: center;
@@ -922,18 +922,18 @@
   margin: 0 0 10px;
   font-size: 24px;
   font-weight: 900;
-  color: #111827;
+  color: hsl(var(--bc));
 }
 .custom-login-header p, .custom-alert-msg {
   margin: 0;
   font-size: 14px;
-  color: #6b7280;
+  color: hsl(var(--bc) / 0.6);
   line-height: 1.6;
 }
 
 .custom-login-error {
-  background: #fef2f2;
-  color: #dc2626;
+  background: hsl(var(--er) / 0.05);
+  color: hsl(var(--er));
   padding: 12px;
   border-radius: 10px;
   font-size: 13px;
@@ -948,7 +948,7 @@
   display: block;
   font-size: 11px;
   font-weight: 800;
-  color: #374151;
+  color: hsl(var(--bc) / 0.65);
   margin-bottom: 8px;
   letter-spacing: 0.5px;
 }
@@ -958,19 +958,19 @@
   gap: 12px;
 }
 .custom-country-code {
-  background: #f9fafb;
-  border: 1.5px solid #e5e7eb;
+  background: hsl(var(--b2));
+  border: 1.5px solid hsl(var(--b3));
   border-radius: 12px;
   padding: 12px 16px;
   font-size: 15px;
   font-weight: 700;
-  color: #111827;
+  color: hsl(var(--bc));
   display: flex;
   align-items: center;
 }
 .custom-phone-input input {
   flex: 1;
-  border: 1.5px solid #e5e7eb;
+  border: 1.5px solid hsl(var(--b3));
   border-radius: 12px;
   padding: 12px 18px;
   font-size: 16px;
@@ -1045,8 +1045,8 @@
 }
 .custom-alert-btn-cancel {
   flex: 1;
-  background: #f3f4f6;
-  color: #4b5563;
+  background: hsl(var(--b2));
+  color: hsl(var(--bc) / 0.7);
   border: none;
   border-radius: 12px;
   padding: 16px;
@@ -1055,7 +1055,7 @@
   cursor: pointer;
   transition: all 0.2s;
 }
-.custom-alert-btn-cancel:hover { background: #e5e7eb; }
+.custom-alert-btn-cancel:hover { background: hsl(var(--b3)); }
 .custom-alert-btn-confirm { flex: 1.5; }
 
 @keyframes modalFadeIn {

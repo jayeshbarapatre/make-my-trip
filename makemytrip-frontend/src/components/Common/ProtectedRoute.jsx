@@ -7,7 +7,7 @@ export default function ProtectedRoute({ children }) {
   if (loading) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '50vh' }}>
-        <p style={{ fontSize: '14px', color: '#6b7280' }}>Verifying your secure session…</p>
+        <p style={{ fontSize: '14px', color: 'hsl(var(--bc) / 0.6)' }}>Verifying your secure session…</p>
       </div>
     )
   }

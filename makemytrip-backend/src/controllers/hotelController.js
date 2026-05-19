@@ -16,9 +16,6 @@ export const searchHotels = async (req, res) => {
     if (checkIn && checkOut && !validateDateRange(checkIn, checkOut).valid) {
       errors.checkOut = validateDateRange(checkIn, checkOut).error
     }
-    if (guests && !validateGuestCount(guests).valid) {
-      errors.guests = 'Guests must be between 1 and 50'
-    }
 
     if (Object.keys(errors).length > 0) {
       return res.status(400).json({ message: 'Validation failed', errors })
@@ -30,7 +27,11 @@ export const searchHotels = async (req, res) => {
 
     const where = { isActive: true }
     if (city) {
-      where.city = { contains: city, mode: 'insensitive' }
+      where.OR = [
+        { city: { contains: city, mode: 'insensitive' } },
+        { name: { contains: city, mode: 'insensitive' } },
+        { location: { contains: city, mode: 'insensitive' } }
+      ]
     }
 
     let nightsCount = 0
@@ -51,8 +52,8 @@ export const searchHotels = async (req, res) => {
     const enrichedHotels = hotels.map(hotel => ({
       ...hotel,
       nightsCount: nightsCount || 1,
-      isAvailable: hotel.availableRooms > 0,
-      availableRooms: hotel.availableRooms || 0
+      isAvailable: hotel.roomsAvailable > 0,
+      availableRooms: hotel.roomsAvailable || 0
     }))
 
     res.json({

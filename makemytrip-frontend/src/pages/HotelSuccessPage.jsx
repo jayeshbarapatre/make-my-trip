@@ -30,8 +30,11 @@ export default function HotelSuccessPage() {
   const bookingId      = booking.bookingId  || `MMT-HT-${Math.floor(100000 + ((_ts + 137) % 900000))}`;
   const paymentMethod  = booking.travellers?.method || 'UPI';
 
+  const bookEntireHotel  = location.state?.bookEntireHotel || false;
   // Price breakdown (18% GST on base, 15% property discount)
-  const basePrice        = hotel?.price ? hotel.price * (typeof nights === 'number' ? nights : 1) * (typeof rooms === 'number' ? rooms : 1) : totalAmount;
+  const basePrice        = bookEntireHotel 
+    ? Math.round(hotel.price * 4.5 * (typeof nights === 'number' ? nights : 1))
+    : (hotel?.price ? hotel.price * (typeof nights === 'number' ? nights : 1) * (typeof rooms === 'number' ? rooms : 1) : totalAmount);
   const propertyDiscount = Math.round(basePrice * 0.15);
   const priceAfterDisc   = basePrice - propertyDiscount;
   const taxAmount        = Math.round(basePrice * 0.18);
@@ -47,7 +50,7 @@ export default function HotelSuccessPage() {
         scale: 2,
         useCORS: true,
         logging: false,
-        backgroundColor: '#ffffff'
+        backgroundColor: 'hsl(var(--b1))'
       });
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF({
@@ -127,8 +130,17 @@ export default function HotelSuccessPage() {
               <h3 className="succ-sec-title">Price Breakdown</h3>
               <div className="succ-price-table">
                 <div className="succ-price-row">
-                  <span>Base Price</span>
-                  <span className="succ-price-sub">({rooms} Room{rooms !== 1 ? 's' : ''} × {nights} Night{nights !== 1 ? 's' : ''})</span>
+                  {bookEntireHotel ? (
+                    <>
+                      <span>Base Price (Resort Takeover)</span>
+                      <span className="succ-price-sub">(All Rooms × {nights} Night{nights !== 1 ? 's' : ''})</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Base Price</span>
+                      <span className="succ-price-sub">({rooms} Room{rooms !== 1 ? 's' : ''} × {nights} Night{nights !== 1 ? 's' : ''})</span>
+                    </>
+                  )}
                   <span>₹ {basePrice.toLocaleString('en-IN')}</span>
                 </div>
                 <div className="succ-price-row discount">
@@ -173,7 +185,7 @@ export default function HotelSuccessPage() {
               </div>
               <div className="succ-info-item">
                 <span className="succ-info-lbl">Payment Status</span>
-                <span className="succ-info-val" style={{ color: '#059669' }}>SUCCESS</span>
+                <span className="succ-info-val" style={{ color: 'hsl(var(--su))' }}>SUCCESS</span>
               </div>
             </div>
 
