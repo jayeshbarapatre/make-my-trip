@@ -79,7 +79,7 @@ const VendorHotelForm = ({ onClose, onSuccess }) => {
     const { name, value } = e.target
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'rooms' || name === 'rating' ? Number(value) : value
+      [name]: ['rooms', 'rating', 'price', 'pricePerNight'].includes(name) ? Number(value) : value
     }))
   }
 
