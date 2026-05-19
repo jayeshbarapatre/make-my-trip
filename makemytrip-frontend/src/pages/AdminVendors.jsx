@@ -23,6 +23,44 @@ const AdminVendors = () => {
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1'
 
+  // Dynamic vendor type configuration - easy to extend for future categories
+  const vendorTypeConfig = {
+    hotel: {
+      label: 'Hotel Vendor',
+      placeholder: 'e.g., Paradise Hotels',
+      icon: '🏨'
+    },
+    flight: {
+      label: 'Flight Vendor',
+      placeholder: 'e.g., SkyAirways Airlines',
+      icon: '✈️'
+    },
+    multi: {
+      label: 'Multi-Service',
+      placeholder: 'e.g., TravelMax Services',
+      icon: '🌐'
+    },
+    bus: {
+      label: 'Bus Booking',
+      placeholder: 'e.g., GoTravel Buses',
+      icon: '🚌'
+    },
+    cab: {
+      label: 'Cab Booking',
+      placeholder: 'e.g., RideHub Cabs',
+      icon: '🚕'
+    },
+    holiday: {
+      label: 'Holiday Package',
+      placeholder: 'e.g., VacationWonders Packages',
+      icon: '🏖️'
+    }
+  }
+
+  const getVendorPlaceholder = (type) => {
+    return vendorTypeConfig[type]?.placeholder || 'e.g., Travel Vendor'
+  }
+
   useEffect(() => {
     fetchVendors()
   }, [])
@@ -73,7 +111,7 @@ const AdminVendors = () => {
 
       toast.success('Vendor created successfully')
       setVendors([response.data.data.vendor, ...vendors])
-      setFormData({ name: '', email: '', password: '', phone: '', vendorType: 'hotel' })
+      setFormData({ name: '', email: '', password: '', phone: '', vendorType: Object.keys(vendorTypeConfig)[0] })
       setShowForm(false)
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to create vendor')
@@ -181,9 +219,11 @@ const AdminVendors = () => {
                         boxSizing: 'border-box'
                       }}
                     >
-                      <option value="hotel">Hotel Vendor</option>
-                      <option value="flight">Flight Vendor</option>
-                      <option value="multi">Multi-Service</option>
+                      {Object.entries(vendorTypeConfig).map(([key, config]) => (
+                        <option key={key} value={key}>
+                          {config.icon} {config.label}
+                        </option>
+                      ))}
                     </select>
                   </div>
 
@@ -196,7 +236,7 @@ const AdminVendors = () => {
                       name="name"
                       value={formData.name}
                       onChange={handleInputChange}
-                      placeholder="e.g., SkyAirways Airlines"
+                      placeholder={getVendorPlaceholder(formData.vendorType)}
                       required
                       style={{
                         width: '100%',
@@ -356,8 +396,8 @@ const AdminVendors = () => {
                     <td>{vendor.email}</td>
                     <td>{vendor.phone}</td>
                     <td>
-                      <span style={{ background: vendor.vendorType === 'flight' ? '#fce7f3' : vendor.vendorType === 'multi' ? '#e0e7ff' : '#dbeafe', color: vendor.vendorType === 'flight' ? '#831843' : vendor.vendorType === 'multi' ? '#3730a3' : '#0c4a6e', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: '600' }}>
-                        {vendor.vendorType === 'flight' ? '✈️ Flight' : vendor.vendorType === 'multi' ? '🌐 Multi' : '🏨 Hotel'}
+                      <span style={{ background: '#dbeafe', color: '#0c4a6e', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: '600' }}>
+                        {vendorTypeConfig[vendor.vendorType]?.icon} {vendorTypeConfig[vendor.vendorType]?.label || vendor.vendorType}
                       </span>
                     </td>
                     <td>
