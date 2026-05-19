@@ -1,26 +1,24 @@
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
 import nodemailer from 'nodemailer'
-import User from '../models/User.js'
-import { getMongoConnectionStatus } from '../config/db.js'
-import { postgresDB, saveMockDb } from '../config/prismaClient.js'
+import prisma from '../config/prismaClient.js'
 
-const JWT_SECRET = process.env.JWT_SECRET || 'change_this_secret_in_production'
+if (!process.env.JWT_SECRET) {
+  throw new Error('FATAL: JWT_SECRET environment variable is not set. This is required for security. Set JWT_SECRET in your .env file.')
+}
+
+const JWT_SECRET = process.env.JWT_SECRET
 
 const signToken = (id) => jwt.sign({ id }, JWT_SECRET, { expiresIn: '7d' })
 
-// Memory fallback datastore if MongoDB is offline
-const memoryUsers = [
-  {
-    id: "usr_1111-2222-3333-4444",
-    name: "Jayesh Sharma",
-    email: "jayesh@gmail.com",
-    phone: "9988776655",
-    password: bcrypt.hashSync("Psspl@123#", 10), 
-    otp: null,
-    otpExpiry: null
-  }
-]
+const validateEmail = (email) => {
+  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  return regex.test(email)
+}
+
+const validatePassword = (password) => {
+  return password && password.length >= 8
+}
 
 // Simulated SMTP / mailer logging helper
 const sendOTPEmail = async (email, otp) => {
@@ -65,32 +63,26 @@ export const register = async (req, res) => {
       return res.status(400).json({ message: 'All fields (name, email, password, phone) are required.' })
     }
 
-    const hashed = await bcrypt.hash(password, 10)
-
-    if (getMongoConnectionStatus()) {
-      const existing = await User.findOne({ email })
-      if (existing) return res.status(409).json({ message: 'Email address already registered.' })
-
-      const newUser = await User.create({ name, email, password: hashed, phone })
-      const token = signToken(newUser._id)
-      return res.status(201).json({
-        data: { user: { id: newUser._id, name: newUser.name, email: newUser.email, phone: newUser.phone }, token }
-      })
-    } else {
-      const existing = memoryUsers.find(u => u.email === email)
-      if (existing) return res.status(409).json({ message: 'Email address already registered.' })
-
-      const newId = 'usr_' + Date.now() + Math.floor(Math.random() * 1000)
-      const newUser = { id: newId, name, email, password: hashed, phone, otp: null, otpExpiry: null }
-      memoryUsers.push(newUser)
-      postgresDB.users.push({ id: newId, name, email, phone, password: hashed, createdAt: new Date() })
-      saveMockDb()
-
-      const token = signToken(newId)
-      return res.status(201).json({
-        data: { user: { id: newId, name, email, phone }, token }
-      })
+    if (!validateEmail(email)) {
+      return res.status(400).json({ message: 'Invalid email address format.' })
     }
+
+    if (!validatePassword(password)) {
+      return res.status(400).json({ message: 'Password must be at least 8 characters long.' })
+    }
+
+    const existing = await prisma.user.findUnique({ where: { email } })
+    if (existing) return res.status(409).json({ message: 'Email address already registered.' })
+
+    const hashed = await bcrypt.hash(password, 10)
+    const newUser = await prisma.user.create({
+      data: { name, email, password: hashed, phone, is_admin: false }
+    })
+
+    const token = signToken(newUser.id)
+    res.status(201).json({
+      data: { user: { id: newUser.id, name: newUser.name, email: newUser.email, phone: newUser.phone, is_admin: false }, token }
+    })
   } catch (err) {
     console.error('Register error:', err)
     res.status(500).json({ message: err.message })
@@ -105,31 +97,15 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: 'Email and password are required.' })
     }
 
-    let user = null
-    let userId = null
-
-    if (getMongoConnectionStatus()) {
-      const matched = await User.findOne({ email })
-      if (matched) {
-        user = matched
-        userId = matched._id
-      }
-    } else {
-      const matched = postgresDB.users.find(u => u.email === email) || memoryUsers.find(u => u.email === email)
-      if (matched) {
-        user = matched
-        userId = matched.id
-      }
-    }
-
+    const user = await prisma.user.findUnique({ where: { email } })
     if (!user) return res.status(401).json({ message: 'Invalid email or password.' })
 
     const isValid = await bcrypt.compare(password, user.password)
-    if (!isValid && user.password !== password) return res.status(401).json({ message: 'Invalid email or password.' })
+    if (!isValid) return res.status(401).json({ message: 'Invalid email or password.' })
 
-    const token = signToken(userId)
+    const token = signToken(user.id)
     res.json({
-      data: { user: { id: userId, name: user.name, email: user.email, phone: user.phone }, token }
+      data: { user: { id: user.id, name: user.name, email: user.email, phone: user.phone, is_admin: user.is_admin }, token }
     })
   } catch (err) {
     console.error('Login error:', err)
@@ -143,27 +119,15 @@ export const forgotPassword = async (req, res) => {
     const { email } = req.body
     if (!email) return res.status(400).json({ message: 'Email address is required.' })
 
-    let user = null
-    const otp = Math.floor(100000 + Math.random() * 900000).toString() // Secure 6-digit random code
-    const expiry = new Date(Date.now() + 5 * 60 * 1000) // Expiry in 5 minutes
+    const user = await prisma.user.findUnique({ where: { email } })
+    if (!user) return res.status(404).json({ message: 'No registered user found with this email.' })
 
-    if (getMongoConnectionStatus()) {
-      user = await User.findOne({ email })
-      if (!user) return res.status(404).json({ message: 'No registered user found with this email.' })
+    const otp = Math.floor(100000 + Math.random() * 900000).toString()
+    const expiry = new Date(Date.now() + 5 * 60 * 1000)
 
-      user.otp = otp
-      user.otpExpiry = expiry
-      await user.save()
-    } else {
-      user = memoryUsers.find(u => u.email === email)
-      if (!user) return res.status(404).json({ message: 'No registered user found with this email.' })
-
-      user.otp = otp
-      user.otpExpiry = expiry
-    }
-
+    await prisma.user.update({ where: { email }, data: { otp, otpExpiry: expiry } })
     await sendOTPEmail(email, otp)
-    res.json({ message: 'Verification OTP sent to your registered email address successfully!', simulatedOtp: otp })
+    res.json({ message: 'Verification OTP sent to your registered email address successfully!' })
   } catch (err) {
     console.error('Forgot password error:', err)
     res.status(500).json({ message: err.message })
@@ -180,23 +144,18 @@ export const verifyOtp = async (req, res) => {
     const { email, otp } = req.body
     if (!email || !otp) return res.status(400).json({ message: 'Email and OTP code are required.' })
 
-    let user = null
-    if (getMongoConnectionStatus()) {
-      user = await User.findOne({ email })
-    } else {
-      user = memoryUsers.find(u => u.email === email)
-    }
-
+    const user = await prisma.user.findUnique({ where: { email } })
     if (!user) return res.status(404).json({ message: 'User not found.' })
 
-    if (user.otp !== otp) {
+    // Allow static OTP '123456' in development mode for testing
+    const isStaticOtpValid = process.env.NODE_ENV !== 'production' && otp === '123456'
+    const isStoredOtpValid = user.otp === otp && new Date() <= user.otpExpiry
+
+    if (!isStaticOtpValid && !isStoredOtpValid) {
       return res.status(400).json({ message: 'Invalid OTP code. Please double-check and try again.' })
     }
 
-    if (new Date() > new Date(user.otpExpiry)) {
-      return res.status(400).json({ message: 'The verification OTP code has expired. Please request a new one.' })
-    }
-
+    console.log(`✅ OTP verified for ${email}${isStaticOtpValid ? ' (using static OTP for testing)' : ''}`)
     res.json({ message: 'OTP verified successfully! You may proceed to reset your password.' })
   } catch (err) {
     console.error('Verify OTP error:', err)
@@ -212,31 +171,22 @@ export const resetPassword = async (req, res) => {
       return res.status(400).json({ message: 'Email, OTP, and new password are required.' })
     }
 
-    let user = null
-    if (getMongoConnectionStatus()) {
-      user = await User.findOne({ email })
-    } else {
-      user = memoryUsers.find(u => u.email === email)
-    }
-
+    const user = await prisma.user.findUnique({ where: { email } })
     if (!user) return res.status(404).json({ message: 'User not found.' })
 
     if (user.otp !== otp) {
       return res.status(400).json({ message: 'Verification failed. Invalid OTP.' })
     }
 
-    if (new Date() > new Date(user.otpExpiry)) {
+    if (new Date() > user.otpExpiry) {
       return res.status(400).json({ message: 'The verification code has expired.' })
     }
 
     const hashed = await bcrypt.hash(password, 10)
-    user.password = hashed
-    user.otp = null
-    user.otpExpiry = null
-
-    if (getMongoConnectionStatus()) {
-      await user.save()
-    }
+    await prisma.user.update({
+      where: { email },
+      data: { password: hashed, otp: null, otpExpiry: null }
+    })
 
     res.json({ message: 'Password reset successfully! You can now log in with your new password.' })
   } catch (err) {
@@ -249,18 +199,10 @@ export const resetPassword = async (req, res) => {
 export const getProfile = async (req, res) => {
   try {
     const targetId = req.userId || req.user?.id
-    let user = null
-
-    if (getMongoConnectionStatus()) {
-      user = await User.findById(targetId).select('-password')
-    }
-    if (!user) {
-      const found = postgresDB.users.find(u => u.id === targetId) || memoryUsers.find(u => u.id === targetId)
-      if (found) {
-        const { password, ...safeUser } = found
-        user = safeUser
-      }
-    }
+    const user = await prisma.user.findUnique({
+      where: { id: targetId },
+      select: { id: true, name: true, email: true, phone: true, is_admin: true }
+    })
 
     if (!user) return res.status(404).json({ message: 'User profile not found.' })
 
@@ -279,28 +221,18 @@ export const sendMobileOtp = async (req, res) => {
     const { phone } = req.body
     if (!phone) return res.status(400).json({ message: 'Mobile number is required.' })
 
+    const user = await prisma.user.findFirst({ where: { phone } })
+    if (!user) {
+      return res.status(404).json({ message: 'No account found with this phone number. Please register first.' })
+    }
+
     const otp = Math.floor(100000 + Math.random() * 900000).toString()
     const expiry = new Date(Date.now() + 5 * 60 * 1000)
 
-    let user = postgresDB.users.find(u => u.phone === phone) || memoryUsers.find(u => u.phone === phone)
-    if (!user) {
-      const newId = 'usr_' + Date.now()
-      user = { 
-        id: newId, 
-        name: 'Traveller_' + phone.slice(-4), 
-        email: phone + '@mmt.mobile', 
-        phone, 
-        password: 'mobile_otp_user', 
-        otp, 
-        otpExpiry: expiry 
-      }
-      memoryUsers.push(user)
-      postgresDB.users.push({ id: newId, name: user.name, email: user.email, phone: user.phone, password: user.password, createdAt: new Date() })
-      saveMockDb()
-    } else {
-      user.otp = otp
-      user.otpExpiry = expiry
-    }
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { otp, otpExpiry: expiry }
+    })
 
     console.log('\n=============================================')
     console.log(`📱 SIMULATED SMS SENT (Razorpay Style Login)`)
@@ -308,9 +240,12 @@ export const sendMobileOtp = async (req, res) => {
     console.log(`👉 MakeMyTrip Login OTP: [ ${otp} ]`)
     console.log('=============================================\n')
 
-    res.json({ message: 'OTP sent successfully via simulated SMS.', simulatedOtp: otp })
+    res.json({
+      message: 'OTP sent successfully via simulated SMS.'
+    })
   } catch (err) {
-    res.status(500).json({ message: err.message })
+    console.error('Send OTP error:', err.message)
+    res.status(500).json({ message: 'Failed to send OTP: ' + err.message })
   }
 }
 
@@ -319,39 +254,55 @@ export const verifyMobileOtp = async (req, res) => {
     const { phone, otp } = req.body
     if (!phone || !otp) return res.status(400).json({ message: 'Phone number and OTP code are required.' })
 
-    let user = postgresDB.users.find(u => u.phone === phone) || memoryUsers.find(u => u.phone === phone)
+    const user = await prisma.user.findFirst({ where: { phone } })
     if (!user) {
-      const newId = 'usr_' + Date.now()
-      user = { 
-        id: newId, 
-        name: 'Traveller_' + phone.slice(-4), 
-        email: phone + '@mmt.mobile', 
-        phone, 
-        password: 'mobile_otp_user', 
-        otp: '123456', 
-        otpExpiry: new Date(Date.now() + 5 * 60 * 1000) 
-      }
-      memoryUsers.push(user)
-      postgresDB.users.push({ id: newId, name: user.name, email: user.email, phone: user.phone, password: user.password, createdAt: new Date() })
-      saveMockDb()
+      return res.status(404).json({ message: 'No account found with this phone number.' })
     }
 
-    if (user.otp !== otp && otp !== '123456') {
+    // Allow static OTP '123456' in development mode for testing
+    const isStaticOtpValid = process.env.NODE_ENV !== 'production' && otp === '123456'
+    const isStoredOtpValid = user.otp === otp && (!user.otpExpiry || new Date() <= user.otpExpiry)
+
+    if (!isStaticOtpValid && !isStoredOtpValid) {
       return res.status(400).json({ message: 'Invalid OTP code.' })
     }
 
-    if (user.otpExpiry && new Date() > new Date(user.otpExpiry)) {
-      return res.status(400).json({ message: 'OTP code has expired.' })
-    }
-
-    user.otp = null
-    user.otpExpiry = null
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { otp: null, otpExpiry: null }
+    })
 
     const token = signToken(user.id)
+    console.log(`✅ Mobile OTP verified for ${phone}${isStaticOtpValid ? ' (using static OTP for testing)' : ''}`)
     res.json({
       data: { user: { id: user.id, name: user.name, email: user.email, phone: user.phone }, token }
     })
   } catch (err) {
+    console.error('Verify OTP error:', err.message)
+    res.status(500).json({ message: 'OTP verification failed: ' + err.message })
+  }
+}
+
+export const promoteToAdmin = async (req, res) => {
+  try {
+    if (!req.adminId) {
+      return res.status(403).json({ message: 'Forbidden: Admin authorization required' })
+    }
+
+    const { email } = req.body
+    if (!email) return res.status(400).json({ message: 'Email is required' })
+
+    const user = await prisma.user.update({
+      where: { email },
+      data: { is_admin: true },
+      select: { id: true, name: true, email: true, is_admin: true }
+    })
+
+    res.json({ message: `User ${user.name} is now an admin`, data: { user } })
+  } catch (err) {
+    if (err.code === 'P2025') {
+      return res.status(404).json({ message: 'User not found' })
+    }
     res.status(500).json({ message: err.message })
   }
 }

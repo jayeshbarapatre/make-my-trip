@@ -1,21 +1,34 @@
-// The main top-bar is rendered inside HeroSearch on HomePage.
-// This thin sticky header only shows on inner pages (search results, booking, login).
 import { useState, useRef, useEffect } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { logout as reduxLogout } from '../../store/reducers/authReducer'
 import { useAuth } from '../../context/AuthContext'
-import '../../styles/Hero.css' // Reuse typography and basic styling
+import { useToast } from '../../hooks/useToast'
+import ThemeSwitcher from './ThemeSwitcher'
+import '../../styles/Hero.css'
+import '../../styles/Header.css'
 
 export default function Header() {
-  const location = useLocation()
   const navigate = useNavigate()
   const { user: contextUser, logout: contextLogout } = useAuth()
   const { user: reduxUser } = useSelector((s) => s.auth)
   const user = contextUser || reduxUser
   const dispatch = useDispatch()
+  const toast = useToast()
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const dropdownRef = useRef(null)
+
+  const isMobileUser = user && (user.name?.startsWith('Traveller_') || (!user.name && user.phone))
+  const displayName = user
+    ? isMobileUser
+      ? `+91 ${user.phone}`
+      : `Hi, ${user.name?.split(' ')[0] || 'User'}`
+    : null
+  const avatarText = user
+    ? isMobileUser
+      ? '📱'
+      : (user.name?.slice(0, 2).toUpperCase() || '?')
+    : null
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -31,10 +44,13 @@ export default function Header() {
     try {
       if (contextLogout) await contextLogout()
       dispatch(reduxLogout())
+      toast.success('See you soon! Logged out successfully 👋')
+      setTimeout(() => {
+        navigate('/')
+      }, 500)
     } catch (e) {
       console.error(e)
-    } finally {
-      navigate('/')
+      toast.error('Failed to logout. Please try again.')
     }
   }
 
@@ -51,11 +67,13 @@ export default function Header() {
           </div>
         </Link>
 
-        {/* Right side items (My Trips, Support, Flag dropdown, Login) */}
+        {/* Right side items (My Trips, Support, Theme, Lang, Login) */}
         <div className="common-header-right">
           <span className="header-right-link" style={{ fontSize: '13px', cursor: 'pointer' }} onClick={() => navigate('/my-trips')}>My Trips</span>
           <span className="header-right-link" style={{ fontSize: '13px', cursor: 'pointer' }} onClick={() => alert('Opening Support assistant...!')}>Support</span>
-          
+
+          <ThemeSwitcher />
+
           <div className="header-lang-select">
             <span>🇮🇳</span>
             <span>EN / INR</span>
@@ -64,14 +82,14 @@ export default function Header() {
 
           {user ? (
             <div ref={dropdownRef} className="common-user-container" style={{ position: 'relative', cursor: 'pointer' }} onClick={() => setDropdownOpen(!dropdownOpen)}>
-              <div className="common-user-avatar" title={user.name || user.phone}>
-                {user.name ? user.name.slice(0, 2).toUpperCase() : '👤'}
+              <div className="common-user-avatar" title={user.name || user.phone} style={{ background: isMobileUser ? 'hsl(var(--p))' : undefined }}>
+                {avatarText}
               </div>
               <div className="common-user-details" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '6px' }}>
-                <span className="common-user-name" style={{ color: '#fff', fontSize: '14px', fontWeight: 700, whiteSpace: 'nowrap' }}>
-                  {user.name ? `Hi, ${user.name.split(' ')[0]}` : `+91 ${user.phone}`}
+                <span className="common-user-name" style={{ fontSize: '14px', fontWeight: 700, whiteSpace: 'nowrap' }}>
+                  {displayName}
                 </span>
-                <span style={{ color: '#94a3b8', fontSize: '11px', display: 'flex', alignItems: 'center' }}>▼</span>
+                <span style={{ color: 'hsl(var(--bc) / 0.5)', fontSize: '11px', display: 'flex', alignItems: 'center' }}>▼</span>
               </div>
 
               {dropdownOpen && (
@@ -81,11 +99,11 @@ export default function Header() {
                     position: 'absolute',
                     top: '50px',
                     right: 0,
-                    background: '#fff',
+                    background: 'hsl(var(--b1))',
                     borderRadius: '12px',
-                    boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
-                    border: '1px solid #e2e8f0',
-                    minWidth: '200px',
+                    boxShadow: '0 10px 25px hsla(var(--b2) / 0.2)',
+                    border: '1px solid hsl(var(--b3))',
+                    minWidth: '220px',
                     padding: '8px 0',
                     zIndex: 1500,
                     display: 'flex',
@@ -93,27 +111,50 @@ export default function Header() {
                     textShadow: 'none'
                   }}
                 >
+                  {/* Login method indicator */}
+                  <div style={{ padding: '10px 20px 6px', borderBottom: '1px solid hsl(var(--b3))', marginBottom: '4px' }}>
+                    <div style={{ fontSize: '11px', color: 'hsl(var(--bc) / 0.6)', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+                      {isMobileUser ? '📱 Logged in via Mobile' : '📧 Logged in via Email'}
+                    </div>
+                    <div style={{ fontSize: '13px', color: 'hsl(var(--bc))', fontWeight: 800, marginTop: '2px' }}>
+                      {isMobileUser ? `+91 ${user.phone}` : (user.email || user.name)}
+                    </div>
+                  </div>
+
+                  {/* Complete Profile prompt for mobile users */}
+                  {isMobileUser && (
+                    <div
+                      onClick={(e) => { e.stopPropagation(); setDropdownOpen(false); navigate('/profile'); }}
+                      style={{ padding: '10px 20px', background: 'hsl(var(--w) / 0.1)', color: 'hsl(var(--w))', fontSize: '13px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', borderBottom: '1px solid hsl(var(--b3))' }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = 'hsl(var(--w) / 0.2)'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = 'hsl(var(--w) / 0.1)'}
+                    >
+                      ✏️ Complete your Profile
+                      <span style={{ marginLeft: 'auto', background: 'hsl(var(--w))', color: 'hsl(var(--b1))', borderRadius: '10px', padding: '1px 8px', fontSize: '10px', fontWeight: 800 }}>NEW</span>
+                    </div>
+                  )}
+
                   <div
                     onClick={(e) => { e.stopPropagation(); setDropdownOpen(false); navigate('/profile'); }}
-                    style={{ padding: '12px 20px', color: '#0f172a', fontSize: '14px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '10px', transition: 'background 0.2s' }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = '#f1f5f9'}
+                    style={{ padding: '12px 20px', color: 'hsl(var(--bc))', fontSize: '14px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '10px', transition: 'background 0.2s', cursor: 'pointer' }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = 'hsl(var(--b2))'}
                     onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                   >
                     👤 My Profile
                   </div>
                   <div
                     onClick={(e) => { e.stopPropagation(); setDropdownOpen(false); navigate('/my-trips'); }}
-                    style={{ padding: '12px 20px', color: '#0f172a', fontSize: '14px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '10px', transition: 'background 0.2s' }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = '#f1f5f9'}
+                    style={{ padding: '12px 20px', color: 'hsl(var(--bc))', fontSize: '14px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '10px', transition: 'background 0.2s', cursor: 'pointer' }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = 'hsl(var(--b2))'}
                     onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                   >
                     🧳 My Trips
                   </div>
-                  <div style={{ borderTop: '1px solid #e2e8f0', margin: '4px 0' }} />
+                  <div style={{ borderTop: '1px solid hsl(var(--b3))', margin: '4px 0' }} />
                   <div
                     onClick={(e) => { e.stopPropagation(); setDropdownOpen(false); handleLogout(); }}
-                    style={{ padding: '12px 20px', color: '#eb2026', fontSize: '14px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '10px', transition: 'background 0.2s' }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = '#fef2f2'}
+                    style={{ padding: '12px 20px', color: 'hsl(var(--er))', fontSize: '14px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '10px', transition: 'background 0.2s', cursor: 'pointer' }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = 'hsl(var(--er) / 0.1)'}
                     onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                   >
                     🚪 Logout

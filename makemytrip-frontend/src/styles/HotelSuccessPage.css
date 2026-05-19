@@ -1,9 +1,9 @@
-.succ-wrapper {
-  background-color: #f0f3f6;
+﻿.succ-wrapper {
+  background-color: hsl(var(--b2));
   min-height: 100vh;
   padding: 40px 20px 80px;
-  font-family: 'Inter', sans-serif;
-  color: #111827;
+  font-family: var(--font-family, 'Space Grotesk', sans-serif);
+  color: hsl(var(--bc));
 }
 
 .succ-container {
@@ -15,16 +15,16 @@
 }
 
 .succ-ticket-outer {
-  background: #fff;
+  background: hsl(var(--b1));
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-  border: 1px solid #e5e7eb;
+  border: 1px solid hsl(var(--b3));
 }
 
 .succ-premium-header {
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-  color: #fff;
+  background: linear-gradient(135deg, hsl(var(--b3)) 0%, hsl(var(--bc)) 100%);
+  color: hsl(var(--b1));
   padding: 48px 32px;
   text-align: center;
 }
@@ -32,8 +32,8 @@
 .succ-icon-glow {
   width: 60px;
   height: 60px;
-  background: #10b981;
-  color: #fff;
+  background: hsl(var(--su));
+  color: hsl(var(--b1));
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -48,6 +48,7 @@
   font-weight: 900;
   margin: 0;
   letter-spacing: -0.5px;
+  color: hsl(var(--b1));
 }
 
 .succ-subtitle {
@@ -100,15 +101,15 @@
 .succ-sec-title {
   font-size: 13px;
   font-weight: 800;
-  color: #6b7280;
+  color: hsl(var(--bc) / 0.6);
   text-transform: uppercase;
   letter-spacing: 1px;
   margin-bottom: 16px;
 }
 
 .succ-prop-card {
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
+  background: hsl(var(--b2));
+  border: 1px solid hsl(var(--b3));
   padding: 20px;
   border-radius: 12px;
   margin-bottom: 24px;
@@ -117,19 +118,19 @@
 .succ-prop-name {
   font-size: 18px;
   font-weight: 800;
-  color: #111827;
+  color: hsl(var(--bc));
 }
 
 .succ-prop-loc {
   font-size: 14px;
-  color: #4b5563;
+  color: hsl(var(--bc) / 0.7);
   margin-top: 4px;
 }
 
 .succ-prop-dates {
   font-size: 14px;
   font-weight: 700;
-  color: #eb2026;
+  color: hsl(var(--er));
   margin-top: 12px;
 }
 
@@ -138,8 +139,8 @@
   grid-template-columns: repeat(3, 1fr);
   gap: 20px;
   padding: 24px 0;
-  border-top: 1px dashed #e5e7eb;
-  border-bottom: 1px dashed #e5e7eb;
+  border-top: 1px dashed hsl(var(--b3));
+  border-bottom: 1px dashed hsl(var(--b3));
 }
 
 .succ-info-item {
@@ -150,7 +151,7 @@
 
 .succ-info-lbl {
   font-size: 11px;
-  color: #6b7280;
+  color: hsl(var(--bc) / 0.6);
   font-weight: 600;
 }
 
@@ -163,7 +164,7 @@
   margin-top: 32px;
   text-align: center;
   font-size: 12px;
-  color: #9ca3af;
+  color: hsl(var(--bc) / 0.5);
   line-height: 1.6;
 }
 
@@ -193,18 +194,18 @@
 }
 
 .succ-action-sec {
-  background: #fff;
-  border: 1.5px solid #eb2026;
-  color: #eb2026;
+  background: hsl(var(--b1));
+  border: 1.5px solid hsl(var(--er));
+  color: hsl(var(--er));
 }
 
 .succ-action-sec:hover {
-  background: #fff5f5;
+  background: hsl(var(--b1))5f5;
 }
 
 .succ-action-home {
-  background: #111827;
-  color: #fff;
+  background: hsl(var(--bc));
+  color: hsl(var(--b1));
   border: none;
 }
 
@@ -227,4 +228,75 @@
     margin: 12px 0;
   }
 }
+
+/* â”€â”€ Section spacing â”€â”€ */
+.succ-sec {
+  margin-bottom: 24px;
+}
+
+/* â”€â”€ Meta chips (nights / rooms / guests) â”€â”€ */
+.succ-meta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: hsl(var(--b2));
+  border: 1px solid hsl(var(--b2));
+  border-radius: 20px;
+  padding: 4px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  color: hsl(var(--nc));
+}
+
+/* â”€â”€ Price Breakdown Table â”€â”€ */
+.succ-price-table {
+  background: hsl(var(--b2));
+  border: 1px solid hsl(var(--b3));
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.succ-price-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 20px;
+  font-size: 14px;
+  color: hsl(var(--bc) / 0.65);
+  border-bottom: 1px solid hsl(var(--b2));
+}
+
+.succ-price-row:last-child {
+  border-bottom: none;
+}
+
+.succ-price-row .succ-price-sub {
+  font-size: 12px;
+  color: hsl(var(--bc) / 0.6);
+}
+
+.succ-price-row.discount {
+  color: hsl(var(--su));
+  font-weight: 700;
+}
+
+.succ-price-row.discount span:last-child {
+  color: hsl(var(--su));
+  font-weight: 800;
+}
+
+.succ-price-row.total {
+  background: hsl(var(--b3));
+  color: hsl(var(--b1));
+  font-size: 16px;
+  font-weight: 900;
+  padding: 16px 20px;
+}
+
+.succ-price-row.total span:last-child {
+  color: hsl(var(--wa));
+  font-size: 18px;
+}
+
 

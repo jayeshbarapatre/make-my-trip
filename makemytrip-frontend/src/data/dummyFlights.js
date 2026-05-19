@@ -73,4 +73,4 @@ export const searchDummyFlights = ({ from, to } = {}) =>
     })
     .sort((a, b) => a.price - b.price)
 
-export const getDummyFlightById = (id) => dummyFlights.find((flight) => flight.id === id)
+export const getDummyFlightById = (id) => dummyFlights.find((flight) => String(flight.id) === String(id))

@@ -127,11 +127,11 @@ export default function ForexPage() {
               <div className="cab-card-body">
                 <div className="cab-badge-row">
                   <span className="cab-icon">💳</span>
-                  {card.badge && <span className="cab-rating" style={{ background: '#febd69', color: '#111' }}>{card.badge}</span>}
+                  {card.badge && <span className="cab-rating" style={{ background: 'hsl(var(--wa) / 0.6)', color: '#111' }}>{card.badge}</span>}
                 </div>
                 <h3>{card.name}</h3>
                 <p className="cab-desc" style={{ fontSize: 14, marginBottom: 8 }}>{card.desc}</p>
-                <p className="cab-desc" style={{ color: '#0A8043', fontWeight: 600 }}>{card.features}</p>
+                <p className="cab-desc" style={{ color: 'hsl(var(--su))', fontWeight: 600 }}>{card.features}</p>
               </div>
               <div className="cab-card-price-action">
                 <div className="price-box">

@@ -1,5 +1,13 @@
-import { createContext, useContext, useState, useEffect } from 'react'
+﻿import { createContext, useContext, useState, useEffect } from 'react'
 import { authService } from '../services/authService'
+
+// Reads locally-saved profile for a mobile OTP user
+function getMobileProfile(phone) {
+  try {
+    const all = JSON.parse(localStorage.getItem('mmt_mobile_profiles') || '{}')
+    return all[phone] || null
+  } catch { return null }
+}
 
 const AuthContext = createContext(null)
 
@@ -15,9 +23,14 @@ export function AuthProvider({ children }) {
         try {
           const profile = await authService.getProfile()
           if (profile && profile.data) {
-            setUser(profile.data.user)
+            let userData = profile.data.user
+            // Restore locally-saved name/email for mobile OTP users
+            if (userData?.phone) {
+              const saved = getMobileProfile(userData.phone)
+              if (saved?.name) userData = { ...userData, ...saved }
+            }
+            setUser(userData)
           } else {
-            // Bad or expired session
             localStorage.removeItem('token')
           }
         } catch (err) {
@@ -41,6 +54,9 @@ export function AuthProvider({ children }) {
         return userData
       }
       throw new Error('Invalid login payload returned from server.')
+    } catch (err) {
+      // Re-throw the error so the Login component can display it
+      throw err
     } finally {
       setLoading(false)
     }
@@ -57,6 +73,9 @@ export function AuthProvider({ children }) {
         return newUser
       }
       throw new Error('Registration succeeded but did not return credential tokens.')
+    } catch (err) {
+      // Re-throw the error so the Signup component can display it
+      throw err
     } finally {
       setLoading(false)
     }
@@ -69,8 +88,11 @@ export function AuthProvider({ children }) {
       if (res && res.data) {
         const { user: userData, token } = res.data
         localStorage.setItem('token', token)
-        setUser(userData)
-        return userData
+        // Merge any locally-saved name/email for this phone number
+        const saved = getMobileProfile(phone)
+        const mergedUser = saved?.name ? { ...userData, ...saved } : userData
+        setUser(mergedUser)
+        return mergedUser
       }
       throw new Error('Invalid OTP login payload.')
     } finally {
@@ -101,3 +123,4 @@ export function useAuth() {
   if (!ctx) throw new Error('useAuth must be executed within an AuthProvider wrapper.')
   return ctx
 }
+

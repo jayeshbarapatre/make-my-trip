@@ -1,4 +1,4 @@
-import api from './api'
+﻿import api from './api'
 
 export const authService = {
   login: (credentials) => api.post('/auth/login', credentials),
@@ -18,84 +18,17 @@ export const bookingService = {
       const res = await api.post('/bookings/create', data)
       return res?.data || res
     } catch (e) {
-      console.warn("Using offline fallback createBooking:", e)
-      return { success: true, data: { id: "bkg_" + Date.now(), ...data } }
+      console.error("Booking creation failed:", e)
+      throw e
     }
   },
-  getUserBookings: async (userId = 'usr_1111-2222-3333-4444') => {
+  getUserBookings: async (userId) => {
     try {
       const res = await api.get(`/bookings/user/${userId}`)
-      const offlineHotel = JSON.parse(localStorage.getItem('user_bookings_hotel') || '[]')
-      const offlineTrain = JSON.parse(localStorage.getItem('user_bookings_train') || '[]')
-      return [...offlineTrain, ...offlineHotel, ...(res?.data || res)]
+      return res?.data || res || []
     } catch (e) {
-      console.warn("Using offline fallback booking data:", e)
-      const offlineHotel = JSON.parse(localStorage.getItem('user_bookings_hotel') || '[]')
-      const offlineTrain = JSON.parse(localStorage.getItem('user_bookings_train') || '[]')
-      return [
-        ...offlineTrain,
-        ...offlineHotel,
-        {
-          id: "bkg_abcd-1234-5678-90ef",
-          userId: userId,
-          type: "flight",
-          fromCity: "Delhi (DEL)",
-          toCity: "Bengaluru (BLR)",
-          departureDate: "2026-05-20",
-          returnDate: "2026-05-25",
-          travellers: { adults: 1, children: 0, infants: 0 },
-          totalAmount: 6499,
-          status: "confirmed",
-          bookingId: "MMT-FL-987654",
-          pnr: "PNR-884422",
-          createdAt: new Date(Date.now() - 2 * 86400000).toISOString()
-        },
-        {
-          id: "bkg_ef01-2345-6789-abcd",
-          userId: userId,
-          type: "hotel",
-          fromCity: "Goa Beach Resort",
-          toCity: "Goa",
-          departureDate: "2026-06-10",
-          returnDate: "2026-06-14",
-          travellers: { rooms: 1, adults: 2, children: 0 },
-          totalAmount: 14500,
-          status: "confirmed",
-          bookingId: "MMT-HT-123456",
-          pnr: "HTL-557799",
-          createdAt: new Date(Date.now() - 5 * 86400000).toISOString()
-        },
-        {
-          id: "bkg_9999-8888-7777-6666",
-          userId: userId,
-          type: "flight",
-          fromCity: "Mumbai (BOM)",
-          toCity: "Jaipur (JAI)",
-          departureDate: "2026-04-10",
-          returnDate: "2026-04-15",
-          travellers: { adults: 2, children: 1, infants: 0 },
-          totalAmount: 12400,
-          status: "completed",
-          bookingId: "MMT-FL-554433",
-          pnr: "PNR-112233",
-          createdAt: new Date(Date.now() - 40 * 86400000).toISOString()
-        },
-        {
-          id: "bkg_7777-6666-5555-4444",
-          userId: userId,
-          type: "hotel",
-          fromCity: "Taj Palace Jaipur",
-          toCity: "Jaipur",
-          departureDate: "2026-05-01",
-          returnDate: "2026-05-05",
-          travellers: { rooms: 1, adults: 2, children: 0 },
-          totalAmount: 22000,
-          status: "cancelled",
-          bookingId: "MMT-HT-998877",
-          pnr: "HTL-334455",
-          createdAt: new Date(Date.now() - 15 * 86400000).toISOString()
-        }
-      ]
+      console.error("Failed to fetch bookings:", e)
+      throw e
     }
   },
   cancelBooking: async (id) => {
@@ -150,3 +83,4 @@ export const userService = {
     }
   }
 }
+

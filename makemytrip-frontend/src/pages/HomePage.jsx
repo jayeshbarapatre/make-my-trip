@@ -5,11 +5,17 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import AOS from 'aos'
 import 'aos/dist/aos.css'
+import { Swiper, SwiperSlide } from 'swiper/react'
+import { Navigation } from 'swiper/modules'
+import 'swiper/css'
+import 'swiper/css/navigation'
 import { setCriteria } from '../store/reducers/searchReducer'
 import { SERVICE_TABS } from '../data/homepageData'
 import { CITIES } from '../data/cities'
 import { flightService } from '../services/flightService'
 import CustomCalendarPicker from '../components/CustomCalendarPicker'
+import ChevronLeft from '../assets/chevron-left.svg'
+import ChevronRight from '../assets/chevron-right.svg'
 import '../styles/HomePage.css'
 import '../styles/Hero.css'
 
@@ -22,11 +28,11 @@ const TRIP_TYPES = [
 const FARES = ['Regular', 'Student', 'Armed Forces', 'Senior Citizen', 'Doctors & Nurses']
 
 const OFFERS = [
-  { type: 'flight',  tag: 'FLIGHTS',  title: 'Flat 25% off domestic flights',  desc: 'Save up to ₹3,000 on bookings made with HDFC credit cards. Code: MMTHDFC',          cta: 'Book Now' },
-  { type: 'hotel',   tag: 'HOTELS',   title: 'Hotels at ₹999 per night',        desc: 'Verified 3-star+ stays across 80 Indian cities. Free cancellation included.',        cta: 'View Deals' },
-  { type: 'luxury',  tag: 'LUXURY',   title: 'Premium escapes, up to 40% off',  desc: 'Curated 5-star resorts in Maldives, Bali, and the Andamans for your dream getaway.', cta: 'Explore' },
-  { type: 'beach',   tag: 'PACKAGES', title: 'Goa long weekend bundle',          desc: 'Flights + hotel + airport transfer from ₹14,499 per person. 3N / 4D.',              cta: 'Book Now' },
-  { type: 'cab',     tag: 'CABS',     title: 'Flat ₹200 off airport cabs',       desc: 'Reliable airport transfers in 60+ cities. Pay only when you ride.',                  cta: 'Book Cab' },
+  { type: 'flight',  tag: 'FLIGHTS',  title: 'Flat 25% off domestic flights',  desc: 'Save up to ₹3,000 on bookings made with HDFC credit cards. Code: MMTHDFC',          cta: 'Book Now', image: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=400&h=250&q=80' },
+  { type: 'hotel',   tag: 'HOTELS',   title: 'Hotels at ₹999 per night',        desc: 'Verified 3-star+ stays across 80 Indian cities. Free cancellation included.',        cta: 'View Deals', image: 'https://images.unsplash.com/photo-1566073771259-1b7e4634a69b?auto=format&fit=crop&w=400&h=250&q=80' },
+  { type: 'luxury',  tag: 'LUXURY',   title: 'Premium escapes, up to 40% off',  desc: 'Curated 5-star resorts in Maldives, Bali, and the Andamans for your dream getaway.', cta: 'Explore', image: 'https://images.unsplash.com/photo-1506929113675-b5b42d069b2d?auto=format&fit=crop&w=400&h=250&q=80' },
+  { type: 'beach',   tag: 'PACKAGES', title: 'Goa long weekend bundle',          desc: 'Flights + hotel + airport transfer from ₹14,499 per person. 3N / 4D.',              cta: 'Book Now', image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=400&h=250&q=80' },
+  { type: 'cab',     tag: 'CABS',     title: 'Flat ₹200 off airport cabs',       desc: 'Reliable airport transfers in 60+ cities. Pay only when you ride.',                  cta: 'Book Cab', image: 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=400&h=250&q=80' },
 ]
 
 const CATEGORIES = [
@@ -77,15 +83,21 @@ export default function HomePage() {
   const [activeTab,  setActiveTab]  = useState('flights')
   const [tripType,   setTripType]   = useState('oneway')
   const [activeFare, setActiveFare] = useState('Regular')
-  
-  // Autocomplete & Search state variables
-  const [fromQuery, setFromQuery] = useState('New Delhi')
-  const [debouncedFromQuery, setDebouncedFromQuery] = useState('New Delhi')
-  const [showFromSuggestions, setShowFromSuggestions] = useState(false)
 
-  const [toQuery, setToQuery] = useState('Bengaluru')
-  const [debouncedToQuery, setDebouncedToQuery] = useState('Bengaluru')
+  // Autocomplete & Search state variables
+  const [fromQuery, setFromQuery] = useState('')
+  const [fromCity, setFromCity] = useState(null)
+  const [debouncedFromQuery, setDebouncedFromQuery] = useState('')
+  const [showFromSuggestions, setShowFromSuggestions] = useState(false)
+  const [fromActiveIdx, setFromActiveIdx] = useState(-1)
+  const [fromError, setFromError] = useState('')
+
+  const [toQuery, setToQuery] = useState('')
+  const [toCity, setToCity] = useState(null)
+  const [debouncedToQuery, setDebouncedToQuery] = useState('')
   const [showToSuggestions, setShowToSuggestions] = useState(false)
+  const [toActiveIdx, setToActiveIdx] = useState(-1)
+  const [toError, setToError] = useState('')
 
   // Traveler states
   const [travellers, setTravellers] = useState({
@@ -97,8 +109,21 @@ export default function HomePage() {
   const [showTravellerDropdown, setShowTravellerDropdown] = useState(false)
 
   // Date and UI controls
-  const [departDate, setDepartDate] = useState('2026-05-13')
-  const [returnDate, setReturnDate] = useState('2026-05-16')
+  const [departDate, setDepartDate] = useState(() => {
+    const today = new Date()
+    const year = today.getFullYear()
+    const month = String(today.getMonth() + 1).padStart(2, '0')
+    const day = String(today.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  })
+  const [returnDate, setReturnDate] = useState(() => {
+    const tomorrow = new Date()
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    const year = tomorrow.getFullYear()
+    const month = String(tomorrow.getMonth() + 1).padStart(2, '0')
+    const day = String(tomorrow.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  })
   const [showDepartCal, setShowDepartCal] = useState(false)
   const [showReturnCal, setShowReturnCal] = useState(false)
   const [phone,      setPhone]      = useState('')
@@ -116,10 +141,7 @@ export default function HomePage() {
   const [recentSearches, setRecentSearches] = useState(() => {
     try {
       const saved = localStorage.getItem('recentSearches_flights')
-      return saved ? JSON.parse(saved) : [
-        { from: 'New Delhi', to: 'Bengaluru', date: '2026-05-13' },
-        { from: 'Mumbai', to: 'Goa', date: '2026-05-14' }
-      ]
+      return saved ? JSON.parse(saved) : []
     } catch {
       return []
     }
@@ -172,6 +194,19 @@ export default function HomePage() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
+  // Auto-adjust return date when departure date changes
+  useEffect(() => {
+    if (tripType === 'roundtrip' && departDate && returnDate) {
+      const departDateObj = new Date(departDate)
+      const returnDateObj = new Date(returnDate)
+      if (returnDateObj <= departDateObj) {
+        const nextDay = new Date(departDate)
+        nextDay.setDate(nextDay.getDate() + 1)
+        setReturnDate(nextDay.toISOString().split('T')[0])
+      }
+    }
+  }, [departDate, tripType])
+
   // Initialize AOS On-Scroll Animations
   useEffect(() => {
     AOS.init({
@@ -181,6 +216,54 @@ export default function HomePage() {
       offset: 80,
     })
   }, [])
+
+  const selectFromCity = (c) => {
+    setFromQuery(c.city)
+    setFromCity(c)
+    setFromError('')
+    setShowFromSuggestions(false)
+    setFromActiveIdx(-1)
+  }
+
+  const selectToCity = (c) => {
+    setToQuery(c.city)
+    setToCity(c)
+    setToError('')
+    setShowToSuggestions(false)
+    setToActiveIdx(-1)
+  }
+
+  const handleFromKeyDown = (e) => {
+    if (!showFromSuggestions || fromSuggestions.length === 0) return
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      setFromActiveIdx(i => Math.min(i + 1, fromSuggestions.length - 1))
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setFromActiveIdx(i => Math.max(i - 1, -1))
+    } else if (e.key === 'Enter' && fromActiveIdx >= 0) {
+      e.preventDefault()
+      selectFromCity(fromSuggestions[fromActiveIdx])
+    } else if (e.key === 'Escape') {
+      setShowFromSuggestions(false)
+    }
+  }
+
+  const handleToKeyDown = (e) => {
+    if (!showToSuggestions || toSuggestions.length === 0) return
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      setToActiveIdx(i => Math.min(i + 1, toSuggestions.length - 1))
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setToActiveIdx(i => Math.max(i - 1, -1))
+    } else if (e.key === 'Enter' && toActiveIdx >= 0) {
+      e.preventDefault()
+      selectToCity(toSuggestions[toActiveIdx])
+    } else if (e.key === 'Escape') {
+      setShowToSuggestions(false)
+    }
+  }
 
   const handleTravellerChange = (type, action) => {
     setTravellers(prev => {
@@ -210,17 +293,18 @@ export default function HomePage() {
   // Helper to format date into Day, Month Name, Year and Weekday
   const formatDateDisplay = (dateStr) => {
     if (!dateStr) return { day: 'Select', monthYear: 'Date', weekday: 'Click to select' };
-    const date = new Date(dateStr);
+    const [year, month, day] = dateStr.split('-');
+    if (!year || !month || !day) return { day: 'Select', monthYear: 'Date', weekday: 'Click to select' };
+    const date = new Date(Number(year), Number(month) - 1, Number(day));
     if (isNaN(date.getTime())) return { day: 'Select', monthYear: 'Date', weekday: 'Click to select' };
-    const day = date.getDate();
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const month = months[date.getMonth()];
-    const year = String(date.getFullYear()).substring(2);
+    const monthName = months[date.getMonth()];
+    const yearShort = String(date.getFullYear()).slice(-2);
     const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const weekday = weekdays[date.getDay()];
     return {
-      day: String(day),
-      monthYear: `${month} '${year}`,
+      day: String(date.getDate()),
+      monthYear: `${monthName} '${yearShort}`,
       weekday
     };
   };
@@ -260,13 +344,31 @@ export default function HomePage() {
 
   function handleSearch(e) {
     if (e) e.preventDefault()
+    let hasError = false
+
+    if (!fromQuery.trim()) {
+      setFromError('Please enter a departure city')
+      hasError = true
+    }
+    if (!toQuery.trim()) {
+      setToError('Please enter a destination city')
+      hasError = true
+    }
+    if (hasError) return
+
     try {
       localStorage.setItem('travellers_flight', JSON.stringify(travellers))
     } catch (err) {
       console.error(err)
     }
     const passengersCount = travellers.adults + travellers.children;
-    navigate(`/flights/results?from=${fromQuery}&to=${toQuery}&date=${departDate || new Date().toISOString().split('T')[0]}&passengers=${passengersCount}&class=${travellers.class || 'Economy'}`)
+    const fromVal = fromCity?.city || fromQuery
+    const toVal = toCity?.city || toQuery
+    let url = `/flights/results?from=${fromVal}&to=${toVal}&date=${departDate || new Date().toISOString().split('T')[0]}&passengers=${passengersCount}&class=${travellers.class || 'Economy'}&type=${tripType}`
+    if (tripType === 'roundtrip' && returnDate) {
+      url += `&returnDate=${returnDate}`
+    }
+    navigate(url)
   }
 
 
@@ -333,33 +435,64 @@ export default function HomePage() {
               <form onSubmit={handleSearch}>
                 <div className="hp-grid">
                   {/* From Field */}
-                  <div className="hp-field hp-field-wrap" ref={fromRef}>
+                  <div className="hp-field hp-field-wrap" ref={fromRef} style={{ position: 'relative' }}>
                     <small>From</small>
-                    <input
-                      value={fromQuery}
-                      onChange={e => {
-                        setFromQuery(e.target.value)
-                        setShowFromSuggestions(true)
-                      }}
-                      onFocus={() => setShowFromSuggestions(true)}
-                      placeholder="City or Airport"
-                    />
+                    <div style={{ position: 'relative' }}>
+                      <input
+                        value={fromQuery}
+                        onChange={e => {
+                          setFromQuery(e.target.value)
+                          setFromCity(null)
+                          setFromError('')
+                          setShowFromSuggestions(true)
+                          setFromActiveIdx(-1)
+                        }}
+                        onKeyDown={handleFromKeyDown}
+                        onFocus={() => setShowFromSuggestions(true)}
+                        placeholder="Enter city"
+                      />
+                      {fromQuery && (
+                        <button
+                          type="button"
+                          className="hp-input-clear"
+                          onClick={() => {
+                            setFromQuery('')
+                            setFromCity(null)
+                            setFromError('')
+                            setShowFromSuggestions(false)
+                            setFromActiveIdx(-1)
+                          }}
+                          style={{
+                            position: 'absolute',
+                            right: '12px',
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            background: 'none',
+                            border: 'none',
+                            fontSize: '18px',
+                            cursor: 'pointer',
+                            color: '#999',
+                            padding: '4px 8px'
+                          }}
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
+                    {fromError && <div style={{ color: 'hsl(var(--er))', fontSize: '12px', marginTop: '4px' }}>{fromError}</div>}
                     <div className="hp-sub">Departure city</div>
 
                     {showFromSuggestions && fromSuggestions.length > 0 && (
                       <div className="hp-autocomplete-dropdown">
-                        {fromSuggestions.map((c) => (
+                        {fromSuggestions.map((c, idx) => (
                           <div
                             key={c.code}
-                            className="hp-suggestion-item"
-                            onClick={() => {
-                              setFromQuery(c.city)
-                              setShowFromSuggestions(false)
-                            }}
+                            className={`hp-suggestion-item${fromActiveIdx === idx ? ' active' : ''}`}
+                            onClick={() => selectFromCity(c)}
                           >
                             <div className="hp-suggestion-left">
                               <span className="hp-suggestion-city">{c.city}</span>
-                              <span className="hp-suggestion-country">{c.region || c.country}</span>
+                              <span className="hp-suggestion-country">{c.airport || c.region || c.country}</span>
                             </div>
                             <span className="hp-suggestion-code">{c.code}</span>
                           </div>
@@ -369,33 +502,64 @@ export default function HomePage() {
                   </div>
 
                   {/* To Field */}
-                  <div className="hp-field hp-field-wrap" ref={toRef}>
+                  <div className="hp-field hp-field-wrap" ref={toRef} style={{ position: 'relative' }}>
                     <small>To</small>
-                    <input
-                      value={toQuery}
-                      onChange={e => {
-                        setToQuery(e.target.value)
-                        setShowToSuggestions(true)
-                      }}
-                      onFocus={() => setShowToSuggestions(true)}
-                      placeholder="City or Airport"
-                    />
+                    <div style={{ position: 'relative' }}>
+                      <input
+                        value={toQuery}
+                        onChange={e => {
+                          setToQuery(e.target.value)
+                          setToCity(null)
+                          setToError('')
+                          setShowToSuggestions(true)
+                          setToActiveIdx(-1)
+                        }}
+                        onKeyDown={handleToKeyDown}
+                        onFocus={() => setShowToSuggestions(true)}
+                        placeholder="Enter city"
+                      />
+                      {toQuery && (
+                        <button
+                          type="button"
+                          className="hp-input-clear"
+                          onClick={() => {
+                            setToQuery('')
+                            setToCity(null)
+                            setToError('')
+                            setShowToSuggestions(false)
+                            setToActiveIdx(-1)
+                          }}
+                          style={{
+                            position: 'absolute',
+                            right: '12px',
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            background: 'none',
+                            border: 'none',
+                            fontSize: '18px',
+                            cursor: 'pointer',
+                            color: '#999',
+                            padding: '4px 8px'
+                          }}
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
+                    {toError && <div style={{ color: 'hsl(var(--er))', fontSize: '12px', marginTop: '4px' }}>{toError}</div>}
                     <div className="hp-sub">Arrival city</div>
 
                     {showToSuggestions && toSuggestions.length > 0 && (
                       <div className="hp-autocomplete-dropdown">
-                        {toSuggestions.map((c) => (
+                        {toSuggestions.map((c, idx) => (
                           <div
                             key={c.code}
-                            className="hp-suggestion-item"
-                            onClick={() => {
-                              setToQuery(c.city)
-                              setShowToSuggestions(false)
-                            }}
+                            className={`hp-suggestion-item${toActiveIdx === idx ? ' active' : ''}`}
+                            onClick={() => selectToCity(c)}
                           >
                             <div className="hp-suggestion-left">
                               <span className="hp-suggestion-city">{c.city}</span>
-                              <span className="hp-suggestion-country">{c.region || c.country}</span>
+                              <span className="hp-suggestion-country">{c.airport || c.region || c.country}</span>
                             </div>
                             <span className="hp-suggestion-code">{c.code}</span>
                           </div>
@@ -452,7 +616,7 @@ export default function HomePage() {
                         />
                       </div>
                     ) : (
-                      <div className="hp-tap-hint" onClick={() => setTripType('roundtrip')} style={{ marginTop: '10px', fontSize: '12px', color: '#0084ff', fontWeight: 600 }}>
+                      <div className="hp-tap-hint" onClick={() => setTripType('roundtrip')} style={{ marginTop: '10px', fontSize: '12px', color: 'hsl(var(--p))', fontWeight: 600 }}>
                         Tap to add for bigger discounts
                       </div>
                     )}
@@ -589,22 +753,43 @@ export default function HomePage() {
               <h2>Offers &amp; deals</h2>
               <div className="hp-sec-sub">Limited-time savings curated for you</div>
             </div>
-            <a href="#offers" className="hp-see-all">View all offers →</a>
-          </div>
-          <div className="hp-offers-scroll">
-            {OFFERS.map((o, idx) => (
-              <div key={o.type} className="hp-offer-card" data-aos="fade-up" data-aos-delay={idx * 100}>
-                <div className={`hp-offer-img hp-offer-${o.type}`}>
-                  <span className="hp-offer-tag">{o.tag}</span>
-                </div>
-                <div className="hp-offer-body">
-                  <h3>{o.title}</h3>
-                  <p>{o.desc}</p>
-                  <button className="hp-offer-btn">{o.cta}</button>
-                </div>
+            <div className="hp-offers-controls">
+              <a href="#offers" className="hp-see-all">View all offers →</a>
+              <div className="hp-offer-nav">
+                <button className="hp-offer-nav-btn hp-offer-prev" aria-label="Previous offer">
+                  <img src={ChevronLeft} alt="Previous" className="hp-offer-nav-icon" />
+                </button>
+                <button className="hp-offer-nav-btn hp-offer-next" aria-label="Next offer">
+                  <img src={ChevronRight} alt="Next" className="hp-offer-nav-icon" />
+                </button>
               </div>
-            ))}
+            </div>
           </div>
+          <Swiper
+            modules={[Navigation]}
+            navigation={{
+              nextEl: '.hp-offer-next',
+              prevEl: '.hp-offer-prev',
+            }}
+            spaceBetween={24}
+            slidesPerView="auto"
+            className="hp-offers-swiper"
+          >
+            {OFFERS.map((o, idx) => (
+              <SwiperSlide key={o.type} className="hp-offer-slide">
+                <div className="hp-offer-card" data-aos="fade-up" data-aos-delay={idx * 100}>
+                  <div className={`hp-offer-img hp-offer-${o.type}`} style={{ backgroundImage: `url(${o.image})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+                    <span className="hp-offer-tag">{o.tag}</span>
+                  </div>
+                  <div className="hp-offer-body">
+                    <h3>{o.title}</h3>
+                    <p>{o.desc}</p>
+                    <button className="hp-offer-btn">{o.cta}</button>
+                  </div>
+                </div>
+              </SwiperSlide>
+            ))}
+          </Swiper>
         </div>
       </section>
 

@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useToast } from '../hooks/useToast'
 
 export default function Login({ onSwitchTab, onForgotPassword }) {
   const navigate = useNavigate()
   const { login } = useAuth()
+  const toast = useToast()
   
   const [form, setForm] = useState({ email: '', password: '' })
   const [showPassword, setShowPassword] = useState(false)
@@ -43,10 +45,22 @@ export default function Login({ onSwitchTab, onForgotPassword }) {
     setLoading(true)
     setError('')
     try {
-      await login(form.email, form.password)
-      navigate('/')
+      const userData = await login(form.email, form.password)
+      toast.success(`Welcome back, ${userData?.name || 'Traveler'}! 🎉`)
+      setTimeout(() => {
+        if (userData?.is_admin) {
+          navigate('/admin/dashboard')
+        } else {
+          navigate('/')
+        }
+      }, 500)
     } catch (err) {
-      setError(err || 'Invalid credentials. Please verify your email and password.')
+      console.error('Login error:', err)
+      const errorMessage = err?.response?.data?.message ||
+                          err?.message ||
+                          'Invalid credentials. Please verify your email and password.'
+      toast.error(errorMessage)
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }

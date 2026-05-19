@@ -88,22 +88,22 @@ export default function TrainPaymentPage() {
             <div className="train-form-card" style={{ padding: '24px 32px' }}>
               <h3 className="train-form-title" style={{ fontSize: '18px', marginBottom: '16px' }}>Booking Review</h3>
               
-              <div style={{ background: '#f8fafc', padding: '20px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '20px' }}>
-                <div style={{ fontSize: '16px', fontWeight: 800, color: '#0f172a', marginBottom: '4px' }}>
+              <div style={{ background: 'hsl(var(--b2))', padding: '20px', borderRadius: '8px', border: '1px solid hsl(var(--b3))', marginBottom: '20px' }}>
+                <div style={{ fontSize: '16px', fontWeight: 800, color: 'hsl(var(--bc))', marginBottom: '4px' }}>
                   {train.name} ({train.number})
                 </div>
-                <div style={{ fontSize: '13px', color: '#64748b' }}>
+                <div style={{ fontSize: '13px', color: 'hsl(var(--bc) / 0.55)' }}>
                   {searchParams.fromCity} ({train.depTime}) → {searchParams.toCity} ({train.arrTime}) · Class: {selectedClass.name}
                 </div>
               </div>
 
-              <div style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a', marginBottom: '12px' }}>
+              <div style={{ fontSize: '14px', fontWeight: 800, color: 'hsl(var(--bc))', marginBottom: '12px' }}>
                 Travellers ({passengers.length})
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {passengers.map((p, i) => (
-                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#475569', background: '#f1f5f9', padding: '10px 16px', borderRadius: '6px' }}>
+                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: 'hsl(var(--bc) / 0.65)', background: 'hsl(var(--b2))', padding: '10px 16px', borderRadius: '6px' }}>
                     <span>👤 {p.name} ({p.age} yrs, {p.gender})</span>
                     <strong>Berth: {p.berth}</strong>
                   </div>
@@ -118,44 +118,44 @@ export default function TrainPaymentPage() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div 
                   onClick={() => handleProcessPayment('UPI / Google Pay')}
-                  style={{ padding: '20px', border: '1px solid #cbd5e1', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', background: '#fff' }}
+                  style={{ padding: '20px', border: '1px solid hsl(var(--b3))', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', background: '#fff' }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                     <span style={{ fontSize: '24px' }}>📱</span>
                     <div>
-                      <div style={{ fontSize: '15px', fontWeight: 800, color: '#0f172a' }}>UPI / Google Pay / PhonePe</div>
-                      <div style={{ fontSize: '12px', color: '#64748b' }}>Instant IRCTC Tatkal &amp; General ticket generation</div>
+                      <div style={{ fontSize: '15px', fontWeight: 800, color: 'hsl(var(--bc))' }}>UPI / Google Pay / PhonePe</div>
+                      <div style={{ fontSize: '12px', color: 'hsl(var(--bc) / 0.55)' }}>Instant IRCTC Tatkal &amp; General ticket generation</div>
                     </div>
                   </div>
-                  <span style={{ fontWeight: 800, color: '#008cff' }}>Pay ₹{totalAmount.toLocaleString()} ›</span>
+                  <span style={{ fontWeight: 800, color: 'hsl(var(--p))' }}>Pay ₹{totalAmount.toLocaleString()} ›</span>
                 </div>
 
                 <div 
                   onClick={() => handleProcessPayment('Credit / Debit Card')}
-                  style={{ padding: '20px', border: '1px solid #cbd5e1', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', background: '#fff' }}
+                  style={{ padding: '20px', border: '1px solid hsl(var(--b3))', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', background: '#fff' }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                     <span style={{ fontSize: '24px' }}>💳</span>
                     <div>
-                      <div style={{ fontSize: '15px', fontWeight: 800, color: '#0f172a' }}>Credit &amp; Debit Cards</div>
-                      <div style={{ fontSize: '12px', color: '#64748b' }}>Visa, Mastercard, Amex, RuPay</div>
+                      <div style={{ fontSize: '15px', fontWeight: 800, color: 'hsl(var(--bc))' }}>Credit &amp; Debit Cards</div>
+                      <div style={{ fontSize: '12px', color: 'hsl(var(--bc) / 0.55)' }}>Visa, Mastercard, Amex, RuPay</div>
                     </div>
                   </div>
-                  <span style={{ fontWeight: 800, color: '#008cff' }}>Pay ₹{totalAmount.toLocaleString()} ›</span>
+                  <span style={{ fontWeight: 800, color: 'hsl(var(--p))' }}>Pay ₹{totalAmount.toLocaleString()} ›</span>
                 </div>
 
                 <div 
                   onClick={() => handleProcessPayment('Net Banking')}
-                  style={{ padding: '20px', border: '1px solid #cbd5e1', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', background: '#fff' }}
+                  style={{ padding: '20px', border: '1px solid hsl(var(--b3))', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', background: '#fff' }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                     <span style={{ fontSize: '24px' }}>🏦</span>
                     <div>
-                      <div style={{ fontSize: '15px', fontWeight: 800, color: '#0f172a' }}>Net Banking</div>
-                      <div style={{ fontSize: '12px', color: '#64748b' }}>SBI, HDFC, ICICI, Axis &amp; all major banks</div>
+                      <div style={{ fontSize: '15px', fontWeight: 800, color: 'hsl(var(--bc))' }}>Net Banking</div>
+                      <div style={{ fontSize: '12px', color: 'hsl(var(--bc) / 0.55)' }}>SBI, HDFC, ICICI, Axis &amp; all major banks</div>
                     </div>
                   </div>
-                  <span style={{ fontWeight: 800, color: '#008cff' }}>Pay ₹{totalAmount.toLocaleString()} ›</span>
+                  <span style={{ fontWeight: 800, color: 'hsl(var(--p))' }}>Pay ₹{totalAmount.toLocaleString()} ›</span>
                 </div>
               </div>
 
@@ -180,7 +180,7 @@ export default function TrainPaymentPage() {
 
               <div className="train-fare-total">
                 <span>Total Payable</span>
-                <span style={{ color: '#eb2026' }}>₹{totalAmount.toLocaleString("en-IN")}</span>
+                <span style={{ color: 'hsl(var(--er))' }}>₹{totalAmount.toLocaleString("en-IN")}</span>
               </div>
 
               <button 

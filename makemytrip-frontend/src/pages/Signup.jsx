@@ -1,10 +1,12 @@
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useToast } from '../hooks/useToast'
 
 export default function Signup({ onSwitchTab }) {
   const navigate = useNavigate()
   const { register } = useAuth()
+  const toast = useToast()
 
   const [form, setForm] = useState({ name: '', email: '', phone: '', password: '', confirmPassword: '' })
   const [error, setError] = useState('')
@@ -19,7 +21,7 @@ export default function Signup({ onSwitchTab }) {
   // Password strength logic
   const pwdStrength = useMemo(() => {
     const p = form.password
-    if (!p) return { label: '', color: '#cbd5e1', width: '0%', text: '' }
+    if (!p) return { label: '', color: 'hsl(var(--b3))', width: '0%', text: '' }
     
     let score = 0
     if (p.length >= 8) score++
@@ -28,9 +30,9 @@ export default function Signup({ onSwitchTab }) {
     if (/[0-9]/.test(p)) score++
     if (/[^A-Za-z0-9]/.test(p)) score++
 
-    if (score <= 2) return { label: 'Weak', color: '#ef4444', width: '33%', text: 'Too simple' }
-    if (score <= 4) return { label: 'Medium', color: '#f59e0b', width: '66%', text: 'Satisfactory' }
-    return { label: 'Strong', color: '#10b981', width: '100%', text: 'Highly Secure!' }
+    if (score <= 2) return { label: 'Weak', color: 'hsl(var(--er))', width: '33%', text: 'Too simple' }
+    if (score <= 4) return { label: 'Medium', color: 'hsl(var(--wa))', width: '66%', text: 'Satisfactory' }
+    return { label: 'Strong', color: 'hsl(var(--su))', width: '100%', text: 'Highly Secure!' }
   }, [form.password])
 
   const validate = () => {
@@ -70,9 +72,17 @@ export default function Signup({ onSwitchTab }) {
         phone: form.phone,
         password: form.password
       })
-      navigate('/')
+      toast.success(`Welcome, ${form.name}! 🚀 Your account has been created successfully.`)
+      setTimeout(() => {
+        navigate('/')
+      }, 500)
     } catch (err) {
-      setError(err || 'Failed to register account. User might already exist.')
+      console.error('Registration error:', err)
+      const errorMessage = err?.response?.data?.message ||
+                          err?.message ||
+                          'Failed to register account. User might already exist.'
+      toast.error(errorMessage)
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -131,6 +141,7 @@ export default function Signup({ onSwitchTab }) {
               placeholder="10-digit mobile number"
               value={form.phone}
               onChange={handleChange('phone')}
+              maxLength={10}
               required
             />
           </div>
@@ -154,11 +165,11 @@ export default function Signup({ onSwitchTab }) {
           {/* Strength Bar */}
           {form.password && (
             <div style={{ marginTop: '6px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#64748b' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'hsl(var(--bc) / 0.55)' }}>
                 <span>Strength: <strong>{pwdStrength.label}</strong></span>
                 <span>{pwdStrength.text}</span>
               </div>
-              <div style={{ height: '4px', background: '#cbd5e1', borderRadius: '2px', marginTop: '4px', overflow: 'hidden' }}>
+              <div style={{ height: '4px', background: 'hsl(var(--b3))', borderRadius: '2px', marginTop: '4px', overflow: 'hidden' }}>
                 <div style={{ height: '100%', width: pwdStrength.width, background: pwdStrength.color, transition: 'width 0.3s' }} />
               </div>
             </div>

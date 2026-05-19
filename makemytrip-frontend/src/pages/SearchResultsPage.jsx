@@ -2,11 +2,12 @@ import { useState, useMemo, useRef, useEffect } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { flightService } from '../services/flightService'
-import { searchDummyFlights } from '../data/dummyFlights'
 import FlightLoader from '../components/Atoms/FlightLoader'
+import { ErrorState } from '../components/EmptyState'
 import { useAuth } from '../context/AuthContext'
 import { authService } from '../services/authService'
 import CustomCalendarPicker from '../components/CustomCalendarPicker'
+import { CITIES } from '../data/cities'
 import '../styles/FlightResults.css'
 
 // ── Airline meta ──────────────────────────────────────────────
@@ -32,15 +33,42 @@ const IATA = {
 const getCode = (city='') => IATA[city.toLowerCase().trim()] || city.slice(0,3).toUpperCase()
 
 // ── Helpers ───────────────────────────────────────────────────
-const fmtTime = (iso) => {
-  const d = new Date(iso)
+const fmtDateDisplay = (dateStr) => {
+  if (!dateStr) return { formatted: 'Select Date', weekday: 'Tap to pick' }
+  const [year, month, day] = dateStr.split('-')
+  if (!year || !month || !day) return { formatted: 'Invalid Date', weekday: '' }
+  const d = new Date(Number(year), Number(month) - 1, Number(day))
+  if (isNaN(d.getTime())) return { formatted: 'Invalid Date', weekday: '' }
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+  const formatted = `${d.getDate()} ${months[d.getMonth()]} '${String(d.getFullYear()).slice(-2)}`
+  const weekday = d.toLocaleDateString('en-IN', { weekday: 'long' })
+  return { formatted, weekday }
+}
+const fmtTime = (val) => {
+  if (!val) return 'N/A'
+  if (typeof val === 'object') {
+    if (val.time) return val.time
+    return 'N/A'
+  }
+  if (typeof val === 'string' && val.match(/^\d{1,2}:\d{2}/)) return val
+  const d = new Date(val)
+  if (isNaN(d.getTime())) return val
   return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`
 }
-const fmtDuration = (m) => `${Math.floor(m/60)}h${m%60?` ${m%60}m`:''}`
+const fmtDuration = (m) => {
+  if (!m) return 'N/A'
+  if (typeof m === 'string') return m
+  const hours = Math.floor(m / 60)
+  const mins = m % 60
+  if (hours > 0 && mins > 0) return `${hours} hour${hours > 1 ? 's' : ''} ${mins} minute${mins > 1 ? 's' : ''}`
+  if (hours > 0) return `${hours} hour${hours > 1 ? 's' : ''}`
+  return `${mins} minute${mins > 1 ? 's' : ''}`
+}
 const fmtPrice    = (p) => '₹' + Number(p).toLocaleString('en-IN')
 const fmtDate     = (s) => {
   if (!s) return ''
-  const d = new Date(s+'T00:00:00')
+  const [year, month, day] = s.split('-')
+  const d = new Date(Number(year), Number(month) - 1, Number(day))
   return d.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'2-digit'})
 }
 
@@ -52,29 +80,6 @@ const PROMOS = [
   {after:18,type:'cashback', logo:'💳',   title:'Book & Win! ₹500 Cashback',                subtitle:'Limited time offer — Book any domestic flight today!',                   cta:'EXPLORE'   },
 ]
 
-// ── City list for autocomplete ───────────────────────────────
-const CITIES_LIST = [
-  { city: 'New Delhi',    code: 'DEL', airport: 'Indira Gandhi Intl Airport' },
-  { city: 'Bengaluru',    code: 'BLR', airport: 'Kempegowda Intl Airport' },
-  { city: 'Mumbai',       code: 'BOM', airport: 'Chhatrapati Shivaji Maharaj Intl Airport' },
-  { city: 'Chennai',      code: 'MAA', airport: 'Chennai Intl Airport' },
-  { city: 'Kolkata',      code: 'CCU', airport: 'Netaji Subhash Chandra Bose Intl Airport' },
-  { city: 'Hyderabad',    code: 'HYD', airport: 'Rajiv Gandhi Intl Airport' },
-  { city: 'Pune',         code: 'PNQ', airport: 'Pune Airport' },
-  { city: 'Ahmedabad',    code: 'AMD', airport: 'Sardar Vallabhbhai Patel Intl Airport' },
-  { city: 'Goa',          code: 'GOI', airport: 'Dabolim Airport' },
-  { city: 'Jaipur',       code: 'JAI', airport: 'Jaipur Intl Airport' },
-  { city: 'Kochi',        code: 'COK', airport: 'Cochin Intl Airport' },
-  { city: 'Lucknow',      code: 'LKO', airport: 'Chaudhary Charan Singh Intl Airport' },
-  { city: 'Chandigarh',   code: 'IXC', airport: 'Chandigarh Intl Airport' },
-  { city: 'Patna',        code: 'PAT', airport: 'Lok Nayak Jayaprakash Airport' },
-  { city: 'Bhopal',       code: 'BHO', airport: 'Raja Bhoj Airport' },
-  { city: 'Nagpur',       code: 'NAG', airport: 'Dr. Babasaheb Ambedkar Intl Airport' },
-  { city: 'Indore',       code: 'IDR', airport: 'Devi Ahilya Bai Holkar Airport' },
-  { city: 'Srinagar',     code: 'SXR', airport: 'Sheikh ul-Alam Intl Airport' },
-  { city: 'Leh',          code: 'IXL', airport: 'Kushok Bakula Rimpochee Airport' },
-  { city: 'Varanasi',     code: 'VNS', airport: 'Lal Bahadur Shastri Airport' },
-]
 
 // ─────────────────────────────────────────────────────────────
 export default function SearchResultsPage() {
@@ -90,8 +95,16 @@ export default function SearchResultsPage() {
   const [toVal,        setToVal]        = useState(params.get('to')   || 'Bengaluru')
   const [fromOpen,     setFromOpen]     = useState(false)
   const [toOpen,       setToOpen]       = useState(false)
-  const [dateVal,      setDateVal]      = useState(params.get('date') || '')
+  const [dateVal,      setDateVal]      = useState(() => {
+    const fromUrl = params.get('date')
+    if (fromUrl) return fromUrl
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    return today.toISOString().split('T')[0]
+  })
+  const [returnDate,   setReturnDate]   = useState(params.get('returnDate') || '')
   const [showCal,      setShowCal]      = useState(false)
+  const [showReturnCal, setShowReturnCal] = useState(false)
   const [passengers,   setPassengers]   = useState(parseInt(params.get('passengers') || '1', 10))
   const [travelClass,  setTravelClass]  = useState(params.get('class') || 'Economy')
   const [showTravDrop, setShowTravDrop] = useState(false)
@@ -100,6 +113,7 @@ export default function SearchResultsPage() {
   const toRef   = useRef(null)
   const tripRef = useRef(null)
   const calRef  = useRef(null)
+  const returnCalRef = useRef(null)
   const travRef = useRef(null)
 
   const { user, verifyOtpLogin } = useAuth()
@@ -109,6 +123,8 @@ export default function SearchResultsPage() {
   const [otpSent, setOtpSent] = useState(false)
   const [selectedFlight, setSelectedFlight] = useState(null)
   const [loginError, setLoginError] = useState('')
+  const [showCustomAlert, setShowCustomAlert] = useState(false)
+  const [alertMsg, setAlertMsg] = useState('')
 
   const criteria = {
     from:        params.get('from')       || 'New Delhi',
@@ -119,7 +135,7 @@ export default function SearchResultsPage() {
   }
 
   // Auto-sync search criteria for the booking details wizard
-  useState(() => {
+  useEffect(() => {
     try {
       const totalCount = parseInt(criteria.passengers, 10) || 1
       const savedTravellers = {
@@ -132,16 +148,16 @@ export default function SearchResultsPage() {
     } catch (e) {
       console.error(e)
     }
-  })
+  }, [criteria.passengers, criteria.travelClass])
 
-  const handleSelectFlight = (flightId) => {
+  const handleSelectFlight = (flight) => {
     if (!user) {
-      alert("Please login to continue booking")
-      setSelectedFlight(flightId)
-      setShowLoginModal(true)
+      setAlertMsg("Please login to continue booking")
+      setShowCustomAlert(true)
+      setSelectedFlight(flight)
       return
     }
-    navigate(`/booking/${flightId}`)
+    navigate(`/booking/${flight.id}`, { state: { flight, searchDate: criteria.date } })
   }
 
   const handleSendOtp = async (e) => {
@@ -152,10 +168,14 @@ export default function SearchResultsPage() {
     }
     setLoginError('')
     try {
-      await authService.sendMobileOtp(mobilePhone)
-      setOtpSent(true)
+      const res = await authService.sendMobileOtp(mobilePhone)
+      if (res && (res.data || res.message)) {
+        setOtpSent(true)
+      } else {
+        setLoginError('Failed to send OTP. Please try again.')
+      }
     } catch (err) {
-      setOtpSent(true)
+      setLoginError(err.message || 'Failed to send OTP. Please try again.')
     }
   }
 
@@ -170,22 +190,57 @@ export default function SearchResultsPage() {
       await verifyOtpLogin(mobilePhone, otpCode)
       setShowLoginModal(false)
       if (selectedFlight) {
-        navigate(`/booking/${selectedFlight}`)
+        navigate(`/booking/${selectedFlight.id}`, { state: { flight: selectedFlight } })
       }
     } catch (err) {
       setLoginError(err.message || 'Verification failed. Try 123456.')
     }
   }
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['flights', criteria],
-    queryFn:  () => flightService.search(criteria),
-    enabled:  !!(criteria.from && criteria.to),
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: ['flights', criteria.from, criteria.to, criteria.date],
+    queryFn:  () => {
+      console.log('🔍 Querying flights with criteria:', criteria)
+      return flightService.search({
+        from: criteria.from,
+        to: criteria.to,
+        date: criteria.date
+      })
+    },
   })
 
-  const apiFlights   = data?.data || []
-  const dummyFlights = useMemo(() => searchDummyFlights(criteria), [criteria.from, criteria.to])
-  const allFlights   = apiFlights.length > 0 ? apiFlights : dummyFlights
+  console.log('📊 Query state:', { isLoading, isError, data })
+  const apiFlights = data?.data || []
+  console.log('✈️ API flights:', apiFlights.length, apiFlights)
+
+  if (isError) {
+    console.error('❌ Query error:', isError)
+    return <ErrorState message="Unable to fetch flights. Please try again." onRetry={refetch} />
+  }
+  const parsedFlights = apiFlights.map(f => {
+    try {
+      return {
+        ...f,
+        departure: typeof f.departure === 'string' ? JSON.parse(f.departure) : f.departure,
+        arrival: typeof f.arrival === 'string' ? JSON.parse(f.arrival) : f.arrival,
+        refundable: f.refundable !== undefined ? f.refundable : true,
+        class: f.class || 'Economy'
+      }
+    } catch (e) {
+      console.error('Error parsing flight:', f, e)
+      return f
+    }
+  })
+
+  const allFlights = parsedFlights.filter(f =>
+    f?.departure?.city?.toLowerCase().includes(criteria.from.toLowerCase()) &&
+    f?.arrival?.city?.toLowerCase().includes(criteria.to.toLowerCase())
+  ).length > 0 ?
+    parsedFlights.filter(f =>
+      f?.departure?.city?.toLowerCase().includes(criteria.from.toLowerCase()) &&
+      f?.arrival?.city?.toLowerCase().includes(criteria.to.toLowerCase())
+    ) :
+    parsedFlights
 
   const allAirlines = useMemo(() => [...new Set(allFlights.map(f=>f.airline))], [allFlights])
 
@@ -212,6 +267,7 @@ export default function SearchResultsPage() {
       if (toRef.current   && !toRef.current.contains(e.target))   setToOpen(false)
       if (tripRef.current && !tripRef.current.contains(e.target)) setShowTripDrop(false)
       if (calRef.current  && !calRef.current.contains(e.target))  setShowCal(false)
+      if (returnCalRef.current && !returnCalRef.current.contains(e.target)) setShowReturnCal(false)
       if (travRef.current && !travRef.current.contains(e.target)) setShowTravDrop(false)
     }
     document.addEventListener('mousedown', onOutside)
@@ -219,17 +275,17 @@ export default function SearchResultsPage() {
   }, [])
 
   const fromSugg = useMemo(() => {
-    if (!fromVal.trim()) return CITIES_LIST.slice(0, 6)
+    if (!fromVal.trim()) return CITIES.slice(0, 6)
     const q = fromVal.toLowerCase()
-    return CITIES_LIST.filter(c =>
+    return CITIES.filter(c =>
       c.city.toLowerCase().includes(q) || c.code.toLowerCase().includes(q)
     ).slice(0, 6)
   }, [fromVal])
 
   const toSugg = useMemo(() => {
-    if (!toVal.trim()) return CITIES_LIST.slice(0, 6)
+    if (!toVal.trim()) return CITIES.slice(0, 6)
     const q = toVal.toLowerCase()
-    return CITIES_LIST.filter(c =>
+    return CITIES.filter(c =>
       c.city.toLowerCase().includes(q) || c.code.toLowerCase().includes(q)
     ).slice(0, 6)
   }, [toVal])
@@ -246,6 +302,7 @@ export default function SearchResultsPage() {
     p.set('passengers', String(passengers))
     p.set('class',      travelClass)
     if (dateVal) p.set('date', dateVal)
+    if (tripType === 'round-trip' && returnDate) p.set('returnDate', returnDate)
     navigate({ search: p.toString() })
   }
 
@@ -253,13 +310,21 @@ export default function SearchResultsPage() {
     if (!allFlights.length) return {}
     const cheapest = Math.min(...allFlights.map(f=>f.price))
     const fastest  = allFlights.reduce((a,b)=>a.duration<b.duration?a:b)
-    const earliest = allFlights.reduce((a,b)=>new Date(a.departure)<new Date(b.departure)?a:b)
-    const latest   = allFlights.reduce((a,b)=>new Date(a.departure)>new Date(b.departure)?a:b)
+    const earliest = allFlights.reduce((a,b)=> {
+      const timeA = a.departure?.time || a.departure;
+      const timeB = b.departure?.time || b.departure;
+      return timeA < timeB ? a : b;
+    })
+    const latest   = allFlights.reduce((a,b)=> {
+      const timeA = a.departure?.time || a.departure;
+      const timeB = b.departure?.time || b.departure;
+      return timeA > timeB ? a : b;
+    })
     return {
       cheapest: fmtPrice(cheapest),
       fastest:  fmtDuration(fastest.duration),
-      earliest: fmtTime(earliest.departure),
-      latest:   fmtTime(latest.departure),
+      earliest: fmtTime(earliest.departure?.time || earliest.departure),
+      latest:   fmtTime(latest.departure?.time || latest.departure),
     }
   }, [allFlights])
 
@@ -323,7 +388,7 @@ export default function SearchResultsPage() {
                   >
                     <div className="fr-city-left">
                       <span className="fr-city-name">{c.city}</span>
-                      <span className="fr-city-apt">{c.airport}</span>
+                      <span className="fr-city-apt">{c.airport || c.region}</span>
                     </div>
                     <span className="fr-city-badge">{c.code}</span>
                   </div>
@@ -356,7 +421,7 @@ export default function SearchResultsPage() {
                   >
                     <div className="fr-city-left">
                       <span className="fr-city-name">{c.city}</span>
-                      <span className="fr-city-apt">{c.airport}</span>
+                      <span className="fr-city-apt">{c.airport || c.region}</span>
                     </div>
                     <span className="fr-city-badge">{c.code}</span>
                   </div>
@@ -370,14 +435,10 @@ export default function SearchResultsPage() {
             onClick={() => setShowCal(p => !p)}>
             <span className="fr-search-label">Departure</span>
             <span className="fr-search-value">
-              {dateVal ? (() => {
-                const d = new Date(dateVal + 'T00:00:00')
-                const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
-                return `${d.getDate()} ${months[d.getMonth()]} '${String(d.getFullYear()).slice(2)}`
-              })() : 'Select Date'}
+              {fmtDateDisplay(dateVal).formatted}
             </span>
             <span className="fr-search-sub">
-              {dateVal ? new Date(dateVal + 'T00:00:00').toLocaleDateString('en-IN', { weekday: 'long' }) : 'Tap to pick'}
+              {fmtDateDisplay(dateVal).weekday}
             </span>
             <CustomCalendarPicker
               isOpen={showCal}
@@ -387,6 +448,34 @@ export default function SearchResultsPage() {
               labelText="Departure"
             />
           </div>
+
+          {/* ── Return date (only for roundtrip) ── */}
+          {tripType === 'round-trip' && (
+            <div className="fr-search-field fr-date-field" ref={returnCalRef} style={{ position: 'relative' }}
+              onClick={() => setShowReturnCal(p => !p)}>
+              <span className="fr-search-label">Return</span>
+              <span className="fr-search-value">
+                {fmtDateDisplay(returnDate).formatted}
+              </span>
+              <span className="fr-search-sub">
+                {fmtDateDisplay(returnDate).weekday}
+              </span>
+              <CustomCalendarPicker
+                isOpen={showReturnCal}
+                value={returnDate}
+                onChange={v => {
+                  if (new Date(v) < new Date(dateVal)) {
+                    alert('Return date cannot be earlier than departure date')
+                    return
+                  }
+                  setReturnDate(v)
+                  setShowReturnCal(false)
+                }}
+                onClose={() => setShowReturnCal(false)}
+                labelText="Return"
+              />
+            </div>
+          )}
 
           {/* ── Travellers & Class ── */}
           <div className="fr-search-field" ref={travRef} style={{ position: 'relative' }}
@@ -402,7 +491,7 @@ export default function SearchResultsPage() {
                   <span style={{ fontWeight: 700, fontSize: 16, minWidth: 20, textAlign: 'center' }}>{passengers}</span>
                   <button className="fr-qty-btn" onClick={e => { e.stopPropagation(); setPassengers(p => Math.min(9, p + 1)) }}>+</button>
                 </div>
-                <div style={{ borderTop: '1px solid #f2f2f2', padding: '8px 16px 6px', fontSize: 12, fontWeight: 700, color: '#666', textTransform: 'uppercase', letterSpacing: '0.6px' }}>Class</div>
+                <div style={{ borderTop: '1px solid hsl(var(--b2))', padding: '8px 16px 6px', fontSize: 12, fontWeight: 700, color: '#666', textTransform: 'uppercase', letterSpacing: '0.6px' }}>Class</div>
                 {['Economy', 'Premium Economy', 'Business', 'First Class'].map(cls => (
                   <div key={cls} className={`fr-trip-option${travelClass === cls ? ' fr-trip-option-active' : ''}`}
                     onMouseDown={e => { e.stopPropagation(); setTravelClass(cls); setShowTravDrop(false) }}>
@@ -563,7 +652,9 @@ export default function SearchResultsPage() {
                   {promo && <PromoBanner banner={promo} />}
                   <div
                     className="fc-card"
-                    onClick={() => handleSelectFlight(flight.id)}
+                    onClick={() => handleSelectFlight(flight)}
+                    data-aos="fade-up"
+                    data-aos-delay={idx * 50}
                   >
                     <div className="fc-main-row">
                       {/* Airline */}
@@ -585,8 +676,8 @@ export default function SearchResultsPage() {
                       {/* Route & times */}
                       <div className="fc-times-col">
                         <div className="fc-time-block">
-                          <span className="fc-time">{fmtTime(flight.departure)}</span>
-                          <span className="fc-city-code">{fromCode}</span>
+                          <span className="fc-time">{fmtTime(flight.departure.time || flight.departure)}</span>
+                          <span className="fc-city-code">{flight.departure.airport || getCode(flight.departure.city)}</span>
                         </div>
                         <div className="fc-route-info">
                           <span className="fc-duration">{fmtDuration(flight.duration)}</span>
@@ -602,8 +693,8 @@ export default function SearchResultsPage() {
                           </span>
                         </div>
                         <div className="fc-time-block">
-                          <span className="fc-time">{fmtTime(flight.arrival)}</span>
-                          <span className="fc-city-code">{toCode}</span>
+                          <span className="fc-time">{fmtTime(flight.arrival.time || flight.arrival)}</span>
+                          <span className="fc-city-code">{flight.arrival.airport || getCode(flight.arrival.city)}</span>
                         </div>
                       </div>
 
@@ -619,7 +710,7 @@ export default function SearchResultsPage() {
                         <span className="fc-price">{fmtPrice(flight.price)}</span>
                         <button
                           className="fc-view-btn"
-                          onClick={e => { e.stopPropagation(); handleSelectFlight(flight.id) }}
+                          onClick={e => { e.stopPropagation(); handleSelectFlight(flight) }}
                         >
                           View Prices
                         </button>
@@ -642,131 +733,90 @@ export default function SearchResultsPage() {
       </div>
 
       {showLoginModal && (
-        <div style={{
-          position: 'fixed',
-          inset: 0,
-          background: 'rgba(0,0,0,0.7)',
-          backdropFilter: 'blur(5px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 9999
-        }}>
-          <div style={{
-            background: '#fff',
-            borderRadius: '16px',
-            width: '90%',
-            maxWidth: '420px',
-            padding: '32px 28px',
-            boxShadow: '0 24px 48px rgba(0,0,0,0.2)',
-            position: 'relative',
-            boxSizing: 'border-box'
-          }}>
-            <button
-              onClick={() => setShowLoginModal(false)}
-              style={{
-                position: 'absolute',
-                top: '20px',
-                right: '20px',
-                background: '#f3f4f6',
-                border: 'none',
-                width: '32px',
-                height: '32px',
-                borderRadius: '50%',
-                fontSize: '14px',
-                fontWeight: 700,
-                cursor: 'pointer'
-              }}
-            >
-              ✕
-            </button>
+        <div className="custom-modal-overlay">
+          <div className="custom-login-card">
+            <button className="custom-modal-close" onClick={() => setShowLoginModal(false)}>✕</button>
 
-            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-              <span style={{ fontSize: '36px', display: 'block', marginBottom: '8px' }}>🔐</span>
-              <h3 style={{ margin: '0 0 8px', fontSize: '22px', fontWeight: 900, color: '#111827' }}>
-                Login to Continue
-              </h3>
-              <p style={{ margin: 0, fontSize: '13px', color: '#6b7280' }}>
-                MakeMyTrip requires verification before booking. Enter your mobile number to instantly login.
-              </p>
+            <div className="custom-login-header">
+              <span className="custom-login-icon">🔐</span>
+              <h3>Login to Continue</h3>
+              <p>MakeMyTrip requires verification before booking. Enter your mobile number to instantly login.</p>
             </div>
 
-            {loginError && (
-              <div style={{ background: '#fee2e2', color: '#991b1b', padding: '10px 14px', borderRadius: '8px', fontSize: '12px', marginBottom: '16px', textAlign: 'center', fontWeight: 600 }}>
-                {loginError}
-              </div>
-            )}
+            {loginError && <div className="custom-login-error">{loginError}</div>}
 
             {!otpSent ? (
               <form onSubmit={handleSendOtp}>
-                <div style={{ marginBottom: '20px' }}>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#374151', marginBottom: '6px' }}>
-                    MOBILE NUMBER
-                  </label>
-                  <div style={{ display: 'flex', gap: '10px' }}>
-                    <span style={{ background: '#f3f4f6', border: '1px solid #d1d5db', borderRadius: '8px', padding: '10px 14px', fontSize: '14px', fontWeight: 700, color: '#4b5563', display: 'flex', alignItems: 'center' }}>
-                      +91
-                    </span>
+                <div className="custom-input-group">
+                  <label>MOBILE NUMBER</label>
+                  <div className="custom-phone-input">
+                    <span className="custom-country-code">+91</span>
                     <input
                       type="tel"
                       placeholder="10-digit mobile number"
                       value={mobilePhone}
+                      maxLength={10}
                       onChange={(e) => setMobilePhone(e.target.value)}
-                      style={{ flex: 1, border: '1px solid #d1d5db', borderRadius: '8px', padding: '10px 14px', fontSize: '14px', fontWeight: 600, outline: 'none', width: '100%', boxSizing: 'border-box' }}
                       autoFocus
                       required
                     />
                   </div>
                 </div>
-                <button
-                  type="submit"
-                  style={{ width: '100%', background: 'var(--clr-primary, #ef4444)', color: '#fff', border: 'none', borderRadius: '8px', padding: '14px', fontSize: '15px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(239,68,68,0.3)' }}
-                >
-                  GET ONE TIME PASSWORD (OTP)
-                </button>
+                <button type="submit" className="custom-login-btn">GET ONE TIME PASSWORD (OTP)</button>
               </form>
             ) : (
               <form onSubmit={handleVerifyOtp}>
-                <div style={{ marginBottom: '20px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                    <label style={{ fontSize: '12px', fontWeight: 700, color: '#374151' }}>
-                      ENTER 6-DIGIT OTP
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => setOtpSent(false)}
-                      style={{ background: 'none', border: 'none', color: 'var(--clr-primary, #ef4444)', fontSize: '12px', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }}
-                    >
-                      Change Number
-                    </button>
+                <div className="custom-input-group">
+                  <div className="custom-otp-header">
+                    <label>ENTER 6-DIGIT OTP</label>
+                    <button type="button" onClick={() => setOtpSent(false)}>Change Number</button>
                   </div>
                   <input
                     type="text"
                     maxLength="6"
-                    placeholder="e.g. 123456"
+                    placeholder="Enter 6-digit OTP"
                     value={otpCode}
                     onChange={(e) => setOtpCode(e.target.value)}
-                    style={{ width: '100%', border: '2px solid var(--clr-primary, #ef4444)', borderRadius: '8px', padding: '12px 14px', fontSize: '18px', fontWeight: 800, letterSpacing: '4px', textAlign: 'center', outline: 'none', boxSizing: 'border-box' }}
+                    className="custom-otp-input"
                     autoFocus
                     required
                   />
-                  <span style={{ display: 'block', textAlign: 'center', fontSize: '11px', color: '#10b981', marginTop: '8px', fontWeight: 600 }}>
-                    ✓ Simulated OTP sent! (Use test OTP: 123456)
-                  </span>
                 </div>
-                <button
-                  type="submit"
-                  style={{ width: '100%', background: '#10b981', color: '#fff', border: 'none', borderRadius: '8px', padding: '14px', fontSize: '15px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(16,185,129,0.3)' }}
-                >
-                  VERIFY &amp; RESUME BOOKING
-                </button>
+                <button type="submit" className="custom-verify-btn">VERIFY & RESUME BOOKING</button>
               </form>
             )}
           </div>
         </div>
       )}
+
+      {showCustomAlert && (
+        <div className="custom-modal-overlay" style={{ zIndex: 10000 }}>
+          <div className="custom-alert-card">
+            <div className="custom-alert-icon">⚠️</div>
+            <h3 className="custom-alert-title">Authentication Required</h3>
+            <p className="custom-alert-msg">{alertMsg}</p>
+            <div className="custom-alert-actions">
+              <button 
+                className="custom-alert-btn-cancel" 
+                onClick={() => setShowCustomAlert(false)}
+              >
+                CANCEL
+              </button>
+              <button 
+                className="custom-alert-btn-confirm" 
+                onClick={() => {
+                  setShowCustomAlert(false)
+                  setShowLoginModal(true)
+                }}
+              >
+                LOGIN NOW
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
-  )
+  );
 }
 
 function PromoBanner({ banner }) {

@@ -156,7 +156,7 @@ export default function TrainResultsPage() {
                     <div className="train-time-sep">
                       <div className="train-time-dur">{train.duration}</div>
                       <div className="train-time-line"/>
-                      <div style={{ fontSize: '11px', color: '#64748b' }}>Non-stop</div>
+                      <div style={{ fontSize: '11px', color: 'hsl(var(--bc) / 0.55)' }}>Non-stop</div>
                     </div>
 
                     <div className="train-time-node">
@@ -192,8 +192,8 @@ export default function TrainResultsPage() {
                 {isSelectedTrain && (
                   <div className="train-res-action">
                     <div>
-                      <span style={{ fontSize: '13px', color: '#64748b' }}>Selected Class: </span>
-                      <strong style={{ fontSize: '16px', color: '#0f172a' }}>{chosenCls.name} ({chosenCls.code})</strong>
+                      <span style={{ fontSize: '13px', color: 'hsl(var(--bc) / 0.55)' }}>Selected Class: </span>
+                      <strong style={{ fontSize: '16px', color: 'hsl(var(--bc))' }}>{chosenCls.name} ({chosenCls.code})</strong>
                     </div>
                     <button className="train-select-btn btn-primary" onClick={() => handleProceedBook(train)}>
                       Book Now

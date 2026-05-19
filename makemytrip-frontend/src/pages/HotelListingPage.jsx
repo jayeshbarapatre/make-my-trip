@@ -4,17 +4,18 @@ import { UDAIPUR_HOTELS, HOTEL_PINS } from '../data/udaipurHotelsData'
 import { useAuth } from '../context/AuthContext'
 import { authService } from '../services/authService'
 import CustomCalendarPicker from '../components/CustomCalendarPicker'
+import { searchHotels } from '../services/hotelService'
 import '../styles/UdaipurListing.css'
 
 /* ─────────── SVGs & Icons ─────────── */
 const I = {
   heart: (filled, c) => (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill={filled ? (c || "#eb2226") : "none"} stroke={filled ? (c || "#eb2226") : "#666"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill={filled ? (c || "hsl(var(--er))") : "none"} stroke={filled ? (c || "hsl(var(--er))") : "#666"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
     </svg>
   ),
   check: (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0db981" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--su))" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
       <polyline points="20 6 9 17 4 12"/>
     </svg>
   ),
@@ -25,12 +26,12 @@ const I = {
   photo: <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM8.9 13.98l2.1 2.53 3.1-3.99L18.5 18H5.5l3.4-4.02z"/></svg>,
   play: <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>,
   pin: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>,
-  star: <svg width="11" height="11" viewBox="0 0 24 24" fill="#fbb52c"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
+  star: <svg width="11" height="11" viewBox="0 0 24 24" fill="hsl(var(--wa))"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
   starHostBadge: (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="#eb2226"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="hsl(var(--er))"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
   ),
-  bulb: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5c33b3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.9.7 1.5 1.7 1.5 2.8V18h5v-.5c0-1.1.6-2.1 1.5-2.8A7 7 0 0 0 12 2z"/></svg>,
-  airport: <svg width="14" height="14" viewBox="0 0 24 24" fill="#0084ff"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg>,
+  bulb: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--a))" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.9.7 1.5 1.7 1.5 2.8V18h5v-.5c0-1.1.6-2.1 1.5-2.8A7 7 0 0 0 12 2z"/></svg>,
+  airport: <svg width="14" height="14" viewBox="0 0 24 24" fill="hsl(var(--p))"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg>,
 };
 
 /* ─────────── SearchBar Component ─────────── */
@@ -38,8 +39,22 @@ function SearchBar({ onSearch, city, checkIn, checkOut, guests }) {
   const g = guests ? JSON.parse(guests) : { adults: 2, rooms: 1 };
   const [inDate, setInDate] = useState(checkIn || '');
   const [outDate, setOutDate] = useState(checkOut || '');
+
+  useEffect(() => {
+    setInDate(checkIn || '');
+    setOutDate(checkOut || '');
+  }, [checkIn, checkOut]);
   const [showInCal, setShowInCal] = useState(false);
   const [showOutCal, setShowOutCal] = useState(false);
+
+  const getGuestDisplay = () => {
+    let display = `${g.adults} Adults`;
+    if (g.children && g.children > 0) {
+      display += ` · ${g.children} ${g.children === 1 ? 'Child' : 'Children'}`;
+    }
+    display += ` · ${g.rooms} Room${g.rooms !== 1 ? 's' : ''}`;
+    return display;
+  };
 
   const fmtD = (s) => {
     if (!s) return 'Select Date';
@@ -79,7 +94,7 @@ function SearchBar({ onSearch, city, checkIn, checkOut, guests }) {
       </div>
       <div className="sb-field">
         <div className="sb-lbl">GUESTS</div>
-        <div className="sb-val">{g.adults} Adults · {g.rooms} Room</div>
+        <div className="sb-val">{getGuestDisplay()}</div>
       </div>
       <button className="sb-search" onClick={() => onSearch && onSearch(city, inDate, outDate)}>SEARCH</button>
     </div>
@@ -128,30 +143,30 @@ function MapPreview({ onOpen, pins }) {
     <div className="map-preview" onClick={onOpen}>
       <svg viewBox="0 0 200 130" className="map-svg" preserveAspectRatio="none">
         {/* Lake Pichola - irregular shape */}
-        <path d="M 30 50 Q 25 70 45 85 Q 70 95 85 80 Q 95 65 80 50 Q 60 40 45 45 Z" fill="#cfe4f0" stroke="#a3c7da" strokeWidth="0.4"/>
-        <path d="M 120 30 Q 110 45 125 60 Q 145 65 155 50 Q 150 35 135 28 Z" fill="#cfe4f0" stroke="#a3c7da" strokeWidth="0.4"/>
+        <path d="M 30 50 Q 25 70 45 85 Q 70 95 85 80 Q 95 65 80 50 Q 60 40 45 45 Z" fill="hsl(var(--p) / 0.15)" stroke="hsl(var(--p) / 0.25)" strokeWidth="0.4"/>
+        <path d="M 120 30 Q 110 45 125 60 Q 145 65 155 50 Q 150 35 135 28 Z" fill="hsl(var(--p) / 0.15)" stroke="hsl(var(--p) / 0.25)" strokeWidth="0.4"/>
         {/* roads */}
-        <g stroke="#e6e1d8" strokeWidth="1.2" fill="none">
+        <g stroke="hsl(var(--b3))" strokeWidth="1.2" fill="none">
           <path d="M 0 30 L 200 35"/>
           <path d="M 10 70 L 190 90"/>
           <path d="M 50 0 L 65 130"/>
           <path d="M 110 0 L 130 130"/>
           <path d="M 160 10 L 180 130"/>
         </g>
-        <g stroke="#efece4" strokeWidth="0.6" fill="none">
+        <g stroke="hsl(var(--b2))" strokeWidth="0.6" fill="none">
           <path d="M 0 50 L 200 55"/>
           <path d="M 20 100 L 200 115"/>
           <path d="M 90 0 L 100 130"/>
           <path d="M 140 0 L 155 130"/>
         </g>
         {/* land blocks */}
-        <rect x="100" y="70" width="35" height="25" fill="#eaf3df" opacity="0.55"/>
-        <rect x="155" y="65" width="40" height="40" fill="#eaf3df" opacity="0.45"/>
-        <rect x="5" y="5" width="40" height="25" fill="#f4efe2" opacity="0.6"/>
+        <rect x="100" y="70" width="35" height="25" fill="hsl(var(--su) / 0.08)" opacity="0.55"/>
+        <rect x="155" y="65" width="40" height="40" fill="hsl(var(--su) / 0.08)" opacity="0.45"/>
+        <rect x="5" y="5" width="40" height="25" fill="hsl(var(--b2))" opacity="0.6"/>
         {/* pins */}
         {pins.slice(0, 6).map((p, i) => (
           <g key={i} transform={`translate(${p.x*200} ${p.y*130})`}>
-            <circle r="3" fill="#0084ff" stroke="#fff" strokeWidth="0.8"/>
+            <circle r="3" fill="hsl(var(--p))" stroke="#fff" strokeWidth="0.8"/>
           </g>
         ))}
       </svg>
@@ -281,7 +296,7 @@ function PhotoCarousel({ seeds, photos, hotelId }) {
           <div key={s} className="carousel-slide" style={{ minWidth: '100%', height: '100%' }}>
             {/* Beautiful hotel imagery placeholders styled with rich Unsplash images */}
             <img 
-              src={`https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&h=420&q=80&sig=${s}`} 
+              src={s.includes('unsplash.com') ? s : `https://images.unsplash.com/photo-${s}?auto=format&fit=crop&w=600&h=420&q=80`} 
               alt="Udaipur Luxury Stay" 
               loading="lazy"
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
@@ -320,7 +335,7 @@ function HotelCard({ h, density, wishlist, toggleWishlist, onSelectHotel }) {
             <h3 className="hc-name">
               {h.coupleFriendly && <span className="cf-tick">{I.check}</span>}
               {h.name}
-              {h.likeStars > 0 && <span className="like-stars"> ❪ Like a {h.likeStars}<span style={{color:"#fbb52c"}}>★</span> ❫</span>}
+              {h.likeStars > 0 && <span className="like-stars"> ❪ Like a {h.likeStars}<span style={{color:"hsl(var(--wa))"}}>★</span> ❫</span>}
             </h3>
             <div className="hc-loc"><a href="#locality" onClick={(e) => e.stopPropagation()}>{h.locality}</a> <span className="dot">|</span> {h.distance}</div>
             <div className="hc-room">{h.roomType}</div>
@@ -347,14 +362,14 @@ function HotelCard({ h, density, wishlist, toggleWishlist, onSelectHotel }) {
               <div className="price">₹ {h.price.toLocaleString("en-IN")}</div>
               <div className="taxes">+ ₹ {h.taxes} taxes &amp; fees</div>
               <div className="per-night">Per Night</div>
-              <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+              <div style={{ display: 'flex', gap: '8px', marginTop: '12px', justifyContent: "end" }}>
                 <button
                   className="hp-hc-btn"
                   onClick={(e) => {
                     e.stopPropagation();
                     onSelectHotel && onSelectHotel(h);
                   }}
-                  style={{ padding: '6px 12px', fontSize: '11px', borderRadius: '6px', background: '#eb2026', border: 'none', color: '#fff', fontWeight: 800 }}
+                  style={{ padding: '6px 12px', fontSize: '11px', borderRadius: '6px', background: 'hsl(var(--er))', border: 'none', color: '#fff', fontWeight: 800 }}
                 >
                   Book Stay
                 </button>
@@ -413,15 +428,15 @@ function MapOverlay({ open, onClose, pins, hotels, wishlist, toggleWishlist }) {
         <button className="map-close" onClick={onClose}>✕</button>
         <div className="map-canvas">
           <svg viewBox="0 0 1000 700" className="map-bg" preserveAspectRatio="xMidYMid slice">
-            <rect width="1000" height="700" fill="#f5f1e7"/>
+            <rect width="1000" height="700" fill="hsl(var(--b2))"/>
             {/* Lake Pichola */}
-            <path d="M 120 220 Q 90 320 220 400 Q 360 440 430 380 Q 480 310 400 230 Q 280 180 200 200 Z" fill="#cfe4f0" stroke="#a3c7da" strokeWidth="1.2"/>
+            <path d="M 120 220 Q 90 320 220 400 Q 360 440 430 380 Q 480 310 400 230 Q 280 180 200 200 Z" fill="hsl(var(--p) / 0.15)" stroke="hsl(var(--p) / 0.25)" strokeWidth="1.2"/>
             {/* Fateh Sagar */}
-            <path d="M 620 110 Q 580 200 660 280 Q 780 310 820 220 Q 800 130 720 90 Z" fill="#cfe4f0" stroke="#a3c7da" strokeWidth="1.2"/>
+            <path d="M 620 110 Q 580 200 660 280 Q 780 310 820 220 Q 800 130 720 90 Z" fill="hsl(var(--p) / 0.15)" stroke="hsl(var(--p) / 0.25)" strokeWidth="1.2"/>
             {/* Badi Lake / Small Lake */}
-            <path d="M 760 480 Q 720 540 800 600 Q 880 610 900 540 Q 880 470 820 460 Z" fill="#cfe4f0" stroke="#a3c7da" strokeWidth="1.2"/>
+            <path d="M 760 480 Q 720 540 800 600 Q 880 610 900 540 Q 880 470 820 460 Z" fill="hsl(var(--p) / 0.15)" stroke="hsl(var(--p) / 0.25)" strokeWidth="1.2"/>
             {/* Roads vector lines */}
-            <g stroke="#e6e1d8" strokeWidth="6" fill="none">
+            <g stroke="hsl(var(--b3))" strokeWidth="6" fill="none">
               <path d="M 0 120 L 1000 140"/>
               <path d="M 50 340 L 980 410"/>
               <path d="M 30 560 L 980 620"/>
@@ -429,7 +444,7 @@ function MapOverlay({ open, onClose, pins, hotels, wishlist, toggleWishlist }) {
               <path d="M 560 0 L 640 700"/>
               <path d="M 870 0 L 920 700"/>
             </g>
-            <g stroke="#efece4" strokeWidth="3" fill="none">
+            <g stroke="hsl(var(--b2))" strokeWidth="3" fill="none">
               <path d="M 0 200 L 1000 230"/>
               <path d="M 0 450 L 1000 480"/>
               <path d="M 150 0 L 200 700"/>
@@ -437,15 +452,15 @@ function MapOverlay({ open, onClose, pins, hotels, wishlist, toggleWishlist }) {
               <path d="M 720 0 L 770 700"/>
             </g>
             {/* land parks and blocks */}
-            <rect x="500" y="450" width="180" height="100" fill="#dbeac8" opacity="0.7"/>
-            <rect x="60" y="50" width="120" height="110" fill="#dbeac8" opacity="0.5"/>
-            <rect x="850" y="280" width="120" height="140" fill="#dbeac8" opacity="0.5"/>
+            <rect x="500" y="450" width="180" height="100" fill="hsl(var(--su) / 0.12)" opacity="0.7"/>
+            <rect x="60" y="50" width="120" height="110" fill="hsl(var(--su) / 0.12)" opacity="0.5"/>
+            <rect x="850" y="280" width="120" height="140" fill="hsl(var(--su) / 0.12)" opacity="0.5"/>
             {/* map city annotations */}
-            <text x="200" y="300" fontSize="14" fill="#7a8c98" fontStyle="italic" fontWeight="600">Lake Pichola</text>
-            <text x="680" y="200" fontSize="14" fill="#7a8c98" fontStyle="italic" fontWeight="600">Fateh Sagar</text>
-            <text x="80" y="105" fontSize="11" fill="#9c8b67">Sukhadia Circle</text>
-            <text x="500" y="80" fontSize="11" fill="#9c8b67">Old City Udaipur</text>
-            <text x="900" y="350" fontSize="11" fill="#9c8b67">Sajjangarh Fort</text>
+            <text x="200" y="300" fontSize="14" fill="hsl(var(--bc) / 0.55)" fontStyle="italic" fontWeight="600">Lake Pichola</text>
+            <text x="680" y="200" fontSize="14" fill="hsl(var(--bc) / 0.55)" fontStyle="italic" fontWeight="600">Fateh Sagar</text>
+            <text x="80" y="105" fontSize="11" fill="hsl(var(--wa) / 0.5)">Sukhadia Circle</text>
+            <text x="500" y="80" fontSize="11" fill="hsl(var(--wa) / 0.5)">Old City Udaipur</text>
+            <text x="900" y="350" fontSize="11" fill="hsl(var(--wa) / 0.5)">Sajjangarh Fort</text>
           </svg>
           {pins.map((p) => {
             const h = hotels.find(x => x.id === p.id);
@@ -494,14 +509,37 @@ function MapOverlay({ open, onClose, pins, hotels, wishlist, toggleWishlist }) {
 }
 
 /* ─────────── Mobile shell Simulator ─────────── */
-function MobileApp({ hotels, wishlist, toggleWishlist, onOpenFilter, onSelectHotel }) {
+function MobileApp({ hotels, wishlist, toggleWishlist, onOpenFilter, onSelectHotel, checkIn, checkOut, guests }) {
+  const getGuestDisplay = () => {
+    try {
+      const g = guests ? JSON.parse(guests) : { adults: 2, rooms: 1 };
+      let display = `${g.adults || 0} Guest${(g.adults || 0) !== 1 ? 's' : ''}`;
+      if (g.children && g.children > 0) {
+        display += ` · ${g.children} Child${g.children > 1 ? 'ren' : ''}`;
+      }
+      return display;
+    } catch {
+      return '2 Guests';
+    }
+  };
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '';
+    const d = new Date(dateStr + 'T00:00:00');
+    return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+  };
+
+  const metaDisplay = checkIn && checkOut
+    ? `${formatDate(checkIn)} - ${formatDate(checkOut)} · ${getGuestDisplay()}`
+    : '14 May - 7 Jun · 2 Guests';
+
   return (
     <div className="mobile-shell">
       <div className="m-top">
         <button className="m-back">{I.chevronL}</button>
         <div className="m-title">
           <div className="m-loc">Udaipur, India</div>
-          <div className="m-meta">14 May - 7 Jun · 2 Guests</div>
+          <div className="m-meta">{metaDisplay}</div>
         </div>
         <button className="m-edit">EDIT</button>
       </div>
@@ -553,7 +591,7 @@ function MobileApp({ hotels, wishlist, toggleWishlist, onOpenFilter, onSelectHot
                     e.stopPropagation();
                     onSelectHotel && onSelectHotel(h);
                   }}
-                  style={{ padding: '6px 12px', fontSize: '11px', borderRadius: '6px', background: '#eb2026', border: 'none', color: '#fff', fontWeight: 800 }}
+                  style={{ padding: '6px 12px', fontSize: '11px', borderRadius: '6px', background: 'hsl(var(--er))', border: 'none', color: '#fff', fontWeight: 800 }}
                 >
                   Book Stay
                 </button>
@@ -592,7 +630,9 @@ const generateHotels = (cityName) => {
     amenities: ['Airport Transfer', 'Free WiFi', 'Swimming Pool'],
     review: "Stunning lake view from balcony, hosts were warm and the rooftop sunset is unreal.",
     longStay: ["Complimentary Breakfast", "Free Laundry"],
-    seed: [i + 1, i + 2, i + 3],
+    seed: [
+      "1542314831-c53cd4b85d05", "1566073771259-6a8506099945", "1582719478250-c89cae4dc85b", "1512918728675-ed5a9ecdebfd", "1520250497591-112f2f40a3f4", "1540541338287-41700207dee6", "1611892440504-42a792e24d32", "1590050752117-238cb061271f", "1578683010236-d716f9a3f461", "1551882547-ff40c0d589rx", "1535827841776-24afc1e255ac", "1445019980597-93fa8acb246c"
+    ].sort(() => Math.random() - 0.5).slice(0, 5),
     photos: 234,
     starHost: i % 4 === 0,
     coupleFriendly: true,
@@ -608,7 +648,51 @@ export default function HotelListingPage() {
   const checkOut = searchParams.get('checkOut');
   const guests = searchParams.get('guests');
 
-  const DYNAMIC_HOTELS = useMemo(() => generateHotels(cityQuery), [cityQuery]);
+  const [realHotels, setRealHotels] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [apiError, setApiError] = useState(null);
+
+  useEffect(() => {
+    const fetchRealHotels = async () => {
+      try {
+        setLoading(true);
+        setApiError(null);
+        const res = await searchHotels({ city: cityQuery, checkIn, checkOut, guests });
+
+        // Map backend response to match expected frontend structure if needed
+        const mapped = (res.data || []).map((h, i) => ({
+          ...h,
+          id: h.id,
+          locality: h.location || h.city,
+          distance: '2.0 km from City Center',
+          ratingLabel: h.rating >= 4.5 ? 'Excellent' : h.rating >= 4 ? 'Very Good' : 'Good',
+          strike: h.price + 1000,
+          taxes: h.price * 0.18,
+          roomType: 'Deluxe Room',
+          amenities: h.amenities || ['Free WiFi'],
+          review: h.description || "A wonderful stay.",
+          longStay: [],
+          seed: h.images?.length > 0 ? h.images : [
+            "1542314831-c53cd4b85d05", "1566073771259-6a8506099945", "1582719478250-c89cae4dc85b", "1512918728675-ed5a9ecdebfd", "1520250497591-112f2f40a3f4", "1540541338287-41700207dee6", "1611892440504-42a792e24d32", "1590050752117-238cb061271f", "1578683010236-d716f9a3f461", "1551882547-ff40c0d589rx", "1535827841776-24afc1e255ac", "1445019980597-93fa8acb246c"
+          ].sort(() => Math.random() - 0.5).slice(0, 5),
+          photos: 10,
+          starHost: h.rating >= 4.5,
+          coupleFriendly: true,
+          promo: ""
+        }));
+
+        setRealHotels(mapped);
+      } catch (err) {
+        setApiError(err.message || 'Failed to load hotels. Please try again.');
+        setRealHotels([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchRealHotels();
+  }, [cityQuery, checkIn, checkOut, guests]);
+
+  const DYNAMIC_HOTELS = useMemo(() => realHotels, [realHotels]);
 
 
   const { user, verifyOtpLogin } = useAuth()
@@ -618,9 +702,24 @@ export default function HotelListingPage() {
   const [otpSent, setOtpSent] = useState(false)
   const [selectedHotel, setSelectedHotel] = useState(null)
   const [loginError, setLoginError] = useState('')
+  const [showCustomAlert, setShowCustomAlert] = useState(false)
+  const [alertMsg, setAlertMsg] = useState('')
 
   const handleSelectHotel = (hotel) => {
-    navigate(`/hotels/detail/${hotel.id}`, { state: { hotel } })
+    if (!user) {
+      setAlertMsg("Please login to continue booking this stay")
+      setShowCustomAlert(true)
+      setSelectedHotel(hotel)
+      return
+    }
+    navigate(`/hotels/detail/${hotel.id}`, {
+      state: {
+        hotel,
+        checkIn,
+        checkOut,
+        guests
+      }
+    })
   }
 
   const handleSendOtp = async (e) => {
@@ -631,10 +730,14 @@ export default function HotelListingPage() {
     }
     setLoginError('')
     try {
-      await authService.sendMobileOtp(mobilePhone)
-      setOtpSent(true)
+      const res = await authService.sendMobileOtp(mobilePhone)
+      if (res && (res.data || res.message)) {
+        setOtpSent(true)
+      } else {
+        setLoginError('Failed to send OTP. Please try again.')
+      }
     } catch (err) {
-      setOtpSent(true)
+      setLoginError(err.message || 'Failed to send OTP. Please try again.')
     }
   }
 
@@ -649,7 +752,7 @@ export default function HotelListingPage() {
       await verifyOtpLogin(mobilePhone, otpCode)
       setShowLoginModal(false)
       if (selectedHotel) {
-        navigate(`/hotels/detail/${selectedHotel.id}`, { state: { hotel: selectedHotel } })
+        navigate(`/hotels/detail/${selectedHotel.id}`, { state: { hotel: selectedHotel, checkIn, checkOut, guests } })
       }
     } catch (err) {
       setLoginError(err.message || 'Verification failed. Try 123456.')
@@ -758,14 +861,18 @@ export default function HotelListingPage() {
       });
     }
 
+    if (filters.luxe) {
+      list = list.filter(h => h.promo === "MMT LUXE SELECTION" || h.rating >= 4.7);
+    }
+
     // Sort order logic
     if (sort === "low") list.sort((a,b) => a.price - b.price);
     else if (sort === "high") list.sort((a,b) => b.price - a.price);
     else if (sort === "rating") list.sort((a,b) => b.rating - a.rating);
     else if (sort === "best") list.sort((a,b) => (b.rating - a.rating) || (a.price - b.price));
-    
+
     return list;
-  }, [filters, sort]);
+  }, [filters, sort, DYNAMIC_HOTELS]);
 
   const perPage = 6;
   const visible = filtered.slice(0, page * perPage);
@@ -818,7 +925,26 @@ export default function HotelListingPage() {
 
         {/* Right Search Results Column */}
         <main className="results">
-          
+
+          {/* Error Banner */}
+          {apiError && (
+            <div style={{
+              backgroundColor: 'hsl(var(--wa) / 0.1)',
+              border: '1px solid hsl(var(--wa))',
+              borderRadius: '4px',
+              padding: '12px 16px',
+              marginBottom: '16px',
+              fontSize: '14px',
+              color: 'hsl(var(--wa) / 0.6)',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <span>⚠️ {apiError}</span>
+              <button onClick={() => setApiError(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '18px' }}>✕</button>
+            </div>
+          )}
+
           {/* Breadcrumbs */}
           <div className="breadcrumb">
             <span style={{ cursor: 'pointer' }} onClick={() => navigate('/hotels')}>Hotels</span> 
@@ -830,7 +956,7 @@ export default function HotelListingPage() {
 
           {/* Results Heading Area */}
           <div className="results-head">
-            <h1>{filtered.length.toLocaleString("en-IN")}{filtered.length === UDAIPUR_HOTELS.length ? ",278" : ""} Properties in {cityQuery}</h1>
+            <h1>{filtered.length.toLocaleString("en-IN")} Properties in {cityQuery}</h1>
             <button className="travel-tips">💡 Explore Travel Tips →</button>
             
             {/* Design Controls floating widget inside search area for incredible Premium feel */}
@@ -852,12 +978,15 @@ export default function HotelListingPage() {
           {view === 'mobile' ? (
             <div className="mobile-wrap">
               <div className="mobile-frame">
-                <MobileApp 
-                  hotels={filtered} 
-                  wishlist={wishlist} 
+                <MobileApp
+                  hotels={filtered}
+                  wishlist={wishlist}
                   toggleWishlist={toggleWishlist}
                   onOpenFilter={() => {}}
                   onSelectHotel={handleSelectHotel}
+                  checkIn={checkIn}
+                  checkOut={checkOut}
+                  guests={guests}
                 />
               </div>
             </div>
@@ -866,19 +995,28 @@ export default function HotelListingPage() {
               {/* Sort Tabs navigation strip */}
               <SortTabs sort={sort} setSort={setSort}/>
 
-              <div className="showing-h">Showing Stays in Udaipur</div>
+              <div className="showing-h">Showing Stays in {cityQuery}</div>
+
+              {/* Empty state when no results */}
+              {!loading && filtered.length === 0 && (
+                <div className="empty-state" style={{ padding: '60px 20px', textAlign: 'center', color: '#666' }}>
+                  <p style={{ fontSize: '18px', marginBottom: '10px' }}>No hotels found in <strong>{cityQuery}</strong></p>
+                  <p style={{ fontSize: '14px', color: '#999' }}>Try searching for a different city, area, or hotel name.</p>
+                </div>
+              )}
 
               {/* Active Results List */}
               <div className="results-list">
-                {visible.map(h => (
-                  <HotelCard 
-                    key={h.id} 
-                    h={h} 
-                    density={density} 
-                    wishlist={wishlist} 
-                    toggleWishlist={toggleWishlist}
-                    onSelectHotel={handleSelectHotel}
-                  />
+                {visible.map((h, idx) => (
+                  <div key={h.id} data-aos="fade-up" data-aos-delay={idx * 50}>
+                    <HotelCard
+                      h={h}
+                      density={density}
+                      wishlist={wishlist}
+                      toggleWishlist={toggleWishlist}
+                      onSelectHotel={handleSelectHotel}
+                    />
+                  </div>
                 ))}
 
                 {/* Shimmer loading list items */}
@@ -914,133 +1052,96 @@ export default function HotelListingPage() {
         pins={HOTEL_PINS} 
         hotels={UDAIPUR_HOTELS} 
         wishlist={wishlist} 
-        toggleWishlist={toggleWishlist}
+        toggleWishlist={toggleWishlist} 
       />
 
       {showLoginModal && (
-        <div style={{
-          position: 'fixed',
-          inset: 0,
-          background: 'rgba(0,0,0,0.7)',
-          backdropFilter: 'blur(5px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 9999
-        }}>
-          <div style={{
-            background: '#fff',
-            borderRadius: '16px',
-            width: '90%',
-            maxWidth: '420px',
-            padding: '32px 28px',
-            boxShadow: '0 24px 48px rgba(0,0,0,0.2)',
-            position: 'relative',
-            boxSizing: 'border-box'
-          }}>
-            <button
-              onClick={() => setShowLoginModal(false)}
-              style={{
-                position: 'absolute',
-                top: '20px',
-                right: '20px',
-                background: '#f3f4f6',
-                border: 'none',
-                width: '32px',
-                height: '32px',
-                borderRadius: '50%',
-                fontSize: '14px',
-                fontWeight: 700,
-                cursor: 'pointer'
-              }}
-            >
-              ✕
-            </button>
+        <div className="custom-modal-overlay">
+          <div className="custom-login-card">
+            <button className="custom-modal-close" onClick={() => setShowLoginModal(false)}>✕</button>
 
-            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-              <span style={{ fontSize: '36px', display: 'block', marginBottom: '8px' }}>🔐</span>
-              <h3 style={{ margin: '0 0 8px', fontSize: '22px', fontWeight: 900, color: '#111827' }}>
-                Login to Continue
-              </h3>
-              <p style={{ margin: 0, fontSize: '13px', color: '#6b7280' }}>
-                MakeMyTrip requires verification before booking. Enter your mobile number to instantly login.
-              </p>
+            <div className="custom-login-header">
+              <span className="custom-login-icon">🔐</span>
+              <h3>Login to Continue</h3>
+              <p>MakeMyTrip requires verification before booking. Enter your mobile number to instantly login.</p>
             </div>
 
-            {loginError && (
-              <div style={{ background: '#fee2e2', color: '#991b1b', padding: '10px 14px', borderRadius: '8px', fontSize: '12px', marginBottom: '16px', textAlign: 'center', fontWeight: 600 }}>
-                {loginError}
-              </div>
-            )}
+            {loginError && <div className="custom-login-error">{loginError}</div>}
 
             {!otpSent ? (
               <form onSubmit={handleSendOtp}>
-                <div style={{ marginBottom: '20px' }}>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#374151', marginBottom: '6px' }}>
-                    MOBILE NUMBER
-                  </label>
-                  <div style={{ display: 'flex', gap: '10px' }}>
-                    <span style={{ background: '#f3f4f6', border: '1px solid #d1d5db', borderRadius: '8px', padding: '10px 14px', fontSize: '14px', fontWeight: 700, color: '#4b5563', display: 'flex', alignItems: 'center' }}>
-                      +91
-                    </span>
+                <div className="custom-input-group">
+                  <label>MOBILE NUMBER</label>
+                  <div className="custom-phone-input">
+                    <span className="custom-country-code">+91</span>
                     <input
                       type="tel"
                       placeholder="10-digit mobile number"
                       value={mobilePhone}
-                      onChange={(e) => setMobilePhone(e.target.value)}
-                      style={{ flex: 1, border: '1px solid #d1d5db', borderRadius: '8px', padding: '10px 14px', fontSize: '14px', fontWeight: 600, outline: 'none', width: '100%', boxSizing: 'border-box' }}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                        setMobilePhone(val);
+                      }}
+                      maxLength="10"
+                      inputMode="numeric"
                       autoFocus
                       required
                     />
                   </div>
                 </div>
-                <button
-                  type="submit"
-                  style={{ width: '100%', background: 'var(--clr-primary, #ef4444)', color: '#fff', border: 'none', borderRadius: '8px', padding: '14px', fontSize: '15px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(239,68,68,0.3)' }}
-                >
-                  GET ONE TIME PASSWORD (OTP)
-                </button>
+                <button type="submit" className="custom-login-btn">GET ONE TIME PASSWORD (OTP)</button>
               </form>
             ) : (
               <form onSubmit={handleVerifyOtp}>
-                <div style={{ marginBottom: '20px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                    <label style={{ fontSize: '12px', fontWeight: 700, color: '#374151' }}>
-                      ENTER 6-DIGIT OTP
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => setOtpSent(false)}
-                      style={{ background: 'none', border: 'none', color: 'var(--clr-primary, #ef4444)', fontSize: '12px', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }}
-                    >
-                      Change Number
-                    </button>
+                <div className="custom-input-group">
+                  <div className="custom-otp-header">
+                    <label>ENTER 6-DIGIT OTP</label>
+                    <button type="button" onClick={() => setOtpSent(false)}>Change Number</button>
                   </div>
                   <input
                     type="text"
                     maxLength="6"
-                    placeholder="e.g. 123456"
+                    placeholder="Enter 6-digit OTP"
                     value={otpCode}
                     onChange={(e) => setOtpCode(e.target.value)}
-                    style={{ width: '100%', border: '2px solid var(--clr-primary, #ef4444)', borderRadius: '8px', padding: '12px 14px', fontSize: '18px', fontWeight: 800, letterSpacing: '4px', textAlign: 'center', outline: 'none', boxSizing: 'border-box' }}
+                    className="custom-otp-input"
                     autoFocus
                     required
                   />
-                  <span style={{ display: 'block', textAlign: 'center', fontSize: '11px', color: '#10b981', marginTop: '8px', fontWeight: 600 }}>
-                    ✓ Simulated OTP sent! (Use test OTP: 123456)
-                  </span>
                 </div>
-                <button
-                  type="submit"
-                  style={{ width: '100%', background: '#10b981', color: '#fff', border: 'none', borderRadius: '8px', padding: '14px', fontSize: '15px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(16,185,129,0.3)' }}
-                >
-                  VERIFY &amp; RESUME BOOKING
-                </button>
+                <button type="submit" className="custom-verify-btn">VERIFY & RESUME BOOKING</button>
               </form>
             )}
           </div>
         </div>
       )}
+
+      {showCustomAlert && (
+        <div className="custom-modal-overlay" style={{ zIndex: 10000 }}>
+          <div className="custom-alert-card">
+            <div className="custom-alert-icon">⚠️</div>
+            <h3 className="custom-alert-title">Authentication Required</h3>
+            <p className="custom-alert-msg">{alertMsg}</p>
+            <div className="custom-alert-actions">
+              <button 
+                className="custom-alert-btn-cancel" 
+                onClick={() => setShowCustomAlert(false)}
+              >
+                CANCEL
+              </button>
+              <button 
+                className="custom-alert-btn-confirm" 
+                onClick={() => {
+                  setShowCustomAlert(false)
+                  setShowLoginModal(true)
+                }}
+              >
+                LOGIN NOW
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
-  )
+  );
 }

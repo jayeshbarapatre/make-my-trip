@@ -47,10 +47,13 @@ const generateHotelsForCity = (cityName) => {
 
 export default function HotelsPage() {
   const navigate = useNavigate()
+  const TODAY = new Date().toISOString().slice(0, 10)
+  const TOMORROW = new Date(Date.now() + 86400000).toISOString().slice(0, 10)
+
   const [activeTab, setActiveTab] = useState('hotels')
   const [activeChip, setActiveChip] = useState('Free cancellation')
-  const [checkInDate, setCheckInDate] = useState('2026-05-14')
-  const [checkOutDate, setCheckOutDate] = useState('2026-05-17')
+  const [checkInDate, setCheckInDate] = useState(TODAY)
+  const [checkOutDate, setCheckOutDate] = useState(TOMORROW)
   const [showCheckInCal, setShowCheckInCal] = useState(false)
   const [showCheckOutCal, setShowCheckOutCal] = useState(false)
   
@@ -314,7 +317,13 @@ export default function HotelsPage() {
                 <CustomCalendarPicker
                   isOpen={showCheckInCal}
                   value={checkInDate}
-                  onChange={(date) => setCheckInDate(date)}
+                  onChange={(date) => {
+                    setCheckInDate(date)
+                    if (checkOutDate <= date) {
+                      const nextDay = new Date(new Date(date).getTime() + 86400000).toISOString().slice(0, 10)
+                      setCheckOutDate(nextDay)
+                    }
+                  }}
                   onClose={() => setShowCheckInCal(false)}
                   labelText="Check-in"
                 />
@@ -399,7 +408,7 @@ export default function HotelsPage() {
                   <button
                     key={`${item.city}-${idx}`}
                     className="hp-recent-chip"
-                    style={{ background: 'rgba(0,0,0,0.06)', border: '1px solid rgba(0,0,0,0.1)', color: '#131921' }}
+                    style={{ background: 'rgba(0,0,0,0.06)', border: '1px solid rgba(0,0,0,0.1)', color: 'hsl(var(--bc))' }}
                     onClick={() => {
                       setCity(item.city)
                       triggerHotelSearch(item.city)

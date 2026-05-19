@@ -1,4 +1,4 @@
-import axios from 'axios'
+﻿import axios from 'axios'
 import { API_BASE_URL, API_TIMEOUT } from '../config/api.config'
 
 const api = axios.create({
@@ -14,7 +14,17 @@ api.interceptors.request.use((config) => {
 
 api.interceptors.response.use(
   (res) => res.data,
-  (err) => Promise.reject(err.response?.data?.message || err.message),
+  (err) => {
+    const message = err.response?.data?.message || err.message || 'An error occurred'
+    const error = new Error(message)
+    error.status = err.response?.status || 500
+    error.response = {
+      data: err.response?.data,
+      status: err.response?.status
+    }
+    return Promise.reject(error)
+  }
 )
 
 export default api
+

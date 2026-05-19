@@ -1,14 +1,100 @@
-/* ═══════════════════════════════════════════════════════════════
-   MakeMyTrip — Awwwards-Level Auth Page · Atlas Edition v3
-   ═══════════════════════════════════════════════════════════════ */
+﻿/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   MakeMyTrip â€” Mobile + Email Auth Page
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
-/* ── Page wrapper: deep starfield background ─────────────────── */
+.login-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, hsl(var(--p)) 0%, hsl(var(--p)) 100%);
+  padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.login-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  max-width: 1000px;
+  width: 100%;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.5s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.login-left {
+  background: linear-gradient(135deg, hsl(var(--p)) 0%, hsl(var(--p)) 100%);
+  color: white;
+  padding: 60px 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.login-right {
+  padding: 50px 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.login-right input {
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  transition: all 0.3s;
+}
+
+.login-right input:focus {
+  outline: none;
+  border-color: hsl(var(--p));
+  box-shadow: 0 0 0 3px rgba(0, 53, 128, 0.1);
+}
+
+.login-right button[type="submit"] {
+  padding: 12px;
+  background: hsl(var(--p));
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.login-right button[type="submit"]:hover:not(:disabled) {
+  background: hsl(var(--p));
+}
+
+.login-right button[type="submit"]:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* â”€â”€ Old page wrapper (kept for backward compatibility) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .login-page-wrapper {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: calc(100vh - 70px);
-  background: #050e1f;
+  background: hsl(var(--bc));
   padding: 24px var(--sp-m, 16px);
   position: relative;
   overflow: hidden;
@@ -30,7 +116,7 @@
   z-index: 0;
 }
 
-/* Ocean teal ambient glow — bottom left */
+/* Ocean teal ambient glow â€” bottom left */
 .login-bg-blob-1 {
   position: absolute;
   bottom: -22%;
@@ -44,7 +130,7 @@
   animation: blob-breathe 9s ease-in-out infinite alternate;
 }
 
-/* Sunset amber glow — top right */
+/* Sunset amber glow â€” top right */
 .login-bg-blob-2 {
   position: absolute;
   top: -14%;
@@ -70,7 +156,7 @@
   }
 }
 
-/* ── Main two-pane card ─────────────────────────────────────── */
+/* â”€â”€ Main two-pane card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .login-container-card {
   display: flex;
   width: 100%;
@@ -99,9 +185,9 @@
   }
 }
 
-/* ══════════════════════════════════════════════════════════════
-   LEFT — Cinematic Travel Visual Panel
-   ══════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   LEFT â€” Cinematic Travel Visual Panel
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 .login-visual-panel {
   flex: 1.2;
   position: relative;
@@ -109,7 +195,7 @@
   flex-direction: column;
   justify-content: space-between;
   padding: 40px 42px;
-  color: #fff;
+  color: hsl(var(--b1));
   overflow: hidden;
   /* Cinematic beach aerial with layered dark overlay */
   background:
@@ -163,7 +249,7 @@
   z-index: 2;
 }
 
-/* ── SVG flight arc ── */
+/* â”€â”€ SVG flight arc â”€â”€ */
 .flight-arc-wrapper {
   position: absolute;
   top: 58px;
@@ -180,7 +266,7 @@
   height: 64px;
 }
 
-/* ── Brand logo ── */
+/* â”€â”€ Brand logo â”€â”€ */
 .visual-brand {
   display: flex;
   align-items: center;
@@ -189,7 +275,6 @@
   position: relative;
   z-index: 6;
   width: fit-content;
-  display: none;
 }
 
 .brand-circle {
@@ -202,7 +287,7 @@
   justify-content: center;
   font-weight: 900;
   font-size: 16px;
-  color: #003580;
+  color: hsl(var(--p));
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
   flex-shrink: 0;
   transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -220,10 +305,10 @@
 }
 
 .brand-trip {
-  color: #ffb347;
+  color: hsl(var(--wa) / 0.65);
 }
 
-/* ── Center hero editorial content ── */
+/* â”€â”€ Center hero editorial content â”€â”€ */
 .visual-promo-content {
   position: relative;
   z-index: 6;
@@ -252,7 +337,7 @@
 .dest-badge-dot {
   width: 7px;
   height: 7px;
-  background: #4ade80;
+  background: hsl(var(--su));
   border-radius: 50%;
   flex-shrink: 0;
   animation: live-pulse 2.2s ease-in-out infinite;
@@ -280,7 +365,7 @@
   line-height: 1.13;
   margin: 0 0 14px;
   letter-spacing: -1px;
-  background: linear-gradient(130deg, #ffffff 40%, #ffe082 100%);
+  background: linear-gradient(130deg, hsl(var(--b1)) 40%, hsl(var(--wa) / 0.4) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -294,7 +379,7 @@
   max-width: 310px;
 }
 
-/* ── Live departure board ── */
+/* â”€â”€ Live departure board â”€â”€ */
 .departure-board {
   background: rgba(255, 255, 255, 0.07);
   border: 1px solid rgba(255, 255, 255, 0.13);
@@ -350,7 +435,7 @@
 .dep-route {
   font-size: 17px;
   font-weight: 800;
-  color: #fff;
+  color: hsl(var(--b1));
   letter-spacing: 0.3px;
   display: block;
   line-height: 1.1;
@@ -380,7 +465,7 @@
 .dep-status {
   font-size: 10px;
   font-weight: 800;
-  color: #4ade80;
+  color: hsl(var(--su));
   letter-spacing: 0.6px;
   padding: 3px 11px;
   background: rgba(74, 222, 128, 0.13);
@@ -390,7 +475,7 @@
 }
 
 .dep-status.boarding {
-  color: #fbbf24;
+  color: hsl(var(--wa));
   background: rgba(251, 191, 36, 0.13);
   animation: boarding-blink 1.4s ease-in-out infinite;
 }
@@ -407,7 +492,7 @@
   }
 }
 
-/* ── Destination photo cards (staggered heights) ── */
+/* â”€â”€ Destination photo cards (staggered heights) â”€â”€ */
 .dest-cards-row {
   display: flex;
   gap: 10px;
@@ -462,8 +547,8 @@
   position: absolute;
   top: 9px;
   right: 9px;
-  background: linear-gradient(135deg, #ff3d5a, #ff7b3a);
-  color: #fff;
+  background: linear-gradient(135deg, hsl(var(--er)), hsl(var(--wa)));
+  color: hsl(var(--b1));
   font-size: 8px;
   font-weight: 900;
   padding: 3px 9px;
@@ -475,7 +560,7 @@
 }
 
 .dest-card-badge.trending {
-  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  background: linear-gradient(135deg, hsl(var(--a)), hsl(var(--a) / 0.8));
   box-shadow: 0 2px 8px rgba(124, 58, 237, 0.38);
 }
 
@@ -492,19 +577,19 @@
   display: block;
   font-size: 13px;
   font-weight: 800;
-  color: #fff;
+  color: hsl(var(--b1));
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.55);
 }
 
 .dest-card-price {
   display: block;
   font-size: 10px;
-  color: #fde68a;
+  color: hsl(var(--wa) / 0.3);
   font-weight: 700;
   margin-top: 2px;
 }
 
-/* ── Bottom stats strip ── */
+/* â”€â”€ Bottom stats strip â”€â”€ */
 .visual-stats-strip {
   display: flex;
   align-items: center;
@@ -528,7 +613,7 @@
   display: block;
   font-size: 22px;
   font-weight: 900;
-  color: #fff;
+  color: hsl(var(--b1));
   line-height: 1;
   letter-spacing: -0.5px;
 }
@@ -543,16 +628,16 @@
   text-transform: uppercase;
 }
 
-/* ══════════════════════════════════════════════════════════════
-   RIGHT — Authentication Form Panel
-   ══════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   RIGHT â€” Authentication Form Panel
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 .login-form-panel {
   flex: 0.82;
   padding: 44px 48px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  background: #ffffff;
+  background: hsl(var(--b1));
   position: relative;
   overflow: hidden;
 }
@@ -572,7 +657,7 @@
 /* Ocean-to-sky gradient accent bar at top of form panel */
 .form-accent-bar {
   height: 3px;
-  background: linear-gradient(90deg, #003580 0%, #1a73e8 55%, #00c4e0 100%);
+  background: linear-gradient(90deg, hsl(var(--p)) 0%, hsl(var(--p)) 55%, hsl(var(--in)) 100%);
   border-radius: 2px;
   margin-bottom: 30px;
   flex-shrink: 0;
@@ -602,7 +687,7 @@
 .form-main-title {
   font-size: 26px;
   font-weight: 800;
-  color: #0a1628;
+  color: hsl(var(--bc));
   margin-bottom: 6px;
   letter-spacing: -0.5px;
   line-height: 1.2;
@@ -610,14 +695,14 @@
 
 .form-sub-title {
   font-size: 13px;
-  color: #64748b;
+  color: hsl(var(--nc));
   line-height: 1.58;
 }
 
-/* ── Tab switcher ── */
+/* â”€â”€ Tab switcher â”€â”€ */
 .login-tabs-container {
   display: flex;
-  background: #f1f5f9;
+  background: hsl(var(--b2));
   border-radius: 12px;
   padding: 4px;
   margin-bottom: 22px;
@@ -631,7 +716,7 @@
   border: none;
   font-size: 14px;
   font-weight: 600;
-  color: #94a3b8;
+  color: hsl(var(--nb));
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -641,13 +726,13 @@
 }
 
 .login-tab-btn.active {
-  background: #fff;
-  color: #003580;
+  background: hsl(var(--b1));
+  color: hsl(var(--p));
   font-weight: 700;
   box-shadow: 0 2px 12px rgba(0, 53, 128, 0.10);
 }
 
-/* ── Form fields ── */
+/* â”€â”€ Form fields â”€â”€ */
 .login-form-element {
   display: flex;
   flex-direction: column;
@@ -664,7 +749,7 @@
 .login-input-group label {
   font-size: 11px;
   font-weight: 700;
-  color: #94a3b8;
+  color: hsl(var(--nb));
   margin-bottom: 7px;
   letter-spacing: 0.9px;
   text-transform: uppercase;
@@ -673,7 +758,7 @@
 
 /* Label turns blue when any child is focused */
 .login-input-group:focus-within label {
-  color: #1a73e8;
+  color: hsl(var(--p));
 }
 
 .login-input-wrapper {
@@ -682,16 +767,16 @@
   align-items: center;
 }
 
-/* Gradient border input — the premium effect */
+/* Gradient border input â€” the premium effect */
 .login-input-field {
   width: 100%;
   height: 50px;
   padding: 12px 16px 12px 46px;
-  border: 1.5px solid #e8edf5;
+  border: 1.5px solid hsl(var(--b2));
   border-radius: 12px;
   font-size: 14px;
-  color: #1e293b;
-  background: #f8fafc;
+  color: hsl(var(--bc));
+  background: hsl(var(--b1));
   outline: none;
   transition: border-color 0.22s ease, box-shadow 0.22s ease, background 0.22s ease;
   box-sizing: border-box;
@@ -699,17 +784,17 @@
 }
 
 .login-input-field::placeholder {
-  color: #b0bec5;
+  color: hsl(var(--bc) / 0.4);
   font-size: 13.5px;
 }
 
 /* On focus: gradient border using double background-clip */
 .login-input-field:focus {
   border-color: transparent;
-  background-color: #fff;
+  background-color: hsl(var(--b1));
   background-image:
-    linear-gradient(#fff, #fff),
-    linear-gradient(135deg, #003580, #1a73e8, #00c4e0);
+    linear-gradient(hsl(var(--b1)), hsl(var(--b1))),
+    linear-gradient(135deg, hsl(var(--p)), hsl(var(--p)), hsl(var(--in)));
   background-origin: border-box;
   background-clip: padding-box, border-box;
   box-shadow: 0 0 0 4px rgba(26, 115, 232, 0.09);
@@ -719,7 +804,7 @@
   position: absolute;
   left: 15px;
   font-size: 16px;
-  color: #cbd5e1;
+  color: hsl(var(--b2));
   pointer-events: none;
   z-index: 1;
   transition: color 0.2s ease;
@@ -727,17 +812,17 @@
 
 /* Icon turns accent-blue when input is focused */
 .login-input-group:focus-within .input-icon-left {
-  color: #1a73e8;
+  color: hsl(var(--p));
 }
 
-/* ── Error card ── */
+/* â”€â”€ Error card â”€â”€ */
 .login-error-card {
   display: flex;
   align-items: center;
   gap: 10px;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #b91c1c;
+  background: hsl(var(--er) / 0.05);
+  border: 1px solid hsl(var(--er) / 0.3);
+  color: hsl(var(--er));
   padding: 12px 16px;
   border-radius: 11px;
   font-size: 13px;
@@ -769,11 +854,11 @@
   }
 }
 
-/* ── Forgot password link ── */
+/* â”€â”€ Forgot password link â”€â”€ */
 .forgot-password-link {
   background: none;
   border: none;
-  color: #1a73e8;
+  color: hsl(var(--p));
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -783,18 +868,18 @@
 }
 
 .forgot-password-link:hover {
-  color: #003580;
+  color: hsl(var(--p));
   text-decoration: underline;
 }
 
-/* ── Premium submit button ── */
+/* â”€â”€ Premium submit button â”€â”€ */
 .login-submit-btn {
   width: 100%;
   height: 52px;
-  background: linear-gradient(135deg, #003580 0%, #1565c0 50%, #1a73e8 100%);
+  background: linear-gradient(135deg, hsl(var(--p)) 0%, hsl(var(--p)) 50%, hsl(var(--p)) 100%);
   background-size: 200% 100%;
   background-position: right center;
-  color: #fff;
+  color: hsl(var(--b1));
   border: none;
   border-radius: 13px;
   font-size: 15px;
@@ -850,14 +935,14 @@
 }
 
 .login-submit-btn:disabled {
-  background: #94a3b8;
+  background: hsl(var(--nb));
   background-size: 100% 100%;
   box-shadow: none;
   cursor: not-allowed;
   transform: none;
 }
 
-/* ── Footer: secure badge + switch link ── */
+/* â”€â”€ Footer: secure badge + switch link â”€â”€ */
 .form-secure-badge {
   display: flex;
   align-items: center;
@@ -865,7 +950,7 @@
   gap: 6px;
   margin-top: 14px;
   font-size: 11px;
-  color: #94a3b8;
+  color: hsl(var(--nb));
   letter-spacing: 0.2px;
   position: relative;
   z-index: 1;
@@ -875,7 +960,7 @@
   text-align: center;
   margin-top: 16px;
   font-size: 13.5px;
-  color: #64748b;
+  color: hsl(var(--nc));
   position: relative;
   z-index: 1;
 }
@@ -883,7 +968,7 @@
 .form-footer-switch-btn {
   background: none;
   border: none;
-  color: #003580;
+  color: hsl(var(--p));
   font-weight: 700;
   cursor: pointer;
   padding: 0;
@@ -894,7 +979,7 @@
 }
 
 .form-footer-switch-btn:hover {
-  color: #1a73e8;
+  color: hsl(var(--p));
   text-decoration: underline;
 }
 
@@ -902,14 +987,14 @@
   text-align: center;
   margin-top: 18px;
   font-size: 11px;
-  color: #b0bec5;
+  color: hsl(var(--bc) / 0.4);
   line-height: 1.65;
   position: relative;
   z-index: 1;
 }
 
 .legal-highlight-link {
-  color: #1a73e8;
+  color: hsl(var(--p));
   cursor: pointer;
   font-weight: 500;
 }
@@ -918,13 +1003,13 @@
   text-decoration: underline;
 }
 
-/* ── Spinner ── */
+/* â”€â”€ Spinner â”€â”€ */
 .login-spinner {
   width: 18px;
   height: 18px;
   border: 2px solid rgba(255, 255, 255, 0.28);
   border-radius: 50%;
-  border-top-color: #fff;
+  border-top-color: hsl(var(--b1));
   animation: spin 0.75s linear infinite;
   flex-shrink: 0;
 }
@@ -935,9 +1020,9 @@
   }
 }
 
-/* ══════════════════════════════════════════════════════════════
-   MOBILE — compact beach header strip (≤ 900px)
-   ══════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   MOBILE â€” compact beach header strip (â‰¤ 900px)
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 .login-mobile-hero {
   display: none;
 }
@@ -1030,3 +1115,55 @@
     margin-bottom: 20px;
   }
 }
+/* ----------------------------------------------------
+   Responsive Design for New Login Page
+   ---------------------------------------------------- */
+
+@media (max-width: 900px) {
+  .login-container {
+    grid-template-columns: 1fr;
+  }
+
+  .login-left {
+    padding: 40px;
+    order: 2;
+  }
+
+  .login-right {
+    padding: 40px;
+    order: 1;
+  }
+}
+
+@media (max-width: 600px) {
+  .login-wrapper {
+    padding: 10px;
+  }
+
+  .login-container {
+    border-radius: 8px;
+  }
+
+  .login-left,
+  .login-right {
+    padding: 30px 20px;
+  }
+
+  .login-left h1 {
+    font-size: 24px;
+  }
+
+  .login-left h2 {
+    font-size: 22px;
+  }
+
+  .login-right input {
+    font-size: 16px;
+  }
+
+  .login-right button {
+    font-size: 14px;
+  }
+}
+
+

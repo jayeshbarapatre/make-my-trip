@@ -1,9 +1,11 @@
-import { useEffect } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+﻿import { useEffect, useState } from 'react'
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
+import { Toaster } from 'react-hot-toast'
 import AOS from 'aos'
 import 'aos/dist/aos.css'
 import Header from './components/Common/Header'
 import Footer from './components/Common/Footer'
+import ProtectedRoute from './components/ProtectedRoute'
 import HomePage from './pages/HomePage'
 import SearchResultsPage from './pages/SearchResultsPage'
 import BookingPage from './pages/BookingPage'
@@ -30,6 +32,131 @@ import ToursPage from './pages/ToursPage'
 import VisaPage from './pages/VisaPage'
 import MyTrips from './pages/MyTrips'
 import Profile from './pages/Profile'
+import { AdminProvider } from './context/AdminContext'
+import { ThemeProvider } from './context/ThemeContext'
+import AdminLoginPage from './pages/AdminLoginPage'
+import AdminDashboard from './pages/AdminDashboard'
+import AdminFlights from './pages/AdminFlights'
+import AdminHotels from './pages/AdminHotels'
+import AdminBuses from './pages/AdminBuses'
+import AdminCabs from './pages/AdminCabs'
+import AdminBookings from './pages/AdminBookings'
+import AdminUsers from './pages/AdminUsers'
+import ProtectedAdminRoute from './components/Admin/ProtectedAdminRoute'
+
+function NotFound() {
+  return (
+    <div style={{ padding: '40px', textAlign: 'center', minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+      <h1>404 â€” Page Not Found</h1>
+      <p>Sorry, the page you're looking for doesn't exist.</p>
+      <a href="/" style={{ marginTop: '20px', padding: '10px 20px', backgroundColor: 'hsl(var(--p))', color: 'hsl(var(--pc))', textDecoration: 'none', borderRadius: '4px' }}>
+        Return to Home
+      </a>
+    </div>
+  )
+}
+
+function RouteLoader() {
+  const location = useLocation()
+  const [isLoading, setIsLoading] = useState(false)
+
+  useEffect(() => {
+    setIsLoading(true)
+    const timer = setTimeout(() => setIsLoading(false), 500)
+    return () => clearTimeout(timer)
+  }, [location])
+
+  if (!isLoading) return null
+
+  return (
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(255, 255, 255, 0.8)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 9999,
+      animation: 'fadeIn 0.3s ease-out'
+    }}>
+      <style>{`
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .route-loader { animation: spin 1s linear infinite; }
+      `}</style>
+      <div className="route-loader" style={{
+        width: '50px',
+        height: '50px',
+        border: '4px solid hsl(var(--b2))',
+        borderTop: '4px solid hsl(var(--p))',
+        borderRadius: '50%'
+      }} />
+    </div>
+  )
+}
+
+function AppContent() {
+  const location = useLocation()
+  const isAdminRoute = location.pathname.startsWith('/admin')
+
+  // Initialize theme on mount
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('daisyui-theme') || 'business'
+    document.documentElement.setAttribute('data-theme', savedTheme)
+  }, [])
+
+  return (
+    <ThemeProvider>
+      <AdminProvider>
+      <RouteLoader />
+      {!isAdminRoute && <Header />}
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/flights/results" element={<SearchResultsPage />} />
+        <Route path="/booking/:flightId" element={<ProtectedRoute><BookingPage /></ProtectedRoute>} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/hotels" element={<HotelsPage />} />
+        <Route path="/hotels/results" element={<HotelListingPage />} />
+        <Route path="/hotels/detail/:hotelId" element={<HotelDetailsPage />} />
+        <Route path="/hotels/review" element={<ProtectedRoute><HotelReviewPage /></ProtectedRoute>} />
+        <Route path="/hotels/payment" element={<ProtectedRoute><HotelPaymentPage /></ProtectedRoute>} />
+        <Route path="/hotels/success" element={<ProtectedRoute><HotelSuccessPage /></ProtectedRoute>} />
+        <Route path="/trains" element={<TrainsPage />} />
+        <Route path="/trains/results" element={<TrainResultsPage />} />
+        <Route path="/trains/passengers" element={<ProtectedRoute><TrainPassengersPage /></ProtectedRoute>} />
+        <Route path="/trains/payment" element={<ProtectedRoute><TrainPaymentPage /></ProtectedRoute>} />
+        <Route path="/trains/success" element={<ProtectedRoute><TrainSuccessPage /></ProtectedRoute>} />
+        <Route path="/holidays" element={<HolidaysPage />} />
+        <Route path="/homestays" element={<HomestaysPage />} />
+        <Route path="/cabs" element={<CabsPage />} />
+        <Route path="/buses" element={<BusesPage />} />
+        <Route path="/cruise" element={<CruisePage />} />
+        <Route path="/forex" element={<ForexPage />} />
+        <Route path="/insurance" element={<InsurancePage />} />
+        <Route path="/tours" element={<ToursPage />} />
+        <Route path="/visa" element={<VisaPage />} />
+        <Route path="/my-trips" element={<ProtectedRoute><MyTrips /></ProtectedRoute>} />
+        <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+
+        <Route path="/admin/login" element={<AdminLoginPage />} />
+        <Route path="/admin/dashboard" element={<ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute>} />
+        <Route path="/admin/flights" element={<ProtectedAdminRoute><AdminFlights /></ProtectedAdminRoute>} />
+        <Route path="/admin/hotels" element={<ProtectedAdminRoute><AdminHotels /></ProtectedAdminRoute>} />
+        <Route path="/admin/buses" element={<ProtectedAdminRoute><AdminBuses /></ProtectedAdminRoute>} />
+        <Route path="/admin/cabs" element={<ProtectedAdminRoute><AdminCabs /></ProtectedAdminRoute>} />
+        <Route path="/admin/bookings" element={<ProtectedAdminRoute><AdminBookings /></ProtectedAdminRoute>} />
+        <Route path="/admin/users" element={<ProtectedAdminRoute><AdminUsers /></ProtectedAdminRoute>} />
+
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+      {!isAdminRoute && <Footer />}
+    </AdminProvider>
+    </ThemeProvider>
+  )
+}
 
 function App() {
   useEffect(() => {
@@ -43,41 +170,47 @@ function App() {
 
   return (
     <BrowserRouter>
-      <Header />
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/flights/results" element={<SearchResultsPage />} />
-        <Route path="/booking/:flightId" element={<BookingPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/hotels" element={<HotelsPage />} />
-        <Route path="/hotels/results" element={<HotelListingPage />} />
-        <Route path="/hotels/detail/:hotelId" element={<HotelDetailsPage />} />
-        <Route path="/hotels/review" element={<HotelReviewPage />} />
-        <Route path="/hotels/payment" element={<HotelPaymentPage />} />
-        <Route path="/hotels/success" element={<HotelSuccessPage />} />
-        <Route path="/trains" element={<TrainsPage />} />
-        <Route path="/trains/results" element={<TrainResultsPage />} />
-        <Route path="/trains/passengers" element={<TrainPassengersPage />} />
-        <Route path="/trains/payment" element={<TrainPaymentPage />} />
-        <Route path="/trains/success" element={<TrainSuccessPage />} />
-        <Route path="/holidays" element={<HolidaysPage />} />
-        <Route path="/homestays" element={<HomestaysPage />} />
-        <Route path="/cabs" element={<CabsPage />} />
-        <Route path="/buses" element={<BusesPage />} />
-        <Route path="/cruise" element={<CruisePage />} />
-        <Route path="/forex" element={<ForexPage />} />
-        <Route path="/insurance" element={<InsurancePage />} />
-        <Route path="/tours" element={<ToursPage />} />
-        <Route path="/visa" element={<VisaPage />} />
-        <Route path="/my-trips" element={<MyTrips />} />
-        <Route path="/profile" element={<Profile />} />
-      </Routes>
-      <Footer />
+      <Toaster
+        position="top-center"
+        reverseOrder={false}
+        gutter={8}
+        containerClassName=""
+        containerStyle={{}}
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: 'hsl(var(--b1))',
+            color: 'hsl(var(--bc))',
+            borderRadius: '8px',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+            fontSize: '14px',
+            fontWeight: '500',
+            padding: '12px 16px'
+          },
+          success: {
+            duration: 3000,
+            style: {
+              background: 'hsl(var(--su))',
+              color: 'hsl(var(--pc))'
+            }
+          },
+          error: {
+            duration: 4000,
+            style: {
+              background: 'hsl(var(--er))',
+              color: 'hsl(var(--pc))'
+            }
+          }
+        }}
+      />
+      <AppContent />
     </BrowserRouter>
   )
 }
 
 export default App
+
+
 
 
 

@@ -1,0 +1,266 @@
+/* ==========================================================================
+   Header Styles - Antigravity Tool
+   Premium, modern light theme header styled for maximum visibility & contrast.
+   ========================================================================== */
+
+/* Main Header Container */
+.common-sticky-header {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  background-color: hsl(var(--b1)) !important; /* solid white background */
+  color: hsl(var(--bc)) !important; /* highly visible dark text */
+  z-index: 1000 !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+  border-bottom: 1px solid hsl(var(--b3)) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Clear color inheritance issues on header elements */
+.common-sticky-header a,
+.common-sticky-header span,
+.common-sticky-header div {
+  color: inherit;
+}
+
+/* Ensure body has space below the fixed header */
+body {
+  padding-top: 75px !important;
+}
+
+/* Inner Layout Wrapper */
+.common-header-inner {
+  max-width: 100% !important;
+  margin: 0 auto !important;
+  padding: 0 48px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  height: 70px !important; /* premium height */
+}
+
+/* Premium Logo Section */
+.common-header-logo {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  text-decoration: none !important;
+  color: hsl(var(--bc)) !important;
+  transition: transform 0.2s ease !important;
+}
+
+.common-header-logo:hover {
+  transform: scale(1.02) !important;
+}
+
+.mmt-logo-badge {
+  background: hsl(var(--wa)) !important; /* Premium gold badge */
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 10px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 18px !important;
+  font-weight: 800 !important;
+  color: hsl(var(--bc)) !important;
+  position: relative !important;
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3) !important;
+}
+
+.mmt-logo-badge::after {
+  content: '' !important;
+  position: absolute !important;
+  top: 4px !important;
+  right: 4px !important;
+  width: 8px !important;
+  height: 8px !important;
+  background: hsl(var(--er)) !important; /* alert red dot */
+  border-radius: 50% !important;
+}
+
+.mmt-logo-text {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.mmt-logo-brand {
+  font-size: 20px !important;
+  font-weight: 900 !important;
+  color: hsl(var(--p)) !important; /* MakeMyTrip blue */
+  line-height: 1.1 !important;
+  letter-spacing: -0.5px !important;
+}
+
+.mmt-logo-sub {
+  font-size: 10px !important;
+  color: hsl(var(--bc) / 0.6) !important; /* visible slate gray */
+  font-weight: 600 !important;
+  letter-spacing: 0.2px !important;
+}
+
+/* Right Side Links */
+.common-header-right {
+  display: flex !important;
+  align-items: center !important;
+  gap: 24px !important;
+}
+
+.header-right-link {
+  color: hsl(var(--bc) / 0.7) !important; /* slate dark text */
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  padding: 6px 12px !important;
+  border-radius: 8px !important;
+}
+
+.header-right-link:hover {
+  color: hsl(var(--p)) !important; /* hover blue */
+  background: hsl(var(--b2)) !important;
+}
+
+/* Language and Currency Selector */
+.header-lang-select {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  color: hsl(var(--bc) / 0.7) !important;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+  cursor: pointer !important;
+  padding: 6px 14px !important;
+  border: 1px solid hsl(var(--b3)) !important;
+  border-radius: 8px !important;
+  transition: all 0.2s ease !important;
+  background: hsl(var(--b1)) !important;
+}
+
+.header-lang-select:hover {
+  color: hsl(var(--p)) !important;
+  border-color: hsl(var(--p)) !important;
+  background: hsl(var(--p) / 0.05) !important;
+}
+
+/* Login Button styling */
+.common-login-btn {
+  padding: 10px 24px !important;
+  background: linear-gradient(135deg, hsl(var(--p)) 0%, hsl(var(--p)) 100%) !important;
+  color: hsl(var(--b1)) !important; /* ensure white text inside the button */
+  border: none !important;
+  border-radius: 30px !important;
+  cursor: pointer !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  box-shadow: 0 4px 14px rgba(31, 109, 184, 0.3) !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.common-login-btn:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 20px rgba(31, 109, 184, 0.4) !important;
+  filter: brightness(1.05) !important;
+}
+
+.common-login-btn:active {
+  transform: translateY(1px) !important;
+}
+
+/* Logged-in User Info section */
+.common-user-container {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 6px 12px !important;
+  border-radius: 30px !important;
+  background: hsl(var(--b2)) !important;
+  border: 1px solid hsl(var(--b3)) !important;
+  transition: all 0.2s ease !important;
+}
+
+.common-user-container:hover {
+  border-color: hsl(var(--p)) !important;
+  background: hsl(var(--p) / 0.05) !important;
+}
+
+.common-user-avatar {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 50% !important;
+  background: linear-gradient(135deg, hsl(var(--p)) 0%, hsl(var(--p)) 100%) !important;
+  color: hsl(var(--b1)) !important;
+  font-weight: 800 !important;
+  font-size: 13px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 2px 6px rgba(31, 109, 184, 0.3) !important;
+}
+
+.common-user-name {
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  color: hsl(var(--bc)) !important; /* dark grey username */
+}
+
+/* User dropdown options inside header */
+.common-user-details span {
+  color: hsl(var(--bc) / 0.7) !important;
+}
+
+/* Clean up Theme Switcher dropdown list styling */
+.dropdown-content ul.menu {
+  list-style: none !important;
+  list-style-type: none !important;
+  padding: 8px !important;
+  margin: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+  background-color: hsl(var(--b2)) !important;
+  border-radius: 12px !important;
+}
+
+.dropdown-content ul.menu li {
+  list-style: none !important;
+  list-style-type: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.dropdown-content ul.menu li::before {
+  content: none !important;
+  display: none !important;
+}
+
+.dropdown-content ul.menu button {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  color: hsl(var(--bc)) !important;
+  padding: 8px 12px !important;
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  border-radius: 8px !important;
+  transition: background-color 0.15s ease, color 0.15s ease !important;
+}
+
+.dropdown-content ul.menu button:hover {
+  background-color: hsl(var(--b3)) !important;
+}
+
+.dropdown-content ul.menu button.bg-base-300 {
+  background-color: hsl(var(--b3)) !important;
+  font-weight: 700 !important;
+}
+
+/* Ensure color inheritance is correct inside theme switcher */
+.common-sticky-header .dropdown-content {
+  color: hsl(var(--bc)) !important;
+}
+

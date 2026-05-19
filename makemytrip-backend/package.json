@@ -7,19 +7,26 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
-    "seed": "node scripts/seed.js"
+    "seed": "node scripts/seed.js",
+    "seed:flights": "node scripts/seedFlights.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@prisma/client": "^5.11.0",
+    "axios": "^1.16.1",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.0.0",
     "express": "^4.18.0",
+    "express-rate-limit": "^8.5.2",
     "firebase-admin": "^13.9.0",
     "jsonwebtoken": "^9.0.0",
     "mongoose": "^9.6.2",
-    "nodemailer": "^8.0.7"
+    "node-cache": "^5.1.2",
+    "nodemailer": "^8.0.7",
+    "prisma": "^5.11.0",
+    "razorpay": "^2.9.6"
   }
 }

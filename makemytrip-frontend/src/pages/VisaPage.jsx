@@ -178,11 +178,11 @@ export default function VisaPage() {
               <div className="cab-card-body">
                 <div className="cab-badge-row">
                   <span className="cab-icon">{visa.icon}</span>
-                  <span className="cab-rating" style={{ background: '#febd69', color: '#111' }}>{visa.badge}</span>
+                  <span className="cab-rating" style={{ background: 'hsl(var(--wa) / 0.6)', color: '#111' }}>{visa.badge}</span>
                 </div>
                 <h3>{visa.country}</h3>
                 <p className="cab-type">{visa.type}</p>
-                <p className="cab-desc" style={{ color: '#0A8043', fontWeight: 600, marginTop: 4 }}>⏱️ {visa.processingTime}</p>
+                <p className="cab-desc" style={{ color: 'hsl(var(--su))', fontWeight: 600, marginTop: 4 }}>⏱️ {visa.processingTime}</p>
                 <p className="cab-desc" style={{ marginTop: 4 }}>📄 Required: {visa.docs}</p>
               </div>
               <div className="cab-card-price-action">

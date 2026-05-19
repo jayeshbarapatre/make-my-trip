@@ -115,18 +115,18 @@ export default function TrainPassengersPage() {
         </div>
 
         {/* Top Summary Banner */}
-        <div className="train-route-banner" style={{ background: '#1e293b' }}>
+        <div className="train-route-banner" style={{ background: 'hsl(var(--bc) / 0.6)' }}>
           <div className="train-rb-left">
             <h2>{train.name} ({train.number})</h2>
             <p>{searchParams.fromCity} ({train.depTime}) → {searchParams.toCity} ({train.arrTime}) · Date: {searchParams.travelDate}</p>
           </div>
           <div>
-            <span className="train-rb-badge" style={{ background: '#10b981' }}>Class: {selectedClass.name}</span>
+            <span className="train-rb-badge" style={{ background: 'hsl(var(--su))' }}>Class: {selectedClass.name}</span>
           </div>
         </div>
 
         {errorMsg && (
-          <div style={{ background: '#fee2e2', color: '#b91c1c', padding: '16px', borderRadius: '8px', marginBottom: '24px', fontWeight: 700 }}>
+          <div style={{ background: 'hsl(var(--er) / 0.08)', color: 'hsl(var(--er))', padding: '16px', borderRadius: '8px', marginBottom: '24px', fontWeight: 700 }}>
             ⚠️ {errorMsg}
           </div>
         )}
@@ -213,7 +213,7 @@ export default function TrainPassengersPage() {
             {/* Contact Details Card */}
             <div className="train-form-card">
               <h3 className="train-form-title">Contact &amp; Ticket Delivery</h3>
-              <p style={{ fontSize: '13px', color: '#64748b', marginBottom: '16px' }}>Your ticket, PNR status updates, and charting info will be sent here.</p>
+              <p style={{ fontSize: '13px', color: 'hsl(var(--bc) / 0.55)', marginBottom: '16px' }}>Your ticket, PNR status updates, and charting info will be sent here.</p>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                 <div className="train-input-grp">
@@ -222,6 +222,7 @@ export default function TrainPassengersPage() {
                     type="tel" 
                     placeholder="10-digit mobile number" 
                     value={contactMobile}
+                    maxLength={10}
                     onChange={(e) => setContactMobile(e.target.value)}
                     className="train-input" 
                     required 
@@ -259,7 +260,7 @@ export default function TrainPassengersPage() {
                 <span>₹35</span>
               </div>
 
-              <div className="train-fare-row" style={{ color: '#10b981', fontWeight: 700 }}>
+              <div className="train-fare-row" style={{ color: 'hsl(var(--su))', fontWeight: 700 }}>
                 <span>Free Cancellation Insurance</span>
                 <span>FREE</span>
               </div>

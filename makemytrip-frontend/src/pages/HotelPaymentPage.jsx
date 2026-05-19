@@ -1,55 +1,251 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import api from '../services/api';
 import '../styles/HotelPaymentPage.css';
 
 export default function HotelPaymentPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
 
-  // Retrieve state or fallback values
+  useEffect(() => {
+    if (!user) {
+      navigate('/login?returnTo=' + encodeURIComponent(location.pathname), { replace: true });
+    }
+  }, [user, navigate, location.pathname]);
+
+  const defaultImage = "https://images.unsplash.com/photo-1542314831-c53cd4b85d05?auto=format&fit=crop&w=240&h=180&q=80";
   const hotel = location.state?.hotel || {
     id: "hotel-fallback",
     name: "Axiom Resort Luxury Cottages, Arambol",
     locality: "Arambol, Goa",
     price: 5000,
-    img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=240&h=180&q=80"
+    images: [defaultImage]
+  };
+
+  const getImageUrl = (h) => {
+    if (h.images && h.images.length > 0) return h.images[0].includes('unsplash.com') ? h.images[0] : `https://images.unsplash.com/photo-${h.images[0]}?auto=format&fit=crop&w=240&h=180&q=80`;
+    if (h.seed && h.seed.length > 0) return h.seed[0].includes('unsplash.com') ? h.seed[0] : `https://images.unsplash.com/photo-${h.seed[0]}?auto=format&fit=crop&w=240&h=180&q=80`;
+    if (h.img) return h.img;
+    return defaultImage;
   };
 
   const roomName = location.state?.roomName || "Premium room with Pool view";
   const checkIn = location.state?.checkIn || "2026-05-15";
   const checkOut = location.state?.checkOut || "2026-05-16";
   const guests = location.state?.guests || "2 Adults | 1 Room";
+  const guestsObj = location.state?.guestsObj || { adults: 2, rooms: 1 };
+  const nights = location.state?.nights || 1;
+  const rooms = location.state?.rooms || guestsObj.rooms || 1;
   const totalAmount = location.state?.totalAmount || 4760;
+  const bookEntireHotel = location.state?.bookEntireHotel || false;
 
   const [secureAdded, setSecureAdded] = useState(false);
   const [selectedMethod, setSelectedMethod] = useState('UPI');
 
   const finalDue = secureAdded ? totalAmount + 59 : totalAmount;
 
-  const handleProcessPayment = (methodName) => {
-    // Generate confirmed booking payload
-    const newBooking = {
-      id: "bkg_hotel_" + Date.now(),
-      userId: user?.id || 'usr_1111-2222-3333-4444',
-      type: "hotel",
-      fromCity: `${hotel.name} - ${roomName}`,
-      toCity: `${hotel.locality}`,
-      departureDate: checkIn,
-      returnDate: checkOut,
-      travellers: { guests, rooms: 1, adults: 2, method: methodName || selectedMethod },
-      totalAmount: finalDue,
-      status: "confirmed",
-      bookingId: "MMT-HT-" + Math.floor(100000 + Math.random() * 900000),
-      pnr: "HTL-" + Math.floor(100000 + Math.random() * 900000),
-      createdAt: new Date().toISOString()
-    };
+  // Price breakdown (consistent with Review page: 18% GST)
+  const basePrice      = location.state?.basePrice      || Math.round(finalDue / (1 - 0.15 + 0.18) * (1 - 0.15));
+  const taxesBreakdown = Math.round(finalDue * 0.18 / 1.18) || Math.round(finalDue * 0.18);
+  const serviceFees    = Math.round(finalDue * 0.005) || 297;
+  const hotelFare      = finalDue - serviceFees;
 
-    const existing = JSON.parse(localStorage.getItem('user_bookings_hotel') || '[]');
-    localStorage.setItem('user_bookings_hotel', JSON.stringify([newBooking, ...existing]));
+  const handleProcessPayment = async (methodName) => {
+    if (!user) {
+      setToastMessage('Please login to continue booking');
+      setTimeout(() => setToastMessage(''), 3500);
+      return;
+    }
 
-    navigate('/hotels/success', { state: { booking: newBooking, hotel } });
+    setIsProcessing(true);
+    console.log('🏨 Starting hotel booking payment process...');
+
+    try {
+      // Step 1: Create Razorpay order
+      console.log('📋 Creating Razorpay order for amount:', finalDue);
+
+      const orderResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/payment/create-order`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          amount: finalDue,
+          currency: 'INR',
+          notes: {
+            bookingType: 'hotel',
+            hotelId: hotel.id,
+            rooms: rooms,
+            nights: nights
+          }
+        })
+      });
+
+      if (!orderResponse.ok) {
+        throw new Error('Failed to create payment order');
+      }
+
+      const orderData = await orderResponse.json();
+      console.log('✓ Order created:', orderData.data);
+
+      if (!orderData.success || !orderData.data?.orderId) {
+        throw new Error('Invalid order response from server');
+      }
+
+      // Step 2: Check Razorpay SDK
+      if (!window.Razorpay) {
+        throw new Error('Razorpay SDK not loaded. Please refresh the page.');
+      }
+
+      // Step 3: Open Razorpay checkout
+      const razorpayOptions = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        order_id: orderData.data.orderId,
+        amount: orderData.data.amount,
+        currency: orderData.data.currency,
+        name: 'MakeMyTrip',
+        description: `${hotel.name} - ${roomName}`,
+
+        handler: async (response) => {
+          console.log('✓ Payment successful!', response);
+
+          try {
+            // Step 4: Verify payment
+            console.log('🔐 Verifying payment...');
+
+            const verifyResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/payment/verify`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                orderId: response.razorpay_order_id,
+                paymentId: response.razorpay_payment_id,
+                signature: response.razorpay_signature
+              })
+            });
+
+            if (!verifyResponse.ok) {
+              throw new Error('Payment verification failed');
+            }
+
+            const verifyData = await verifyResponse.json();
+            console.log('✓ Payment verified!', verifyData);
+
+            if (!verifyData.success) {
+              throw new Error(verifyData.message || 'Payment verification failed');
+            }
+
+            // Step 5: Create booking after successful payment
+            console.log('📝 Creating hotel booking...');
+
+            const bookingPayload = {
+              userId: user?.id || 'usr_1111-2222-3333-4444',
+              type: 'hotel',
+              fromCity: hotel.name,
+              toCity: hotel.locality || hotel.location || '',
+              departureDate: checkIn,
+              returnDate: checkOut,
+              travellers: {
+                guests,
+                rooms,
+                adults: guestsObj.adults,
+                method: methodName || selectedMethod,
+                roomName
+              },
+              totalAmount: finalDue,
+              paymentId: response.razorpay_payment_id,
+              orderId: response.razorpay_order_id,
+              hotelName: hotel.name,
+              hotelLocality: hotel.locality || hotel.location || '',
+              roomName,
+              checkIn,
+              checkOut,
+              nights,
+              rooms,
+              userEmail: user?.email,
+              userName: user?.name
+            };
+
+            const bookingResponse = await api.post('/bookings', bookingPayload);
+            console.log('✓ Hotel booking created!', bookingResponse);
+
+            const bookingData = {
+              ...bookingResponse,
+              pnr: bookingResponse.pnr || 'HTL-' + Math.floor(100000 + Math.random() * 900000),
+              bookingId: bookingResponse.bookingId || 'MMT-HT-' + Math.floor(100000 + Math.random() * 900000),
+              paymentId: response.razorpay_payment_id
+            };
+
+            navigate('/hotels/success', {
+              state: {
+                booking: bookingData,
+                hotel,
+                roomName,
+                checkIn,
+                checkOut,
+                guests,
+                guestsObj,
+                nights,
+                rooms,
+                totalAmount: finalDue,
+                bookEntireHotel
+              }
+            });
+
+            setToastMessage('✓ Booking confirmed! Check your email for details.');
+            setTimeout(() => setToastMessage(''), 3500);
+
+          } catch (err) {
+            console.error('❌ Payment verification/booking error:', err);
+            setToastMessage('Payment verified but booking failed: ' + err.message);
+            setTimeout(() => setToastMessage(''), 5000);
+            setIsProcessing(false);
+          }
+        },
+
+        prefill: {
+          name: user?.name || 'Guest User',
+          email: user?.email || '',
+          contact: user?.phone || ''
+        },
+
+        notes: {
+          bookingType: 'hotel',
+          hotelName: hotel.name,
+          rooms: rooms,
+          nights: nights
+        },
+
+        theme: {
+          color: '#003580'
+        },
+
+        modal: {
+          ondismiss: () => {
+            console.log('❌ Payment cancelled');
+            setToastMessage('Payment cancelled. Please try again.');
+            setTimeout(() => setToastMessage(''), 3500);
+            setIsProcessing(false);
+          }
+        }
+      };
+
+      console.log('🔓 Opening Razorpay checkout...');
+      const razorpay = new window.Razorpay(razorpayOptions);
+      razorpay.open();
+
+    } catch (err) {
+      console.error('❌ Payment error:', err);
+      setToastMessage(err.message || 'Payment failed. Please try again.');
+      setTimeout(() => setToastMessage(''), 3500);
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -65,10 +261,10 @@ export default function HotelPaymentPage() {
               <div className="pmt-summary-box">
                 <div className="pmt-summary-top">
                   <div className="pmt-prop-info">
-                    <img src={hotel.img} alt={hotel.name} className="pmt-prop-thumb" />
+                    <img src={getImageUrl(hotel)} alt={hotel.name} className="pmt-prop-thumb" />
                     <div className="pmt-prop-text">
                       <h3>{hotel.name}</h3>
-                      <p className="pmt-meta">{checkIn} - {checkOut} · {guests}</p>
+                      <p className="pmt-meta">{checkIn} - {checkOut} · {nights} Night{nights !== 1 ? 's' : ''} · {rooms} Room{rooms !== 1 ? 's' : ''} · {guests}</p>
                     </div>
                   </div>
                   <span className="pmt-toggle">VIEW DETAILS ∨</span>
@@ -105,7 +301,7 @@ export default function HotelPaymentPage() {
                 <div>
                   <button 
                     className="pmt-sec-add" 
-                    style={{ background: secureAdded ? '#10b981' : '#2563eb' }}
+                    style={{ background: secureAdded ? 'hsl(var(--su))' : 'hsl(var(--p))' }}
                     onClick={() => setSecureAdded(!secureAdded)}
                   >
                     {secureAdded ? "✓ Added @ ₹59" : "Add @ ₹59"}
@@ -186,18 +382,18 @@ export default function HotelPaymentPage() {
               </div>
 
               <div className="pmt-due-row">
-                <span>Hotel Fare</span>
-                <span>₹ {(finalDue - 510).toLocaleString("en-IN")}</span>
+                <span>Hotel Fare ({rooms} Room{rooms !== 1 ? 's' : ''} × {nights} Night{nights !== 1 ? 's' : ''})</span>
+                <span>₹ {hotelFare.toLocaleString("en-IN")}</span>
               </div>
 
               <div className="pmt-due-row">
                 <span>Service Fees</span>
-                <span>₹ 297</span>
+                <span>₹ {serviceFees.toLocaleString("en-IN")}</span>
               </div>
 
               <div className="pmt-due-row" style={{ marginBottom: 0 }}>
                 <span>Taxes</span>
-                <span>₹ 213</span>
+                <span>₹ {taxesBreakdown.toLocaleString("en-IN")}</span>
               </div>
             </div>
 
@@ -210,13 +406,13 @@ export default function HotelPaymentPage() {
                 {/* SVG Mock QR Code Graphic */}
                 <svg viewBox="0 0 100 100" className="pmt-qr-img">
                   <rect width="100" height="100" fill="#fff"/>
-                  <path d="M10 10h25v25H10zM15 15h15v15H15zM65 10h25v25H65zM70 15h15v15H70zM10 65h25v25H10zM15 70h15v15H15z" fill="#0f172a"/>
-                  <rect x="40" y="20" width="10" height="10" fill="#0f172a"/>
-                  <rect x="50" y="40" width="10" height="10" fill="#0f172a"/>
-                  <rect x="40" y="60" width="15" height="10" fill="#0f172a"/>
-                  <rect x="70" y="50" width="10" height="15" fill="#0f172a"/>
-                  <rect x="80" y="70" width="10" height="20" fill="#0f172a"/>
-                  <rect x="60" y="80" width="15" height="10" fill="#0f172a"/>
+                  <path d="M10 10h25v25H10zM15 15h15v15H15zM65 10h25v25H65zM70 15h15v15H70zM10 65h25v25H10zM15 70h15v15H15z" fill="hsl(var(--bc))"/>
+                  <rect x="40" y="20" width="10" height="10" fill="hsl(var(--bc))"/>
+                  <rect x="50" y="40" width="10" height="10" fill="hsl(var(--bc))"/>
+                  <rect x="40" y="60" width="15" height="10" fill="hsl(var(--bc))"/>
+                  <rect x="70" y="50" width="10" height="15" fill="hsl(var(--bc))"/>
+                  <rect x="80" y="70" width="10" height="20" fill="hsl(var(--bc))"/>
+                  <rect x="60" y="80" width="15" height="10" fill="hsl(var(--bc))"/>
                 </svg>
                 
                 <button className="pmt-qr-overlay-btn" onClick={() => handleProcessPayment('Scan to Pay QR')}>

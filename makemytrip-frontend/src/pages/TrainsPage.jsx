@@ -253,9 +253,9 @@ export default function TrainsPage() {
                 <div className="inner-field-sub">{fromStation.state}</div>
 
                 {activePopup === 'from' && (
-                  <div className="popup-dropdown" onClick={(e) => e.stopPropagation()} style={{ position: 'absolute', top: '100%', left: 0, width: '320px', background: '#fff', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.2)', padding: '16px', zIndex: 1000, border: '1px solid #cbd5e1', marginTop: '8px' }}>
+                  <div className="popup-dropdown" onClick={(e) => e.stopPropagation()} style={{ position: 'absolute', top: '100%', left: 0, width: '320px', background: '#fff', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.2)', padding: '16px', zIndex: 1000, border: '1px solid hsl(var(--b3))', marginTop: '8px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                      <span style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a' }}>SEARCH ORIGIN STATION</span>
+                      <span style={{ fontSize: '13px', fontWeight: 800, color: 'hsl(var(--bc))' }}>SEARCH ORIGIN STATION</span>
                       <button onClick={() => setActivePopup(null)} style={{ border: 'none', background: 'none', fontSize: '16px', cursor: 'pointer', fontWeight: 800 }}>✕</button>
                     </div>
                     <input 
@@ -263,7 +263,7 @@ export default function TrainsPage() {
                       placeholder="City or Station" 
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      style={{ width: '100%', padding: '12px 14px', border: '2px solid #008cff', borderRadius: '8px', fontSize: '14px', outline: 'none', marginBottom: '12px', boxSizing: 'border-box' }}
+                      style={{ width: '100%', padding: '12px 14px', border: '2px solid hsl(var(--p))', borderRadius: '8px', fontSize: '14px', outline: 'none', marginBottom: '12px', boxSizing: 'border-box' }}
                       autoFocus
                     />
                     <div style={{ maxHeight: '240px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -271,13 +271,13 @@ export default function TrainsPage() {
                         <div 
                           key={st.code} 
                           onClick={() => { setFromStation(st); setActivePopup(null); }}
-                          style={{ padding: '10px 12px', borderRadius: '6px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc' }}
+                          style={{ padding: '10px 12px', borderRadius: '6px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'hsl(var(--b2))' }}
                         >
                           <div>
-                            <div style={{ fontSize: '14px', fontWeight: 700, color: '#0f172a' }}>{st.name}</div>
-                            <div style={{ fontSize: '11px', color: '#64748b' }}>{st.state}</div>
+                            <div style={{ fontSize: '14px', fontWeight: 700, color: 'hsl(var(--bc))' }}>{st.name}</div>
+                            <div style={{ fontSize: '11px', color: 'hsl(var(--bc) / 0.55)' }}>{st.state}</div>
                           </div>
-                          <span style={{ background: '#e2e8f0', color: '#334155', padding: '2px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: 800 }}>{st.code}</span>
+                          <span style={{ background: 'hsl(var(--b3))', color: 'hsl(var(--bc) / 0.6)', padding: '2px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: 800 }}>{st.code}</span>
                         </div>
                       ))}
 
@@ -287,13 +287,13 @@ export default function TrainsPage() {
                             setFromStation({ name: searchQuery.trim(), code: searchQuery.trim().substring(0,3).toUpperCase(), state: 'India' });
                             setActivePopup(null);
                           }}
-                          style={{ padding: '10px 12px', borderRadius: '6px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#eef2ff', border: '1px solid #c7d2fe' }}
+                          style={{ padding: '10px 12px', borderRadius: '6px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'hsl(var(--p) / 0.06)', border: '1px solid hsl(var(--p) / 0.2)' }}
                         >
                           <div>
-                            <div style={{ fontSize: '14px', fontWeight: 700, color: '#4f46e5' }}>🚂 Origin: "{searchQuery.trim()}"</div>
-                            <div style={{ fontSize: '11px', color: '#64748b' }}>Click to select this custom station</div>
+                            <div style={{ fontSize: '14px', fontWeight: 700, color: 'hsl(var(--p))' }}>🚂 Origin: "{searchQuery.trim()}"</div>
+                            <div style={{ fontSize: '11px', color: 'hsl(var(--bc) / 0.55)' }}>Click to select this custom station</div>
                           </div>
-                          <span style={{ background: '#4f46e5', color: '#fff', padding: '2px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: 800 }}>CUSTOM</span>
+                          <span style={{ background: 'hsl(var(--p))', color: '#fff', padding: '2px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: 800 }}>CUSTOM</span>
                         </div>
                       )}
                     </div>
@@ -312,9 +312,9 @@ export default function TrainsPage() {
                 <div className="inner-field-sub">{toStation.state}</div>
 
                 {activePopup === 'to' && (
-                  <div className="popup-dropdown" onClick={(e) => e.stopPropagation()} style={{ position: 'absolute', top: '100%', left: 0, width: '320px', background: '#fff', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.2)', padding: '16px', zIndex: 1000, border: '1px solid #cbd5e1', marginTop: '8px' }}>
+                  <div className="popup-dropdown" onClick={(e) => e.stopPropagation()} style={{ position: 'absolute', top: '100%', left: 0, width: '320px', background: '#fff', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.2)', padding: '16px', zIndex: 1000, border: '1px solid hsl(var(--b3))', marginTop: '8px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                      <span style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a' }}>SEARCH DESTINATION STATION</span>
+                      <span style={{ fontSize: '13px', fontWeight: 800, color: 'hsl(var(--bc))' }}>SEARCH DESTINATION STATION</span>
                       <button onClick={() => setActivePopup(null)} style={{ border: 'none', background: 'none', fontSize: '16px', cursor: 'pointer', fontWeight: 800 }}>✕</button>
                     </div>
                     <input 
@@ -322,7 +322,7 @@ export default function TrainsPage() {
                       placeholder="City or Station" 
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      style={{ width: '100%', padding: '12px 14px', border: '2px solid #008cff', borderRadius: '8px', fontSize: '14px', outline: 'none', marginBottom: '12px', boxSizing: 'border-box' }}
+                      style={{ width: '100%', padding: '12px 14px', border: '2px solid hsl(var(--p))', borderRadius: '8px', fontSize: '14px', outline: 'none', marginBottom: '12px', boxSizing: 'border-box' }}
                       autoFocus
                     />
                     <div style={{ maxHeight: '240px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -330,13 +330,13 @@ export default function TrainsPage() {
                         <div 
                           key={st.code} 
                           onClick={() => { setToStation(st); setActivePopup(null); }}
-                          style={{ padding: '10px 12px', borderRadius: '6px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc' }}
+                          style={{ padding: '10px 12px', borderRadius: '6px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'hsl(var(--b2))' }}
                         >
                           <div>
-                            <div style={{ fontSize: '14px', fontWeight: 700, color: '#0f172a' }}>{st.name}</div>
-                            <div style={{ fontSize: '11px', color: '#64748b' }}>{st.state}</div>
+                            <div style={{ fontSize: '14px', fontWeight: 700, color: 'hsl(var(--bc))' }}>{st.name}</div>
+                            <div style={{ fontSize: '11px', color: 'hsl(var(--bc) / 0.55)' }}>{st.state}</div>
                           </div>
-                          <span style={{ background: '#e2e8f0', color: '#334155', padding: '2px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: 800 }}>{st.code}</span>
+                          <span style={{ background: 'hsl(var(--b3))', color: 'hsl(var(--bc) / 0.6)', padding: '2px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: 800 }}>{st.code}</span>
                         </div>
                       ))}
 
@@ -346,13 +346,13 @@ export default function TrainsPage() {
                             setToStation({ name: searchQuery.trim(), code: searchQuery.trim().substring(0,3).toUpperCase(), state: 'India' });
                             setActivePopup(null);
                           }}
-                          style={{ padding: '10px 12px', borderRadius: '6px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#eef2ff', border: '1px solid #c7d2fe' }}
+                          style={{ padding: '10px 12px', borderRadius: '6px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'hsl(var(--p) / 0.06)', border: '1px solid hsl(var(--p) / 0.2)' }}
                         >
                           <div>
-                            <div style={{ fontSize: '14px', fontWeight: 700, color: '#4f46e5' }}>🚂 Destination: "{searchQuery.trim()}"</div>
-                            <div style={{ fontSize: '11px', color: '#64748b' }}>Click to select this custom station</div>
+                            <div style={{ fontSize: '14px', fontWeight: 700, color: 'hsl(var(--p))' }}>🚂 Destination: "{searchQuery.trim()}"</div>
+                            <div style={{ fontSize: '11px', color: 'hsl(var(--bc) / 0.55)' }}>Click to select this custom station</div>
                           </div>
-                          <span style={{ background: '#4f46e5', color: '#fff', padding: '2px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: 800 }}>CUSTOM</span>
+                          <span style={{ background: 'hsl(var(--p))', color: '#fff', padding: '2px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: 800 }}>CUSTOM</span>
                         </div>
                       )}
                     </div>
