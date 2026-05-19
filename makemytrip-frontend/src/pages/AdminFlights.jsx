@@ -14,6 +14,8 @@ const AdminFlights = () => {
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState(null)
   const [editingFlight, setEditingFlight] = useState(null)
+  const [seatsModalFlight, setSeatsModalFlight] = useState(null)
+  const [seatsInput, setSeatsInput] = useState('')
 
   useEffect(() => {
     fetchFlights()
@@ -104,6 +106,34 @@ const AdminFlights = () => {
     }
   }
 
+  const handleOpenSeatsModal = (flight) => {
+    setSeatsModalFlight(flight)
+    setSeatsInput(flight.seatsAvailable.toString())
+  }
+
+  const handleCloseSeatsModal = () => {
+    setSeatsModalFlight(null)
+    setSeatsInput('')
+  }
+
+  const handleUpdateSeats = async () => {
+    if (!seatsModalFlight || seatsInput === '') return
+
+    const newSeats = parseInt(seatsInput)
+    if (isNaN(newSeats) || newSeats < 0 || newSeats > seatsModalFlight.seats) {
+      setError(`Seats must be between 0 and ${seatsModalFlight.seats}`)
+      return
+    }
+
+    try {
+      await adminFlightsService.updateSeats(seatsModalFlight.id, newSeats)
+      setFlights(flights.map(f => f.id === seatsModalFlight.id ? { ...f, seatsAvailable: newSeats } : f))
+      handleCloseSeatsModal()
+    } catch (err) {
+      setError('Failed to update seats')
+    }
+  }
+
   return (
     <AdminLayout>
       <div className="admin-page">
@@ -179,6 +209,9 @@ const AdminFlights = () => {
                         </span>
                       </td>
                       <td className="actions">
+                        <button className="btn-sm btn-seats" onClick={() => handleOpenSeatsModal(flight)} title="Update Seats" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                          ✈️ Seats
+                        </button>
                         <button className="btn-sm btn-edit" onClick={() => handleEdit(flight)} title="Edit" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
                           {Icons.edit({ size: 14 })} Edit
                         </button>
@@ -195,6 +228,62 @@ const AdminFlights = () => {
               </table>
             </div>
           </>
+        )}
+
+        {seatsModalFlight && (
+          <div className="modal-overlay" onClick={handleCloseSeatsModal}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '400px' }}>
+              <div style={{ padding: '24px' }}>
+                <h2 style={{ marginTop: 0, marginBottom: '16px' }}>Update Available Seats</h2>
+                <p style={{ marginBottom: '16px', color: 'hsl(var(--bc) / 0.7)' }}>
+                  {seatsModalFlight.flightNumber} - {seatsModalFlight.airline}
+                </p>
+
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>
+                    Available Seats (0-{seatsModalFlight.seats})
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    max={seatsModalFlight.seats}
+                    value={seatsInput}
+                    onChange={(e) => setSeatsInput(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      border: '1px solid hsl(var(--bc) / 0.2)',
+                      borderRadius: '6px',
+                      fontSize: '14px'
+                    }}
+                  />
+                </div>
+
+                <div style={{ marginBottom: '16px', padding: '12px', backgroundColor: 'hsl(var(--info) / 0.1)', borderRadius: '6px' }}>
+                  <p style={{ margin: 0, fontSize: '13px', color: 'hsl(var(--bc) / 0.8)' }}>
+                    Current: <strong>{seatsModalFlight.seatsAvailable}/{seatsModalFlight.seats}</strong>
+                  </p>
+                </div>
+
+                <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                  <button
+                    className="btn-secondary"
+                    onClick={handleCloseSeatsModal}
+                    style={{ padding: '8px 16px', borderRadius: '6px' }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="btn-primary"
+                    onClick={handleUpdateSeats}
+                    style={{ padding: '8px 16px', borderRadius: '6px' }}
+                  >
+                    Update
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </AdminLayout>

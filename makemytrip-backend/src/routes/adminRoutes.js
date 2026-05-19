@@ -1,11 +1,14 @@
 import express from 'express'
 import { adminRegister, adminLogin, getAdminProfile, adminLogout, changePassword } from '../controllers/adminAuthController.js'
 import {
-  createFlight, getAllFlights, getFlightById, updateFlight, deleteFlight, toggleFlightStatus
+  createFlight, getAllFlights, getFlightById, updateFlight, deleteFlight, toggleFlightStatus, updateFlightSeats
 } from '../controllers/flightAdminController.js'
 import {
   createHotel, getAllHotels, getHotelById, updateHotel, deleteHotel, toggleHotelStatus, updateHotelImages, getHotelImages
 } from '../controllers/hotelAdminController.js'
+import {
+  getRooms, createRoom, updateRoom, deleteRoom, toggleRoomStatus
+} from '../controllers/hotelRoomController.js'
 import {
   createBus, getAllBuses, getBusById, updateBus, deleteBus, toggleBusStatus
 } from '../controllers/busAdminController.js'
@@ -36,6 +39,7 @@ router.get('/flights/:id', authenticateAdmin, adminOnly, getFlightById)
 router.put('/flights/:id', authenticateAdmin, adminOnly, updateFlight)
 router.delete('/flights/:id', authenticateAdmin, adminOnly, deleteFlight)
 router.patch('/flights/:id/toggle', authenticateAdmin, adminOnly, toggleFlightStatus)
+router.patch('/flights/:id/seats', authenticateAdmin, adminOnly, updateFlightSeats)
 
 router.post('/hotels', authenticateAdmin, adminOnly, createHotel)
 router.get('/hotels', authenticateAdmin, adminOnly, getAllHotels)
@@ -45,6 +49,12 @@ router.delete('/hotels/:id', authenticateAdmin, adminOnly, deleteHotel)
 router.patch('/hotels/:id/toggle', authenticateAdmin, adminOnly, toggleHotelStatus)
 router.put('/hotels/:id/images', authenticateAdmin, adminOnly, updateHotelImages)
 router.get('/hotels/:id/images', getHotelImages)
+
+router.get('/hotels/:id/rooms', authenticateAdmin, adminOnly, getRooms)
+router.post('/hotels/:id/rooms', authenticateAdmin, adminOnly, createRoom)
+router.put('/hotels/:hotelId/rooms/:id', authenticateAdmin, adminOnly, updateRoom)
+router.delete('/hotels/:hotelId/rooms/:id', authenticateAdmin, adminOnly, deleteRoom)
+router.patch('/hotels/:hotelId/rooms/:id/toggle', authenticateAdmin, adminOnly, toggleRoomStatus)
 
 router.post('/buses', authenticateAdmin, adminOnly, createBus)
 router.get('/buses', authenticateAdmin, adminOnly, getAllBuses)

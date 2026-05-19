@@ -133,3 +133,25 @@ export const toggleFlightStatus = async (req, res) => {
     res.status(500).json({ message: err.message })
   }
 }
+
+export const updateFlightSeats = async (req, res) => {
+  try {
+    const { seatsAvailable } = req.body
+
+    if (seatsAvailable == null || seatsAvailable < 0) {
+      return res.status(400).json({ error: 'Invalid seatsAvailable value' })
+    }
+
+    const flight = await prisma.flight.update({
+      where: { id: req.params.id },
+      data: { seatsAvailable: parseInt(seatsAvailable) }
+    })
+
+    res.json({ success: true, message: 'Seats updated successfully', data: { flight } })
+  } catch (err) {
+    if (err.code === 'P2025') {
+      return res.status(404).json({ error: 'Flight not found' })
+    }
+    res.status(500).json({ error: err.message })
+  }
+}

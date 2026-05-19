@@ -29,7 +29,8 @@ export const adminFlightsService = {
   create: (data) => adminAPI.post('/flights', data),
   update: (id, data) => adminAPI.put(`/flights/${id}`, data),
   delete: (id) => adminAPI.delete(`/flights/${id}`),
-  toggleStatus: (id) => adminAPI.patch(`/flights/${id}/toggle`)
+  toggleStatus: (id) => adminAPI.patch(`/flights/${id}/toggle`),
+  updateSeats: (id, seatsAvailable) => adminAPI.patch(`/flights/${id}/seats`, { seatsAvailable })
 }
 
 export const adminHotelsService = {
@@ -38,7 +39,16 @@ export const adminHotelsService = {
   create: (data) => adminAPI.post('/hotels', data),
   update: (id, data) => adminAPI.put(`/hotels/${id}`, data),
   delete: (id) => adminAPI.delete(`/hotels/${id}`),
-  toggleStatus: (id) => adminAPI.patch(`/hotels/${id}/toggle`)
+  toggleStatus: (id) => adminAPI.patch(`/hotels/${id}/toggle`),
+  getHotel: (id) => adminAPI.get(`/hotels/${id}`)
+}
+
+export const adminRoomsService = {
+  getRooms: (hotelId) => adminAPI.get(`/hotels/${hotelId}/rooms`),
+  createRoom: (hotelId, data) => adminAPI.post(`/hotels/${hotelId}/rooms`, data),
+  updateRoom: (hotelId, roomId, data) => adminAPI.put(`/hotels/${hotelId}/rooms/${roomId}`, data),
+  deleteRoom: (hotelId, roomId) => adminAPI.delete(`/hotels/${hotelId}/rooms/${roomId}`),
+  toggleRoom: (hotelId, roomId) => adminAPI.patch(`/hotels/${hotelId}/rooms/${roomId}/toggle`)
 }
 
 export const adminBusesService = {

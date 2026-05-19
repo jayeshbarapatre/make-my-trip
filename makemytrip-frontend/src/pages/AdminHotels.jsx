@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import AdminLayout from '../components/Admin/AdminLayout'
 import { adminHotelsService } from '../services/adminService'
 import HotelForm from '../components/Admin/HotelForm'
@@ -6,6 +7,7 @@ import Icons from '../utils/icons'
 import './AdminFlights.css'
 
 const AdminHotels = () => {
+  const navigate = useNavigate()
   const [hotels, setHotels] = useState([])
   const [allHotels, setAllHotels] = useState([])
   const [loading, setLoading] = useState(true)
@@ -166,6 +168,9 @@ const AdminHotels = () => {
                         </span>
                       </td>
                       <td className="actions">
+                        <button className="btn-sm btn-edit" onClick={() => navigate(`/admin/hotels/${hotel.id}/rooms`)} title="Manage Rooms" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                          🛏️ Rooms
+                        </button>
                         <button className="btn-sm btn-edit" onClick={() => handleEdit(hotel)} title="Edit" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
                           {Icons.edit({ size: 14 })} Edit
                         </button>
