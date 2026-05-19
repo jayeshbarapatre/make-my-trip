@@ -17,43 +17,78 @@ const AdminVendors = () => {
     email: '',
     password: '',
     phone: '',
-    vendorType: 'hotel'
+    vendorType: 'flight'
   })
   const [submitting, setSubmitting] = useState(false)
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1'
 
-  // Dynamic vendor type configuration - easy to extend for future categories
+  // Dynamic vendor type configuration - matches homepage services
   const vendorTypeConfig = {
+    flight: {
+      label: 'Flights',
+      placeholder: 'e.g., SkyAirways Airlines',
+      icon: '✈️'
+    },
     hotel: {
-      label: 'Hotel Vendor',
+      label: 'Hotels',
       placeholder: 'e.g., Paradise Hotels',
       icon: '🏨'
     },
-    flight: {
-      label: 'Flight Vendor',
-      placeholder: 'e.g., SkyAirways Airlines',
-      icon: '✈️'
+    villa: {
+      label: 'Villas & Homestays',
+      placeholder: 'e.g., CozyStay Villas',
+      icon: '🏡'
+    },
+    holiday: {
+      label: 'Holiday Packages',
+      placeholder: 'e.g., VacationWonders Packages',
+      icon: '🧳'
+    },
+    train: {
+      label: 'Trains',
+      placeholder: 'e.g., RailTravel Express',
+      icon: '🚆'
+    },
+    bus: {
+      label: 'Buses',
+      placeholder: 'e.g., GoTravel Buses',
+      icon: '🚌'
+    },
+    cab: {
+      label: 'Cabs',
+      placeholder: 'e.g., RideHub Cabs',
+      icon: '🚖'
+    },
+    tour: {
+      label: 'Tours & Attractions',
+      placeholder: 'e.g., ExploreWorld Tours',
+      icon: '🎡'
+    },
+    visa: {
+      label: 'Visa',
+      placeholder: 'e.g., TravelVisa Services',
+      icon: '🛂'
+    },
+    cruise: {
+      label: 'Cruise',
+      placeholder: 'e.g., SailingAdventures Cruise',
+      icon: '🚢'
+    },
+    forex: {
+      label: 'Forex Card & Currency',
+      placeholder: 'e.g., MoneyExchange Services',
+      icon: '💳'
+    },
+    insurance: {
+      label: 'Travel Insurance',
+      placeholder: 'e.g., SafeTravel Insurance',
+      icon: '🛡️'
     },
     multi: {
       label: 'Multi-Service',
       placeholder: 'e.g., TravelMax Services',
       icon: '🌐'
-    },
-    bus: {
-      label: 'Bus Booking',
-      placeholder: 'e.g., GoTravel Buses',
-      icon: '🚌'
-    },
-    cab: {
-      label: 'Cab Booking',
-      placeholder: 'e.g., RideHub Cabs',
-      icon: '🚕'
-    },
-    holiday: {
-      label: 'Holiday Package',
-      placeholder: 'e.g., VacationWonders Packages',
-      icon: '🏖️'
     }
   }
 
