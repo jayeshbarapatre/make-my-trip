@@ -27,7 +27,8 @@ const AdminSidebar = ({ isOpen, toggleSidebar }) => {
       title: 'MANAGEMENT',
       items: [
         { path: '/admin/bookings', label: 'Bookings', icon: 'fas fa-calendar-check' },
-        { path: '/admin/users', label: 'Users', icon: 'fas fa-users' }
+        { path: '/admin/users', label: 'Users', icon: 'fas fa-users' },
+        { path: '/admin/approvals', label: 'Approvals', icon: 'fas fa-check-circle' }
       ]
     }
   ]

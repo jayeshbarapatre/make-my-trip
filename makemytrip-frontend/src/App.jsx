@@ -43,6 +43,7 @@ import AdminBuses from './pages/AdminBuses'
 import AdminCabs from './pages/AdminCabs'
 import AdminBookings from './pages/AdminBookings'
 import AdminUsers from './pages/AdminUsers'
+import AdminApprovals from './pages/AdminApprovals'
 import ProtectedAdminRoute from './components/Admin/ProtectedAdminRoute'
 import VendorLoginPage from './pages/VendorLoginPage'
 import VendorDashboard from './pages/VendorDashboard'
@@ -158,6 +159,7 @@ function AppContent() {
         <Route path="/admin/cabs" element={<ProtectedAdminRoute><AdminCabs /></ProtectedAdminRoute>} />
         <Route path="/admin/bookings" element={<ProtectedAdminRoute><AdminBookings /></ProtectedAdminRoute>} />
         <Route path="/admin/users" element={<ProtectedAdminRoute><AdminUsers /></ProtectedAdminRoute>} />
+        <Route path="/admin/approvals" element={<ProtectedAdminRoute><AdminApprovals /></ProtectedAdminRoute>} />
 
         <Route path="/vendor/login" element={<VendorLoginPage />} />
         <Route path="/vendor/dashboard" element={<ProtectedVendorRoute><VendorDashboard /></ProtectedVendorRoute>} />

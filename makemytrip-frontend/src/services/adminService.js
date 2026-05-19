@@ -66,5 +66,11 @@ export const adminDashboardService = {
   getAvailability: () => adminAPI.get('/dashboard/availability')
 }
 
+export const adminService = {
+  getPendingHotels: () => adminAPI.get('/approvals/hotels'),
+  approveHotel: (id) => adminAPI.patch(`/approvals/hotels/${id}/approve`),
+  rejectHotel: (id, data) => adminAPI.patch(`/approvals/hotels/${id}/reject`, data)
+}
+
 export default adminAPI
 
