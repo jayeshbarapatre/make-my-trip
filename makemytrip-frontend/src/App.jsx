@@ -45,6 +45,8 @@ import AdminBookings from './pages/AdminBookings'
 import AdminUsers from './pages/AdminUsers'
 import ProtectedAdminRoute from './components/Admin/ProtectedAdminRoute'
 import VendorLoginPage from './pages/VendorLoginPage'
+import VendorDashboard from './pages/VendorDashboard'
+import VendorHotels from './pages/VendorHotels'
 import ProtectedVendorRoute from './components/Vendor/ProtectedVendorRoute'
 
 function NotFound() {
@@ -156,6 +158,8 @@ function AppContent() {
         <Route path="/admin/users" element={<ProtectedAdminRoute><AdminUsers /></ProtectedAdminRoute>} />
 
         <Route path="/vendor/login" element={<VendorLoginPage />} />
+        <Route path="/vendor/dashboard" element={<ProtectedVendorRoute><VendorDashboard /></ProtectedVendorRoute>} />
+        <Route path="/vendor/hotels" element={<ProtectedVendorRoute><VendorHotels /></ProtectedVendorRoute>} />
 
         <Route path="*" element={<NotFound />} />
       </Routes>
