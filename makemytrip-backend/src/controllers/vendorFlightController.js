@@ -67,6 +67,7 @@ export const createFlight = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Flight number already exists' })
     }
 
+    // Prisma schema expects both simple fields and JSON objects
     const newFlight = await prisma.flight.create({
       data: {
         vendorId,
@@ -76,6 +77,8 @@ export const createFlight = async (req, res) => {
         to,
         departureTime,
         arrivalTime,
+        departure: { city: from, time: departureTime },
+        arrival: { city: to, time: arrivalTime },
         durationMinutes: parseInt(durationMinutes),
         price: parseFloat(price),
         seatsAvailable: parseInt(seatsAvailable),
@@ -127,6 +130,21 @@ export const updateFlight = async (req, res) => {
     if (durationMinutes) updateData.durationMinutes = parseInt(durationMinutes)
     if (price) updateData.price = parseFloat(price)
     if (seatsAvailable !== undefined) updateData.seatsAvailable = parseInt(seatsAvailable)
+
+    // Update JSON objects if from/to or times change
+    if (from || to || departureTime || arrivalTime) {
+      const newFrom = from || flight.from
+      const newTo = to || flight.to
+      const newDepTime = departureTime || flight.departureTime
+      const newArrTime = arrivalTime || flight.arrivalTime
+
+      if (from || departureTime) {
+        updateData.departure = { city: newFrom, time: newDepTime }
+      }
+      if (to || arrivalTime) {
+        updateData.arrival = { city: newTo, time: newArrTime }
+      }
+    }
 
     // If flight is already approved, editing it requires re-approval
     if (flight.listingStatus === 'APPROVED') {
