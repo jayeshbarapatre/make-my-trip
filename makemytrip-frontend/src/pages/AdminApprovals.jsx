@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import AdminLayout from '../components/Admin/AdminLayout'
 import { adminService } from '../services/adminService'
 import toast from 'react-hot-toast'
-import '../components/Admin/AdminFlights.css'
+import './AdminFlights.css'
 
 const AdminApprovals = () => {
   const [hotels, setHotels] = useState([])
