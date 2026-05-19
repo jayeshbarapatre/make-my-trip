@@ -1,4 +1,4 @@
-.vendor-flights-page {
+.vendor-buses-page {
   padding: 2rem;
 }
 
@@ -17,13 +17,13 @@
   color: hsl(var(--bc));
 }
 
-.flights-list {
+.bus-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: 1.5rem;
 }
 
-.flight-card {
+.bus-card {
   background: hsl(var(--b1));
   border: 1px solid hsl(var(--bc) / 0.1);
   border-radius: 0.5rem;
@@ -31,12 +31,12 @@
   transition: all 0.3s ease;
 }
 
-.flight-card:hover {
+.bus-card:hover {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   border-color: hsl(var(--bc) / 0.2);
 }
 
-.flight-header {
+.bus-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -46,22 +46,38 @@
   border-bottom: 1px solid hsl(var(--bc) / 0.1);
 }
 
-.flight-info {
+.bus-info {
   flex: 1;
 }
 
-.flight-name {
+.bus-name {
   margin: 0;
   font-size: 1.125rem;
   font-weight: 600;
   color: hsl(var(--bc));
 }
 
-.flight-route {
+.bus-route {
   margin: 0;
   margin-top: 0.25rem;
   font-size: 0.875rem;
   color: hsl(var(--bc) / 0.6);
+}
+
+.bus-badges {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: flex-end;
+}
+
+.bus-type-badge {
+  background: hsl(var(--in) / 0.2);
+  color: hsl(var(--in));
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
 }
 
 .badge {
@@ -110,7 +126,7 @@
   flex-shrink: 0;
 }
 
-.flight-details {
+.bus-details {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 1rem;
@@ -140,14 +156,14 @@
   color: hsl(var(--bc));
 }
 
-.flight-actions {
+.bus-actions {
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
 }
 
 @media (max-width: 900px) {
-  .flights-list {
+  .bus-list {
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   }
 }
@@ -157,20 +173,20 @@
     flex-direction: column;
   }
 
-  .flights-list {
+  .bus-list {
     grid-template-columns: 1fr;
   }
 
-  .flight-details {
+  .bus-details {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .flight-actions {
+  .bus-actions {
     flex-direction: column;
     width: 100%;
   }
 
-  .flight-actions button {
+  .bus-actions button {
     width: 100%;
     justify-content: center;
   }

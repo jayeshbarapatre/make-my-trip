@@ -1,6 +1,7 @@
 import mongoose from 'mongoose'
 
 const busSchema = new mongoose.Schema({
+  vendorId: { type: mongoose.Schema.Types.ObjectId, ref: 'Vendor' },
   operatorName: { type: String, required: true },
   busNumber: { type: String, required: true, unique: true },
   type: { type: String, enum: ['AC', 'Non-AC', 'Sleeper', 'Luxury'], required: true },
@@ -21,6 +22,8 @@ const busSchema = new mongoose.Schema({
   amenities: [String],
   image: String,
   isActive: { type: Boolean, default: true },
+  listingStatus: { type: String, enum: ['DRAFT', 'PENDING_APPROVAL', 'APPROVED', 'REJECTED'], default: 'DRAFT' },
+  rejectionReason: String,
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 }, { timestamps: true })

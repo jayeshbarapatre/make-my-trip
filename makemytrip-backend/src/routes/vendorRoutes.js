@@ -9,6 +9,9 @@ import {
 import {
   getMyFlights, createFlight, getMyFlightById, updateFlight, deleteFlight, submitForApproval as submitFlightForApproval, toggleFlightStatus
 } from '../controllers/vendorFlightController.js'
+import {
+  getMyBuses, createBus, updateBus, deleteBus, submitBusForApproval
+} from '../controllers/vendorBusController.js'
 import { authenticateVendor, vendorOnly } from '../middleware/vendorAuth.js'
 
 const router = express.Router()
@@ -40,5 +43,11 @@ router.put('/flights/:id', authenticateVendor, vendorOnly, updateFlight)
 router.delete('/flights/:id', authenticateVendor, vendorOnly, deleteFlight)
 router.patch('/flights/:id/submit', authenticateVendor, vendorOnly, submitFlightForApproval)
 router.patch('/flights/:id/toggle', authenticateVendor, vendorOnly, toggleFlightStatus)
+
+router.post('/buses', authenticateVendor, vendorOnly, createBus)
+router.get('/buses', authenticateVendor, vendorOnly, getMyBuses)
+router.put('/buses/:id', authenticateVendor, vendorOnly, updateBus)
+router.delete('/buses/:id', authenticateVendor, vendorOnly, deleteBus)
+router.patch('/buses/:id/submit', authenticateVendor, vendorOnly, submitBusForApproval)
 
 export default router

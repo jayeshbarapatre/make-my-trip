@@ -192,9 +192,9 @@ const AdminVendors = () => {
   if (loading) {
     return (
       <AdminLayout>
-        <div style={{ padding: '40px', textAlign: 'center' }}>
-          <i className="fas fa-spinner fa-spin" style={{ fontSize: '32px', color: 'hsl(var(--p))' }}></i>
-          <p style={{ marginTop: '12px', color: 'hsl(var(--bc) / 0.6)' }}>Loading vendors...</p>
+        <div className="flex flex-col items-center justify-center py-16 text-base-content/60">
+          <i className="fas fa-spinner fa-spin text-4xl text-primary mb-3"></i>
+          <p>Loading vendors...</p>
         </div>
       </AdminLayout>
     )
@@ -206,207 +206,148 @@ const AdminVendors = () => {
         <div className="page-header">
           <div>
             <h1>Manage Vendors</h1>
-            <p style={{ margin: '4px 0 0 0', color: '#6b7280', fontSize: '14px' }}>
+            <p className="mt-1 text-base-content/60 text-sm">
               Register and manage hotel & flight vendors
             </p>
           </div>
           <button
-            className="btn-primary"
+            className="btn btn-primary"
             onClick={() => setShowForm(true)}
-            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
           >
             <i className="fas fa-plus"></i> Register New Vendor
           </button>
         </div>
 
         {showForm && (
-          <div className="modal-overlay" onClick={() => !submitting && setShowForm(false)}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-              <div className="modal-header">
-                <h2>Register New Vendor</h2>
-                <button
-                  className="modal-header button"
-                  onClick={() => !submitting && setShowForm(false)}
-                  disabled={submitting}
-                >
-                  <i className="fas fa-times"></i>
-                </button>
-              </div>
+          <div className="modal modal-open">
+            <div className="modal-box shadow-2xl max-w-md">
+              <button
+                className="btn btn-sm btn-circle btn-ghost absolute right-4 top-4"
+                onClick={() => !submitting && setShowForm(false)}
+                disabled={submitting}
+              >
+                ✕
+              </button>
 
-              <div className="modal-body">
-                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  <div>
-                    <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', fontSize: '13px', color: '#374151' }}>
-                      Vendor Type *
-                    </label>
-                    <select
-                      name="vendorType"
-                      value={formData.vendorType}
-                      onChange={handleInputChange}
-                      required
-                      style={{
-                        width: '100%',
-                        padding: '10px 12px',
-                        border: '1px solid #e5e7eb',
-                        borderRadius: '6px',
-                        fontSize: '14px',
-                        fontFamily: 'inherit',
-                        boxSizing: 'border-box'
-                      }}
-                    >
-                      {Object.entries(vendorTypeConfig).map(([key, config]) => (
-                        <option key={key} value={key}>
-                          {config.icon} {config.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+              <h3 className="font-bold text-lg mb-6">Register New Vendor</h3>
 
-                  <div>
-                    <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', fontSize: '13px', color: '#374151' }}>
-                      Vendor Name *
-                    </label>
-                    <input
-                      type="text"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      placeholder={getVendorPlaceholder(formData.vendorType)}
-                      required
-                      style={{
-                        width: '100%',
-                        padding: '10px 12px',
-                        border: '1px solid #e5e7eb',
-                        borderRadius: '6px',
-                        fontSize: '14px',
-                        fontFamily: 'inherit',
-                        boxSizing: 'border-box'
-                      }}
-                    />
-                  </div>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text font-semibold">Vendor Type *</span>
+                  </label>
+                  <select
+                    name="vendorType"
+                    value={formData.vendorType}
+                    onChange={handleInputChange}
+                    required
+                    className="select select-bordered"
+                    disabled={submitting}
+                  >
+                    {Object.entries(vendorTypeConfig).map(([key, config]) => (
+                      <option key={key} value={key}>
+                        {config.icon} {config.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-                  <div>
-                    <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', fontSize: '13px', color: '#374151' }}>
-                      Email *
-                    </label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      placeholder="vendor@example.com"
-                      required
-                      style={{
-                        width: '100%',
-                        padding: '10px 12px',
-                        border: '1px solid #e5e7eb',
-                        borderRadius: '6px',
-                        fontSize: '14px',
-                        fontFamily: 'inherit',
-                        boxSizing: 'border-box'
-                      }}
-                    />
-                  </div>
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text font-semibold">Vendor Name *</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    placeholder={getVendorPlaceholder(formData.vendorType)}
+                    required
+                    className="input input-bordered"
+                    disabled={submitting}
+                  />
+                </div>
 
-                  <div>
-                    <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', fontSize: '13px', color: '#374151' }}>
-                      Phone Number *
-                    </label>
-                    <input
-                      type="tel"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      placeholder="9876543210"
-                      required
-                      style={{
-                        width: '100%',
-                        padding: '10px 12px',
-                        border: '1px solid #e5e7eb',
-                        borderRadius: '6px',
-                        fontSize: '14px',
-                        fontFamily: 'inherit',
-                        boxSizing: 'border-box'
-                      }}
-                    />
-                  </div>
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text font-semibold">Email *</span>
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    placeholder="vendor@example.com"
+                    required
+                    className="input input-bordered"
+                    disabled={submitting}
+                  />
+                </div>
 
-                  <div>
-                    <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', fontSize: '13px', color: '#374151' }}>
-                      Password (min 8 characters) *
-                    </label>
-                    <input
-                      type="password"
-                      name="password"
-                      value={formData.password}
-                      onChange={handleInputChange}
-                      placeholder="Enter secure password"
-                      required
-                      minLength="8"
-                      style={{
-                        width: '100%',
-                        padding: '10px 12px',
-                        border: '1px solid #e5e7eb',
-                        borderRadius: '6px',
-                        fontSize: '14px',
-                        fontFamily: 'inherit',
-                        boxSizing: 'border-box'
-                      }}
-                    />
-                  </div>
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text font-semibold">Phone Number *</span>
+                  </label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    placeholder="9876543210"
+                    required
+                    className="input input-bordered"
+                    disabled={submitting}
+                  />
+                </div>
 
-                  <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
-                    <button
-                      type="submit"
-                      disabled={submitting}
-                      style={{
-                        flex: 1,
-                        padding: '10px 20px',
-                        background: '#1a73e8',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '6px',
-                        fontWeight: '600',
-                        cursor: 'pointer',
-                        opacity: submitting ? 0.6 : 1
-                      }}
-                    >
-                      {submitting ? 'Creating...' : 'Register Vendor'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setShowForm(false)}
-                      disabled={submitting}
-                      style={{
-                        flex: 1,
-                        padding: '10px 20px',
-                        background: '#e5e7eb',
-                        color: '#374151',
-                        border: 'none',
-                        borderRadius: '6px',
-                        fontWeight: '600',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </form>
-              </div>
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text font-semibold">Password (min 8 characters) *</span>
+                  </label>
+                  <input
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    placeholder="Enter secure password"
+                    required
+                    minLength="8"
+                    className="input input-bordered"
+                    disabled={submitting}
+                  />
+                </div>
+
+                <div className="modal-action pt-6">
+                  <button
+                    type="button"
+                    onClick={() => setShowForm(false)}
+                    disabled={submitting}
+                    className="btn btn-outline btn-sm"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="btn btn-primary btn-sm gap-2"
+                  >
+                    {submitting && <span className="loading loading-spinner loading-sm"></span>}
+                    {submitting ? 'Creating...' : 'Register Vendor'}
+                  </button>
+                </div>
+              </form>
             </div>
+            <form method="dialog" className="modal-backdrop" onClick={() => !submitting && setShowForm(false)}>
+              <button disabled={submitting} />
+            </form>
           </div>
         )}
 
         {vendors.length === 0 ? (
-          <div
-            className="empty-state"
-            style={{ minHeight: '400px', background: 'white', borderRadius: '8px' }}
-          >
-            <div style={{ textAlign: 'center' }}>
-              <i className="fas fa-inbox" style={{ fontSize: '48px', color: '#d1d5db', marginBottom: '16px' }}></i>
-              <p style={{ color: '#6b7280', fontSize: '16px' }}>No vendors registered yet</p>
-              <p style={{ color: '#9ca3af', fontSize: '14px' }}>Click "Register New Vendor" to get started</p>
-            </div>
+          <div className="flex flex-col items-center justify-center min-h-96 bg-base-100 rounded-lg">
+            <i className="fas fa-inbox text-5xl text-base-content/30 mb-4"></i>
+            <p className="text-lg text-base-content/70">No vendors registered yet</p>
+            <p className="text-sm text-base-content/50">Click "Register New Vendor" to get started</p>
           </div>
         ) : (
           <div className="table-container">
@@ -431,59 +372,31 @@ const AdminVendors = () => {
                     <td>{vendor.email}</td>
                     <td>{vendor.phone}</td>
                     <td>
-                      <span style={{ background: '#dbeafe', color: '#0c4a6e', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: '600' }}>
+                      <span className="badge badge-info badge-sm">
                         {vendorTypeConfig[vendor.vendorType]?.icon} {vendorTypeConfig[vendor.vendorType]?.label || vendor.vendorType}
                       </span>
                     </td>
                     <td>
-                      <span
-                        style={{
-                          display: 'inline-block',
-                          padding: '4px 12px',
-                          borderRadius: '20px',
-                          fontSize: '12px',
-                          fontWeight: '600',
-                          background: vendor.vendorStatus === 'ACTIVE' ? '#dcfce7' : '#fee2e2',
-                          color: vendor.vendorStatus === 'ACTIVE' ? '#166534' : '#991b1b'
-                        }}
-                      >
+                      <span className={`badge badge-sm ${vendor.vendorStatus === 'ACTIVE' ? 'badge-success' : 'badge-error'}`}>
                         {vendor.vendorStatus}
                       </span>
                     </td>
                     <td>{new Date(vendor.createdAt).toLocaleDateString()}</td>
-                    <td style={{ display: 'flex', gap: '8px' }}>
-                      <button
-                        className="btn-sm"
-                        onClick={() => handleViewHotels(vendor)}
-                        style={{
-                          background: '#dbeafe',
-                          color: '#0c4a6e',
-                          padding: '6px 10px',
-                          border: 'none',
-                          borderRadius: '4px',
-                          fontSize: '12px',
-                          fontWeight: '600',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        <i className="fas fa-eye"></i> View
-                      </button>
-                      <button
-                        className="btn-sm btn-delete"
-                        onClick={() => handleDelete(vendor.id)}
-                        style={{
-                          background: '#fee2e2',
-                          color: '#991b1b',
-                          padding: '6px 10px',
-                          border: 'none',
-                          borderRadius: '4px',
-                          fontSize: '12px',
-                          fontWeight: '600',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        <i className="fas fa-trash"></i> Delete
-                      </button>
+                    <td>
+                      <div className="flex gap-2">
+                        <button
+                          className="btn btn-sm btn-info"
+                          onClick={() => handleViewHotels(vendor)}
+                        >
+                          <i className="fas fa-eye"></i> View
+                        </button>
+                        <button
+                          className="btn btn-sm btn-error"
+                          onClick={() => handleDelete(vendor.id)}
+                        >
+                          <i className="fas fa-trash"></i> Delete
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -493,118 +406,76 @@ const AdminVendors = () => {
         )}
 
         {showHotels && selectedVendor && (
-          <div className="modal-overlay" onClick={() => !loadingHotels && setShowHotels(false)}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-              <div className="modal-header">
-                <h2>{selectedVendor.name}'s Hotels</h2>
-                <button
-                  onClick={() => setShowHotels(false)}
-                  disabled={loadingHotels}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    fontSize: '20px',
-                    color: '#6b7280',
-                    cursor: 'pointer',
-                    padding: 0
-                  }}
-                >
-                  <i className="fas fa-times"></i>
-                </button>
-              </div>
+          <div className="modal modal-open">
+            <div className="modal-box shadow-2xl max-w-2xl max-h-96 overflow-y-auto">
+              <button
+                className="btn btn-sm btn-circle btn-ghost absolute right-4 top-4"
+                onClick={() => !loadingHotels && setShowHotels(false)}
+                disabled={loadingHotels}
+              >
+                ✕
+              </button>
 
-              <div className="modal-body">
-                {loadingHotels ? (
-                  <div style={{ textAlign: 'center', padding: '40px' }}>
-                    <i className="fas fa-spinner fa-spin" style={{ fontSize: '32px', color: '#1a73e8', marginBottom: '12px' }}></i>
-                    <p style={{ color: '#6b7280' }}>Loading hotels...</p>
-                  </div>
-                ) : vendorHotels.length === 0 ? (
-                  <div style={{ textAlign: 'center', padding: '40px', color: '#6b7280' }}>
-                    <p>No hotels added yet</p>
-                  </div>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    {vendorHotels.map(hotel => (
-                      <div
-                        key={hotel.id}
-                        style={{
-                          border: '1px solid #e5e7eb',
-                          borderRadius: '8px',
-                          padding: '16px',
-                          background: '#f9fafb'
-                        }}
-                      >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '8px' }}>
-                          <div>
-                            <h4 style={{ margin: '0 0 4px 0', color: '#1a1f36', fontSize: '14px', fontWeight: '700' }}>
-                              {hotel.name}
-                            </h4>
-                            <p style={{ margin: '0', color: '#6b7280', fontSize: '13px' }}>
-                              📍 {hotel.city}
-                            </p>
-                          </div>
-                          <span
-                            style={{
-                              display: 'inline-block',
-                              padding: '4px 12px',
-                              borderRadius: '20px',
-                              fontSize: '11px',
-                              fontWeight: '600',
-                              background:
-                                hotel.listingStatus === 'APPROVED'
-                                  ? '#dcfce7'
-                                  : hotel.listingStatus === 'PENDING_APPROVAL'
-                                  ? '#fef3c7'
-                                  : hotel.listingStatus === 'REJECTED'
-                                  ? '#fee2e2'
-                                  : '#e5e7eb',
-                              color:
-                                hotel.listingStatus === 'APPROVED'
-                                  ? '#166534'
-                                  : hotel.listingStatus === 'PENDING_APPROVAL'
-                                  ? '#78350f'
-                                  : hotel.listingStatus === 'REJECTED'
-                                  ? '#991b1b'
-                                  : '#374151'
-                            }}
-                          >
-                            {hotel.listingStatus.replace(/_/g, ' ')}
-                          </span>
+              <h3 className="font-bold text-lg mb-4">{selectedVendor.name}'s Hotels</h3>
+
+              <div className="divider my-0"></div>
+
+              {loadingHotels ? (
+                <div className="flex flex-col items-center justify-center py-12 text-base-content/60">
+                  <i className="fas fa-spinner fa-spin text-3xl text-primary mb-2"></i>
+                  <p>Loading hotels...</p>
+                </div>
+              ) : vendorHotels.length === 0 ? (
+                <div className="text-center py-12 text-base-content/60">
+                  <p>No hotels added yet</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {vendorHotels.map(hotel => (
+                    <div key={hotel.id} className="border border-base-content/10 rounded-lg p-4 bg-base-100">
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <h4 className="font-bold text-base-content">{hotel.name}</h4>
+                          <p className="text-sm text-base-content/60">📍 {hotel.city}</p>
                         </div>
-
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', fontSize: '12px' }}>
-                          <div>
-                            <span style={{ color: '#9ca3af', fontSize: '11px', textTransform: 'uppercase' }}>Price/Night</span>
-                            <p style={{ margin: '4px 0 0 0', fontWeight: '600', color: '#1a1f36' }}>
-                              ₹{hotel.pricePerNight.toLocaleString()}
-                            </p>
-                          </div>
-                          <div>
-                            <span style={{ color: '#9ca3af', fontSize: '11px', textTransform: 'uppercase' }}>Rooms</span>
-                            <p style={{ margin: '4px 0 0 0', fontWeight: '600', color: '#1a1f36' }}>
-                              {hotel.rooms}
-                            </p>
-                          </div>
-                          <div>
-                            <span style={{ color: '#9ca3af', fontSize: '11px', textTransform: 'uppercase' }}>Rating</span>
-                            <p style={{ margin: '4px 0 0 0', fontWeight: '600', color: '#1a1f36' }}>
-                              ⭐ {hotel.rating.toFixed(1)}
-                            </p>
-                          </div>
-                        </div>
-
-                        {hotel.listingStatus === 'REJECTED' && hotel.rejectionReason && (
-                          <div style={{ marginTop: '12px', padding: '8px 12px', background: '#fee2e2', borderRadius: '4px', fontSize: '12px', color: '#991b1b' }}>
-                            <strong>Rejection Reason:</strong> {hotel.rejectionReason}
-                          </div>
-                        )}
+                        <span className={`badge badge-sm ${
+                          hotel.listingStatus === 'APPROVED' ? 'badge-success' :
+                          hotel.listingStatus === 'PENDING_APPROVAL' ? 'badge-warning' :
+                          hotel.listingStatus === 'REJECTED' ? 'badge-error' :
+                          'badge-secondary'
+                        }`}>
+                          {hotel.listingStatus.replace(/_/g, ' ')}
+                        </span>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+
+                      <div className="grid grid-cols-3 gap-3 text-sm">
+                        <div>
+                          <span className="text-xs uppercase text-base-content/60 font-semibold">Price/Night</span>
+                          <p className="font-semibold text-base-content">₹{hotel.pricePerNight.toLocaleString()}</p>
+                        </div>
+                        <div>
+                          <span className="text-xs uppercase text-base-content/60 font-semibold">Rooms</span>
+                          <p className="font-semibold text-base-content">{hotel.rooms}</p>
+                        </div>
+                        <div>
+                          <span className="text-xs uppercase text-base-content/60 font-semibold">Rating</span>
+                          <p className="font-semibold text-base-content">⭐ {hotel.rating.toFixed(1)}</p>
+                        </div>
+                      </div>
+
+                      {hotel.listingStatus === 'REJECTED' && hotel.rejectionReason && (
+                        <div className="mt-3 p-3 bg-error/10 border border-error/20 rounded text-sm text-error">
+                          <strong>Rejection Reason:</strong> {hotel.rejectionReason}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
+            <form method="dialog" className="modal-backdrop" onClick={() => !loadingHotels && setShowHotels(false)}>
+              <button disabled={loadingHotels} />
+            </form>
           </div>
         )}
       </div>

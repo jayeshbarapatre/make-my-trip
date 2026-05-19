@@ -24,8 +24,7 @@ const AdminBuses = () => {
     try {
       setLoading(true)
       const response = await adminBusesService.getAll({ page, limit: 10, search })
-      setBuses(response.data.data.buses)
-      setPagination(response.data.data.pagination)
+      setBuses(response.data.data || [])
     } catch (err) {
       setError('Failed to load buses')
     } finally {
@@ -72,7 +71,8 @@ const AdminBuses = () => {
         setBuses(buses.map(b => b._id === editingId ? { ...b, ...formData } : b))
       } else {
         const response = await adminBusesService.create(formData)
-        setBuses([response.data.data.bus, ...buses])
+        const newBus = response.data.data
+        setBuses([newBus, ...buses])
       }
       handleCloseForm()
     } catch (err) {

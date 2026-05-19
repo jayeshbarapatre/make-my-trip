@@ -5,6 +5,7 @@ import cors from 'cors'
 import { connectDB } from './config/db.js'
 import authRoutes from './routes/auth.js'
 import flightRoutes from './routes/flights.js'
+import busRoutes from './routes/buses.js'
 import bookingRoutes from './routes/bookings.js'
 import paymentRoutes from './routes/paymentRoutes.js'
 import userRoutes from './routes/userRoutes.js'
@@ -28,6 +29,8 @@ app.use('/api/auth', authRoutes)
 app.use('/api/v1/auth', authRoutes)
 app.use('/api/flights', flightRoutes)
 app.use('/api/v1/flights', flightRoutes)
+app.use('/api/buses', busRoutes)
+app.use('/api/v1/buses', busRoutes)
 app.use('/api/bookings', bookingRoutes)
 app.use('/api/v1/bookings', bookingRoutes)
 app.use('/api/payment', paymentRoutes)

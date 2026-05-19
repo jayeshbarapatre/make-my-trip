@@ -51,4 +51,12 @@ export const vendorFlightsService = {
   toggleStatus: (id) => vendorAPI.patch(`/flights/${id}/toggle`)
 }
 
+export const vendorBusesService = {
+  getAll: (params) => vendorAPI.get('/buses', { params }),
+  create: (data) => vendorAPI.post('/buses', data),
+  update: (id, data) => vendorAPI.put(`/buses/${id}`, data),
+  delete: (id) => vendorAPI.delete(`/buses/${id}`),
+  submit: (id) => vendorAPI.patch(`/buses/${id}/submit`)
+}
+
 export default vendorAPI

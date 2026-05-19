@@ -357,18 +357,30 @@ export default function HomePage() {
     if (hasError) return
 
     try {
-      localStorage.setItem('travellers_flight', JSON.stringify(travellers))
+      if (activeTab === 'flights') {
+        localStorage.setItem('travellers_flight', JSON.stringify(travellers))
+      } else if (activeTab === 'buses') {
+        localStorage.setItem('travellers_bus', JSON.stringify(travellers))
+      }
     } catch (err) {
       console.error(err)
     }
+
     const passengersCount = travellers.adults + travellers.children;
     const fromVal = fromCity?.city || fromQuery
     const toVal = toCity?.city || toQuery
-    let url = `/flights/results?from=${fromVal}&to=${toVal}&date=${departDate || new Date().toISOString().split('T')[0]}&passengers=${passengersCount}&class=${travellers.class || 'Economy'}&type=${tripType}`
-    if (tripType === 'roundtrip' && returnDate) {
-      url += `&returnDate=${returnDate}`
+    const dateVal = departDate || new Date().toISOString().split('T')[0]
+
+    if (activeTab === 'buses') {
+      let url = `/buses/results?from=${fromVal}&to=${toVal}&date=${dateVal}&passengers=${passengersCount}`
+      navigate(url)
+    } else {
+      let url = `/flights/results?from=${fromVal}&to=${toVal}&date=${dateVal}&passengers=${passengersCount}&class=${travellers.class || 'Economy'}&type=${tripType}`
+      if (tripType === 'roundtrip' && returnDate) {
+        url += `&returnDate=${returnDate}`
+      }
+      navigate(url)
     }
-    navigate(url)
   }
 
 
@@ -418,19 +430,21 @@ export default function HomePage() {
             </div>
 
             <div className="hp-booker-body">
-              <div className="hp-trip-row">
-                {TRIP_TYPES.map(tt => (
-                  <button
-                    key={tt.id}
-                    type="button"
-                    className={`hp-trip-btn${tripType === tt.id ? ' hp-trip-on' : ''}`}
-                    onClick={() => setTripType(tt.id)}
-                  >
-                    <span className="hp-radio-dot"></span>
-                    {tt.label}
-                  </button>
-                ))}
-              </div>
+              {activeTab === 'flights' && (
+                <div className="hp-trip-row">
+                  {TRIP_TYPES.map(tt => (
+                    <button
+                      key={tt.id}
+                      type="button"
+                      className={`hp-trip-btn${tripType === tt.id ? ' hp-trip-on' : ''}`}
+                      onClick={() => setTripType(tt.id)}
+                    >
+                      <span className="hp-radio-dot"></span>
+                      {tt.label}
+                    </button>
+                  ))}
+                </div>
+              )}
 
               <form onSubmit={handleSearch}>
                 <div className="hp-grid">
@@ -592,43 +606,45 @@ export default function HomePage() {
                     />
                   </div>
 
-                  {/* Return Field */}
-                  <div className="hp-field clickable" style={{ position: 'relative', cursor: 'pointer' }}>
-                    <small>Return</small>
-                    {tripType === 'roundtrip' ? (
-                      <div onClick={(e) => { e.stopPropagation(); setShowReturnCal(true); }}>
-                        <div className="hp-field-big" style={{ fontSize: '24px', fontWeight: 800, margin: '4px 0' }}>
-                          {formatDateDisplay(returnDate).day} <span className="hp-unit" style={{ fontSize: '14px', fontWeight: 600 }}>{formatDateDisplay(returnDate).monthYear}</span>
+                  {/* Return Field - only for flights roundtrip */}
+                  {activeTab === 'flights' && (
+                    <div className="hp-field clickable" style={{ position: 'relative', cursor: 'pointer' }}>
+                      <small>Return</small>
+                      {tripType === 'roundtrip' ? (
+                        <div onClick={(e) => { e.stopPropagation(); setShowReturnCal(true); }}>
+                          <div className="hp-field-big" style={{ fontSize: '24px', fontWeight: 800, margin: '4px 0' }}>
+                            {formatDateDisplay(returnDate).day} <span className="hp-unit" style={{ fontSize: '14px', fontWeight: 600 }}>{formatDateDisplay(returnDate).monthYear}</span>
+                          </div>
+                          <div className="hp-sub">{formatDateDisplay(returnDate).weekday}</div>
+                          <CustomCalendarPicker
+                            isOpen={showReturnCal}
+                            value={returnDate}
+                            onChange={(date) => {
+                              if (new Date(date) < new Date(departDate)) {
+                                alert("Return date cannot be earlier than departure date.")
+                                return
+                              }
+                              setReturnDate(date)
+                            }}
+                            onClose={() => setShowReturnCal(false)}
+                            labelText="Return"
+                          />
                         </div>
-                        <div className="hp-sub">{formatDateDisplay(returnDate).weekday}</div>
-                        <CustomCalendarPicker
-                          isOpen={showReturnCal}
-                          value={returnDate}
-                          onChange={(date) => {
-                            if (new Date(date) < new Date(departDate)) {
-                              alert("Return date cannot be earlier than departure date.")
-                              return
-                            }
-                            setReturnDate(date)
-                          }}
-                          onClose={() => setShowReturnCal(false)}
-                          labelText="Return"
-                        />
-                      </div>
-                    ) : (
-                      <div className="hp-tap-hint" onClick={() => setTripType('roundtrip')} style={{ marginTop: '10px', fontSize: '12px', color: 'hsl(var(--p))', fontWeight: 600 }}>
-                        Tap to add for bigger discounts
-                      </div>
-                    )}
-                  </div>
+                      ) : (
+                        <div className="hp-tap-hint" onClick={() => setTripType('roundtrip')} style={{ marginTop: '10px', fontSize: '12px', color: 'hsl(var(--p))', fontWeight: 600 }}>
+                          Tap to add for bigger discounts
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {/* Travellers Field */}
                   <div className="hp-field clickable" ref={travellerRef} onClick={() => setShowTravellerDropdown(true)} style={{ position: 'relative', cursor: 'pointer' }}>
-                    <small>Travellers &amp; Class</small>
+                    <small>{activeTab === 'buses' ? 'Passengers' : 'Travellers & Class'}</small>
                     <div className="hp-field-big">
-                      {travellers.adults + travellers.children + travellers.infants} <span className="hp-unit">Travellers</span>
+                      {travellers.adults + travellers.children + travellers.infants} <span className="hp-unit">Passengers</span>
                     </div>
-                    <div className="hp-sub">{travellers.class}</div>
+                    <div className="hp-sub">{activeTab === 'flights' ? travellers.class : 'All ages'}</div>
 
                     {showTravellerDropdown && (
                       <div className="hp-traveller-dropdown" onClick={(e) => e.stopPropagation()}>
@@ -668,21 +684,23 @@ export default function HomePage() {
                           </div>
                         </div>
 
-                        <div className="hp-class-selector">
-                          <div className="hp-class-title">Choose Travel Class</div>
-                          <div className="hp-class-chips">
-                            {['Economy', 'Premium Economy', 'Business'].map(cl => (
-                              <button
-                                key={cl}
-                                type="button"
-                                className={`hp-class-chip${travellers.class === cl ? ' active' : ''}`}
-                                onClick={() => setTravellers(prev => ({ ...prev, class: cl }))}
-                              >
-                                {cl}
-                              </button>
-                            ))}
+                        {activeTab === 'flights' && (
+                          <div className="hp-class-selector">
+                            <div className="hp-class-title">Choose Travel Class</div>
+                            <div className="hp-class-chips">
+                              {['Economy', 'Premium Economy', 'Business'].map(cl => (
+                                <button
+                                  key={cl}
+                                  type="button"
+                                  className={`hp-class-chip${travellers.class === cl ? ' active' : ''}`}
+                                  onClick={() => setTravellers(prev => ({ ...prev, class: cl }))}
+                                >
+                                  {cl}
+                                </button>
+                              ))}
+                            </div>
                           </div>
-                        </div>
+                        )}
 
                         <button type="button" className="hp-traveller-apply-btn" onClick={() => setShowTravellerDropdown(false)}>
                           APPLY

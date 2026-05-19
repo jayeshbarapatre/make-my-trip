@@ -1,10 +1,16 @@
 import { useState, useEffect } from 'react'
-import './FormStyles.css'
+import { useParams, useNavigate } from 'react-router-dom'
+import { vendorBusesService } from '../../services/vendorService'
+import './VendorBusForm.css'
 
 const cities = ['Delhi', 'Mumbai', 'Bangalore', 'Hyderabad', 'Chennai', 'Kolkata', 'Pune', 'Jaipur', 'Lucknow', 'Ahmedabad']
 const amenitiesList = ['WiFi', 'Charging Point', 'Blanket', 'Water Bottle', 'Movie']
 
-const BusForm = ({ bus, onSubmit, onClose }) => {
+const VendorBusForm = () => {
+  const { id } = useParams()
+  const navigate = useNavigate()
+  const isEditing = !!id
+
   const [formData, setFormData] = useState({
     operatorName: '',
     busNumber: '',
@@ -13,18 +19,35 @@ const BusForm = ({ bus, onSubmit, onClose }) => {
     arrival: { city: '' },
     departureTime: '',
     arrivalTime: '',
-    duration: '',
+    durationMinutes: 0,
     price: '',
-    seats: 45,
+    seatsAvailable: 45,
     amenities: [],
     image: ''
   })
 
+  const [loading, setLoading] = useState(isEditing)
+  const [error, setError] = useState('')
+
   useEffect(() => {
-    if (bus) {
-      setFormData(bus)
+    if (isEditing) {
+      loadBus()
     }
-  }, [bus])
+  }, [id])
+
+  const loadBus = async () => {
+    try {
+      const response = await vendorBusesService.getAll()
+      const bus = response.data.data.find(b => b._id === id)
+      if (bus) {
+        setFormData(bus)
+      }
+    } catch (err) {
+      setError('Failed to load bus')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
     if (formData.departureTime && formData.arrivalTime) {
@@ -36,14 +59,8 @@ const BusForm = ({ bus, onSubmit, onClose }) => {
 
       if (arrTotal < depTotal) arrTotal += 24 * 60
 
-      const diffMin = arrTotal - depTotal
-      const hours = Math.floor(diffMin / 60)
-      const minutes = diffMin % 60
-
-      setFormData(prev => ({
-        ...prev,
-        duration: `${hours}h ${minutes}m`
-      }))
+      const durationMin = arrTotal - depTotal
+      setFormData(prev => ({ ...prev, durationMinutes: durationMin }))
     }
   }, [formData.departureTime, formData.arrivalTime])
 
@@ -66,28 +83,44 @@ const BusForm = ({ bus, onSubmit, onClose }) => {
     }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    onSubmit(formData)
+    try {
+      if (isEditing) {
+        await vendorBusesService.update(id, formData)
+      } else {
+        await vendorBusesService.create(formData)
+      }
+      navigate('/vendor/buses')
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to save bus')
+    }
   }
 
+  if (loading) return <div className="vendor-flights-page">Loading...</div>
+
+  const hours = Math.floor(formData.durationMinutes / 60)
+  const minutes = formData.durationMinutes % 60
+
   return (
-    <div className="form-container">
-      <div className="form-header">
-        <h2>{bus ? 'Edit Bus' : 'Add New Bus'}</h2>
-        <button className="btn-close" onClick={onClose}>✕</button>
+    <div className="vendor-flights-page">
+      <div className="page-header">
+        <h1>{isEditing ? 'Edit Bus' : 'Add New Bus'}</h1>
       </div>
 
-      <form onSubmit={handleSubmit} className="form">
-        <div className="form-section">
-          <h3>Basic Information</h3>
+      {error && <div style={{ color: 'hsl(var(--er))', marginBottom: '1rem', padding: '1rem', background: 'hsl(var(--er) / 0.1)', borderRadius: '0.5rem' }}>{error}</div>}
 
-          <div className="form-row">
+      <form onSubmit={handleSubmit} className="form-container">
+        <div className="form-section">
+          <h3>Bus Details</h3>
+
+          <div className="form-grid">
             <div className="form-group">
-              <label>Operator Name *</label>
+              <label className="form-label">Operator Name *</label>
               <input
                 type="text"
                 name="operatorName"
+                className="form-input"
                 value={formData.operatorName}
                 onChange={handleChange}
                 placeholder="e.g., RedBus Travels"
@@ -96,22 +129,21 @@ const BusForm = ({ bus, onSubmit, onClose }) => {
             </div>
 
             <div className="form-group">
-              <label>Bus Number *</label>
+              <label className="form-label">Bus Number *</label>
               <input
                 type="text"
                 name="busNumber"
+                className="form-input"
                 value={formData.busNumber}
                 onChange={handleChange}
                 placeholder="e.g., RB-001"
                 required
               />
             </div>
-          </div>
 
-          <div className="form-row">
             <div className="form-group">
-              <label>Bus Type *</label>
-              <select name="type" value={formData.type} onChange={handleChange} required>
+              <label className="form-label">Bus Type *</label>
+              <select name="type" className="form-input" value={formData.type} onChange={handleChange} required>
                 <option value="AC">AC Sleeper</option>
                 <option value="Non-AC">Non-AC Seater</option>
                 <option value="Sleeper">Semi-Sleeper</option>
@@ -120,10 +152,11 @@ const BusForm = ({ bus, onSubmit, onClose }) => {
             </div>
 
             <div className="form-group">
-              <label>Price (₹) *</label>
+              <label className="form-label">Price (₹) *</label>
               <input
                 type="number"
                 name="price"
+                className="form-input"
                 value={formData.price}
                 onChange={handleChange}
                 required
@@ -135,10 +168,11 @@ const BusForm = ({ bus, onSubmit, onClose }) => {
         <div className="form-section">
           <h3>Route</h3>
 
-          <div className="form-row">
+          <div className="form-grid">
             <div className="form-group">
-              <label>Departure City *</label>
+              <label className="form-label">From *</label>
               <select
+                className="form-input"
                 value={formData.departure.city}
                 onChange={(e) => handleNestedChange('departure', 'city', e.target.value)}
                 required
@@ -151,8 +185,9 @@ const BusForm = ({ bus, onSubmit, onClose }) => {
             </div>
 
             <div className="form-group">
-              <label>Arrival City *</label>
+              <label className="form-label">To *</label>
               <select
+                className="form-input"
                 value={formData.arrival.city}
                 onChange={(e) => handleNestedChange('arrival', 'city', e.target.value)}
                 required
@@ -169,12 +204,13 @@ const BusForm = ({ bus, onSubmit, onClose }) => {
         <div className="form-section">
           <h3>Schedule</h3>
 
-          <div className="form-row">
+          <div className="form-grid">
             <div className="form-group">
-              <label>Departure Time *</label>
+              <label className="form-label">Departure Time *</label>
               <input
                 type="time"
                 name="departureTime"
+                className="form-input"
                 value={formData.departureTime}
                 onChange={handleChange}
                 required
@@ -182,10 +218,11 @@ const BusForm = ({ bus, onSubmit, onClose }) => {
             </div>
 
             <div className="form-group">
-              <label>Arrival Time *</label>
+              <label className="form-label">Arrival Time *</label>
               <input
                 type="time"
                 name="arrivalTime"
+                className="form-input"
                 value={formData.arrivalTime}
                 onChange={handleChange}
                 required
@@ -193,28 +230,28 @@ const BusForm = ({ bus, onSubmit, onClose }) => {
             </div>
 
             <div className="form-group">
-              <label>Duration</label>
+              <label className="form-label">Duration</label>
               <input
                 type="text"
-                name="duration"
-                value={formData.duration}
+                className="form-input"
+                value={`${hours}h ${minutes}m`}
                 disabled
-                placeholder="Auto-calculated"
               />
             </div>
           </div>
         </div>
 
         <div className="form-section">
-          <h3>Capacity & Amenities</h3>
+          <h3>Pricing & Availability</h3>
 
-          <div className="form-row">
+          <div className="form-grid">
             <div className="form-group">
-              <label>Total Seats *</label>
+              <label className="form-label">Available Seats *</label>
               <input
                 type="number"
-                name="seats"
-                value={formData.seats}
+                name="seatsAvailable"
+                className="form-input"
+                value={formData.seatsAvailable}
                 onChange={handleChange}
                 min="1"
                 required
@@ -223,7 +260,7 @@ const BusForm = ({ bus, onSubmit, onClose }) => {
           </div>
 
           <div className="form-group">
-            <label>Amenities</label>
+            <label className="form-label">Amenities</label>
             <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
               {amenitiesList.map(amenity => (
                 <div key={amenity} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -240,11 +277,12 @@ const BusForm = ({ bus, onSubmit, onClose }) => {
             </div>
           </div>
 
-          <div className="form-group full-width">
-            <label>Image URL</label>
+          <div className="form-group">
+            <label className="form-label">Image URL</label>
             <input
               type="text"
               name="image"
+              className="form-input"
               value={formData.image}
               onChange={handleChange}
               placeholder="Image URL"
@@ -253,11 +291,11 @@ const BusForm = ({ bus, onSubmit, onClose }) => {
         </div>
 
         <div className="form-actions">
-          <button type="button" className="btn-secondary" onClick={onClose}>
+          <button type="button" className="btn btn-secondary" onClick={() => navigate('/vendor/buses')}>
             Cancel
           </button>
-          <button type="submit" className="btn-primary">
-            {bus ? 'Update Bus' : 'Create Bus'}
+          <button type="submit" className="btn btn-primary">
+            {isEditing ? 'Update Bus' : 'Add Bus'}
           </button>
         </div>
       </form>
@@ -265,4 +303,4 @@ const BusForm = ({ bus, onSubmit, onClose }) => {
   )
 }
 
-export default BusForm
+export default VendorBusForm

@@ -68,9 +68,9 @@ const AdminFlightApprovals = () => {
   if (loading) {
     return (
       <AdminLayout>
-        <div style={{ padding: '40px', textAlign: 'center' }}>
-          <i className="fas fa-spinner fa-spin" style={{ fontSize: '32px', color: 'hsl(var(--p))' }}></i>
-          <p style={{ marginTop: '12px', color: 'hsl(var(--bc) / 0.6)' }}>Loading pending approvals...</p>
+        <div className="flex flex-col items-center justify-center py-16 text-base-content/60">
+          <i className="fas fa-spinner fa-spin text-4xl text-primary mb-3"></i>
+          <p>Loading pending approvals...</p>
         </div>
       </AdminLayout>
     )
@@ -87,8 +87,8 @@ const AdminFlightApprovals = () => {
         </div>
 
         {flights.length === 0 ? (
-          <div style={{ padding: '60px 20px', textAlign: 'center', color: 'hsl(var(--bc) / 0.6))' }}>
-            <p style={{ margin: 0 }}>No pending flight approvals</p>
+          <div className="text-center py-16 text-base-content/60">
+            <p>No pending flight approvals</p>
           </div>
         ) : (
           <div className="table-container">
@@ -116,16 +116,16 @@ const AdminFlightApprovals = () => {
                     <td>₹{flight.price.toLocaleString()}</td>
                     <td>{flight.seatsAvailable}</td>
                     <td>
-                      <div style={{ display: 'flex', gap: '8px' }}>
+                      <div className="flex gap-2">
                         <button
-                          className="btn-sm btn-success"
+                          className="btn btn-sm btn-success"
                           onClick={() => setApprovingId(flight.id)}
                           disabled={processing}
                         >
                           <i className="fas fa-check"></i> Approve
                         </button>
                         <button
-                          className="btn-sm btn-error"
+                          className="btn btn-sm btn-error"
                           onClick={() => setRejectingId(flight.id)}
                           disabled={processing}
                         >

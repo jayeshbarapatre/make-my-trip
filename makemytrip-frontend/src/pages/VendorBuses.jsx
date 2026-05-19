@@ -1,30 +1,30 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import VendorLayout from '../components/Vendor/VendorLayout'
-import { vendorFlightsService } from '../services/vendorService'
+import { vendorBusesService } from '../services/vendorService'
 import toast from 'react-hot-toast'
-import './VendorFlights.css'
+import './VendorBuses.css'
 
-const VendorFlights = () => {
+const VendorBuses = () => {
   const navigate = useNavigate()
-  const [flights, setFlights] = useState([])
+  const [buses, setBuses] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [confirmDialog, setConfirmDialog] = useState(null)
   const [processingId, setProcessingId] = useState(null)
 
   useEffect(() => {
-    fetchFlights()
+    fetchBuses()
   }, [])
 
-  const fetchFlights = async () => {
+  const fetchBuses = async () => {
     try {
       setLoading(true)
-      const response = await vendorFlightsService.getAll()
-      setFlights(response.data.data.flights || [])
+      const response = await vendorBusesService.getAll()
+      setBuses(response.data.data.buses || [])
       setError('')
     } catch (err) {
-      setError('Failed to load flights')
+      setError('Failed to load buses')
       console.error(err)
     } finally {
       setLoading(false)
@@ -34,18 +34,18 @@ const VendorFlights = () => {
   const handleSubmitForApproval = (id) => {
     setConfirmDialog({
       type: 'submit',
-      flightId: id,
+      busId: id,
       title: 'Submit for Approval',
-      message: 'Submit this flight for admin review?'
+      message: 'Submit this bus for admin review?'
     })
   }
 
   const handleDelete = (id) => {
     setConfirmDialog({
       type: 'delete',
-      flightId: id,
-      title: 'Delete Flight',
-      message: 'Delete this flight? This action cannot be undone.'
+      busId: id,
+      title: 'Delete Bus',
+      message: 'Delete this bus? This action cannot be undone.'
     })
   }
 
@@ -53,16 +53,16 @@ const VendorFlights = () => {
     if (!confirmDialog) return
 
     try {
-      setProcessingId(confirmDialog.flightId)
+      setProcessingId(confirmDialog.busId)
       if (confirmDialog.type === 'submit') {
-        await vendorFlightsService.submit(confirmDialog.flightId)
-        toast.success('Flight submitted for approval')
+        await vendorBusesService.submit(confirmDialog.busId)
+        toast.success('Bus submitted for approval')
       } else if (confirmDialog.type === 'delete') {
-        await vendorFlightsService.delete(confirmDialog.flightId)
-        toast.success('Flight deleted successfully')
-        setFlights(flights.filter(f => f.id !== confirmDialog.flightId))
+        await vendorBusesService.delete(confirmDialog.busId)
+        toast.success('Bus deleted successfully')
+        setBuses(buses.filter(b => b.id !== confirmDialog.busId))
       }
-      fetchFlights()
+      fetchBuses()
       setConfirmDialog(null)
     } catch (err) {
       toast.error(err.response?.data?.message || 'Action failed')
@@ -91,7 +91,7 @@ const VendorFlights = () => {
       <VendorLayout>
         <div className="flex items-center justify-center gap-4 py-16 text-base-content/60">
           <i className="fas fa-spinner fa-spin text-xl text-primary"></i>
-          <span>Loading flights...</span>
+          <span>Loading buses...</span>
         </div>
       </VendorLayout>
     )
@@ -99,83 +99,86 @@ const VendorFlights = () => {
 
   return (
     <VendorLayout>
-      <div className="vendor-flights-page">
+      <div className="vendor-buses-page">
         <div className="page-header">
           <div>
-            <h1>My Flights</h1>
+            <h1>My Buses</h1>
             <div className="flex gap-6 mt-2 text-sm text-base-content/60">
-              <span>📊 Total: <strong className="text-base-content">{flights.length}</strong></span>
-              <span>✏️ Draft: <strong className="text-base-content">{flights.filter(f => f.listingStatus === 'DRAFT').length}</strong></span>
-              <span>⏳ Pending: <strong className="text-warning">{flights.filter(f => f.listingStatus === 'PENDING_APPROVAL').length}</strong></span>
-              <span>✅ Approved: <strong className="text-success">{flights.filter(f => f.listingStatus === 'APPROVED').length}</strong></span>
+              <span>📊 Total: <strong className="text-base-content">{buses.length}</strong></span>
+              <span>✏️ Draft: <strong className="text-base-content">{buses.filter(b => b.listingStatus === 'DRAFT').length}</strong></span>
+              <span>⏳ Pending: <strong className="text-warning">{buses.filter(b => b.listingStatus === 'PENDING_APPROVAL').length}</strong></span>
+              <span>✅ Approved: <strong className="text-success">{buses.filter(b => b.listingStatus === 'APPROVED').length}</strong></span>
             </div>
           </div>
-          <button className="btn btn-success" onClick={() => navigate('/vendor/flights/create')}>
-            <i className="fas fa-plus"></i> Add New Flight
+          <button className="btn btn-success" onClick={() => navigate('/vendor/buses/create')}>
+            <i className="fas fa-plus"></i> Add New Bus
           </button>
         </div>
 
         {error && <div className="alert alert-error mb-6"><i className="fas fa-exclamation-circle"></i>{error}</div>}
 
-        {flights.length === 0 ? (
+        {buses.length === 0 ? (
           <div className="text-center py-12 text-base-content/60">
-            <p className="text-lg">No flights yet. Create your first flight listing!</p>
+            <p className="text-lg">No buses yet. Create your first bus listing!</p>
           </div>
         ) : (
-          <div className="flights-list">
-            {flights.map(flight => (
-              <div key={flight.id} className="flight-card">
-                <div className="flight-header">
-                  <div className="flight-info">
-                    <h3 className="flight-name">{flight.airline} - {flight.flightNumber}</h3>
-                    <p className="flight-route">{flight.from} → {flight.to}</p>
+          <div className="bus-list">
+            {buses.map(bus => (
+              <div key={bus.id} className="bus-card">
+                <div className="bus-header">
+                  <div className="bus-info">
+                    <h3 className="bus-name">{bus.operator}</h3>
+                    <p className="bus-route">{bus.from} → {bus.to}</p>
                   </div>
-                  <span className={`badge ${getStatusBadgeClass(flight.listingStatus)}`}>
-                    {flight.listingStatus.replace(/_/g, ' ')}
-                  </span>
+                  <div className="bus-badges">
+                    <span className={`badge ${bus.type ? 'bus-type-badge' : ''}`}>{bus.type || 'AC'}</span>
+                    <span className={`badge ${getStatusBadgeClass(bus.listingStatus)}`}>
+                      {bus.listingStatus.replace(/_/g, ' ')}
+                    </span>
+                  </div>
                 </div>
 
-                {flight.listingStatus === 'REJECTED' && flight.rejectionReason && (
+                {bus.listingStatus === 'REJECTED' && bus.rejectionReason && (
                   <div className="rejection-reason">
                     <i className="fas fa-exclamation-triangle"></i>
-                    <span><strong>Rejection Reason:</strong> {flight.rejectionReason}</span>
+                    <span><strong>Rejection Reason:</strong> {bus.rejectionReason}</span>
                   </div>
                 )}
 
-                <div className="flight-details">
+                <div className="bus-details">
                   <div className="detail-item">
                     <span className="detail-label">Departure:</span>
-                    <span className="detail-value">{flight.departureTime}</span>
+                    <span className="detail-value">{bus.departureTime}</span>
                   </div>
                   <div className="detail-item">
                     <span className="detail-label">Arrival:</span>
-                    <span className="detail-value">{flight.arrivalTime}</span>
+                    <span className="detail-value">{bus.arrivalTime}</span>
                   </div>
                   <div className="detail-item">
                     <span className="detail-label">Duration:</span>
-                    <span className="detail-value">{flight.durationMinutes} min</span>
+                    <span className="detail-value">{bus.durationMinutes} min</span>
                   </div>
                   <div className="detail-item">
                     <span className="detail-label">Price:</span>
-                    <span className="detail-value">₹{flight.price.toLocaleString()}</span>
+                    <span className="detail-value">₹{bus.price.toLocaleString()}</span>
                   </div>
                   <div className="detail-item">
                     <span className="detail-label">Seats:</span>
-                    <span className="detail-value">{flight.seatsAvailable}</span>
+                    <span className="detail-value">{bus.seatsAvailable}</span>
                   </div>
                 </div>
 
-                <div className="flight-actions">
-                  <button className="btn btn-sm btn-info" onClick={() => navigate(`/vendor/flights/${flight.id}/edit`)}>
+                <div className="bus-actions">
+                  <button className="btn btn-sm btn-info" onClick={() => navigate(`/vendor/buses/${bus.id}/edit`)}>
                     <i className="fas fa-edit"></i> Edit
                   </button>
-                  {['DRAFT', 'REJECTED'].includes(flight.listingStatus) && (
-                    <button className="btn btn-sm btn-success" onClick={() => handleSubmitForApproval(flight.id)}>
+                  {['DRAFT', 'REJECTED'].includes(bus.listingStatus) && (
+                    <button className="btn btn-sm btn-success" onClick={() => handleSubmitForApproval(bus.id)}>
                       <i className="fas fa-paper-plane"></i> Submit
                     </button>
                   )}
-                  {['DRAFT', 'REJECTED'].includes(flight.listingStatus) && (
-                    <button className="btn btn-sm btn-error" onClick={() => handleDelete(flight.id)}>
+                  {['DRAFT', 'REJECTED'].includes(bus.listingStatus) && (
+                    <button className="btn btn-sm btn-error" onClick={() => handleDelete(bus.id)}>
                       <i className="fas fa-trash"></i> Delete
                     </button>
                   )}
@@ -210,7 +213,7 @@ const VendorFlights = () => {
                   {confirmDialog.title}
                 </h3>
                 <p className="text-base-content/70 text-sm mt-1">
-                  {confirmDialog.type === 'delete' ? 'This action is permanent' : 'This will send your flight for admin review'}
+                  {confirmDialog.type === 'delete' ? 'This action is permanent' : 'This will send your bus for admin review'}
                 </p>
               </div>
             </div>
@@ -234,13 +237,13 @@ const VendorFlights = () => {
                 onClick={confirmAction}
                 disabled={processingId !== null}
               >
-                {processingId === confirmDialog.flightId && (
+                {processingId === confirmDialog.busId && (
                   <span className="loading loading-spinner loading-sm"></span>
                 )}
                 <span>
-                  {processingId === confirmDialog.flightId
+                  {processingId === confirmDialog.busId
                     ? (confirmDialog.type === 'delete' ? 'Deleting...' : 'Submitting...')
-                    : (confirmDialog.type === 'delete' ? 'Delete Flight' : 'Submit Flight')}
+                    : (confirmDialog.type === 'delete' ? 'Delete Bus' : 'Submit Bus')}
                 </span>
               </button>
             </div>
@@ -254,4 +257,4 @@ const VendorFlights = () => {
   )
 }
 
-export default VendorFlights
+export default VendorBuses

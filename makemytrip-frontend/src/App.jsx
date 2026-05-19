@@ -9,6 +9,8 @@ import ProtectedRoute from './components/ProtectedRoute'
 import HomePage from './pages/HomePage'
 import SearchResultsPage from './pages/SearchResultsPage'
 import BookingPage from './pages/BookingPage'
+import BusSearchResultsPage from './pages/BusSearchResultsPage'
+import BusBookingPage from './pages/BusBookingPage'
 import LoginPage from './pages/LoginPage'
 import HotelsPage from './pages/HotelsPage'
 import HotelListingPage from './pages/HotelListingPage'
@@ -53,6 +55,8 @@ import VendorHotelFormPage from './pages/VendorHotelFormPage'
 import VendorHotelRooms from './pages/VendorHotelRooms'
 import VendorFlights from './pages/VendorFlights'
 import VendorFlightFormPage from './pages/VendorFlightFormPage'
+import VendorBuses from './pages/VendorBuses'
+import VendorBusForm from './components/Vendor/VendorBusForm'
 import AdminFlightApprovals from './pages/AdminFlightApprovals'
 import ProtectedVendorRoute from './components/Vendor/ProtectedVendorRoute'
 
@@ -131,6 +135,8 @@ function AppContent() {
         <Route path="/" element={<HomePage />} />
         <Route path="/flights/results" element={<SearchResultsPage />} />
         <Route path="/booking/:flightId" element={<ProtectedRoute><BookingPage /></ProtectedRoute>} />
+        <Route path="/buses/results" element={<BusSearchResultsPage />} />
+        <Route path="/buses/booking/:busId" element={<ProtectedRoute><BusBookingPage /></ProtectedRoute>} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/hotels" element={<HotelsPage />} />
         <Route path="/hotels/results" element={<HotelListingPage />} />
@@ -176,6 +182,9 @@ function AppContent() {
         <Route path="/vendor/flights" element={<ProtectedVendorRoute><VendorFlights /></ProtectedVendorRoute>} />
         <Route path="/vendor/flights/create" element={<ProtectedVendorRoute><VendorFlightFormPage /></ProtectedVendorRoute>} />
         <Route path="/vendor/flights/:id/edit" element={<ProtectedVendorRoute><VendorFlightFormPage /></ProtectedVendorRoute>} />
+        <Route path="/vendor/buses" element={<ProtectedVendorRoute><VendorBuses /></ProtectedVendorRoute>} />
+        <Route path="/vendor/buses/create" element={<ProtectedVendorRoute><VendorBusForm /></ProtectedVendorRoute>} />
+        <Route path="/vendor/buses/:id/edit" element={<ProtectedVendorRoute><VendorBusForm /></ProtectedVendorRoute>} />
 
         <Route path="*" element={<NotFound />} />
       </Routes>
