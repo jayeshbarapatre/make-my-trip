@@ -9,6 +9,8 @@ import ProtectedRoute from './components/ProtectedRoute'
 import HomePage from './pages/HomePage'
 import SearchResultsPage from './pages/SearchResultsPage'
 import BookingPage from './pages/BookingPage'
+import BusSearchResultsPage from './pages/BusSearchResultsPage'
+import BusBookingPage from './pages/BusBookingPage'
 import LoginPage from './pages/LoginPage'
 import HotelsPage from './pages/HotelsPage'
 import HotelListingPage from './pages/HotelListingPage'
@@ -33,6 +35,7 @@ import VisaPage from './pages/VisaPage'
 import MyTrips from './pages/MyTrips'
 import Profile from './pages/Profile'
 import { AdminProvider } from './context/AdminContext'
+import { VendorProvider } from './context/VendorContext'
 import { ThemeProvider } from './context/ThemeContext'
 import AdminLoginPage from './pages/AdminLoginPage'
 import AdminDashboard from './pages/AdminDashboard'
@@ -42,7 +45,20 @@ import AdminBuses from './pages/AdminBuses'
 import AdminCabs from './pages/AdminCabs'
 import AdminBookings from './pages/AdminBookings'
 import AdminUsers from './pages/AdminUsers'
+import AdminApprovals from './pages/AdminApprovals'
+import AdminVendors from './pages/AdminVendors'
 import ProtectedAdminRoute from './components/Admin/ProtectedAdminRoute'
+import VendorLoginPage from './pages/VendorLoginPage'
+import VendorDashboard from './pages/VendorDashboard'
+import VendorHotels from './pages/VendorHotels'
+import VendorHotelFormPage from './pages/VendorHotelFormPage'
+import VendorHotelRooms from './pages/VendorHotelRooms'
+import VendorFlights from './pages/VendorFlights'
+import VendorFlightFormPage from './pages/VendorFlightFormPage'
+import VendorBuses from './pages/VendorBuses'
+import VendorBusForm from './components/Vendor/VendorBusForm'
+import AdminFlightApprovals from './pages/AdminFlightApprovals'
+import ProtectedVendorRoute from './components/Vendor/ProtectedVendorRoute'
 
 function NotFound() {
   return (
@@ -101,6 +117,7 @@ function RouteLoader() {
 function AppContent() {
   const location = useLocation()
   const isAdminRoute = location.pathname.startsWith('/admin')
+  const isVendorRoute = location.pathname.startsWith('/vendor')
 
   // Initialize theme on mount
   useEffect(() => {
@@ -111,12 +128,15 @@ function AppContent() {
   return (
     <ThemeProvider>
       <AdminProvider>
+      <VendorProvider>
       <RouteLoader />
-      {!isAdminRoute && <Header />}
+      {!isAdminRoute && !isVendorRoute && <Header />}
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/flights/results" element={<SearchResultsPage />} />
         <Route path="/booking/:flightId" element={<ProtectedRoute><BookingPage /></ProtectedRoute>} />
+        <Route path="/buses/results" element={<BusSearchResultsPage />} />
+        <Route path="/buses/booking/:busId" element={<ProtectedRoute><BusBookingPage /></ProtectedRoute>} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/hotels" element={<HotelsPage />} />
         <Route path="/hotels/results" element={<HotelListingPage />} />
@@ -149,10 +169,27 @@ function AppContent() {
         <Route path="/admin/cabs" element={<ProtectedAdminRoute><AdminCabs /></ProtectedAdminRoute>} />
         <Route path="/admin/bookings" element={<ProtectedAdminRoute><AdminBookings /></ProtectedAdminRoute>} />
         <Route path="/admin/users" element={<ProtectedAdminRoute><AdminUsers /></ProtectedAdminRoute>} />
+        <Route path="/admin/vendors" element={<ProtectedAdminRoute><AdminVendors /></ProtectedAdminRoute>} />
+        <Route path="/admin/approvals" element={<ProtectedAdminRoute><AdminApprovals /></ProtectedAdminRoute>} />
+        <Route path="/admin/flight-approvals" element={<ProtectedAdminRoute><AdminFlightApprovals /></ProtectedAdminRoute>} />
+
+        <Route path="/vendor/login" element={<VendorLoginPage />} />
+        <Route path="/vendor/dashboard" element={<ProtectedVendorRoute><VendorDashboard /></ProtectedVendorRoute>} />
+        <Route path="/vendor/hotels" element={<ProtectedVendorRoute><VendorHotels /></ProtectedVendorRoute>} />
+        <Route path="/vendor/hotels/create" element={<ProtectedVendorRoute><VendorHotelFormPage /></ProtectedVendorRoute>} />
+        <Route path="/vendor/hotels/:id/edit" element={<ProtectedVendorRoute><VendorHotelFormPage /></ProtectedVendorRoute>} />
+        <Route path="/vendor/hotels/:hotelId/rooms" element={<ProtectedVendorRoute><VendorHotelRooms /></ProtectedVendorRoute>} />
+        <Route path="/vendor/flights" element={<ProtectedVendorRoute><VendorFlights /></ProtectedVendorRoute>} />
+        <Route path="/vendor/flights/create" element={<ProtectedVendorRoute><VendorFlightFormPage /></ProtectedVendorRoute>} />
+        <Route path="/vendor/flights/:id/edit" element={<ProtectedVendorRoute><VendorFlightFormPage /></ProtectedVendorRoute>} />
+        <Route path="/vendor/buses" element={<ProtectedVendorRoute><VendorBuses /></ProtectedVendorRoute>} />
+        <Route path="/vendor/buses/create" element={<ProtectedVendorRoute><VendorBusForm /></ProtectedVendorRoute>} />
+        <Route path="/vendor/buses/:id/edit" element={<ProtectedVendorRoute><VendorBusForm /></ProtectedVendorRoute>} />
 
         <Route path="*" element={<NotFound />} />
       </Routes>
-      {!isAdminRoute && <Footer />}
+      {!isAdminRoute && !isVendorRoute && <Footer />}
+      </VendorProvider>
     </AdminProvider>
     </ThemeProvider>
   )

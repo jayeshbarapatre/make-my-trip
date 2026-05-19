@@ -27,7 +27,10 @@ const AdminSidebar = ({ isOpen, toggleSidebar }) => {
       title: 'MANAGEMENT',
       items: [
         { path: '/admin/bookings', label: 'Bookings', icon: 'fas fa-calendar-check' },
-        { path: '/admin/users', label: 'Users', icon: 'fas fa-users' }
+        { path: '/admin/users', label: 'Users', icon: 'fas fa-users' },
+        { path: '/admin/vendors', label: 'Vendors', icon: 'fas fa-store' },
+        { path: '/admin/approvals', label: 'Hotel Approvals', icon: 'fas fa-check-circle' },
+        { path: '/admin/flight-approvals', label: 'Flight Approvals', icon: 'fas fa-plane' }
       ]
     }
   ]

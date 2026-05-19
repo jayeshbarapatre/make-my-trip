@@ -5,11 +5,13 @@ import cors from 'cors'
 import { connectDB } from './config/db.js'
 import authRoutes from './routes/auth.js'
 import flightRoutes from './routes/flights.js'
+import busRoutes from './routes/buses.js'
 import bookingRoutes from './routes/bookings.js'
 import paymentRoutes from './routes/paymentRoutes.js'
 import userRoutes from './routes/userRoutes.js'
 import unifiedSearchRoutes from './routes/unifiedSearch.js'
 import adminRoutes from './routes/adminRoutes.js'
+import vendorRoutes from './routes/vendorRoutes.js'
 import autocompleteRoutes from './routes/autocomplete.js'
 import hotelRoutes from './routes/hotels.js'
 
@@ -27,6 +29,8 @@ app.use('/api/auth', authRoutes)
 app.use('/api/v1/auth', authRoutes)
 app.use('/api/flights', flightRoutes)
 app.use('/api/v1/flights', flightRoutes)
+app.use('/api/buses', busRoutes)
+app.use('/api/v1/buses', busRoutes)
 app.use('/api/bookings', bookingRoutes)
 app.use('/api/v1/bookings', bookingRoutes)
 app.use('/api/payment', paymentRoutes)
@@ -37,6 +41,8 @@ app.use('/api/search', unifiedSearchRoutes)
 app.use('/api/v1/search', unifiedSearchRoutes)
 app.use('/api/admin', adminRoutes)
 app.use('/api/v1/admin', adminRoutes)
+app.use('/api/vendor', vendorRoutes)
+app.use('/api/v1/vendor', vendorRoutes)
 app.use('/api/autocomplete', autocompleteRoutes)
 app.use('/api/v1/autocomplete', autocompleteRoutes)
 app.use('/api/hotels', hotelRoutes)

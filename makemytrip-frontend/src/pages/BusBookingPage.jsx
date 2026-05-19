@@ -1,0 +1,629 @@
+import { useState, useEffect } from 'react'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
+import { busService } from '../services/busService'
+import { useAuth } from '../context/AuthContext'
+import { authService, bookingService } from '../services/authService'
+import jsPDF from 'jspdf'
+import html2canvas from 'html2canvas'
+
+const fmtTime = (val) => {
+  if (!val) return 'N/A'
+  if (typeof val === 'object' && val.time) return val.time
+  if (typeof val === 'string' && val.match(/^\d{1,2}:\d{2}/)) return val
+  const d = new Date(val)
+  if (isNaN(d.getTime())) return val
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+}
+
+const fmtDuration = (m) => {
+  if (!m || isNaN(m)) return 'N/A'
+  const duration = Number(m)
+  const hours = Math.floor(duration / 60)
+  const mins = duration % 60
+  if (hours > 0 && mins > 0) return `${hours}h ${mins}m`
+  if (hours > 0) return `${hours}h`
+  return `${mins}m`
+}
+
+const fmtPrice = (p) => '₹' + Number(p).toLocaleString('en-IN')
+
+const fmtDate = (dateStr) => {
+  if (!dateStr) return 'N/A'
+  const [year, month, day] = dateStr.split('-')
+  if (!year || !month || !day) return dateStr
+  const d = new Date(Number(year), Number(month) - 1, Number(day))
+  if (isNaN(d.getTime())) return dateStr
+  return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })
+}
+
+export default function BusBookingPage() {
+  const { busId } = useParams()
+  const navigate = useNavigate()
+  const location = useLocation()
+  const searchDate = location.state?.searchDate
+
+  const { user, verifyOtpLogin } = useAuth()
+  const [showLoginModal, setShowLoginModal] = useState(false)
+  const [mobilePhone, setMobilePhone] = useState('')
+  const [otpCode, setOtpCode] = useState('')
+  const [otpSent, setOtpSent] = useState(false)
+  const [pendingStep, setPendingStep] = useState(null)
+  const [loginError, setLoginError] = useState('')
+
+  const [step, setStep] = useState(1)
+
+  const [travellers] = useState(() => {
+    try {
+      const saved = localStorage.getItem('travellers_bus')
+      return saved ? JSON.parse(saved) : { count: 1 }
+    } catch {
+      return { count: 1 }
+    }
+  })
+
+  const [passengerDetails, setPassengerDetails] = useState(() => {
+    const list = []
+    for (let i = 0; i < (travellers.count || 1); i++) {
+      list.push({ name: '', age: '', gender: 'Male', seat: i + 1 })
+    }
+    return list
+  })
+
+  const [contact, setContact] = useState({ email: '', phone: '' })
+  const [errors, setErrors] = useState({})
+  const [paymentLoading, setPaymentLoading] = useState(false)
+  const [bookingDetails, setBookingDetails] = useState(null)
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['bus', busId],
+    queryFn: () => busService.getById(busId),
+    retry: false,
+  })
+
+  const rawBus = data?.data || location.state?.bus
+  const bus = rawBus ? (() => {
+    const departure = typeof rawBus.departure === 'string' ? JSON.parse(rawBus.departure) : rawBus.departure
+    const arrival = typeof rawBus.arrival === 'string' ? JSON.parse(rawBus.arrival) : rawBus.arrival
+
+    const dateToUse = searchDate || departure?.date
+
+    return {
+      ...rawBus,
+      departure: { ...departure, date: dateToUse },
+      arrival: { ...arrival, date: dateToUse },
+      source: departure?.city || rawBus.source,
+      destination: arrival?.city || rawBus.destination,
+    }
+  })() : null
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [step])
+
+  if (isLoading && !bus) return (
+    <div style={{ padding: '2rem', textAlign: 'center' }}>
+      <p>Loading bus details…</p>
+    </div>
+  )
+
+  if (!bus) return (
+    <div style={{ padding: '2rem', textAlign: 'center' }}>
+      <p>Bus not found.</p>
+      <button className="btn btn-secondary" onClick={() => navigate(-1)}>Go Back</button>
+    </div>
+  )
+
+  const passengerCount = passengerDetails.length
+  const basePrice = bus.price * passengerCount
+  const taxes = Math.round(basePrice * 0.18)
+  const totalAmount = basePrice + taxes
+
+  const validatePassengersForm = () => {
+    const errs = {}
+
+    if (!contact.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email)) {
+      errs.email = 'Please enter a valid email address.'
+    }
+    if (!contact.phone || contact.phone.trim().length < 10) {
+      errs.phone = 'Please enter a valid 10-digit mobile number.'
+    }
+
+    passengerDetails.forEach((p, i) => {
+      if (!p.name.trim()) errs[`p_${i}_name`] = 'Name is required.'
+      if (!p.age) errs[`p_${i}_age`] = 'Age is required.'
+    })
+
+    setErrors(errs)
+    return Object.keys(errs).length === 0
+  }
+
+  const handleProceedToPassengers = () => {
+    if (!user) {
+      setPendingStep(2)
+      setShowLoginModal(true)
+      return
+    }
+    setStep(2)
+  }
+
+  const handleSendOtp = async (e) => {
+    e.preventDefault()
+    if (!mobilePhone || mobilePhone.length < 10) {
+      setLoginError('Please enter a valid 10-digit mobile number')
+      return
+    }
+    setLoginError('')
+    try {
+      const res = await authService.sendMobileOtp(mobilePhone)
+      if (res && (res.data || res.message)) {
+        setOtpSent(true)
+      } else {
+        setLoginError('Failed to send OTP. Please try again.')
+      }
+    } catch (err) {
+      setLoginError(err.message || 'Failed to send OTP. Please try again.')
+    }
+  }
+
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault()
+    if (!otpCode || otpCode.length < 6) {
+      setLoginError('Please enter a valid 6-digit OTP (e.g., 123456)')
+      return
+    }
+    setLoginError('')
+    try {
+      await verifyOtpLogin(mobilePhone, otpCode)
+      setShowLoginModal(false)
+      if (pendingStep) setStep(pendingStep)
+    } catch (err) {
+      setLoginError(err.message || 'Verification failed. Try 123456.')
+    }
+  }
+
+  const handleProceedToPayment = () => {
+    if (!user) {
+      setPendingStep(3)
+      setShowLoginModal(true)
+      return
+    }
+    if (validatePassengersForm()) {
+      setStep(3)
+    } else {
+      const firstErr = Object.keys(errors)[0]
+      if (firstErr) {
+        const el = document.getElementById(firstErr)
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }
+    }
+  }
+
+  const handlePaymentSubmit = async (e) => {
+    e.preventDefault()
+    if (!user) {
+      setPendingStep(3)
+      setShowLoginModal(true)
+      return
+    }
+
+    setPaymentLoading(true)
+    try {
+      const bookingPayload = {
+        busId: bus.id,
+        passengers: passengerDetails,
+        totalPrice: totalAmount,
+        contactEmail: contact.email,
+        contactPhone: contact.phone,
+      }
+
+      const response = await bookingService.createBusBooking(bookingPayload)
+      const booking = response.data
+
+      setBookingDetails(booking)
+      setStep(4)
+    } catch (error) {
+      console.error('Booking failed:', error)
+      alert(error.response?.data?.message || 'Booking failed. Please try again.')
+    } finally {
+      setPaymentLoading(false)
+    }
+  }
+
+  const downloadTicket = async () => {
+    const ticketElement = document.getElementById('ticket-content')
+    if (!ticketElement) return
+
+    try {
+      const canvas = await html2canvas(ticketElement, { scale: 2 })
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
+      const imgData = canvas.toDataURL('image/png')
+      const imgWidth = 190
+      const imgHeight = (canvas.height * imgWidth) / canvas.width
+      pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight)
+      pdf.save(`bus-ticket-${bookingDetails.id}.pdf`)
+    } catch (error) {
+      console.error('PDF generation failed:', error)
+    }
+  }
+
+  return (
+    <div style={{ minHeight: '100vh', background: '#f5f5f5', padding: '2rem 1rem' }}>
+      <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+        <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
+          <h1 style={{ margin: '0 0 0.5rem', fontSize: '1.875rem', fontWeight: 700 }}>Book Your Bus</h1>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '2rem', marginTop: '1rem' }}>
+            {[1, 2, 3, 4].map(s => (
+              <div key={s} style={{
+                padding: '0.75rem 1.5rem',
+                background: step >= s ? '#003580' : '#ccc',
+                color: 'white',
+                borderRadius: '50px',
+                fontSize: '0.875rem',
+                fontWeight: 600,
+              }}>
+                Step {s}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {step === 1 && (
+          <div style={{ background: 'white', borderRadius: '0.5rem', padding: '2rem', marginBottom: '2rem' }}>
+            <h2 style={{ marginTop: 0, marginBottom: '1.5rem' }}>Review Bus Details</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '2rem' }}>
+              <div>
+                <p style={{ margin: '0 0 0.5rem', fontSize: '0.875rem', color: '#666', fontWeight: 600, textTransform: 'uppercase' }}>OPERATOR</p>
+                <p style={{ margin: 0, fontSize: '1.125rem', fontWeight: 600 }}>{bus.operator}</p>
+              </div>
+              <div>
+                <p style={{ margin: '0 0 0.5rem', fontSize: '0.875rem', color: '#666', fontWeight: 600, textTransform: 'uppercase' }}>BUS TYPE</p>
+                <p style={{ margin: 0, fontSize: '1.125rem', fontWeight: 600 }}>{bus.type || 'AC'}</p>
+              </div>
+              <div>
+                <p style={{ margin: '0 0 0.5rem', fontSize: '0.875rem', color: '#666', fontWeight: 600, textTransform: 'uppercase' }}>DEPARTURE</p>
+                <p style={{ margin: 0, fontSize: '1rem' }}>{fmtTime(bus.departureTime)}</p>
+                <p style={{ margin: '0.25rem 0 0', fontSize: '0.875rem', color: '#666' }}>{fmtDate(bus.departure?.date)} - {bus.from}</p>
+              </div>
+              <div>
+                <p style={{ margin: '0 0 0.5rem', fontSize: '0.875rem', color: '#666', fontWeight: 600, textTransform: 'uppercase' }}>ARRIVAL</p>
+                <p style={{ margin: 0, fontSize: '1rem' }}>{fmtTime(bus.arrivalTime)}</p>
+                <p style={{ margin: '0.25rem 0 0', fontSize: '0.875rem', color: '#666' }}>{fmtDate(bus.arrival?.date)} - {bus.to}</p>
+              </div>
+              <div>
+                <p style={{ margin: '0 0 0.5rem', fontSize: '0.875rem', color: '#666', fontWeight: 600, textTransform: 'uppercase' }}>DURATION</p>
+                <p style={{ margin: 0, fontSize: '1.125rem', fontWeight: 600 }}>{fmtDuration(bus.durationMinutes)}</p>
+              </div>
+              <div>
+                <p style={{ margin: '0 0 0.5rem', fontSize: '0.875rem', color: '#666', fontWeight: 600, textTransform: 'uppercase' }}>PRICE PER SEAT</p>
+                <p style={{ margin: 0, fontSize: '1.125rem', fontWeight: 600 }}>{fmtPrice(bus.price)}</p>
+              </div>
+            </div>
+
+            {bus.amenities && bus.amenities.length > 0 && (
+              <div style={{ marginBottom: '2rem' }}>
+                <p style={{ margin: '0 0 0.75rem', fontSize: '0.875rem', color: '#666', fontWeight: 600, textTransform: 'uppercase' }}>AMENITIES</p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
+                  {bus.amenities.map((a, i) => (
+                    <span key={i} style={{
+                      background: '#f0f0f0',
+                      padding: '0.5rem 1rem',
+                      borderRadius: '20px',
+                      fontSize: '0.875rem'
+                    }}>
+                      {a}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+              <button className="btn btn-outline" onClick={() => navigate(-1)}>Cancel</button>
+              <button className="btn btn-primary" onClick={handleProceedToPassengers}>
+                Continue to Passengers
+              </button>
+            </div>
+          </div>
+        )}
+
+        {step === 2 && (
+          <div style={{ background: 'white', borderRadius: '0.5rem', padding: '2rem', marginBottom: '2rem' }}>
+            <h2 style={{ marginTop: 0, marginBottom: '1.5rem' }}>Passenger Details</h2>
+
+            <div style={{ marginBottom: '2rem', padding: '1rem', background: '#f9f9f9', borderRadius: '0.5rem' }}>
+              <h3 style={{ marginTop: 0, marginBottom: '1rem', fontSize: '1rem' }}>Contact Information</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, fontSize: '0.875rem' }}>EMAIL</label>
+                  <input
+                    type="email"
+                    value={contact.email}
+                    onChange={(e) => setContact({ ...contact, email: e.target.value })}
+                    id="email"
+                    style={{
+                      width: '100%',
+                      padding: '0.5rem',
+                      border: `1px solid ${errors.email ? '#e63946' : '#ddd'}`,
+                      borderRadius: '0.375rem'
+                    }}
+                    placeholder="your@email.com"
+                  />
+                  {errors.email && <p style={{ color: '#e63946', fontSize: '0.875rem', marginTop: '0.25rem' }}>{errors.email}</p>}
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, fontSize: '0.875rem' }}>PHONE</label>
+                  <input
+                    type="tel"
+                    value={contact.phone}
+                    onChange={(e) => setContact({ ...contact, phone: e.target.value })}
+                    id="phone"
+                    style={{
+                      width: '100%',
+                      padding: '0.5rem',
+                      border: `1px solid ${errors.phone ? '#e63946' : '#ddd'}`,
+                      borderRadius: '0.375rem'
+                    }}
+                    placeholder="10-digit number"
+                    maxLength={10}
+                  />
+                  {errors.phone && <p style={{ color: '#e63946', fontSize: '0.875rem', marginTop: '0.25rem' }}>{errors.phone}</p>}
+                </div>
+              </div>
+            </div>
+
+            <h3 style={{ marginTop: 0, marginBottom: '1rem', fontSize: '1rem' }}>Passengers ({passengerCount})</h3>
+            <div style={{ display: 'grid', gap: '1rem', marginBottom: '2rem' }}>
+              {passengerDetails.map((p, i) => (
+                <div key={i} style={{ padding: '1rem', background: '#f9f9f9', borderRadius: '0.5rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, fontSize: '0.875rem' }}>SEAT {p.seat}</label>
+                    <input
+                      type="text"
+                      value={p.name}
+                      onChange={(e) => {
+                        const updated = [...passengerDetails]
+                        updated[i].name = e.target.value
+                        setPassengerDetails(updated)
+                      }}
+                      id={`p_${i}_name`}
+                      style={{
+                        width: '100%',
+                        padding: '0.5rem',
+                        border: `1px solid ${errors[`p_${i}_name`] ? '#e63946' : '#ddd'}`,
+                        borderRadius: '0.375rem'
+                      }}
+                      placeholder="Full name"
+                    />
+                    {errors[`p_${i}_name`] && <p style={{ color: '#e63946', fontSize: '0.875rem', marginTop: '0.25rem' }}>{errors[`p_${i}_name`]}</p>}
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, fontSize: '0.875rem' }}>AGE</label>
+                    <input
+                      type="number"
+                      value={p.age}
+                      onChange={(e) => {
+                        const updated = [...passengerDetails]
+                        updated[i].age = e.target.value
+                        setPassengerDetails(updated)
+                      }}
+                      id={`p_${i}_age`}
+                      style={{
+                        width: '100%',
+                        padding: '0.5rem',
+                        border: `1px solid ${errors[`p_${i}_age`] ? '#e63946' : '#ddd'}`,
+                        borderRadius: '0.375rem'
+                      }}
+                      placeholder="Age"
+                      min="1"
+                      max="120"
+                    />
+                    {errors[`p_${i}_age`] && <p style={{ color: '#e63946', fontSize: '0.875rem', marginTop: '0.25rem' }}>{errors[`p_${i}_age`]}</p>}
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, fontSize: '0.875rem' }}>GENDER</label>
+                    <select
+                      value={p.gender}
+                      onChange={(e) => {
+                        const updated = [...passengerDetails]
+                        updated[i].gender = e.target.value
+                        setPassengerDetails(updated)
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '0.5rem',
+                        border: '1px solid #ddd',
+                        borderRadius: '0.375rem'
+                      }}
+                    >
+                      <option>Male</option>
+                      <option>Female</option>
+                      <option>Other</option>
+                    </select>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+              <button className="btn btn-outline" onClick={() => setStep(1)}>Back</button>
+              <button className="btn btn-primary" onClick={handleProceedToPayment}>
+                Continue to Payment
+              </button>
+            </div>
+          </div>
+        )}
+
+        {step === 3 && (
+          <div style={{ background: 'white', borderRadius: '0.5rem', padding: '2rem', marginBottom: '2rem' }}>
+            <h2 style={{ marginTop: 0, marginBottom: '1.5rem' }}>Review & Confirm</h2>
+
+            <div style={{ marginBottom: '2rem', padding: '1.5rem', background: '#f9f9f9', borderRadius: '0.5rem' }}>
+              <h3 style={{ marginTop: 0, marginBottom: '1rem', fontSize: '1rem' }}>Price Summary</h3>
+              <div style={{ display: 'grid', gap: '0.75rem', fontSize: '0.95rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Base Price ({passengerCount} × {fmtPrice(bus.price)})</span>
+                  <span>{fmtPrice(basePrice)}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Taxes & Fees (18%)</span>
+                  <span>{fmtPrice(taxes)}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #ddd', paddingTop: '0.75rem', fontSize: '1.1rem', fontWeight: 700 }}>
+                  <span>Total Amount</span>
+                  <span>{fmtPrice(totalAmount)}</span>
+                </div>
+              </div>
+            </div>
+
+            <form onSubmit={handlePaymentSubmit}>
+              <div style={{ marginBottom: '2rem', padding: '1.5rem', background: '#f9f9f9', borderRadius: '0.5rem' }}>
+                <h3 style={{ marginTop: 0, marginBottom: '1rem', fontSize: '1rem' }}>Payment Method</h3>
+                <div style={{ display: 'grid', gap: '0.75rem' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
+                    <input type="radio" name="payment" value="upi" defaultChecked style={{ cursor: 'pointer' }} />
+                    <span>UPI (Recommended)</span>
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
+                    <input type="radio" name="payment" value="card" style={{ cursor: 'pointer' }} />
+                    <span>Credit/Debit Card</span>
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
+                    <input type="radio" name="payment" value="netbanking" style={{ cursor: 'pointer' }} />
+                    <span>Net Banking</span>
+                  </label>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+                <button type="button" className="btn btn-outline" onClick={() => setStep(2)}>Back</button>
+                <button type="submit" className="btn btn-primary" disabled={paymentLoading}>
+                  {paymentLoading ? 'Processing...' : `Confirm & Pay ${fmtPrice(totalAmount)}`}
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {step === 4 && bookingDetails && (
+          <div style={{ background: 'white', borderRadius: '0.5rem', padding: '2rem' }}>
+            <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>✓</div>
+              <h2 style={{ margin: '0 0 0.5rem', color: '#27ae60', fontSize: '1.875rem' }}>Booking Confirmed!</h2>
+              <p style={{ margin: '0.5rem 0 0', color: '#666' }}>Your bus ticket has been booked successfully</p>
+            </div>
+
+            <div id="ticket-content" style={{ padding: '2rem', background: '#f9f9f9', borderRadius: '0.5rem', marginBottom: '2rem' }}>
+              <div style={{ marginBottom: '1.5rem', borderBottom: '1px solid #ddd', paddingBottom: '1rem' }}>
+                <h3 style={{ margin: '0 0 0.5rem', fontSize: '1.125rem' }}>Booking Confirmation</h3>
+                <p style={{ margin: 0, color: '#666', fontSize: '0.875rem' }}>Booking ID: <strong>{bookingDetails.id}</strong></p>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                <div>
+                  <p style={{ margin: '0 0 0.5rem', fontSize: '0.75rem', color: '#666', fontWeight: 600, textTransform: 'uppercase' }}>OPERATOR</p>
+                  <p style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>{bus.operator}</p>
+                </div>
+                <div>
+                  <p style={{ margin: '0 0 0.5rem', fontSize: '0.75rem', color: '#666', fontWeight: 600, textTransform: 'uppercase' }}>BUS TYPE</p>
+                  <p style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>{bus.type || 'AC'}</p>
+                </div>
+                <div>
+                  <p style={{ margin: '0 0 0.5rem', fontSize: '0.75rem', color: '#666', fontWeight: 600, textTransform: 'uppercase' }}>FROM</p>
+                  <p style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>{bus.from} - {fmtTime(bus.departureTime)}</p>
+                </div>
+                <div>
+                  <p style={{ margin: '0 0 0.5rem', fontSize: '0.75rem', color: '#666', fontWeight: 600, textTransform: 'uppercase' }}>TO</p>
+                  <p style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>{bus.to} - {fmtTime(bus.arrivalTime)}</p>
+                </div>
+                <div>
+                  <p style={{ margin: '0 0 0.5rem', fontSize: '0.75rem', color: '#666', fontWeight: 600, textTransform: 'uppercase' }}>PASSENGERS</p>
+                  <p style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>{passengerCount}</p>
+                </div>
+                <div>
+                  <p style={{ margin: '0 0 0.5rem', fontSize: '0.75rem', color: '#666', fontWeight: 600, textTransform: 'uppercase' }}>TOTAL AMOUNT</p>
+                  <p style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>{fmtPrice(totalAmount)}</p>
+                </div>
+              </div>
+
+              <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid #ddd' }}>
+                <h4 style={{ marginTop: 0, marginBottom: '0.75rem', fontSize: '0.875rem', fontWeight: 600 }}>PASSENGERS</h4>
+                <div style={{ display: 'grid', gap: '0.5rem', fontSize: '0.875rem' }}>
+                  {passengerDetails.map((p, i) => (
+                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span>{i + 1}. {p.name} (Age: {p.age})</span>
+                      <span>Seat {p.seat}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+              <button className="btn btn-outline" onClick={downloadTicket}>
+                <i className="fas fa-download"></i> Download Ticket
+              </button>
+              <button className="btn btn-primary" onClick={() => navigate('/')}>
+                Back to Home
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {showLoginModal && (
+        <div className="custom-modal-overlay">
+          <div className="custom-login-card">
+            <button className="custom-modal-close" onClick={() => setShowLoginModal(false)}>✕</button>
+            <div className="custom-login-header">
+              <span className="custom-login-icon">🔐</span>
+              <h3>Login to Continue</h3>
+              <p>Enter your mobile number to instantly login.</p>
+            </div>
+            {loginError && <div className="custom-login-error">{loginError}</div>}
+            {!otpSent ? (
+              <form onSubmit={handleSendOtp}>
+                <div className="custom-input-group">
+                  <label>MOBILE NUMBER</label>
+                  <div className="custom-phone-input">
+                    <span className="custom-country-code">+91</span>
+                    <input
+                      type="tel"
+                      placeholder="10-digit mobile number"
+                      value={mobilePhone}
+                      maxLength={10}
+                      onChange={(e) => setMobilePhone(e.target.value)}
+                      autoFocus
+                      required
+                    />
+                  </div>
+                </div>
+                <button type="submit" className="custom-login-btn">GET OTP</button>
+              </form>
+            ) : (
+              <form onSubmit={handleVerifyOtp}>
+                <div className="custom-input-group">
+                  <div className="custom-otp-header">
+                    <label>ENTER 6-DIGIT OTP</label>
+                    <button type="button" onClick={() => setOtpSent(false)}>Change Number</button>
+                  </div>
+                  <input
+                    type="text"
+                    maxLength="6"
+                    placeholder="Enter 6-digit OTP"
+                    value={otpCode}
+                    onChange={(e) => setOtpCode(e.target.value)}
+                    className="custom-otp-input"
+                    autoFocus
+                    required
+                  />
+                </div>
+                <button type="submit" className="custom-verify-btn">VERIFY & RESUME BOOKING</button>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
