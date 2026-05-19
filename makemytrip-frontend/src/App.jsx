@@ -48,6 +48,7 @@ import VendorLoginPage from './pages/VendorLoginPage'
 import VendorDashboard from './pages/VendorDashboard'
 import VendorHotels from './pages/VendorHotels'
 import VendorHotelFormPage from './pages/VendorHotelFormPage'
+import VendorHotelRooms from './pages/VendorHotelRooms'
 import ProtectedVendorRoute from './components/Vendor/ProtectedVendorRoute'
 
 function NotFound() {
@@ -163,6 +164,7 @@ function AppContent() {
         <Route path="/vendor/hotels" element={<ProtectedVendorRoute><VendorHotels /></ProtectedVendorRoute>} />
         <Route path="/vendor/hotels/create" element={<ProtectedVendorRoute><VendorHotelFormPage /></ProtectedVendorRoute>} />
         <Route path="/vendor/hotels/:id/edit" element={<ProtectedVendorRoute><VendorHotelFormPage /></ProtectedVendorRoute>} />
+        <Route path="/vendor/hotels/:hotelId/rooms" element={<ProtectedVendorRoute><VendorHotelRooms /></ProtectedVendorRoute>} />
 
         <Route path="*" element={<NotFound />} />
       </Routes>
