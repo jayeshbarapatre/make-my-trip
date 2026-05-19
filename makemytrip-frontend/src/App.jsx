@@ -38,7 +38,6 @@ import AdminLoginPage from './pages/AdminLoginPage'
 import AdminDashboard from './pages/AdminDashboard'
 import AdminFlights from './pages/AdminFlights'
 import AdminHotels from './pages/AdminHotels'
-import AdminHotelRooms from './pages/AdminHotelRooms'
 import AdminBuses from './pages/AdminBuses'
 import AdminCabs from './pages/AdminCabs'
 import AdminBookings from './pages/AdminBookings'
@@ -146,7 +145,6 @@ function AppContent() {
         <Route path="/admin/dashboard" element={<ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute>} />
         <Route path="/admin/flights" element={<ProtectedAdminRoute><AdminFlights /></ProtectedAdminRoute>} />
         <Route path="/admin/hotels" element={<ProtectedAdminRoute><AdminHotels /></ProtectedAdminRoute>} />
-        <Route path="/admin/hotels/:id/rooms" element={<ProtectedAdminRoute><AdminHotelRooms /></ProtectedAdminRoute>} />
         <Route path="/admin/buses" element={<ProtectedAdminRoute><AdminBuses /></ProtectedAdminRoute>} />
         <Route path="/admin/cabs" element={<ProtectedAdminRoute><AdminCabs /></ProtectedAdminRoute>} />
         <Route path="/admin/bookings" element={<ProtectedAdminRoute><AdminBookings /></ProtectedAdminRoute>} />
