@@ -17,7 +17,7 @@ import {
 } from '../controllers/dashboardController.js'
 import { authenticateAdmin, adminOnly } from '../middleware/adminAuth.js'
 import { getPendingHotels, approveHotel, rejectHotel } from '../controllers/adminHotelApprovalController.js'
-import { getAllVendors, createVendor, deleteVendor, toggleVendorStatus } from '../controllers/adminVendorController.js'
+import { getAllVendors, createVendor, deleteVendor, toggleVendorStatus, getVendorHotels } from '../controllers/adminVendorController.js'
 
 const router = express.Router()
 
@@ -68,6 +68,7 @@ router.patch('/approvals/hotels/:id/reject', authenticateAdmin, adminOnly, rejec
 
 router.get('/vendors', authenticateAdmin, adminOnly, getAllVendors)
 router.post('/vendors', authenticateAdmin, adminOnly, createVendor)
+router.get('/vendors/:id/hotels', authenticateAdmin, adminOnly, getVendorHotels)
 router.delete('/vendors/:id', authenticateAdmin, adminOnly, deleteVendor)
 router.patch('/vendors/:id/toggle', authenticateAdmin, adminOnly, toggleVendorStatus)
 

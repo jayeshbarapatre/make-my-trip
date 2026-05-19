@@ -8,6 +8,10 @@ const AdminVendors = () => {
   const [vendors, setVendors] = useState([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
+  const [showHotels, setShowHotels] = useState(false)
+  const [selectedVendor, setSelectedVendor] = useState(null)
+  const [vendorHotels, setVendorHotels] = useState([])
+  const [loadingHotels, setLoadingHotels] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -74,6 +78,24 @@ const AdminVendors = () => {
       toast.error(err.response?.data?.message || 'Failed to create vendor')
     } finally {
       setSubmitting(false)
+    }
+  }
+
+  const handleViewHotels = async (vendor) => {
+    try {
+      setSelectedVendor(vendor)
+      setLoadingHotels(true)
+      const token = localStorage.getItem('adminToken')
+      const response = await axios.get(`${API_BASE_URL}/admin/vendors/${vendor.id}/hotels`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      setVendorHotels(response.data.data.hotels || [])
+      setShowHotels(true)
+    } catch (err) {
+      toast.error('Failed to load vendor hotels')
+      console.error(err)
+    } finally {
+      setLoadingHotels(false)
     }
   }
 
@@ -328,7 +350,23 @@ const AdminVendors = () => {
                       </span>
                     </td>
                     <td>{new Date(vendor.createdAt).toLocaleDateString()}</td>
-                    <td>
+                    <td style={{ display: 'flex', gap: '8px' }}>
+                      <button
+                        className="btn-sm"
+                        onClick={() => handleViewHotels(vendor)}
+                        style={{
+                          background: '#dbeafe',
+                          color: '#0c4a6e',
+                          padding: '6px 10px',
+                          border: 'none',
+                          borderRadius: '4px',
+                          fontSize: '12px',
+                          fontWeight: '600',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <i className="fas fa-eye"></i> View
+                      </button>
                       <button
                         className="btn-sm btn-delete"
                         onClick={() => handleDelete(vendor.id)}
@@ -350,6 +388,122 @@ const AdminVendors = () => {
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {showHotels && selectedVendor && (
+          <div className="modal-overlay" onClick={() => !loadingHotels && setShowHotels(false)}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h2>{selectedVendor.name}'s Hotels</h2>
+                <button
+                  onClick={() => setShowHotels(false)}
+                  disabled={loadingHotels}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    fontSize: '20px',
+                    color: '#6b7280',
+                    cursor: 'pointer',
+                    padding: 0
+                  }}
+                >
+                  <i className="fas fa-times"></i>
+                </button>
+              </div>
+
+              <div className="modal-body">
+                {loadingHotels ? (
+                  <div style={{ textAlign: 'center', padding: '40px' }}>
+                    <i className="fas fa-spinner fa-spin" style={{ fontSize: '32px', color: '#1a73e8', marginBottom: '12px' }}></i>
+                    <p style={{ color: '#6b7280' }}>Loading hotels...</p>
+                  </div>
+                ) : vendorHotels.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '40px', color: '#6b7280' }}>
+                    <p>No hotels added yet</p>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {vendorHotels.map(hotel => (
+                      <div
+                        key={hotel.id}
+                        style={{
+                          border: '1px solid #e5e7eb',
+                          borderRadius: '8px',
+                          padding: '16px',
+                          background: '#f9fafb'
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '8px' }}>
+                          <div>
+                            <h4 style={{ margin: '0 0 4px 0', color: '#1a1f36', fontSize: '14px', fontWeight: '700' }}>
+                              {hotel.name}
+                            </h4>
+                            <p style={{ margin: '0', color: '#6b7280', fontSize: '13px' }}>
+                              📍 {hotel.city}
+                            </p>
+                          </div>
+                          <span
+                            style={{
+                              display: 'inline-block',
+                              padding: '4px 12px',
+                              borderRadius: '20px',
+                              fontSize: '11px',
+                              fontWeight: '600',
+                              background:
+                                hotel.listingStatus === 'APPROVED'
+                                  ? '#dcfce7'
+                                  : hotel.listingStatus === 'PENDING_APPROVAL'
+                                  ? '#fef3c7'
+                                  : hotel.listingStatus === 'REJECTED'
+                                  ? '#fee2e2'
+                                  : '#e5e7eb',
+                              color:
+                                hotel.listingStatus === 'APPROVED'
+                                  ? '#166534'
+                                  : hotel.listingStatus === 'PENDING_APPROVAL'
+                                  ? '#78350f'
+                                  : hotel.listingStatus === 'REJECTED'
+                                  ? '#991b1b'
+                                  : '#374151'
+                            }}
+                          >
+                            {hotel.listingStatus.replace(/_/g, ' ')}
+                          </span>
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', fontSize: '12px' }}>
+                          <div>
+                            <span style={{ color: '#9ca3af', fontSize: '11px', textTransform: 'uppercase' }}>Price/Night</span>
+                            <p style={{ margin: '4px 0 0 0', fontWeight: '600', color: '#1a1f36' }}>
+                              ₹{hotel.pricePerNight.toLocaleString()}
+                            </p>
+                          </div>
+                          <div>
+                            <span style={{ color: '#9ca3af', fontSize: '11px', textTransform: 'uppercase' }}>Rooms</span>
+                            <p style={{ margin: '4px 0 0 0', fontWeight: '600', color: '#1a1f36' }}>
+                              {hotel.rooms}
+                            </p>
+                          </div>
+                          <div>
+                            <span style={{ color: '#9ca3af', fontSize: '11px', textTransform: 'uppercase' }}>Rating</span>
+                            <p style={{ margin: '4px 0 0 0', fontWeight: '600', color: '#1a1f36' }}>
+                              ⭐ {hotel.rating.toFixed(1)}
+                            </p>
+                          </div>
+                        </div>
+
+                        {hotel.listingStatus === 'REJECTED' && hotel.rejectionReason && (
+                          <div style={{ marginTop: '12px', padding: '8px 12px', background: '#fee2e2', borderRadius: '4px', fontSize: '12px', color: '#991b1b' }}>
+                            <strong>Rejection Reason:</strong> {hotel.rejectionReason}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
       </div>

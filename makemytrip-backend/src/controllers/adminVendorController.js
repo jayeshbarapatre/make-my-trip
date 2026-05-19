@@ -17,6 +17,28 @@ export const getAllVendors = async (req, res) => {
   }
 }
 
+export const getVendorHotels = async (req, res) => {
+  try {
+    const vendor = await prisma.user.findUnique({
+      where: { id: req.params.id }
+    })
+
+    if (!vendor || !vendor.is_vendor) {
+      return res.status(404).json({ message: 'Vendor not found' })
+    }
+
+    const hotels = await prisma.hotel.findMany({
+      where: { vendorId: req.params.id },
+      include: { roomCategories: true },
+      orderBy: { createdAt: 'desc' }
+    })
+
+    res.json({ data: { hotels } })
+  } catch (err) {
+    res.status(500).json({ message: err.message })
+  }
+}
+
 export const createVendor = async (req, res) => {
   try {
     const { name, email, password, phone } = req.body
