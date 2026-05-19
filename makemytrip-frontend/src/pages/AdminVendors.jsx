@@ -16,7 +16,8 @@ const AdminVendors = () => {
     name: '',
     email: '',
     password: '',
-    phone: ''
+    phone: '',
+    vendorType: 'hotel'
   })
   const [submitting, setSubmitting] = useState(false)
 
@@ -72,7 +73,7 @@ const AdminVendors = () => {
 
       toast.success('Vendor created successfully')
       setVendors([response.data.data.vendor, ...vendors])
-      setFormData({ name: '', email: '', password: '', phone: '' })
+      setFormData({ name: '', email: '', password: '', phone: '', vendorType: 'hotel' })
       setShowForm(false)
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to create vendor')
@@ -133,7 +134,7 @@ const AdminVendors = () => {
           <div>
             <h1>Manage Vendors</h1>
             <p style={{ margin: '4px 0 0 0', color: '#6b7280', fontSize: '14px' }}>
-              Register and manage hotel vendors
+              Register and manage hotel & flight vendors
             </p>
           </div>
           <button
@@ -232,6 +233,31 @@ const AdminVendors = () => {
 
                   <div>
                     <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', fontSize: '13px', color: '#374151' }}>
+                      Vendor Type *
+                    </label>
+                    <select
+                      name="vendorType"
+                      value={formData.vendorType}
+                      onChange={handleInputChange}
+                      required
+                      style={{
+                        width: '100%',
+                        padding: '10px 12px',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '6px',
+                        fontSize: '14px',
+                        fontFamily: 'inherit',
+                        boxSizing: 'border-box'
+                      }}
+                    >
+                      <option value="hotel">Hotel Vendor</option>
+                      <option value="flight">Flight Vendor</option>
+                      <option value="multi">Multi-Service</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', fontSize: '13px', color: '#374151' }}>
                       Password (min 8 characters) *
                     </label>
                     <input
@@ -315,7 +341,7 @@ const AdminVendors = () => {
                   <th>Vendor Name</th>
                   <th>Email</th>
                   <th>Phone</th>
-                  <th>Hotels</th>
+                  <th>Type</th>
                   <th>Status</th>
                   <th>Joined</th>
                   <th>Actions</th>
@@ -330,8 +356,8 @@ const AdminVendors = () => {
                     <td>{vendor.email}</td>
                     <td>{vendor.phone}</td>
                     <td>
-                      <span style={{ background: '#dbeafe', color: '#0c4a6e', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: '600' }}>
-                        {vendor._count?.hotels || 0} hotels
+                      <span style={{ background: vendor.vendorType === 'flight' ? '#fce7f3' : vendor.vendorType === 'multi' ? '#e0e7ff' : '#dbeafe', color: vendor.vendorType === 'flight' ? '#831843' : vendor.vendorType === 'multi' ? '#3730a3' : '#0c4a6e', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: '600' }}>
+                        {vendor.vendorType === 'flight' ? '✈️ Flight' : vendor.vendorType === 'multi' ? '🌐 Multi' : '🏨 Hotel'}
                       </span>
                     </td>
                     <td>

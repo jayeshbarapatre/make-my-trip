@@ -35,16 +35,20 @@ export const searchFlights = async (req, res) => {
   try {
     const { from, to, date, passengers, page = 1, limit = 20, minPrice, maxPrice } = req.query
 
-    // Fetch active flights from database
+    // Fetch active AND approved flights from database (vendor listings must be approved to show)
     const allFlights = await prisma.flight.findMany({
-      where: { isActive: true },
+      where: {
+        isActive: true,
+        listingStatus: 'APPROVED'
+      },
+      include: { vendor: { select: { id: true, name: true } } },
       orderBy: { price: 'asc' }
     })
 
     // Filter by route and criteria
     let results = allFlights.filter(f => {
-      const fromMatch = !from || (f.departure && f.departure.city && f.departure.city.toLowerCase() === from.toLowerCase())
-      const toMatch = !to || (f.arrival && f.arrival.city && f.arrival.city.toLowerCase() === to.toLowerCase())
+      const fromMatch = !from || (f.from && f.from.toLowerCase() === from.toLowerCase())
+      const toMatch = !to || (f.to && f.to.toLowerCase() === to.toLowerCase())
       const matchPassengers = !passengers || f.seatsAvailable >= parseInt(passengers)
       const matchMinPrice = !minPrice || f.price >= parseFloat(minPrice)
       const matchMaxPrice = !maxPrice || f.price <= parseFloat(maxPrice)

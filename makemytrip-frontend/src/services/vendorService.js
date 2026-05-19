@@ -41,4 +41,14 @@ export const vendorRoomsService = {
   toggleStatus: (hotelId, roomId) => vendorAPI.patch(`/hotels/${hotelId}/rooms/${roomId}/toggle`)
 }
 
+export const vendorFlightsService = {
+  getAll: (params) => vendorAPI.get('/flights', { params }),
+  getById: (id) => vendorAPI.get(`/flights/${id}`),
+  create: (data) => vendorAPI.post('/flights', data),
+  update: (id, data) => vendorAPI.put(`/flights/${id}`, data),
+  delete: (id) => vendorAPI.delete(`/flights/${id}`),
+  submit: (id) => vendorAPI.patch(`/flights/${id}/submit`),
+  toggleStatus: (id) => vendorAPI.patch(`/flights/${id}/toggle`)
+}
+
 export default vendorAPI

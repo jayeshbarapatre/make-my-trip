@@ -204,8 +204,9 @@
   background:
     linear-gradient(180deg, rgba(0, 0, 0, 0.35) 0%, rgba(0, 0, 0, 0.15) 50%, rgba(0, 0, 0, 0.05) 100%),
     url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=1920&q=80') center / cover no-repeat;
-  padding: 60px 0 140px;
+  padding: 80px 0 140px;
   overflow: visible;
+  margin-top: 72px;
 }
 
 .hp-hero::before {
@@ -760,7 +761,8 @@
 }
 
 .hp-offer-flight {
-  background: linear-gradient(135deg, hsl(var(--p)) 0%, hsl(var(--p) / 0.8) 100%);
+  background-color: hsl(var(--p));
+  background-blend-mode: overlay;
 }
 
 .hp-offer-flight::before {
@@ -768,7 +770,7 @@
 }
 
 .hp-offer-hotel {
-  background: linear-gradient(135deg, hsl(var(--wa)) 0%, hsl(var(--er)) 100%);
+  background-color: hsl(var(--wa));
 }
 
 .hp-offer-hotel::before {
@@ -776,7 +778,7 @@
 }
 
 .hp-offer-luxury {
-  background: linear-gradient(135deg, hsl(var(--bc)) 0%, hsl(var(--bc) / 0.6) 100%);
+  background-color: hsl(var(--bc));
 }
 
 .hp-offer-luxury::before {
@@ -784,7 +786,7 @@
 }
 
 .hp-offer-beach {
-  background: linear-gradient(180deg, hsl(var(--p)) 0%, hsl(var(--p)) 60%, hsl(var(--wa)) 60%, hsl(var(--wa)) 100%);
+  background-color: hsl(var(--wa));
 }
 
 .hp-offer-beach::before {
@@ -792,7 +794,7 @@
 }
 
 .hp-offer-cab {
-  background: linear-gradient(135deg, hsl(var(--wa)) 0%, hsl(var(--wa)) 100%);
+  background-color: hsl(var(--wa));
 }
 
 .hp-offer-cab::before {

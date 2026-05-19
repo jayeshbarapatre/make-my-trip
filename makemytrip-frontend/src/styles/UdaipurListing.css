@@ -24,6 +24,7 @@
   color: var(--text);
   background: var(--bg);
   min-height: 100vh;
+  padding-top: 70px;
   padding-bottom: 80px;
 }
 
@@ -38,6 +39,9 @@
   background: var(--card);
   border-bottom: 1px solid var(--border);
   padding: 12px 0;
+  position: relative;
+  z-index: 10;
+  overflow: visible;
 }
 
 .udaipur-page-wrapper .searchbar {
@@ -48,6 +52,7 @@
   display: flex;
   gap: 0;
   align-items: stretch;
+  position: relative;
 }
 
 .udaipur-page-wrapper .sb-field {
@@ -57,6 +62,8 @@
   border-right: 0;
   background: var(--card);
   cursor: text;
+  position: relative;
+  overflow: visible;
 }
 
 .udaipur-page-wrapper .sb-field:first-child {

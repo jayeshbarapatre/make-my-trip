@@ -39,6 +39,8 @@ function SearchBar({ onSearch, city, checkIn, checkOut, guests }) {
   const g = guests ? JSON.parse(guests) : { adults: 2, rooms: 1 };
   const [inDate, setInDate] = useState(checkIn || '');
   const [outDate, setOutDate] = useState(checkOut || '');
+  const [cityInput, setCityInput] = useState(city || '');
+  const [showCitySuggestions, setShowCitySuggestions] = useState(false);
 
   useEffect(() => {
     setInDate(checkIn || '');
@@ -62,11 +64,73 @@ function SearchBar({ onSearch, city, checkIn, checkOut, guests }) {
     return d.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
   };
 
+  const citySuggestions = ['Mumbai', 'Delhi', 'Bangalore', 'Hyderabad', 'Chennai', 'Kolkata', 'Pune', 'Udaipur', 'Goa', 'Jaipur'];
+  const filteredCities = citySuggestions.filter(c => c.toLowerCase().includes(cityInput.toLowerCase()));
+
+  const handleCitySelect = (selectedCity) => {
+    setCityInput(selectedCity);
+    setShowCitySuggestions(false);
+    if (onSearch) {
+      onSearch(selectedCity, inDate, outDate);
+    }
+  };
+
   return (
     <div className="searchbar">
-      <div className="sb-field flex2">
+      <div className="sb-field flex2" style={{ position: 'relative' }}>
         <div className="sb-lbl">CITY, AREA OR PROPERTY</div>
-        <div className="sb-val">{city || "Udaipur"}</div>
+        <input
+          type="text"
+          value={cityInput}
+          onChange={(e) => {
+            setCityInput(e.target.value);
+            setShowCitySuggestions(true);
+          }}
+          onFocus={() => setShowCitySuggestions(true)}
+          placeholder={city || "Udaipur"}
+          style={{
+            border: 'none',
+            background: 'transparent',
+            fontSize: '15px',
+            fontWeight: '700',
+            color: 'hsl(var(--bc))',
+            outline: 'none',
+            width: '100%',
+            padding: '0',
+          }}
+        />
+        {showCitySuggestions && filteredCities.length > 0 && (
+          <div style={{
+            position: 'absolute',
+            top: '100%',
+            left: '0',
+            right: '0',
+            background: 'hsl(var(--b1))',
+            border: '1px solid hsl(var(--b3))',
+            borderRadius: '4px',
+            marginTop: '4px',
+            zIndex: 1000,
+            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+          }}>
+            {filteredCities.map(c => (
+              <div
+                key={c}
+                onClick={() => handleCitySelect(c)}
+                style={{
+                  padding: '10px 14px',
+                  cursor: 'pointer',
+                  borderBottom: '1px solid hsl(var(--b3))',
+                  color: 'hsl(var(--bc))',
+                  fontSize: '13px',
+                }}
+                onMouseEnter={(e) => e.target.style.background = 'hsl(var(--b2))'}
+                onMouseLeave={(e) => e.target.style.background = 'transparent'}
+              >
+                {c}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
       <div className="sb-field" style={{ position: 'relative', cursor: 'pointer' }}
         onClick={() => { setShowInCal(p => !p); setShowOutCal(false) }}>

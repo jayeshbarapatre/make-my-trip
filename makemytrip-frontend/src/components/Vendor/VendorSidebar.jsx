@@ -17,7 +17,8 @@ const VendorSidebar = ({ isOpen, toggleSidebar }) => {
     {
       title: 'MY PROPERTY',
       items: [
-        { path: '/vendor/hotels', label: 'My Hotels', icon: 'fas fa-hotel' }
+        { path: '/vendor/hotels', label: 'My Hotels', icon: 'fas fa-hotel' },
+        { path: '/vendor/flights', label: 'My Flights', icon: 'fas fa-plane' }
       ]
     },
     {
@@ -78,7 +79,9 @@ const VendorSidebar = ({ isOpen, toggleSidebar }) => {
             </div>
             <div>
               <div className="vendor-name-small">{vendor?.name || 'Vendor'}</div>
-              <div className="vendor-role">Hotel Vendor</div>
+              <div className="vendor-role">
+                {vendor?.vendorType === 'flight' ? 'Flight Vendor' : vendor?.vendorType === 'multi' ? 'Multi-Service' : 'Hotel Vendor'}
+              </div>
             </div>
           </div>
           <button className="logout-btn" onClick={handleLogout}>

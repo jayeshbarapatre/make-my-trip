@@ -51,6 +51,9 @@ import VendorDashboard from './pages/VendorDashboard'
 import VendorHotels from './pages/VendorHotels'
 import VendorHotelFormPage from './pages/VendorHotelFormPage'
 import VendorHotelRooms from './pages/VendorHotelRooms'
+import VendorFlights from './pages/VendorFlights'
+import VendorFlightFormPage from './pages/VendorFlightFormPage'
+import AdminFlightApprovals from './pages/AdminFlightApprovals'
 import ProtectedVendorRoute from './components/Vendor/ProtectedVendorRoute'
 
 function NotFound() {
@@ -162,6 +165,7 @@ function AppContent() {
         <Route path="/admin/users" element={<ProtectedAdminRoute><AdminUsers /></ProtectedAdminRoute>} />
         <Route path="/admin/vendors" element={<ProtectedAdminRoute><AdminVendors /></ProtectedAdminRoute>} />
         <Route path="/admin/approvals" element={<ProtectedAdminRoute><AdminApprovals /></ProtectedAdminRoute>} />
+        <Route path="/admin/flight-approvals" element={<ProtectedAdminRoute><AdminFlightApprovals /></ProtectedAdminRoute>} />
 
         <Route path="/vendor/login" element={<VendorLoginPage />} />
         <Route path="/vendor/dashboard" element={<ProtectedVendorRoute><VendorDashboard /></ProtectedVendorRoute>} />
@@ -169,6 +173,9 @@ function AppContent() {
         <Route path="/vendor/hotels/create" element={<ProtectedVendorRoute><VendorHotelFormPage /></ProtectedVendorRoute>} />
         <Route path="/vendor/hotels/:id/edit" element={<ProtectedVendorRoute><VendorHotelFormPage /></ProtectedVendorRoute>} />
         <Route path="/vendor/hotels/:hotelId/rooms" element={<ProtectedVendorRoute><VendorHotelRooms /></ProtectedVendorRoute>} />
+        <Route path="/vendor/flights" element={<ProtectedVendorRoute><VendorFlights /></ProtectedVendorRoute>} />
+        <Route path="/vendor/flights/create" element={<ProtectedVendorRoute><VendorFlightFormPage /></ProtectedVendorRoute>} />
+        <Route path="/vendor/flights/:id/edit" element={<ProtectedVendorRoute><VendorFlightFormPage /></ProtectedVendorRoute>} />
 
         <Route path="*" element={<NotFound />} />
       </Routes>

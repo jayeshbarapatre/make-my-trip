@@ -41,10 +41,14 @@ export const getVendorHotels = async (req, res) => {
 
 export const createVendor = async (req, res) => {
   try {
-    const { name, email, password, phone } = req.body
+    const { name, email, password, phone, vendorType = 'hotel' } = req.body
 
     if (!name || !email || !password || !phone) {
       return res.status(400).json({ message: 'Name, email, password, and phone are required' })
+    }
+
+    if (!['hotel', 'flight', 'multi'].includes(vendorType)) {
+      return res.status(400).json({ message: 'Invalid vendor type. Must be hotel, flight, or multi' })
     }
 
     if (password.length < 8) {
@@ -64,10 +68,10 @@ export const createVendor = async (req, res) => {
         password: hashed,
         phone,
         is_vendor: true,
-        vendorType: 'hotel',
+        vendorType,
         vendorStatus: 'ACTIVE'
       },
-      select: { id: true, name: true, email: true, phone: true, is_vendor: true, vendorStatus: true, createdAt: true }
+      select: { id: true, name: true, email: true, phone: true, is_vendor: true, vendorType: true, vendorStatus: true, createdAt: true }
     })
 
     res.status(201).json({

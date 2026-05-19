@@ -4,8 +4,8 @@ import { adminService } from '../services/adminService'
 import toast from 'react-hot-toast'
 import './AdminFlights.css'
 
-const AdminApprovals = () => {
-  const [hotels, setHotels] = useState([])
+const AdminFlightApprovals = () => {
+  const [flights, setFlights] = useState([])
   const [loading, setLoading] = useState(true)
   const [rejectingId, setRejectingId] = useState(null)
   const [rejectReason, setRejectReason] = useState('')
@@ -13,16 +13,16 @@ const AdminApprovals = () => {
   const [approvingId, setApprovingId] = useState(null)
 
   useEffect(() => {
-    fetchPendingHotels()
+    fetchPendingFlights()
   }, [])
 
-  const fetchPendingHotels = async () => {
+  const fetchPendingFlights = async () => {
     try {
       setLoading(true)
-      const response = await adminService.getPendingHotels()
-      setHotels(response.data.data.hotels || [])
+      const response = await adminService.getPendingFlights()
+      setFlights(response.data.data.flights || [])
     } catch (err) {
-      toast.error('Failed to load pending hotels')
+      toast.error('Failed to load pending flights')
       console.error(err)
     } finally {
       setLoading(false)
@@ -34,18 +34,18 @@ const AdminApprovals = () => {
 
     try {
       setProcessing(true)
-      await adminService.approveHotel(approvingId)
-      toast.success('Hotel approved successfully')
-      setHotels(hotels.filter(h => h.id !== approvingId))
+      await adminService.approveFlight(approvingId)
+      toast.success('Flight approved successfully')
+      setFlights(flights.filter(f => f.id !== approvingId))
       setApprovingId(null)
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to approve hotel')
+      toast.error(err.response?.data?.message || 'Failed to approve flight')
     } finally {
       setProcessing(false)
     }
   }
 
-  const handleReject = async (hotelId) => {
+  const handleReject = async (flightId) => {
     if (!rejectReason.trim()) {
       toast.error('Please provide a rejection reason')
       return
@@ -53,13 +53,13 @@ const AdminApprovals = () => {
 
     try {
       setProcessing(true)
-      await adminService.rejectHotel(hotelId, { reason: rejectReason })
-      toast.success('Hotel rejected successfully')
-      setHotels(hotels.filter(h => h.id !== hotelId))
+      await adminService.rejectFlight(flightId, { reason: rejectReason })
+      toast.success('Flight rejected successfully')
+      setFlights(flights.filter(f => f.id !== flightId))
       setRejectingId(null)
       setRejectReason('')
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to reject hotel')
+      toast.error(err.response?.data?.message || 'Failed to reject flight')
     } finally {
       setProcessing(false)
     }
@@ -81,50 +81,52 @@ const AdminApprovals = () => {
       <div className="admin-flights-page">
         <div className="page-header">
           <div>
-            <h1>Hotel Approvals</h1>
-            <p className="subtitle">Pending vendor hotel listings</p>
+            <h1>Flight Approvals</h1>
+            <p className="subtitle">Pending vendor flight listings</p>
           </div>
         </div>
 
-        {hotels.length === 0 ? (
+        {flights.length === 0 ? (
           <div style={{ padding: '60px 20px', textAlign: 'center', color: 'hsl(var(--bc) / 0.6))' }}>
-            <p style={{ margin: 0 }}>No pending hotel approvals</p>
+            <p style={{ margin: 0 }}>No pending flight approvals</p>
           </div>
         ) : (
           <div className="table-container">
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>Hotel Name</th>
-                  <th>City</th>
-                  <th>Vendor Name</th>
-                  <th>Vendor Email</th>
-                  <th>Submitted At</th>
+                  <th>Airline</th>
+                  <th>Flight Number</th>
+                  <th>Route</th>
+                  <th>Departure</th>
+                  <th>Price</th>
+                  <th>Seats</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {hotels.map(hotel => (
-                  <tr key={hotel.id}>
+                {flights.map(flight => (
+                  <tr key={flight.id}>
                     <td>
-                      <strong>{hotel.name}</strong>
+                      <strong>{flight.airline}</strong>
                     </td>
-                    <td>{hotel.city}</td>
-                    <td>{hotel.vendor?.name || 'N/A'}</td>
-                    <td>{hotel.vendor?.email || 'N/A'}</td>
-                    <td>{hotel.submittedAt ? new Date(hotel.submittedAt).toLocaleDateString() : 'N/A'}</td>
+                    <td>{flight.flightNumber}</td>
+                    <td>{flight.from} → {flight.to}</td>
+                    <td>{flight.departureTime}</td>
+                    <td>₹{flight.price.toLocaleString()}</td>
+                    <td>{flight.seatsAvailable}</td>
                     <td>
                       <div style={{ display: 'flex', gap: '8px' }}>
                         <button
                           className="btn-sm btn-success"
-                          onClick={() => setApprovingId(hotel.id)}
+                          onClick={() => setApprovingId(flight.id)}
                           disabled={processing}
                         >
                           <i className="fas fa-check"></i> Approve
                         </button>
                         <button
                           className="btn-sm btn-error"
-                          onClick={() => setRejectingId(hotel.id)}
+                          onClick={() => setRejectingId(flight.id)}
                           disabled={processing}
                         >
                           <i className="fas fa-times"></i> Reject
@@ -155,17 +157,17 @@ const AdminApprovals = () => {
                 </div>
                 <div className="flex-1">
                   <h3 className="font-bold text-xl text-success">
-                    Approve Hotel Listing
+                    Approve Flight Listing
                   </h3>
                   <p className="text-base-content/70 text-sm mt-1">
-                    Hotel will be visible to customers
+                    Flight will be visible to customers
                   </p>
                 </div>
               </div>
 
               <div className="p-4 rounded-lg mb-6 bg-success/5 border border-success/20">
                 <p className="text-base-content">
-                  Are you sure you want to approve this hotel listing? It will be immediately published on the platform.
+                  Are you sure you want to approve this flight listing? It will be immediately published on the platform.
                 </p>
               </div>
 
@@ -214,7 +216,7 @@ const AdminApprovals = () => {
                 </div>
                 <div className="flex-1">
                   <h3 className="font-bold text-xl text-error">
-                    Reject Hotel Listing
+                    Reject Flight Listing
                   </h3>
                   <p className="text-base-content/70 text-sm mt-1">
                     Provide feedback to the vendor
@@ -268,4 +270,4 @@ const AdminApprovals = () => {
   )
 }
 
-export default AdminApprovals
+export default AdminFlightApprovals

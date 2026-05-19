@@ -15,7 +15,7 @@ model User {
   password      String
   is_admin      Boolean   @default(false)
   is_vendor     Boolean   @default(false)
-  vendorType    String?   // "hotel" | "airline"
+  vendorType    String?   // "hotel" | "airline" | "multi"
   vendorName    String?
   vendorStatus  String    @default("ACTIVE") // "ACTIVE" | "SUSPENDED"
   otp           String?
@@ -24,6 +24,7 @@ model User {
   updatedAt     DateTime  @updatedAt
   bookings      Booking[]
   hotels        Hotel[]   @relation("HotelVendor")
+  flights       Flight[]  @relation("FlightVendor")
 }
 
 model Booking {
@@ -47,8 +48,13 @@ model Flight {
   id              String   @id @default(uuid())
   airline         String
   flightNumber    String   @unique
-  departure       Json     // { city, time }
-  arrival         Json     // { city, time }
+  from            String?
+  to              String?
+  departureTime   String?
+  arrivalTime     String?
+  durationMinutes Int?
+  departure       Json?    // { city, time }
+  arrival         Json?    // { city, time }
   duration        String?
   price           Float
   seats           Int      @default(180)
@@ -57,6 +63,13 @@ model Flight {
   stops           Int      @default(0)
   aircraft        String?
   image           String?
+  vendorId        String?
+  vendor          User?    @relation("FlightVendor", fields: [vendorId], references: [id], onDelete: SetNull)
+  listingStatus   String   @default("DRAFT") // "DRAFT" | "PENDING_APPROVAL" | "APPROVED" | "REJECTED"
+  rejectionReason String?
+  submittedAt     DateTime?
+  approvedAt      DateTime?
+  approvedBy      String?
   isActive        Boolean  @default(true)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt

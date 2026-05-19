@@ -1,30 +1,30 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import VendorLayout from '../components/Vendor/VendorLayout'
-import { vendorHotelsService } from '../services/vendorService'
+import { vendorFlightsService } from '../services/vendorService'
 import toast from 'react-hot-toast'
-import './VendorHotels.css'
+import './VendorFlights.css'
 
-const VendorHotels = () => {
+const VendorFlights = () => {
   const navigate = useNavigate()
-  const [hotels, setHotels] = useState([])
+  const [flights, setFlights] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [confirmDialog, setConfirmDialog] = useState(null)
   const [processingId, setProcessingId] = useState(null)
 
   useEffect(() => {
-    fetchHotels()
+    fetchFlights()
   }, [])
 
-  const fetchHotels = async () => {
+  const fetchFlights = async () => {
     try {
       setLoading(true)
-      const response = await vendorHotelsService.getAll()
-      setHotels(response.data.data.hotels || [])
+      const response = await vendorFlightsService.getAll()
+      setFlights(response.data.data.flights || [])
       setError('')
     } catch (err) {
-      setError('Failed to load hotels')
+      setError('Failed to load flights')
       console.error(err)
     } finally {
       setLoading(false)
@@ -34,18 +34,18 @@ const VendorHotels = () => {
   const handleSubmitForApproval = (id) => {
     setConfirmDialog({
       type: 'submit',
-      hotelId: id,
+      flightId: id,
       title: 'Submit for Approval',
-      message: 'Submit this hotel for admin review?'
+      message: 'Submit this flight for admin review?'
     })
   }
 
   const handleDelete = (id) => {
     setConfirmDialog({
       type: 'delete',
-      hotelId: id,
-      title: 'Delete Hotel',
-      message: 'Delete this hotel? This action cannot be undone.'
+      flightId: id,
+      title: 'Delete Flight',
+      message: 'Delete this flight? This action cannot be undone.'
     })
   }
 
@@ -53,16 +53,16 @@ const VendorHotels = () => {
     if (!confirmDialog) return
 
     try {
-      setProcessingId(confirmDialog.hotelId)
+      setProcessingId(confirmDialog.flightId)
       if (confirmDialog.type === 'submit') {
-        await vendorHotelsService.submit(confirmDialog.hotelId)
-        toast.success('Hotel submitted for approval')
+        await vendorFlightsService.submit(confirmDialog.flightId)
+        toast.success('Flight submitted for approval')
       } else if (confirmDialog.type === 'delete') {
-        await vendorHotelsService.delete(confirmDialog.hotelId)
-        toast.success('Hotel deleted successfully')
-        setHotels(hotels.filter(h => h.id !== confirmDialog.hotelId))
+        await vendorFlightsService.delete(confirmDialog.flightId)
+        toast.success('Flight deleted successfully')
+        setFlights(flights.filter(f => f.id !== confirmDialog.flightId))
       }
-      fetchHotels()
+      fetchFlights()
       setConfirmDialog(null)
     } catch (err) {
       toast.error(err.response?.data?.message || 'Action failed')
@@ -90,7 +90,7 @@ const VendorHotels = () => {
     return (
       <VendorLayout>
         <div className="loading-state">
-          <i className="fas fa-spinner fa-spin"></i> Loading hotels...
+          <i className="fas fa-spinner fa-spin"></i> Loading flights...
         </div>
       </VendorLayout>
     )
@@ -98,78 +98,83 @@ const VendorHotels = () => {
 
   return (
     <VendorLayout>
-      <div className="vendor-hotels-page">
+      <div className="vendor-flights-page">
         <div className="page-header">
           <div>
-            <h1>My Hotels</h1>
+            <h1>My Flights</h1>
             <div style={{ display: 'flex', gap: '24px', marginTop: '8px', fontSize: '14px', color: 'hsl(var(--bc) / 0.55)' }}>
-              <span>📊 Total: <strong style={{ color: 'hsl(var(--bc))' }}>{hotels.length}</strong></span>
-              <span>✏️ Draft: <strong style={{ color: 'hsl(var(--bc))' }}>{hotels.filter(h => h.listingStatus === 'DRAFT').length}</strong></span>
-              <span>⏳ Pending: <strong style={{ color: 'hsl(var(--wa))' }}>{hotels.filter(h => h.listingStatus === 'PENDING_APPROVAL').length}</strong></span>
-              <span>✅ Approved: <strong style={{ color: 'hsl(var(--su))' }}>{hotels.filter(h => h.listingStatus === 'APPROVED').length}</strong></span>
+              <span>📊 Total: <strong style={{ color: 'hsl(var(--bc))' }}>{flights.length}</strong></span>
+              <span>✏️ Draft: <strong style={{ color: 'hsl(var(--bc))' }}>{flights.filter(f => f.listingStatus === 'DRAFT').length}</strong></span>
+              <span>⏳ Pending: <strong style={{ color: 'hsl(var(--wa))' }}>{flights.filter(f => f.listingStatus === 'PENDING_APPROVAL').length}</strong></span>
+              <span>✅ Approved: <strong style={{ color: 'hsl(var(--su))' }}>{flights.filter(f => f.listingStatus === 'APPROVED').length}</strong></span>
             </div>
           </div>
-          <button className="btn-primary" onClick={() => navigate('/vendor/hotels/create')} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <i className="fas fa-plus"></i> Add New Hotel
+          <button className="btn-primary" onClick={() => navigate('/vendor/flights/create')} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <i className="fas fa-plus"></i> Add New Flight
           </button>
         </div>
 
         {error && <div className="error-banner">{error}</div>}
 
-        {hotels.length === 0 ? (
+        {flights.length === 0 ? (
           <div className="empty-state">
-            <p>No hotels yet. Create your first hotel listing!</p>
+            <p>No flights yet. Create your first flight listing!</p>
           </div>
         ) : (
-          <div className="hotels-list">
-            {hotels.map(hotel => (
-              <div key={hotel.id} className="hotel-card">
-                <div className="hotel-header">
-                  <div className="hotel-info">
-                    <h3 className="hotel-name">{hotel.name}</h3>
-                    <p className="hotel-city">{hotel.city}</p>
+          <div className="flights-list">
+            {flights.map(flight => (
+              <div key={flight.id} className="flight-card">
+                <div className="flight-header">
+                  <div className="flight-info">
+                    <h3 className="flight-name">{flight.airline} - {flight.flightNumber}</h3>
+                    <p className="flight-route">{flight.from} → {flight.to}</p>
                   </div>
-                  <span className={`badge ${getStatusBadgeClass(hotel.listingStatus)}`}>
-                    {hotel.listingStatus.replace(/_/g, ' ')}
+                  <span className={`badge ${getStatusBadgeClass(flight.listingStatus)}`}>
+                    {flight.listingStatus.replace(/_/g, ' ')}
                   </span>
                 </div>
 
-                {hotel.listingStatus === 'REJECTED' && hotel.rejectionReason && (
+                {flight.listingStatus === 'REJECTED' && flight.rejectionReason && (
                   <div className="rejection-reason">
                     <i className="fas fa-exclamation-triangle"></i>
-                    <span><strong>Rejection Reason:</strong> {hotel.rejectionReason}</span>
+                    <span><strong>Rejection Reason:</strong> {flight.rejectionReason}</span>
                   </div>
                 )}
 
-                <div className="hotel-details">
+                <div className="flight-details">
                   <div className="detail-item">
-                    <span className="detail-label">Price/Night:</span>
-                    <span className="detail-value">₹{hotel.pricePerNight.toLocaleString()}</span>
+                    <span className="detail-label">Departure:</span>
+                    <span className="detail-value">{flight.departureTime}</span>
                   </div>
                   <div className="detail-item">
-                    <span className="detail-label">Total Rooms:</span>
-                    <span className="detail-value">{hotel.rooms}</span>
+                    <span className="detail-label">Arrival:</span>
+                    <span className="detail-value">{flight.arrivalTime}</span>
                   </div>
                   <div className="detail-item">
-                    <span className="detail-label">Rating:</span>
-                    <span className="detail-value">⭐ {hotel.rating.toFixed(1)}</span>
+                    <span className="detail-label">Duration:</span>
+                    <span className="detail-value">{flight.durationMinutes} min</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">Price:</span>
+                    <span className="detail-value">₹{flight.price.toLocaleString()}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">Seats:</span>
+                    <span className="detail-value">{flight.seatsAvailable}</span>
                   </div>
                 </div>
 
-                <div className="hotel-actions">
-                  <button className="btn-sm btn-edit" onClick={() => navigate(`/vendor/hotels/${hotel.id}/edit`)}>
+                <div className="flight-actions">
+                  <button className="btn-sm btn-edit" onClick={() => navigate(`/vendor/flights/${flight.id}/edit`)}>
                     <i className="fas fa-edit"></i> Edit
                   </button>
-                  <button className="btn-sm btn-rooms" onClick={() => navigate(`/vendor/hotels/${hotel.id}/rooms`)}>
-                    <i className="fas fa-door-open"></i> Rooms
-                  </button>
-                  {['DRAFT', 'REJECTED'].includes(hotel.listingStatus) && (
-                    <button className="btn-sm btn-submit" onClick={() => handleSubmitForApproval(hotel.id)}>
+                  {['DRAFT', 'REJECTED'].includes(flight.listingStatus) && (
+                    <button className="btn-sm btn-submit" onClick={() => handleSubmitForApproval(flight.id)}>
                       <i className="fas fa-paper-plane"></i> Submit for Approval
                     </button>
                   )}
-                  {['DRAFT', 'REJECTED'].includes(hotel.listingStatus) && (
-                    <button className="btn-sm btn-delete" onClick={() => handleDelete(hotel.id)}>
+                  {['DRAFT', 'REJECTED'].includes(flight.listingStatus) && (
+                    <button className="btn-sm btn-delete" onClick={() => handleDelete(flight.id)}>
                       <i className="fas fa-trash"></i> Delete
                     </button>
                   )}
@@ -204,7 +209,7 @@ const VendorHotels = () => {
                   {confirmDialog.title}
                 </h3>
                 <p className="text-base-content/70 text-sm mt-1">
-                  {confirmDialog.type === 'delete' ? 'This action is permanent' : 'This will send your hotel for admin review'}
+                  {confirmDialog.type === 'delete' ? 'This action is permanent' : 'This will send your flight for admin review'}
                 </p>
               </div>
             </div>
@@ -228,13 +233,13 @@ const VendorHotels = () => {
                 onClick={confirmAction}
                 disabled={processingId !== null}
               >
-                {processingId === confirmDialog.hotelId && (
+                {processingId === confirmDialog.flightId && (
                   <span className="loading loading-spinner loading-sm"></span>
                 )}
                 <span>
-                  {processingId === confirmDialog.hotelId
+                  {processingId === confirmDialog.flightId
                     ? (confirmDialog.type === 'delete' ? 'Deleting...' : 'Submitting...')
-                    : (confirmDialog.type === 'delete' ? 'Delete Hotel' : 'Submit Hotel')}
+                    : (confirmDialog.type === 'delete' ? 'Delete Flight' : 'Submit Flight')}
                 </span>
               </button>
             </div>
@@ -248,4 +253,4 @@ const VendorHotels = () => {
   )
 }
 
-export default VendorHotels
+export default VendorFlights

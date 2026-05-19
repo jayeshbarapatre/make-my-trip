@@ -69,7 +69,10 @@ export const adminDashboardService = {
 export const adminService = {
   getPendingHotels: () => adminAPI.get('/approvals/hotels'),
   approveHotel: (id) => adminAPI.patch(`/approvals/hotels/${id}/approve`),
-  rejectHotel: (id, data) => adminAPI.patch(`/approvals/hotels/${id}/reject`, data)
+  rejectHotel: (id, data) => adminAPI.patch(`/approvals/hotels/${id}/reject`, data),
+  getPendingFlights: () => adminAPI.get('/approvals/flights'),
+  approveFlight: (id) => adminAPI.patch(`/approvals/flights/${id}/approve`),
+  rejectFlight: (id, data) => adminAPI.patch(`/approvals/flights/${id}/reject`, data)
 }
 
 export default adminAPI
