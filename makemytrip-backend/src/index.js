@@ -10,6 +10,7 @@ import paymentRoutes from './routes/paymentRoutes.js'
 import userRoutes from './routes/userRoutes.js'
 import unifiedSearchRoutes from './routes/unifiedSearch.js'
 import adminRoutes from './routes/adminRoutes.js'
+import vendorRoutes from './routes/vendorRoutes.js'
 import autocompleteRoutes from './routes/autocomplete.js'
 import hotelRoutes from './routes/hotels.js'
 
@@ -37,6 +38,8 @@ app.use('/api/search', unifiedSearchRoutes)
 app.use('/api/v1/search', unifiedSearchRoutes)
 app.use('/api/admin', adminRoutes)
 app.use('/api/v1/admin', adminRoutes)
+app.use('/api/vendor', vendorRoutes)
+app.use('/api/v1/vendor', vendorRoutes)
 app.use('/api/autocomplete', autocompleteRoutes)
 app.use('/api/v1/autocomplete', autocompleteRoutes)
 app.use('/api/hotels', hotelRoutes)

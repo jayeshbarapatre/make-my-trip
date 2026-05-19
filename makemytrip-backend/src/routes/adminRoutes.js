@@ -16,6 +16,7 @@ import {
   getDashboardStats, getRevenueData, getRecentBookings, getAvailabilityStats
 } from '../controllers/dashboardController.js'
 import { authenticateAdmin, adminOnly } from '../middleware/adminAuth.js'
+import { getPendingHotels, approveHotel, rejectHotel } from '../controllers/adminHotelApprovalController.js'
 
 const router = express.Router()
 
@@ -59,5 +60,9 @@ router.get('/cabs/:id', authenticateAdmin, adminOnly, getCabById)
 router.put('/cabs/:id', authenticateAdmin, adminOnly, updateCab)
 router.delete('/cabs/:id', authenticateAdmin, adminOnly, deleteCab)
 router.patch('/cabs/:id/toggle', authenticateAdmin, adminOnly, toggleCabStatus)
+
+router.get('/approvals/hotels', authenticateAdmin, adminOnly, getPendingHotels)
+router.patch('/approvals/hotels/:id/approve', authenticateAdmin, adminOnly, approveHotel)
+router.patch('/approvals/hotels/:id/reject', authenticateAdmin, adminOnly, rejectHotel)
 
 export default router

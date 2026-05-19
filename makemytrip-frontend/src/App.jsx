@@ -33,6 +33,7 @@ import VisaPage from './pages/VisaPage'
 import MyTrips from './pages/MyTrips'
 import Profile from './pages/Profile'
 import { AdminProvider } from './context/AdminContext'
+import { VendorProvider } from './context/VendorContext'
 import { ThemeProvider } from './context/ThemeContext'
 import AdminLoginPage from './pages/AdminLoginPage'
 import AdminDashboard from './pages/AdminDashboard'
@@ -43,6 +44,8 @@ import AdminCabs from './pages/AdminCabs'
 import AdminBookings from './pages/AdminBookings'
 import AdminUsers from './pages/AdminUsers'
 import ProtectedAdminRoute from './components/Admin/ProtectedAdminRoute'
+import VendorLoginPage from './pages/VendorLoginPage'
+import ProtectedVendorRoute from './components/Vendor/ProtectedVendorRoute'
 
 function NotFound() {
   return (
@@ -101,6 +104,7 @@ function RouteLoader() {
 function AppContent() {
   const location = useLocation()
   const isAdminRoute = location.pathname.startsWith('/admin')
+  const isVendorRoute = location.pathname.startsWith('/vendor')
 
   // Initialize theme on mount
   useEffect(() => {
@@ -111,8 +115,9 @@ function AppContent() {
   return (
     <ThemeProvider>
       <AdminProvider>
+      <VendorProvider>
       <RouteLoader />
-      {!isAdminRoute && <Header />}
+      {!isAdminRoute && !isVendorRoute && <Header />}
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/flights/results" element={<SearchResultsPage />} />
@@ -150,9 +155,12 @@ function AppContent() {
         <Route path="/admin/bookings" element={<ProtectedAdminRoute><AdminBookings /></ProtectedAdminRoute>} />
         <Route path="/admin/users" element={<ProtectedAdminRoute><AdminUsers /></ProtectedAdminRoute>} />
 
+        <Route path="/vendor/login" element={<VendorLoginPage />} />
+
         <Route path="*" element={<NotFound />} />
       </Routes>
-      {!isAdminRoute && <Footer />}
+      {!isAdminRoute && !isVendorRoute && <Footer />}
+      </VendorProvider>
     </AdminProvider>
     </ThemeProvider>
   )

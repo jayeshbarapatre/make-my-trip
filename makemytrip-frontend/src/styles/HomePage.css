@@ -455,7 +455,7 @@
   position: relative;
 }
 
-.hp-field:last-child {
+.hp-field:last-of-type {
   border-right: none;
 }
 
