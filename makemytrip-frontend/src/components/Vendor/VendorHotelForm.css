@@ -1,0 +1,227 @@
+.vendor-hotel-form {
+  background: hsl(var(--b1));
+  border-radius: 8px;
+  padding: 24px;
+  max-width: 700px;
+}
+
+.form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid hsl(var(--bc) / 0.1);
+}
+
+.form-header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: hsl(var(--bc));
+}
+
+.btn-close {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: hsl(var(--bc) / 0.6);
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+}
+
+.btn-close:hover {
+  color: hsl(var(--bc));
+}
+
+.form-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-section h3 {
+  font-size: 14px;
+  font-weight: 700;
+  color: hsl(var(--bc));
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid hsl(var(--bc) / 0.1);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+}
+
+.form-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: hsl(var(--bc));
+}
+
+.form-group input,
+.form-group textarea {
+  padding: 10px 12px;
+  border: 1px solid hsl(var(--bc) / 0.2);
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  color: hsl(var(--bc));
+  background: hsl(var(--b2));
+  transition: all 0.2s ease;
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: hsl(var(--bc) / 0.4);
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: hsl(var(--su));
+  box-shadow: 0 0 0 3px hsl(var(--su) / 0.1);
+}
+
+.form-group input:disabled,
+.form-group textarea:disabled {
+  background: hsl(var(--b3));
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.form-group textarea {
+  resize: vertical;
+}
+
+.amenities-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.amenity-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid hsl(var(--bc) / 0.2);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 13px;
+  color: hsl(var(--bc));
+}
+
+.amenity-checkbox:hover {
+  border-color: hsl(var(--su));
+  background: hsl(var(--su) / 0.05);
+}
+
+.amenity-checkbox input {
+  margin: 0;
+  padding: 0;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: hsl(var(--su));
+}
+
+.amenity-checkbox span {
+  flex: 1;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid hsl(var(--bc) / 0.1);
+}
+
+.btn-submit,
+.btn-cancel {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-submit {
+  background: hsl(var(--su));
+  color: hsl(var(--suc));
+  flex: 1;
+}
+
+.btn-submit:hover:not(:disabled) {
+  opacity: 0.9;
+  box-shadow: 0 4px 12px hsl(var(--su) / 0.3);
+}
+
+.btn-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-cancel {
+  background: hsl(var(--bc) / 0.1);
+  color: hsl(var(--bc));
+}
+
+.btn-cancel:hover:not(:disabled) {
+  background: hsl(var(--bc) / 0.15);
+}
+
+.btn-cancel:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.form-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: hsl(var(--bc) / 0.6);
+  font-size: 16px;
+}
+
+@media (max-width: 768px) {
+  .vendor-hotel-form {
+    padding: 16px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .amenities-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+}

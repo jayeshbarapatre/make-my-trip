@@ -47,6 +47,7 @@ import ProtectedAdminRoute from './components/Admin/ProtectedAdminRoute'
 import VendorLoginPage from './pages/VendorLoginPage'
 import VendorDashboard from './pages/VendorDashboard'
 import VendorHotels from './pages/VendorHotels'
+import VendorHotelFormPage from './pages/VendorHotelFormPage'
 import ProtectedVendorRoute from './components/Vendor/ProtectedVendorRoute'
 
 function NotFound() {
@@ -160,6 +161,8 @@ function AppContent() {
         <Route path="/vendor/login" element={<VendorLoginPage />} />
         <Route path="/vendor/dashboard" element={<ProtectedVendorRoute><VendorDashboard /></ProtectedVendorRoute>} />
         <Route path="/vendor/hotels" element={<ProtectedVendorRoute><VendorHotels /></ProtectedVendorRoute>} />
+        <Route path="/vendor/hotels/create" element={<ProtectedVendorRoute><VendorHotelFormPage /></ProtectedVendorRoute>} />
+        <Route path="/vendor/hotels/:id/edit" element={<ProtectedVendorRoute><VendorHotelFormPage /></ProtectedVendorRoute>} />
 
         <Route path="*" element={<NotFound />} />
       </Routes>
