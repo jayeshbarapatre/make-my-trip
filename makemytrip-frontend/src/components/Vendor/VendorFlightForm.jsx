@@ -32,6 +32,29 @@ const VendorFlightForm = () => {
     }
   }, [id])
 
+  // Auto-calculate duration when departure or arrival time changes
+  useEffect(() => {
+    if (formData.departureTime && formData.arrivalTime) {
+      const [depHour, depMin] = formData.departureTime.split(':').map(Number)
+      const [arrHour, arrMin] = formData.arrivalTime.split(':').map(Number)
+
+      let depTotalMin = depHour * 60 + depMin
+      let arrTotalMin = arrHour * 60 + arrMin
+
+      // If arrival time is less than departure time, assume next day flight
+      if (arrTotalMin < depTotalMin) {
+        arrTotalMin += 24 * 60
+      }
+
+      const duration = arrTotalMin - depTotalMin
+
+      setFormData(prev => ({
+        ...prev,
+        durationMinutes: Math.max(0, duration) // Ensure duration is not negative
+      }))
+    }
+  }, [formData.departureTime, formData.arrivalTime])
+
   const fetchFlight = async () => {
     try {
       setLoading(true)
@@ -254,7 +277,7 @@ const VendorFlightForm = () => {
             </div>
 
             <div className="form-group">
-              <label htmlFor="durationMinutes" className="form-label">Duration (minutes) *</label>
+              <label htmlFor="durationMinutes" className="form-label">Duration (minutes) * <span style={{ fontSize: '12px', color: '#6b7280' }}>(auto-calculated)</span></label>
               <input
                 type="number"
                 id="durationMinutes"
@@ -264,7 +287,9 @@ const VendorFlightForm = () => {
                 placeholder="e.g., 180"
                 className="form-input"
                 min="1"
-                disabled={submitting}
+                disabled={true}
+                style={{ backgroundColor: '#f3f4f6', cursor: 'not-allowed', opacity: 0.7 }}
+                title="Duration is automatically calculated from departure and arrival times"
               />
             </div>
           </div>
