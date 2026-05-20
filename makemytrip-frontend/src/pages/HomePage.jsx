@@ -14,6 +14,7 @@ import { SERVICE_TABS } from '../data/homepageData'
 import { CITIES } from '../data/cities'
 import { flightService } from '../services/flightService'
 import CustomCalendarPicker from '../components/CustomCalendarPicker'
+import TabIcon from '../components/TabIcon'
 import ChevronLeft from '../assets/chevron-left.svg'
 import ChevronRight from '../assets/chevron-right.svg'
 import '../styles/HomePage.css'
@@ -422,7 +423,7 @@ export default function HomePage() {
                   }}
                 >
                   {t.isNew && <span className="tab-new">new</span>}
-                  <span className="tab-icon">{t.icon}</span>
+                  <span className="tab-icon"><TabIcon id={t.id} size={26} /></span>
                   <span className="tab-lbl" style={{ whiteSpace: 'pre-line' }}>{t.label}</span>
                   {activeTab === t.id && <div className="tab-bar" />}
                 </button>
@@ -451,7 +452,7 @@ export default function HomePage() {
                   {/* From Field */}
                   <div className="hp-field hp-field-wrap" ref={fromRef} style={{ position: 'relative' }}>
                     <small>From</small>
-                    <div style={{ position: 'relative' }}>
+                    <div style={{ position: 'relative', width: '100%', minWidth: 0 }}>
                       <input
                         value={fromQuery}
                         onChange={e => {
@@ -518,7 +519,7 @@ export default function HomePage() {
                   {/* To Field */}
                   <div className="hp-field hp-field-wrap" ref={toRef} style={{ position: 'relative' }}>
                     <small>To</small>
-                    <div style={{ position: 'relative' }}>
+                    <div style={{ position: 'relative', width: '100%', minWidth: 0 }}>
                       <input
                         value={toQuery}
                         onChange={e => {

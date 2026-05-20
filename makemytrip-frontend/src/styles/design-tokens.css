@@ -125,7 +125,7 @@
   --btn-lg-h:    48px;
 
   /* â”€â”€ Input â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-  --input-border: 1px solid var(--clr-border);
+  --input-border: 1px solid hsl(var(--b3));
   --input-radius: var(--radius-sm);
   --input-pad:    12px 16px;
   --input-fs:     var(--fs-body);
@@ -408,13 +408,13 @@
 
 
 /* â”€â”€ Utility classes used across every page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-.ds-page-bg   { background: var(--clr-bg-base); min-height: 100vh; }
+.ds-page-bg   { background: hsl(var(--b2)); min-height: 100vh; }
 .ds-container { max-width: var(--max-width); margin: 0 auto; padding: 0 var(--sp-m); }
 
 /* Primary Button */
 .ds-btn-primary {
-  background: var(--clr-primary);
-  color: var(--clr-text-inverse);
+  background: hsl(var(--p));
+  color: hsl(var(--pc));
   border: none;
   border-radius: var(--radius-sm);
   font-family: var(--font-family);
@@ -423,41 +423,41 @@
   transition: var(--transition-fast);
   letter-spacing: 0.5px;
 }
-.ds-btn-primary:hover  { background: var(--clr-primary-hover); box-shadow: var(--shadow-sm); }
+.ds-btn-primary:hover  { background: hsl(var(--p) / 0.85); box-shadow: var(--shadow-sm); }
 .ds-btn-primary:active { transform: translateY(1px); }
 .ds-btn-primary:disabled { opacity: 0.55; cursor: not-allowed; }
 
 /* Secondary Button */
 .ds-btn-secondary {
   background: transparent;
-  color: var(--clr-primary);
-  border: 1.5px solid var(--clr-primary);
+  color: hsl(var(--p));
+  border: 1.5px solid hsl(var(--p));
   border-radius: var(--radius-sm);
   font-family: var(--font-family);
   font-weight: var(--fw-semibold);
   cursor: pointer;
   transition: var(--transition-fast);
 }
-.ds-btn-secondary:hover { background: var(--clr-info-bg); }
+.ds-btn-secondary:hover { background: hsl(var(--p) / 0.08); }
 
 /* Card shell */
 .ds-card {
-  background: var(--clr-bg-white);
+  background: hsl(var(--b1));
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
 }
 .ds-card:hover { box-shadow: var(--shadow-md); }
 
 /* Status badges */
-.ds-badge-success { color: var(--clr-success); background: var(--clr-success-bg); }
-.ds-badge-error   { color: var(--clr-error);   background: var(--clr-error-bg);   }
-.ds-badge-warning { color: var(--clr-warning);  background: var(--clr-warning-bg); }
-.ds-badge-info    { color: var(--clr-info);     background: var(--clr-info-bg);    }
+.ds-badge-success { color: hsl(var(--su)); background: hsl(var(--su) / 0.12); }
+.ds-badge-error   { color: hsl(var(--er));   background: hsl(var(--er) / 0.12);   }
+.ds-badge-warning { color: hsl(var(--wa));  background: hsl(var(--wa) / 0.12); }
+.ds-badge-info    { color: var(--clr-info);     background: hsl(var(--p) / 0.08);    }
 
 /* Divider */
 .ds-divider {
   height: 1px;
-  background: var(--clr-divider);
+  background: hsl(var(--b3));
   border: none;
   margin: var(--sp-m) 0;
 }

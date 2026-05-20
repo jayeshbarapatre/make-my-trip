@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { SERVICE_TABS } from '../data/homepageData'
+import TabIcon from '../components/TabIcon'
 import '../styles/Hero.css'
 
 export default function InsurancePage() {
@@ -73,7 +74,7 @@ export default function InsurancePage() {
                   onClick={() => handleTabChange(t.id)}
                 >
                   {t.isNew && <span className="tab-new">new</span>}
-                  <span className="tab-icon">{t.icon}</span>
+                  <span className="tab-icon"><TabIcon id={t.id} size={26} /></span>
                   <span className="tab-lbl" style={{ whiteSpace: 'pre-line' }}>{t.label}</span>
                   {activeTab === t.id && <div className="tab-bar" />}
                 </button>

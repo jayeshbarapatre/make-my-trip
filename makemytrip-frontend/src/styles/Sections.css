@@ -222,7 +222,7 @@ html[data-theme="dark"],
 
 .promo-card-tandc {
   font-size: 9px;
-  color: var(--clr-text-hint);
+  color: hsl(var(--bc) / 0.4);
   font-weight: 600;
 }
 
@@ -1171,7 +1171,7 @@ html[data-theme="dark"] .footer-anchor:hover {
 
 .footer-lower {
   background: hsl(var(--b3));
-  color: var(--clr-text-secondary);
+  color: hsl(var(--bc) / 0.6);
   padding: 24px 0;
 }
 
@@ -1218,7 +1218,7 @@ html[data-theme="dark"] .social-label {
   padding: 6px 12px;
   border-radius: 20px;
   text-decoration: none;
-  color: var(--clr-text-dark);
+  color: hsl(var(--bc));
   font-size: 12px;
   font-weight: 600;
   transition: var(--transition-smooth);
@@ -1246,7 +1246,7 @@ html[data-theme="dark"] .social-icon-link:hover {
 
 .footer-copyright-block {
   font-size: 11px;
-  color: var(--clr-text-hint);
+  color: hsl(var(--bc) / 0.4);
 }
 
 html[data-theme="dark"] .footer-copyright-block {

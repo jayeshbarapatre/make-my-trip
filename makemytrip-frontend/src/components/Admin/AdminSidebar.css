@@ -18,12 +18,13 @@
   left: 0;
   top: 0;
   bottom: 0;
-  width: 250px;
-  background: var(--bg-sidebar);
-  color: var(--sidebar-text);
+  width: 248px;
+  background: var(--bg-surface);
+  color: var(--text-secondary);
   display: flex;
   flex-direction: column;
-  box-shadow: 1px 0 4px rgba(0, 0, 0, 0.06);
+  border-right: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
   transition: all 0.3s ease;
   z-index: 1000;
 }
@@ -58,7 +59,7 @@
 }
 
 .admin-logo-badge {
-  background: linear-gradient(135deg, #febd69 0%, #f39c12 100%);
+  background: linear-gradient(135deg, var(--accent) 0%, #2B4DBE 100%);
   width: 28px;
   height: 28px;
   border-radius: 6px;
@@ -67,10 +68,10 @@
   justify-content: center;
   font-size: 14px;
   font-weight: 800;
-  color: #111;
+  color: white;
   position: relative;
   flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(253, 189, 105, 0.3);
+  box-shadow: 0 4px 12px rgba(52, 97, 224, 0.3);
 }
 
 .admin-logo-badge::after {
@@ -164,25 +165,27 @@
 .nav-item {
   display: flex;
   align-items: center;
-  padding: 7px 14px;
+  padding: 0.625rem 1rem;
   color: var(--text-secondary);
   text-decoration: none;
   transition: all 0.2s ease;
-  border-radius: 4px;
-  margin: 1px 8px;
-  font-size: 11.5px;
+  border-radius: 0.375rem;
+  margin: 2px 8px;
+  font-size: 0.9375rem;
   font-weight: 500;
+  position: relative;
 }
 
 .nav-item:hover {
-  background: rgba(26, 115, 232, 0.08);
+  background: var(--accentSoft);
   color: var(--accent);
 }
 
 .nav-item.active {
-  background: var(--accent);
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(26, 115, 232, 0.2);
+  background: var(--accentSoft);
+  color: var(--accent);
+  box-shadow: none;
+  font-weight: 600;
 }
 
 .nav-icon {
@@ -220,7 +223,7 @@
 .admin-avatar-small {
   width: 28px;
   height: 28px;
-  background: linear-gradient(135deg, #1a73e8, #667eea);
+  background: linear-gradient(135deg, var(--accent), #2B4DBE);
   color: white;
   border-radius: 50%;
   display: flex;
@@ -246,9 +249,9 @@
 .logout-btn {
   width: 100%;
   padding: 6px;
-  background: linear-gradient(135deg, #e63946 0%, #d62828 100%);
-  color: white;
-  border: none;
+  background: var(--accentSoft);
+  color: var(--accent);
+  border: 1px solid var(--border);
   border-radius: 4px;
   font-weight: 600;
   cursor: pointer;
@@ -261,8 +264,8 @@
 }
 
 .logout-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(230, 57, 70, 0.3);
+  background: var(--accent);
+  color: white;
 }
 
 .logout-btn i {

@@ -9,7 +9,7 @@
   justify-content: space-between;
   gap: 16px;
   z-index: 100;
-  box-shadow: var(--card-shadow);
+  box-shadow: var(--shadow-sm);
   transition: all 0.3s ease;
   width: 100%;
   box-sizing: border-box;
@@ -56,6 +56,7 @@
   margin: 0;
   font-size: 18px;
   font-weight: 600;
+  font-family: 'Fraunces', serif;
   color: var(--text-primary);
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -348,7 +349,7 @@
 .admin-avatar {
   width: 28px;
   height: 28px;
-  background: linear-gradient(135deg, #1a73e8, #667eea);
+  background: linear-gradient(135deg, var(--accent), #2B4DBE);
   color: white;
   border-radius: 50%;
   display: flex;
