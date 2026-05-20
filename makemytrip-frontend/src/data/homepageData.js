@@ -4,18 +4,18 @@ const img = (id, w = 800, h = 500) =>
 
 // ─── Service Tabs Data ────────────────────────────────────────────────────────
 export const SERVICE_TABS = [
-  { id: 'flights',   icon: '✈️',  label: 'Flights' },
-  { id: 'hotels',    icon: '🏨',  label: 'Hotels' },
-  { id: 'villas',    icon: '🏡',  label: 'Villas &\nHomestays' },
-  { id: 'holidays',  icon: '🧳',  label: 'Holiday\nPackages' },
-  { id: 'trains',    icon: '🚆',  label: 'Trains' },
-  { id: 'buses',     icon: '🚌',  label: 'Buses' },
-  { id: 'cabs',      icon: '🚖',  label: 'Cabs' },
-  { id: 'tours',     icon: '🎡',  label: 'Tours &\nAttractions' },
-  { id: 'visa',      icon: '🛂',  label: 'Visa' },
-  { id: 'cruise',    icon: '🚢',  label: 'Cruise', isNew: true },
-  { id: 'forex',     icon: '💳',  label: 'Forex Card\n& Currency' },
-  { id: 'insurance', icon: '🛡️', label: 'Travel\nInsurance' },
+  { id: 'flights',   icon: 'flights',   label: 'Flights' },
+  { id: 'hotels',    icon: 'hotels',    label: 'Hotels' },
+  { id: 'villas',    icon: 'villas',    label: 'Villas &\nHomestays' },
+  { id: 'holidays',  icon: 'holidays',  label: 'Holiday\nPackages' },
+  { id: 'trains',    icon: 'trains',    label: 'Trains' },
+  { id: 'buses',     icon: 'buses',     label: 'Buses' },
+  { id: 'cabs',      icon: 'cabs',      label: 'Cabs' },
+  { id: 'tours',     icon: 'tours',     label: 'Tours &\nAttractions' },
+  { id: 'visa',      icon: 'visa',      label: 'Visa' },
+  { id: 'cruise',    icon: 'cruise',    label: 'Cruise', isNew: true },
+  { id: 'forex',     icon: 'forex',     label: 'Forex Card\n& Currency' },
+  { id: 'insurance', icon: 'insurance', label: 'Travel\nInsurance' },
 ]
 
 // ─── Special Fares Data ───────────────────────────────────────────────────────

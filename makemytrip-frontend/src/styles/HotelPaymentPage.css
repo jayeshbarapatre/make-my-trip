@@ -1,4 +1,4 @@
-﻿.pmt-wrapper {
+.pmt-wrapper {
   background-color: hsl(var(--b2));
   min-height: 100vh;
   padding: 24px 0 60px;
@@ -54,7 +54,7 @@
   }
 }
 
-/* â”€â”€ Left Column Cards â”€â”€ */
+/* ── Left Column Cards ── */
 .pmt-card {
   background: hsl(var(--b1));
   border-radius: 12px;
@@ -259,7 +259,7 @@
   border-radius: 4px;
 }
 
-/* â”€â”€ Right Column Sidebar Cards â”€â”€ */
+/* ── Right Column Sidebar Cards ── */
 .pmt-total-card {
   padding: 24px;
   background: hsl(var(--b1));

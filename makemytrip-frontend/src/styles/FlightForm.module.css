@@ -1,4 +1,4 @@
-﻿.form {
+.form {
   background: white;
   border-radius: 12px;
   padding: 32px;
@@ -67,7 +67,7 @@
 }
 
 .input::placeholder {
-  color: var(--clr-text-secondary);
+  color: hsl(var(--bc) / 0.6);
 }
 
 .error {

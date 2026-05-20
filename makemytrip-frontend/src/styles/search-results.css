@@ -1,4 +1,4 @@
-﻿/* ============ FLIGHT CARDS ============ */
+/* ============ FLIGHT CARDS ============ */
 
 .flight-card {
   background: white;
@@ -45,13 +45,13 @@
 
 .airline-name {
   font-weight: 600;
-  color: var(--clr-text-primary);
+  color: hsl(var(--bc));
   font-size: 14px;
 }
 
 .flight-code {
   font-size: 12px;
-  color: var(--clr-text-secondary);
+  color: hsl(var(--bc) / 0.6);
 }
 
 .flight-times {
@@ -68,12 +68,12 @@
 .time {
   font-size: 20px;
   font-weight: 700;
-  color: var(--clr-text-primary);
+  color: hsl(var(--bc));
 }
 
 .code {
   font-size: 12px;
-  color: var(--clr-text-dark);
+  color: hsl(var(--bc));
   text-transform: uppercase;
 }
 
@@ -86,13 +86,13 @@
 
 .duration-text {
   font-weight: 600;
-  color: var(--clr-text-primary);
+  color: hsl(var(--bc));
   font-size: 13px;
 }
 
 .stops-info {
   font-size: 11px;
-  color: var(--clr-text-dark);
+  color: hsl(var(--bc));
 }
 
 .direct-badge {
@@ -117,7 +117,7 @@
 
 .seats-left {
   font-size: 12px;
-  color: var(--clr-text-dark);
+  color: hsl(var(--bc));
   margin-top: 4px;
 }
 
@@ -242,13 +242,13 @@
 .hotel-name {
   font-size: 16px;
   font-weight: 700;
-  color: var(--clr-text-primary);
+  color: hsl(var(--bc));
   margin: 0 0 8px 0;
 }
 
 .hotel-location {
   font-size: 13px;
-  color: var(--clr-text-dark);
+  color: hsl(var(--bc));
   margin-bottom: 8px;
 }
 
@@ -268,11 +268,11 @@
 
 .rating-value {
   font-weight: 600;
-  color: var(--clr-text-primary);
+  color: hsl(var(--bc));
 }
 
 .review-count {
-  color: var(--clr-text-secondary);
+  color: hsl(var(--bc) / 0.6);
 }
 
 .hotel-amenities {
@@ -287,7 +287,7 @@
   padding: 4px 8px;
   border-radius: 4px;
   font-size: 11px;
-  color: var(--clr-text-dark);
+  color: hsl(var(--bc));
 }
 
 .amenity-more {
@@ -321,14 +321,14 @@
 .per-night .label,
 .total-nights .label {
   font-weight: 700;
-  color: var(--clr-text-primary);
+  color: hsl(var(--bc));
   font-size: 14px;
 }
 
 .per-night .unit,
 .total-nights .unit {
   font-size: 11px;
-  color: var(--clr-text-secondary);
+  color: hsl(var(--bc) / 0.6);
 }
 
 .total-price {
@@ -399,12 +399,12 @@
   margin: 0;
   font-size: 15px;
   font-weight: 700;
-  color: var(--clr-text-primary);
+  color: hsl(var(--bc));
 }
 
 .bus-type {
   font-size: 12px;
-  color: var(--clr-text-dark);
+  color: hsl(var(--bc));
   margin-top: 2px;
 }
 
@@ -426,13 +426,13 @@
 .time-value {
   font-size: 20px;
   font-weight: 700;
-  color: var(--clr-text-primary);
+  color: hsl(var(--bc));
   display: block;
 }
 
 .time-label {
   font-size: 11px;
-  color: var(--clr-text-dark);
+  color: hsl(var(--bc));
   text-transform: uppercase;
   margin-top: 4px;
 }
@@ -446,13 +446,13 @@
 
 .duration {
   font-weight: 600;
-  color: var(--clr-text-primary);
+  color: hsl(var(--bc));
   font-size: 14px;
 }
 
 .seats-available {
   font-size: 11px;
-  color: var(--clr-text-dark);
+  color: hsl(var(--bc));
 }
 
 .bus-amenities {
@@ -468,7 +468,7 @@
   background: hsl(var(--b2));
   border-radius: 4px;
   font-size: 12px;
-  color: var(--clr-text-dark);
+  color: hsl(var(--bc));
   border-radius: 20px;
 }
 
@@ -553,12 +553,12 @@
   margin: 0;
   font-size: 15px;
   font-weight: 700;
-  color: var(--clr-text-primary);
+  color: hsl(var(--bc));
 }
 
 .cab-description {
   font-size: 12px;
-  color: var(--clr-text-dark);
+  color: hsl(var(--bc));
   margin-top: 2px;
 }
 
@@ -581,7 +581,7 @@
 
 .route-item .label {
   font-size: 11px;
-  color: var(--clr-text-secondary);
+  color: hsl(var(--bc) / 0.6);
   text-transform: uppercase;
   font-weight: 600;
 }
@@ -589,11 +589,11 @@
 .route-item .value {
   font-size: 14px;
   font-weight: 600;
-  color: var(--clr-text-primary);
+  color: hsl(var(--bc));
 }
 
 .route-divider {
-  color: var(--clr-text-hint);
+  color: hsl(var(--bc) / 0.4);
   align-self: center;
 }
 
@@ -621,7 +621,7 @@
 
 .rating-label {
   font-size: 11px;
-  color: var(--clr-text-secondary);
+  color: hsl(var(--bc) / 0.6);
 }
 
 .cab-price-section {
@@ -639,7 +639,7 @@
 
 .estimated-price .label {
   font-size: 11px;
-  color: var(--clr-text-secondary);
+  color: hsl(var(--bc) / 0.6);
   text-transform: uppercase;
 }
 
@@ -764,7 +764,7 @@
 }
 
 .loading-text {
-  color: var(--clr-text-dark);
+  color: hsl(var(--bc));
   font-size: 14px;
 }
 
@@ -780,7 +780,7 @@
 .search-results-empty {
   padding: 40px 20px;
   text-align: center;
-  color: var(--clr-text-secondary);
+  color: hsl(var(--bc) / 0.6);
 }
 
 .search-results-empty-icon {
@@ -808,20 +808,21 @@
 .results-title {
   font-size: 16px;
   font-weight: 700;
-  color: var(--clr-text-primary);
+  color: hsl(var(--bc));
 }
 
 .results-count {
   font-size: 13px;
-  color: var(--clr-text-secondary);
+  color: hsl(var(--bc) / 0.6);
 }
 
 .sort-dropdown {
   padding: 6px 12px;
-  border: 1px solid #ddd;
+  border: 1px solid hsl(var(--b3));
   border-radius: 4px;
   font-size: 13px;
   cursor: pointer;
   background: white;
 }
+
 

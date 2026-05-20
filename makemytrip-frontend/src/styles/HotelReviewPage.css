@@ -1,4 +1,4 @@
-﻿.review-wrapper {
+.review-wrapper {
   background-color: hsl(var(--b2));
   min-height: 100vh;
   padding: 32px 0 60px;
@@ -14,7 +14,7 @@
 .review-header-title {
   font-size: 28px;
   font-weight: 900;
-  color: var(--clr-text-primary);
+  color: hsl(var(--bc));
   margin: 0 0 24px;
 }
 
@@ -31,7 +31,7 @@
   }
 }
 
-/* â”€â”€ Left Column Cards â”€â”€ */
+/* ── Left Column Cards ── */
 .rev-card {
   background: hsl(var(--b1));
   border-radius: 12px;
@@ -276,7 +276,7 @@
   line-height: 1.8;
 }
 
-/* â”€â”€ Right Column Sidebar Cards â”€â”€ */
+/* ── Right Column Sidebar Cards ── */
 .rev-side-card {
   background: hsl(var(--b1));
   border-radius: 12px;
@@ -406,7 +406,7 @@
   transform: translateY(-2px);
 }
 
-/* â”€â”€ Custom Alert Modal â”€â”€ */
+/* ── Custom Alert Modal ── */
 .custom-alert-overlay {
   position: fixed;
   inset: 0;
