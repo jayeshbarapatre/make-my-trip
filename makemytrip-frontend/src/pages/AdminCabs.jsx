@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react'
 import AdminLayout from '../components/Admin/AdminLayout'
 import { adminCabsService } from '../services/adminService'
 import CabForm from '../components/Admin/CabForm'
-import Icons from '../utils/icons'
-import './AdminFlights.css'
+import {
+  RiTaxiLine, RiAddLine, RiSearchLine, RiEditLine,
+  RiDeleteBinLine, RiToggleLine, RiToggleFill
+} from 'react-icons/ri'
 
 const AdminCabs = () => {
   const [cabs, setCabs] = useState([])
@@ -13,20 +15,17 @@ const AdminCabs = () => {
   const [page, setPage] = useState(1)
   const [pagination, setPagination] = useState({})
   const [showForm, setShowForm] = useState(false)
-  const [editingId, setEditingId] = useState(null)
   const [editingCab, setEditingCab] = useState(null)
 
-  useEffect(() => {
-    fetchCabs()
-  }, [page, search])
+  useEffect(() => { fetchCabs() }, [page, search])
 
   const fetchCabs = async () => {
     try {
       setLoading(true)
-      const response = await adminCabsService.getAll({ page, limit: 10, search })
-      setCabs(response.data.data.cabs)
-      setPagination(response.data.data.pagination)
-    } catch (err) {
+      const res = await adminCabsService.getAll({ page, limit: 10, search })
+      setCabs(res.data.data.cabs || [])
+      setPagination(res.data.data.pagination || {})
+    } catch {
       setError('Failed to load cabs')
     } finally {
       setLoading(false)
@@ -34,13 +33,12 @@ const AdminCabs = () => {
   }
 
   const handleDelete = async (id) => {
-    if (window.confirm('Delete this cab?')) {
-      try {
-        await adminCabsService.delete(id)
-        setCabs(cabs.filter(c => c._id !== id))
-      } catch (err) {
-        setError('Failed to delete cab')
-      }
+    if (!window.confirm('Delete this cab?')) return
+    try {
+      await adminCabsService.delete(id)
+      setCabs(cabs.filter(c => c._id !== id))
+    } catch {
+      setError('Failed to delete cab')
     }
   }
 
@@ -48,119 +46,152 @@ const AdminCabs = () => {
     try {
       await adminCabsService.toggleStatus(id)
       setCabs(cabs.map(c => c._id === id ? { ...c, isActive: !c.isActive } : c))
-    } catch (err) {
+    } catch {
       setError('Failed to update status')
     }
   }
 
-  const handleEdit = (cab) => {
-    setEditingCab(cab)
-    setEditingId(cab._id)
-    setShowForm(true)
-  }
-
-  const handleCloseForm = () => {
-    setShowForm(false)
-    setEditingId(null)
-    setEditingCab(null)
-  }
-
   const handleFormSubmit = async (formData) => {
     try {
-      if (editingId) {
-        await adminCabsService.update(editingId, formData)
-        setCabs(cabs.map(c => c._id === editingId ? { ...c, ...formData } : c))
+      if (editingCab) {
+        await adminCabsService.update(editingCab._id, formData)
+        setCabs(cabs.map(c => c._id === editingCab._id ? { ...c, ...formData } : c))
       } else {
-        const response = await adminCabsService.create(formData)
-        setCabs([response.data.data.cab, ...cabs])
+        const res = await adminCabsService.create(formData)
+        setCabs([res.data.data.cab, ...cabs])
       }
-      handleCloseForm()
-    } catch (err) {
+      setShowForm(false)
+      setEditingCab(null)
+    } catch {
       setError('Failed to save cab')
     }
   }
 
   return (
     <AdminLayout>
-      <div className="admin-page">
-        <div className="page-header">
-          <h1>Cabs Management</h1>
-          <button className="btn-primary" onClick={() => setShowForm(true)} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            {Icons.taxi({ size: 16 })} Add New Cab
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h2 className="text-2xl font-bold text-base-content">Cabs</h2>
+            <div className="flex items-center gap-4 mt-1 text-xs text-base-content/50">
+              <span>Total: <strong className="text-base-content">{cabs.length}</strong></span>
+              <span>Active: <strong className="text-success">{cabs.filter(c => c.isActive).length}</strong></span>
+            </div>
+          </div>
+          <button className="btn btn-primary btn-sm gap-2 w-fit" onClick={() => { setEditingCab(null); setShowForm(true) }}>
+            <RiAddLine className="w-4 h-4" />
+            Add Cab
           </button>
         </div>
 
-        {error && <div className="error-banner">{error}</div>}
+        {error && <div className="alert alert-error text-sm py-2">{error}</div>}
 
-        {showForm && (
-          <div className="modal-overlay" onClick={handleCloseForm}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-              <CabForm cab={editingCab} onSubmit={handleFormSubmit} onClose={handleCloseForm} />
-            </div>
-          </div>
-        )}
-
-        <div className="search-bar">
-          <input type="text" placeholder="Search cabs..." value={search} onChange={(e) => { setSearch(e.target.value); setPage(1) }} />
-        </div>
+        <label className="input input-bordered input-sm flex items-center gap-2 max-w-sm">
+          <RiSearchLine className="w-4 h-4 text-base-content/40" />
+          <input
+            type="text"
+            className="grow"
+            placeholder="Search cabs..."
+            value={search}
+            onChange={e => { setSearch(e.target.value); setPage(1) }}
+          />
+        </label>
 
         {loading ? (
-          <div className="loading">Loading cabs...</div>
+          <div className="flex flex-col items-center justify-center py-20">
+            <span className="loading loading-spinner loading-lg text-primary mb-3" />
+            <p className="text-sm text-base-content/50">Loading cabs...</p>
+          </div>
         ) : cabs.length === 0 ? (
-          <div className="empty-state"><p>No cabs found. Create your first cab!</p></div>
+          <div className="card bg-base-100 border border-base-200 shadow-sm">
+            <div className="card-body flex flex-col items-center justify-center py-20">
+              <RiTaxiLine className="w-14 h-14 text-base-content/20 mb-3" />
+              <p className="font-semibold text-base-content">No cabs found</p>
+            </div>
+          </div>
         ) : (
           <>
-            <div className="table-container">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Cab Number</th>
-                    <th>Operator</th>
-                    <th>Type</th>
-                    <th>City</th>
-                    <th>Base Fare</th>
-                    <th>Available</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {cabs.map(cab => (
-                    <tr key={cab._id}>
-                      <td className="font-bold">{cab.cabNumber}</td>
-                      <td>{cab.operatorName}</td>
-                      <td>{cab.type}</td>
-                      <td>{cab.currentCity}</td>
-                      <td>₹{cab.baseFare}</td>
-                      <td>{cab.cabs_available}/{cab.cabs}</td>
-                      <td><span className={`badge ${cab.isActive ? 'badge-active' : 'badge-inactive'}`}>{cab.isActive ? 'Active' : 'Inactive'}</span></td>
-                      <td className="actions">
-                        <button className="btn-sm btn-edit" onClick={() => handleEdit(cab)} title="Edit" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-                          {Icons.edit({ size: 14 })} Edit
-                        </button>
-                        <button className="btn-sm btn-toggle" onClick={() => handleToggleStatus(cab._id)} title={cab.isActive ? 'Deactivate' : 'Activate'} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          {cab.isActive ? Icons.toggleOn({ size: 14 }) : Icons.toggleOff({ size: 14 })}
-                        </button>
-                        <button className="btn-sm btn-delete" onClick={() => handleDelete(cab._id)} title="Delete" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-                          {Icons.delete({ size: 14 })} Delete
-                        </button>
-                      </td>
+            <div className="card bg-base-100 border border-base-200 shadow-sm overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="table table-sm">
+                  <thead>
+                    <tr className="text-xs text-base-content/50 uppercase tracking-wider bg-base-200">
+                      <th>Cab</th>
+                      <th>Type</th>
+                      <th>City</th>
+                      <th>Base Fare</th>
+                      <th>Available</th>
+                      <th>Status</th>
+                      <th className="text-right">Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {cabs.map(cab => (
+                      <tr key={cab._id} className="hover:bg-base-200/50 transition-colors">
+                        <td>
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-lg bg-error/10 flex items-center justify-center shrink-0">
+                              <RiTaxiLine className="w-4 h-4 text-error" />
+                            </div>
+                            <div>
+                              <p className="font-semibold text-sm text-base-content">{cab.cabNumber}</p>
+                              <p className="text-[11px] text-base-content/50">{cab.operatorName}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="text-sm text-base-content/60">{cab.type}</td>
+                        <td className="text-sm text-base-content/60">{cab.currentCity}</td>
+                        <td className="font-semibold text-sm text-base-content">₹{cab.baseFare}</td>
+                        <td className="text-sm text-base-content/60">{cab.cabs_available}/{cab.cabs}</td>
+                        <td>
+                          <span className={`badge badge-sm ${cab.isActive ? 'badge-success' : 'badge-error'}`}>
+                            {cab.isActive ? 'Active' : 'Inactive'}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="flex items-center justify-end gap-1">
+                            <button className="btn btn-ghost btn-xs gap-1" onClick={() => { setEditingCab(cab); setShowForm(true) }}>
+                              <RiEditLine className="w-3.5 h-3.5" /> Edit
+                            </button>
+                            <button className="btn btn-ghost btn-xs" onClick={() => handleToggleStatus(cab._id)}>
+                              {cab.isActive
+                                ? <RiToggleFill className="w-4 h-4 text-success" />
+                                : <RiToggleLine className="w-4 h-4 text-base-content/40" />
+                              }
+                            </button>
+                            <button className="btn btn-ghost btn-xs text-error hover:bg-error/10" onClick={() => handleDelete(cab._id)}>
+                              <RiDeleteBinLine className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
 
             {pagination.pages > 1 && (
-              <div className="pagination">
-                <button disabled={page === 1} onClick={() => setPage(page - 1)}>← Previous</button>
-                <span>Page {page} of {pagination.pages}</span>
-                <button disabled={page === pagination.pages} onClick={() => setPage(page + 1)}>Next →</button>
+              <div className="flex items-center justify-center gap-4">
+                <button className="btn btn-outline btn-sm" disabled={page === 1} onClick={() => setPage(page - 1)}>← Previous</button>
+                <span className="text-sm text-base-content/60">Page {page} of {pagination.pages}</span>
+                <button className="btn btn-outline btn-sm" disabled={page === pagination.pages} onClick={() => setPage(page + 1)}>Next →</button>
               </div>
             )}
           </>
         )}
       </div>
+
+      {showForm && (
+        <div className="modal modal-open">
+          <div className="modal-box max-w-2xl max-h-[90vh] overflow-y-auto">
+            <button className="btn btn-ghost btn-xs btn-circle absolute right-4 top-4" onClick={() => { setShowForm(false); setEditingCab(null) }}>✕</button>
+            <h3 className="font-bold text-lg mb-5">{editingCab ? 'Edit Cab' : 'Add New Cab'}</h3>
+            <CabForm cab={editingCab} onSubmit={handleFormSubmit} onClose={() => { setShowForm(false); setEditingCab(null) }} />
+          </div>
+          <div className="modal-backdrop" onClick={() => { setShowForm(false); setEditingCab(null) }} />
+        </div>
+      )}
     </AdminLayout>
   )
 }

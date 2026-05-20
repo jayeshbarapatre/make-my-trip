@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import AOS from 'aos'
@@ -37,6 +37,7 @@ import Profile from './pages/Profile'
 import { AdminProvider } from './context/AdminContext'
 import { VendorProvider } from './context/VendorContext'
 import { ThemeProvider } from './context/ThemeContext'
+import { SaaSProvider } from './context/SaaSContext'
 import AdminLoginPage from './pages/AdminLoginPage'
 import AdminDashboard from './pages/AdminDashboard'
 import AdminFlights from './pages/AdminFlights'
@@ -127,8 +128,9 @@ function AppContent() {
 
   return (
     <ThemeProvider>
-      <AdminProvider>
-      <VendorProvider>
+      <SaaSProvider>
+        <AdminProvider>
+          <VendorProvider>
       <RouteLoader />
       {!isAdminRoute && !isVendorRoute && <Header />}
       <Routes>
@@ -189,8 +191,9 @@ function AppContent() {
         <Route path="*" element={<NotFound />} />
       </Routes>
       {!isAdminRoute && !isVendorRoute && <Footer />}
-      </VendorProvider>
-    </AdminProvider>
+          </VendorProvider>
+        </AdminProvider>
+      </SaaSProvider>
     </ThemeProvider>
   )
 }

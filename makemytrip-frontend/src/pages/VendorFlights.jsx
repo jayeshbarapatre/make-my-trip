@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import VendorLayout from '../components/Vendor/VendorLayout'
 import { vendorFlightsService } from '../services/vendorService'
 import toast from 'react-hot-toast'
-import './VendorFlights.css'
+import { RiPlaneLine, RiAddLine, RiEditLine, RiDeleteBinLine, RiSendPlaneLine } from 'react-icons/ri'
 
 const VendorFlights = () => {
   const navigate = useNavigate()
@@ -86,102 +86,99 @@ const VendorFlights = () => {
     }
   }
 
-  if (loading) {
-    return (
-      <VendorLayout>
-        <div className="flex items-center justify-center gap-4 py-16 text-base-content/60">
-          <i className="fas fa-spinner fa-spin text-xl text-primary"></i>
-          <span>Loading flights...</span>
-        </div>
-      </VendorLayout>
-    )
-  }
-
   return (
     <VendorLayout>
-      <div className="vendor-flights-page">
-        <div className="page-header">
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h1>My Flights</h1>
-            <div className="flex gap-6 mt-2 text-sm text-base-content/60">
-              <span>📊 Total: <strong className="text-base-content">{flights.length}</strong></span>
-              <span>✏️ Draft: <strong className="text-base-content">{flights.filter(f => f.listingStatus === 'DRAFT').length}</strong></span>
-              <span>⏳ Pending: <strong className="text-warning">{flights.filter(f => f.listingStatus === 'PENDING_APPROVAL').length}</strong></span>
-              <span>✅ Approved: <strong className="text-success">{flights.filter(f => f.listingStatus === 'APPROVED').length}</strong></span>
+            <h2 className="text-2xl font-bold text-base-content">My Flights</h2>
+            <div className="flex items-center gap-4 mt-1 text-xs text-base-content/50">
+              <span>Total: <strong className="text-base-content">{flights.length}</strong></span>
+              <span>Pending: <strong className="text-warning">{flights.filter(f => f.listingStatus === 'PENDING_APPROVAL').length}</strong></span>
+              <span>Approved: <strong className="text-success">{flights.filter(f => f.listingStatus === 'APPROVED').length}</strong></span>
             </div>
           </div>
-          <button className="btn btn-success" onClick={() => navigate('/vendor/flights/create')}>
-            <i className="fas fa-plus"></i> Add New Flight
+          <button className="btn btn-primary btn-sm gap-2 w-fit" onClick={() => navigate('/vendor/flights/create')}>
+            <RiAddLine className="w-4 h-4" /> Add Flight
           </button>
         </div>
 
-        {error && <div className="alert alert-error mb-6"><i className="fas fa-exclamation-circle"></i>{error}</div>}
+        {error && <div className="alert alert-error text-sm py-2">{error}</div>}
 
-        {flights.length === 0 ? (
-          <div className="text-center py-12 text-base-content/60">
-            <p className="text-lg">No flights yet. Create your first flight listing!</p>
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-20">
+            <span className="loading loading-spinner loading-lg text-primary mb-3" />
+            <p className="text-sm text-base-content/50">Loading flights...</p>
+          </div>
+        ) : flights.length === 0 ? (
+          <div className="card bg-base-100 border border-base-200 shadow-sm">
+            <div className="card-body flex flex-col items-center justify-center py-20">
+              <RiPlaneLine className="w-14 h-14 text-base-content/20 mb-3" />
+              <p className="font-semibold text-base-content">No flights yet</p>
+              <button className="btn btn-primary btn-sm gap-2 mt-4" onClick={() => navigate('/vendor/flights/create')}>
+                <RiAddLine className="w-4 h-4" /> Add First Flight
+              </button>
+            </div>
           </div>
         ) : (
-          <div className="flights-list">
-            {flights.map(flight => (
-              <div key={flight.id} className="flight-card">
-                <div className="flight-header">
-                  <div className="flight-info">
-                    <h3 className="flight-name">{flight.airline} - {flight.flightNumber}</h3>
-                    <p className="flight-route">{flight.from} → {flight.to}</p>
-                  </div>
-                  <span className={`badge ${getStatusBadgeClass(flight.listingStatus)}`}>
-                    {flight.listingStatus.replace(/_/g, ' ')}
-                  </span>
-                </div>
-
-                {flight.listingStatus === 'REJECTED' && flight.rejectionReason && (
-                  <div className="rejection-reason">
-                    <i className="fas fa-exclamation-triangle"></i>
-                    <span><strong>Rejection Reason:</strong> {flight.rejectionReason}</span>
-                  </div>
-                )}
-
-                <div className="flight-details">
-                  <div className="detail-item">
-                    <span className="detail-label">Departure:</span>
-                    <span className="detail-value">{flight.departureTime}</span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="detail-label">Arrival:</span>
-                    <span className="detail-value">{flight.arrivalTime}</span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="detail-label">Duration:</span>
-                    <span className="detail-value">{flight.durationMinutes} min</span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="detail-label">Price:</span>
-                    <span className="detail-value">₹{flight.price.toLocaleString()}</span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="detail-label">Seats:</span>
-                    <span className="detail-value">{flight.seatsAvailable}</span>
-                  </div>
-                </div>
-
-                <div className="flight-actions">
-                  <button className="btn btn-sm btn-info" onClick={() => navigate(`/vendor/flights/${flight.id}/edit`)}>
-                    <i className="fas fa-edit"></i> Edit
-                  </button>
-                  {['DRAFT', 'REJECTED'].includes(flight.listingStatus) && (
-                    <button className="btn btn-sm btn-success" onClick={() => handleSubmitForApproval(flight.id)}>
-                      <i className="fas fa-paper-plane"></i> Submit
-                    </button>
-                  )}
-                  {['DRAFT', 'REJECTED'].includes(flight.listingStatus) && (
-                    <button className="btn btn-sm btn-error" onClick={() => handleDelete(flight.id)}>
-                      <i className="fas fa-trash"></i> Delete
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
+          <div className="card bg-base-100 border border-base-200 shadow-sm overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="table table-sm">
+                <thead>
+                  <tr className="text-xs text-base-content/50 uppercase tracking-wider bg-base-200">
+                    <th>Flight</th>
+                    <th>Route</th>
+                    <th>Departure</th>
+                    <th>Price</th>
+                    <th>Seats</th>
+                    <th>Status</th>
+                    <th className="text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {flights.map(flight => (
+                    <tr key={flight.id} className="hover:bg-base-200/50 transition-colors">
+                      <td>
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-info/10 flex items-center justify-center shrink-0">
+                            <RiPlaneLine className="w-4 h-4 text-info" />
+                          </div>
+                          <div>
+                            <p className="font-semibold text-sm text-base-content">{flight.airline} - {flight.flightNumber}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="text-sm text-base-content/70">{flight.from} → {flight.to}</td>
+                      <td className="text-xs text-base-content/60">{flight.departureTime}</td>
+                      <td className="font-semibold text-sm text-base-content">₹{flight.price?.toLocaleString()}</td>
+                      <td className="text-sm text-base-content/60">{flight.seatsAvailable}</td>
+                      <td>
+                        <span className={`badge badge-sm ${getStatusBadgeClass(flight.listingStatus)}`}>
+                          {flight.listingStatus?.replace(/_/g, ' ')}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="flex items-center justify-end gap-1">
+                          <button className="btn btn-ghost btn-xs gap-1" onClick={() => navigate(`/vendor/flights/${flight.id}/edit`)}>
+                            <RiEditLine className="w-3.5 h-3.5" /> Edit
+                          </button>
+                          {['DRAFT', 'REJECTED'].includes(flight.listingStatus) && (
+                            <>
+                              <button className="btn btn-success btn-xs gap-1" onClick={() => handleSubmitForApproval(flight.id)}>
+                                <RiSendPlaneLine className="w-3.5 h-3.5" /> Submit
+                              </button>
+                              <button className="btn btn-ghost btn-xs text-error hover:bg-error/10" onClick={() => handleDelete(flight.id)}>
+                                <RiDeleteBinLine className="w-3.5 h-3.5" />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </div>

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import VendorLayout from '../components/Vendor/VendorLayout'
 import { vendorBusesService } from '../services/vendorService'
 import toast from 'react-hot-toast'
-import './VendorBuses.css'
+import { RiBusLine, RiAddLine, RiEditLine, RiDeleteBinLine, RiSendPlaneLine } from 'react-icons/ri'
 
 const VendorBuses = () => {
   const navigate = useNavigate()
@@ -86,105 +86,100 @@ const VendorBuses = () => {
     }
   }
 
-  if (loading) {
-    return (
-      <VendorLayout>
-        <div className="flex items-center justify-center gap-4 py-16 text-base-content/60">
-          <i className="fas fa-spinner fa-spin text-xl text-primary"></i>
-          <span>Loading buses...</span>
-        </div>
-      </VendorLayout>
-    )
-  }
-
   return (
     <VendorLayout>
-      <div className="vendor-buses-page">
-        <div className="page-header">
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h1>My Buses</h1>
-            <div className="flex gap-6 mt-2 text-sm text-base-content/60">
-              <span>📊 Total: <strong className="text-base-content">{buses.length}</strong></span>
-              <span>✏️ Draft: <strong className="text-base-content">{buses.filter(b => b.listingStatus === 'DRAFT').length}</strong></span>
-              <span>⏳ Pending: <strong className="text-warning">{buses.filter(b => b.listingStatus === 'PENDING_APPROVAL').length}</strong></span>
-              <span>✅ Approved: <strong className="text-success">{buses.filter(b => b.listingStatus === 'APPROVED').length}</strong></span>
+            <h2 className="text-2xl font-bold text-base-content">My Buses</h2>
+            <div className="flex items-center gap-4 mt-1 text-xs text-base-content/50">
+              <span>Total: <strong className="text-base-content">{buses.length}</strong></span>
+              <span>Pending: <strong className="text-warning">{buses.filter(b => b.listingStatus === 'PENDING_APPROVAL').length}</strong></span>
+              <span>Approved: <strong className="text-success">{buses.filter(b => b.listingStatus === 'APPROVED').length}</strong></span>
             </div>
           </div>
-          <button className="btn btn-success" onClick={() => navigate('/vendor/buses/create')}>
-            <i className="fas fa-plus"></i> Add New Bus
+          <button className="btn btn-primary btn-sm gap-2 w-fit" onClick={() => navigate('/vendor/buses/create')}>
+            <RiAddLine className="w-4 h-4" /> Add Bus
           </button>
         </div>
 
-        {error && <div className="alert alert-error mb-6"><i className="fas fa-exclamation-circle"></i>{error}</div>}
+        {error && <div className="alert alert-error text-sm py-2">{error}</div>}
 
-        {buses.length === 0 ? (
-          <div className="text-center py-12 text-base-content/60">
-            <p className="text-lg">No buses yet. Create your first bus listing!</p>
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-20">
+            <span className="loading loading-spinner loading-lg text-primary mb-3" />
+            <p className="text-sm text-base-content/50">Loading buses...</p>
+          </div>
+        ) : buses.length === 0 ? (
+          <div className="card bg-base-100 border border-base-200 shadow-sm">
+            <div className="card-body flex flex-col items-center justify-center py-20">
+              <RiBusLine className="w-14 h-14 text-base-content/20 mb-3" />
+              <p className="font-semibold text-base-content">No buses yet</p>
+              <button className="btn btn-primary btn-sm gap-2 mt-4" onClick={() => navigate('/vendor/buses/create')}>
+                <RiAddLine className="w-4 h-4" /> Add First Bus
+              </button>
+            </div>
           </div>
         ) : (
-          <div className="bus-list">
-            {buses.map(bus => (
-              <div key={bus.id} className="bus-card">
-                <div className="bus-header">
-                  <div className="bus-info">
-                    <h3 className="bus-name">{bus.operator}</h3>
-                    <p className="bus-route">{bus.from} → {bus.to}</p>
-                  </div>
-                  <div className="bus-badges">
-                    <span className={`badge ${bus.type ? 'bus-type-badge' : ''}`}>{bus.type || 'AC'}</span>
-                    <span className={`badge ${getStatusBadgeClass(bus.listingStatus)}`}>
-                      {bus.listingStatus.replace(/_/g, ' ')}
-                    </span>
-                  </div>
-                </div>
-
-                {bus.listingStatus === 'REJECTED' && bus.rejectionReason && (
-                  <div className="rejection-reason">
-                    <i className="fas fa-exclamation-triangle"></i>
-                    <span><strong>Rejection Reason:</strong> {bus.rejectionReason}</span>
-                  </div>
-                )}
-
-                <div className="bus-details">
-                  <div className="detail-item">
-                    <span className="detail-label">Departure:</span>
-                    <span className="detail-value">{bus.departureTime}</span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="detail-label">Arrival:</span>
-                    <span className="detail-value">{bus.arrivalTime}</span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="detail-label">Duration:</span>
-                    <span className="detail-value">{bus.durationMinutes} min</span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="detail-label">Price:</span>
-                    <span className="detail-value">₹{bus.price.toLocaleString()}</span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="detail-label">Seats:</span>
-                    <span className="detail-value">{bus.seatsAvailable}</span>
-                  </div>
-                </div>
-
-                <div className="bus-actions">
-                  <button className="btn btn-sm btn-info" onClick={() => navigate(`/vendor/buses/${bus.id}/edit`)}>
-                    <i className="fas fa-edit"></i> Edit
-                  </button>
-                  {['DRAFT', 'REJECTED'].includes(bus.listingStatus) && (
-                    <button className="btn btn-sm btn-success" onClick={() => handleSubmitForApproval(bus.id)}>
-                      <i className="fas fa-paper-plane"></i> Submit
-                    </button>
-                  )}
-                  {['DRAFT', 'REJECTED'].includes(bus.listingStatus) && (
-                    <button className="btn btn-sm btn-error" onClick={() => handleDelete(bus.id)}>
-                      <i className="fas fa-trash"></i> Delete
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
+          <div className="card bg-base-100 border border-base-200 shadow-sm overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="table table-sm">
+                <thead>
+                  <tr className="text-xs text-base-content/50 uppercase tracking-wider bg-base-200">
+                    <th>Bus</th>
+                    <th>Route</th>
+                    <th>Departure</th>
+                    <th>Price</th>
+                    <th>Seats</th>
+                    <th>Status</th>
+                    <th className="text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {buses.map(bus => (
+                    <tr key={bus.id} className="hover:bg-base-200/50 transition-colors">
+                      <td>
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-warning/10 flex items-center justify-center shrink-0">
+                            <RiBusLine className="w-4 h-4 text-warning" />
+                          </div>
+                          <div>
+                            <p className="font-semibold text-sm text-base-content">{bus.operator}</p>
+                            <p className="text-[11px] text-base-content/50">{bus.type || 'AC'}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="text-sm text-base-content/70">{bus.from} → {bus.to}</td>
+                      <td className="text-xs text-base-content/60">{bus.departureTime}</td>
+                      <td className="font-semibold text-sm text-base-content">₹{bus.price?.toLocaleString()}</td>
+                      <td className="text-sm text-base-content/60">{bus.seatsAvailable}</td>
+                      <td>
+                        <span className={`badge badge-sm ${getStatusBadgeClass(bus.listingStatus)}`}>
+                          {bus.listingStatus?.replace(/_/g, ' ')}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="flex items-center justify-end gap-1">
+                          <button className="btn btn-ghost btn-xs gap-1" onClick={() => navigate(`/vendor/buses/${bus.id}/edit`)}>
+                            <RiEditLine className="w-3.5 h-3.5" /> Edit
+                          </button>
+                          {['DRAFT', 'REJECTED'].includes(bus.listingStatus) && (
+                            <>
+                              <button className="btn btn-success btn-xs gap-1" onClick={() => handleSubmitForApproval(bus.id)}>
+                                <RiSendPlaneLine className="w-3.5 h-3.5" /> Submit
+                              </button>
+                              <button className="btn btn-ghost btn-xs text-error hover:bg-error/10" onClick={() => handleDelete(bus.id)}>
+                                <RiDeleteBinLine className="w-3.5 h-3.5" />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </div>

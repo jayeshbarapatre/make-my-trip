@@ -2,43 +2,37 @@ import { useState, useEffect } from 'react'
 import AdminLayout from '../components/Admin/AdminLayout'
 import { adminHotelsService } from '../services/adminService'
 import HotelForm from '../components/Admin/HotelForm'
-import Icons from '../utils/icons'
-import './AdminFlights.css'
+import {
+  RiHotelLine, RiAddLine, RiSearchLine, RiEditLine,
+  RiDeleteBinLine, RiToggleLine, RiToggleFill
+} from 'react-icons/ri'
 
 const AdminHotels = () => {
-  const [hotels, setHotels] = useState([])
   const [allHotels, setAllHotels] = useState([])
+  const [hotels, setHotels] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [search, setSearch] = useState('')
   const [showForm, setShowForm] = useState(false)
-  const [editingId, setEditingId] = useState(null)
   const [editingHotel, setEditingHotel] = useState(null)
 
-  useEffect(() => {
-    fetchHotels()
-  }, [])
+  useEffect(() => { fetchHotels() }, [])
 
   useEffect(() => {
-    if (search.trim() === '') {
-      setHotels(allHotels)
-    } else {
-      const filtered = allHotels.filter(h =>
-        h.name.toLowerCase().includes(search.toLowerCase()) ||
-        h.city.toLowerCase().includes(search.toLowerCase())
-      )
-      setHotels(filtered)
-    }
+    const q = search.trim().toLowerCase()
+    setHotels(q ? allHotels.filter(h =>
+      h.name.toLowerCase().includes(q) || h.city.toLowerCase().includes(q)
+    ) : allHotels)
   }, [search, allHotels])
 
   const fetchHotels = async () => {
     try {
       setLoading(true)
-      const response = await adminHotelsService.getAll()
-      setAllHotels(response.data.data)
-      setHotels(response.data.data)
+      const res = await adminHotelsService.getAll()
+      setAllHotels(res.data.data)
+      setHotels(res.data.data)
       setError('')
-    } catch (err) {
+    } catch {
       setError('Failed to load hotels')
     } finally {
       setLoading(false)
@@ -46,145 +40,184 @@ const AdminHotels = () => {
   }
 
   const handleDelete = async (id) => {
-    if (window.confirm('Delete this hotel?')) {
-      try {
-        await adminHotelsService.delete(id)
-        setHotels(hotels.filter(h => h.id !== id))
-      } catch (err) {
-        setError('Failed to delete hotel')
-      }
+    if (!window.confirm('Delete this hotel?')) return
+    try {
+      await adminHotelsService.delete(id)
+      const updated = allHotels.filter(h => h.id !== id)
+      setAllHotels(updated)
+      setHotels(updated)
+    } catch {
+      setError('Failed to delete hotel')
     }
   }
 
   const handleToggleStatus = async (id) => {
     try {
       await adminHotelsService.toggleStatus(id)
-      setHotels(hotels.map(h => h.id === id ? { ...h, isActive: !h.isActive } : h))
-    } catch (err) {
+      const updated = allHotels.map(h => h.id === id ? { ...h, isActive: !h.isActive } : h)
+      setAllHotels(updated)
+      setHotels(updated)
+    } catch {
       setError('Failed to update status')
     }
   }
 
-  const handleEdit = (hotel) => {
-    setEditingHotel(hotel)
-    setEditingId(hotel.id)
-    setShowForm(true)
-  }
-
-  const handleCloseForm = () => {
-    setShowForm(false)
-    setEditingId(null)
-    setEditingHotel(null)
-  }
-
   const handleFormSubmit = async (formData) => {
     try {
-      if (editingId) {
-        await adminHotelsService.update(editingId, formData)
-        setHotels(hotels.map(h => h.id === editingId ? { ...h, ...formData } : h))
+      if (editingHotel) {
+        await adminHotelsService.update(editingHotel.id, formData)
+        const updated = allHotels.map(h => h.id === editingHotel.id ? { ...h, ...formData } : h)
+        setAllHotels(updated)
+        setHotels(updated)
       } else {
-        const response = await adminHotelsService.create(formData)
-        setHotels([response.data.data.hotel, ...hotels])
+        const res = await adminHotelsService.create(formData)
+        setAllHotels([res.data.data.hotel, ...allHotels])
+        setHotels([res.data.data.hotel, ...hotels])
       }
-      handleCloseForm()
-    } catch (err) {
+      setShowForm(false)
+      setEditingHotel(null)
+    } catch {
       setError('Failed to save hotel')
     }
   }
 
   return (
     <AdminLayout>
-      <div className="admin-page">
-        <div className="page-header">
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h1>Hotels Management</h1>
-            <div style={{ display: 'flex', gap: '24px', marginTop: '8px', fontSize: '14px', color: 'hsl(var(--bc) / 0.55)' }}>
-              <span>📊 Total: <strong style={{ color: 'hsl(var(--bc))' }}>{allHotels.length}</strong></span>
-              <span>✅ Active: <strong style={{ color: 'hsl(var(--su))' }}>{allHotels.filter(h => h.isActive).length}</strong></span>
-              <span>⛔ Inactive: <strong style={{ color: 'hsl(var(--er))' }}>{allHotels.filter(h => !h.isActive).length}</strong></span>
+            <h2 className="text-2xl font-bold text-base-content">Hotels</h2>
+            <div className="flex items-center gap-4 mt-1 text-xs text-base-content/50">
+              <span>Total: <strong className="text-base-content">{allHotels.length}</strong></span>
+              <span>Active: <strong className="text-success">{allHotels.filter(h => h.isActive).length}</strong></span>
+              <span>Inactive: <strong className="text-error">{allHotels.filter(h => !h.isActive).length}</strong></span>
             </div>
           </div>
-          <button className="btn-primary" onClick={() => setShowForm(true)} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            {Icons.plus({ size: 16 })} Add New Hotel
+          <button className="btn btn-primary btn-sm gap-2 w-fit" onClick={() => { setEditingHotel(null); setShowForm(true) }}>
+            <RiAddLine className="w-4 h-4" />
+            Add Hotel
           </button>
         </div>
 
-        {error && <div className="error-banner">{error}</div>}
+        {error && <div className="alert alert-error text-sm py-2">{error}</div>}
 
-        <div className="search-bar">
+        {/* Search */}
+        <label className="input input-bordered input-sm flex items-center gap-2 max-w-sm">
+          <RiSearchLine className="w-4 h-4 text-base-content/40" />
           <input
             type="text"
-            placeholder="Search hotels by name, city..."
+            className="grow"
+            placeholder="Search by name or city..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={e => setSearch(e.target.value)}
           />
-        </div>
+        </label>
 
-        {showForm && (
-          <div className="modal-overlay" onClick={handleCloseForm}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-              <HotelForm
-                hotel={editingHotel}
-                onSubmit={handleFormSubmit}
-                onClose={handleCloseForm}
-              />
+        {/* Table */}
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-20">
+            <span className="loading loading-spinner loading-lg text-primary mb-3" />
+            <p className="text-sm text-base-content/50">Loading hotels...</p>
+          </div>
+        ) : hotels.length === 0 ? (
+          <div className="card bg-base-100 border border-base-200 shadow-sm">
+            <div className="card-body flex flex-col items-center justify-center py-20">
+              <RiHotelLine className="w-14 h-14 text-base-content/20 mb-3" />
+              <p className="font-semibold text-base-content">No hotels found</p>
+              <p className="text-sm text-base-content/50 mt-1">
+                {search ? 'Try a different search term' : 'Add your first hotel to get started'}
+              </p>
             </div>
           </div>
-        )}
-
-
-        {loading ? (
-          <div className="loading">Loading hotels...</div>
-        ) : hotels.length === 0 ? (
-          <div className="empty-state"><p>No hotels found. Create your first hotel!</p></div>
         ) : (
-          <>
-            <div className="table-container">
-              <table className="data-table">
+          <div className="card bg-base-100 border border-base-200 shadow-sm overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="table table-sm">
                 <thead>
-                  <tr>
-                    <th>Hotel Name</th>
+                  <tr className="text-xs text-base-content/50 uppercase tracking-wider bg-base-200">
+                    <th>Hotel</th>
                     <th>City</th>
                     <th>Rating</th>
                     <th>Price/Night</th>
                     <th>Rooms</th>
                     <th>Status</th>
-                    <th>Actions</th>
+                    <th className="text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {hotels.map(hotel => (
-                    <tr key={hotel.id}>
-                      <td className="font-bold">{hotel.name}</td>
-                      <td>{hotel.city}</td>
-                      <td>⭐ {hotel.rating}</td>
-                      <td>₹{hotel.pricePerNight.toLocaleString()}</td>
-                      <td>{hotel.roomsAvailable}/{hotel.rooms}</td>
+                    <tr key={hotel.id} className="hover:bg-base-200/50 transition-colors">
                       <td>
-                        <span className={`badge ${hotel.isActive ? 'badge-active' : 'badge-inactive'}`}>
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                            <RiHotelLine className="w-4 h-4 text-primary" />
+                          </div>
+                          <span className="font-semibold text-sm text-base-content">{hotel.name}</span>
+                        </div>
+                      </td>
+                      <td className="text-sm text-base-content/60">{hotel.city}</td>
+                      <td className="text-sm text-base-content/70">⭐ {hotel.rating}</td>
+                      <td className="font-semibold text-sm text-base-content">₹{hotel.pricePerNight?.toLocaleString()}</td>
+                      <td className="text-sm text-base-content/60">{hotel.roomsAvailable}/{hotel.rooms}</td>
+                      <td>
+                        <span className={`badge badge-sm ${hotel.isActive ? 'badge-success' : 'badge-error'}`}>
                           {hotel.isActive ? 'Active' : 'Inactive'}
                         </span>
                       </td>
-                      <td className="actions">
-                        <button className="btn-sm btn-edit" onClick={() => handleEdit(hotel)} title="Edit" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-                          {Icons.edit({ size: 14 })} Edit
-                        </button>
-                        <button className="btn-sm btn-toggle" onClick={() => handleToggleStatus(hotel.id)} title={hotel.isActive ? 'Deactivate' : 'Activate'} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          {hotel.isActive ? Icons.toggleOn({ size: 14 }) : Icons.toggleOff({ size: 14 })}
-                        </button>
-                        <button className="btn-sm btn-delete" onClick={() => handleDelete(hotel.id)} title="Delete" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-                          {Icons.delete({ size: 14 })} Delete
-                        </button>
+                      <td>
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            className="btn btn-ghost btn-xs gap-1"
+                            onClick={() => { setEditingHotel(hotel); setShowForm(true) }}
+                          >
+                            <RiEditLine className="w-3.5 h-3.5" /> Edit
+                          </button>
+                          <button
+                            className="btn btn-ghost btn-xs gap-1"
+                            onClick={() => handleToggleStatus(hotel.id)}
+                            title={hotel.isActive ? 'Deactivate' : 'Activate'}
+                          >
+                            {hotel.isActive
+                              ? <RiToggleFill className="w-4 h-4 text-success" />
+                              : <RiToggleLine className="w-4 h-4 text-base-content/40" />
+                            }
+                          </button>
+                          <button
+                            className="btn btn-ghost btn-xs text-error hover:bg-error/10 gap-1"
+                            onClick={() => handleDelete(hotel.id)}
+                          >
+                            <RiDeleteBinLine className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-
-          </>
+          </div>
         )}
       </div>
+
+      {/* Hotel Form Modal */}
+      {showForm && (
+        <div className="modal modal-open">
+          <div className="modal-box max-w-2xl max-h-[90vh] overflow-y-auto">
+            <button
+              className="btn btn-ghost btn-xs btn-circle absolute right-4 top-4"
+              onClick={() => { setShowForm(false); setEditingHotel(null) }}
+            >✕</button>
+            <h3 className="font-bold text-lg mb-5">{editingHotel ? 'Edit Hotel' : 'Add New Hotel'}</h3>
+            <HotelForm
+              hotel={editingHotel}
+              onSubmit={handleFormSubmit}
+              onClose={() => { setShowForm(false); setEditingHotel(null) }}
+            />
+          </div>
+          <div className="modal-backdrop" onClick={() => { setShowForm(false); setEditingHotel(null) }} />
+        </div>
+      )}
     </AdminLayout>
   )
 }

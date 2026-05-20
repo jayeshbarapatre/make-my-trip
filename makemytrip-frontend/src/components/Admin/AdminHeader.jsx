@@ -1,264 +1,329 @@
-import { useState, useRef, useEffect } from 'react'
-import { useLocation } from 'react-router-dom'
-import { useAdmin } from '../../context/AdminContext'
-import { useTheme } from '../../context/ThemeContext'
-import { adminAuthService } from '../../services/adminService'
-import './AdminHeader.css'
+import React, { useState, useRef, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useAdmin } from '../../context/AdminContext';
+import { useSaaS } from '../../context/SaaSContext';
+import { adminAuthService } from '../../services/adminService';
+import {
+  RiMenuLine,
+  RiBellLine,
+  RiSunLine,
+  RiMoonLine,
+  RiUserLine,
+  RiSettings4Line,
+  RiLockPasswordLine,
+  RiLogoutBoxLine,
+  RiCheckLine,
+  RiNotificationBadgeLine
+} from 'react-icons/ri';
 
-const AdminHeader = ({ toggleSidebar }) => {
-  const { admin, logout } = useAdmin()
-  const { theme, toggleTheme } = useTheme()
-  const location = useLocation()
-  const [dropdownOpen, setDropdownOpen] = useState(false)
-  const [notificationOpen, setNotificationOpen] = useState(false)
-  const [showPasswordModal, setShowPasswordModal] = useState(false)
-  const [passwordData, setPasswordData] = useState({ current: '', new: '' })
-  const [passwordStatus, setPasswordStatus] = useState({ loading: false, error: '', success: '' })
-  const dropdownRef = useRef(null)
-  const notificationRef = useRef(null)
+const PAGE_NAMES = {
+  '/admin/dashboard': 'Admin Control Room',
+  '/admin/vendors': 'Vendor Partners Directory',
+  '/admin/users': 'User Account Registry',
+  '/admin/approvals': 'Universal Submissions Queue',
+  '/admin/bookings': 'Transactional Ledger',
+  '/admin/hotels': 'Hotels Listing Catalog',
+  '/admin/flights': 'Flights Routing Catalog',
+  '/admin/buses': 'Buses Transit Catalog',
+};
 
-  const getPageName = () => {
-    const pathMap = {
-      '/admin/dashboard': 'Dashboard',
-      '/admin/flights': 'Flights',
-      '/admin/hotels': 'Hotels',
-      '/admin/buses': 'Buses',
-      '/admin/cabs': 'Cabs',
-      '/admin/bookings': 'Bookings',
-      '/admin/users': 'Users'
-    }
-    return pathMap[location.pathname] || 'Admin'
-  }
+const THEMES = [
+  { id: 'light', label: 'Classic Light' },
+  { id: 'dark', label: 'Sleek Dark' },
+  { id: 'corporate', label: 'Enterprise Light' },
+  { id: 'business', label: 'Stripe Deep Dark' },
+  { id: 'nord', label: 'Nordic Chill' },
+  { id: 'dim', label: 'Dim Night' },
+  { id: 'dracula', label: 'Vampire Dark' },
+  { id: 'night', label: 'Space Black' },
+  { id: 'winter', label: 'Winter Ice' }
+];
+
+const AdminHeader = ({ onMenuClick }) => {
+  const { admin, logout } = useAdmin();
+  const { notifications, markAllNotificationsRead } = useSaaS();
+  const location = useLocation();
+  const navigate = useNavigate();
+  
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [themeOpen, setThemeOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+  
+  const [currentTheme, setCurrentTheme] = useState(() => localStorage.getItem('daisyui-theme') || 'business');
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [pwData, setPwData] = useState({ current: '', next: '' });
+  const [pwStatus, setPwStatus] = useState({ loading: false, error: '', success: '' });
+
+  const profileRef = useRef(null);
+  const themeRef = useRef(null);
+  const notifRef = useRef(null);
+
+  const pageName = PAGE_NAMES[location.pathname] || 'Antigravity Management Portal';
+  const isDark = ['dark', 'business', 'night', 'dim', 'dracula', 'black', 'sunset'].includes(currentTheme);
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setDropdownOpen(false)
-      }
-      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
-        setNotificationOpen(false)
-      }
+    const handleOutside = (e) => {
+      if (profileRef.current && !profileRef.current.contains(e.target)) setProfileOpen(false);
+      if (themeRef.current && !themeRef.current.contains(e.target)) setThemeOpen(false);
+      if (notifRef.current && !notifRef.current.contains(e.target)) setNotifOpen(false);
+    };
+    document.addEventListener('mousedown', handleOutside);
+    return () => document.removeEventListener('mousedown', handleOutside);
+  }, []);
+
+  const applyTheme = (themeId) => {
+    document.documentElement.setAttribute('data-theme', themeId);
+    localStorage.setItem('daisyui-theme', themeId);
+    setCurrentTheme(themeId);
+    setThemeOpen(false);
+  };
+
+  const toggleDarkLight = () => {
+    applyTheme(isDark ? 'light' : 'business');
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/admin/login');
+  };
+
+  const handleChangePassword = async () => {
+    if (!pwData.current || !pwData.next) {
+      return setPwStatus({ loading: false, error: 'Both fields are required', success: '' });
     }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+    try {
+      setPwStatus({ loading: true, error: '', success: '' });
+      await adminAuthService.changePassword(pwData.current, pwData.next);
+      setPwStatus({ loading: false, error: '', success: 'Password updated successfully!' });
+      setTimeout(() => {
+        setShowPasswordModal(false);
+        setPwStatus({ loading: false, error: '', success: '' });
+        setPwData({ current: '', next: '' });
+      }, 1500);
+    } catch (err) {
+      setPwStatus({ loading: false, error: err.response?.data?.message || 'Failed to update password', success: '' });
+    }
+  };
+
+  const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
-    <header className="admin-header">
-      <button className="menu-toggle" onClick={toggleSidebar}>
-        <i className="fas fa-bars"></i>
-      </button>
-
-      <div className="greeting-section">
-        <h2 className="greeting">{getPageName()}</h2>
-      </div>
-
-      <div className="header-right">
-        {/* Language Selector */}
-        <div className="language-selector">
-          <button className="lang-btn" title="English">
-            <span className="flag">🇺🇸</span>
-          </button>
-          <button className="lang-btn" title="Spanish">
-            <span className="flag">🇪🇸</span>
-          </button>
-          <button className="lang-btn" title="German">
-            <span className="flag">🇩🇪</span>
-          </button>
-          <button className="lang-btn" title="French">
-            <span className="flag">🇫🇷</span>
-          </button>
-        </div>
-
-        {/* Notifications */}
-        <div className="notification-container" ref={notificationRef}>
+    <>
+      <header className="sticky top-0 z-20 bg-base-100/90 backdrop-blur-md border-b border-base-200/50 h-16 flex items-center justify-between px-6 gap-4">
+        {/* Mobile menu trigger */}
+        <div className="flex items-center gap-3">
           <button
-            className="notification-btn"
-            onClick={() => setNotificationOpen(!notificationOpen)}
+            className="btn btn-ghost btn-sm btn-circle lg:hidden text-base-content/70 hover:text-base-content"
+            onClick={onMenuClick}
           >
-            <i className="fas fa-bell"></i>
-            <span className="notification-badge">24</span>
+            <RiMenuLine className="w-5 h-5" />
           </button>
-
-          {notificationOpen && (
-            <div className="notification-panel">
-              <div className="notification-header">
-                <h3>Notifications</h3>
-                <button className="close-btn" onClick={() => setNotificationOpen(false)}>
-                  <i className="fas fa-times"></i>
-                </button>
-              </div>
-
-              <div className="notification-tabs">
-                <button className="tab-btn active">All</button>
-                <button className="tab-btn">Projects</button>
-                <button className="tab-btn">Team</button>
-              </div>
-
-              <div className="notification-list">
-                <div className="notification-item">
-                  <div className="notification-icon">
-                    <i className="fas fa-shopping-cart"></i>
-                  </div>
-                  <div className="notification-content">
-                    <p className="notification-title">New Order Placed</p>
-                    <p className="notification-time">2 min ago</p>
-                  </div>
-                </div>
-
-                <div className="notification-item">
-                  <div className="notification-icon">
-                    <i className="fas fa-tasks"></i>
-                  </div>
-                  <div className="notification-content">
-                    <p className="notification-title">Task Completed</p>
-                    <p className="notification-time">5 min ago</p>
-                  </div>
-                </div>
-
-                <div className="notification-item">
-                  <div className="notification-icon">
-                    <i className="fas fa-user-plus"></i>
-                  </div>
-                  <div className="notification-content">
-                    <p className="notification-title">New User Registration</p>
-                    <p className="notification-time">15 min ago</p>
-                  </div>
-                </div>
-
-                <div className="notification-item">
-                  <div className="notification-icon">
-                    <i className="fas fa-file-alt"></i>
-                  </div>
-                  <div className="notification-content">
-                    <p className="notification-title">Report Generated</p>
-                    <p className="notification-time">1 hour ago</p>
-                  </div>
-                </div>
-              </div>
-
-              <button className="view-all-btn">View All Notifications</button>
-            </div>
-          )}
+          
+          {/* Breadcrumb style page title */}
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] uppercase font-bold tracking-widest text-base-content/30 hidden sm:inline">Platform</span>
+            <span className="text-base-content/30 text-xs hidden sm:inline">/</span>
+            <h1 className="text-sm font-bold text-base-content tracking-tight">{pageName}</h1>
+          </div>
         </div>
 
-        {/* Theme Toggle */}
-        <button className="theme-toggle-btn" onClick={toggleTheme} title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}>
-          {theme === 'light' ? <i className="fas fa-moon"></i> : <i className="fas fa-sun"></i>}
-        </button>
-
-        {/* Admin Dropdown */}
-        <div className="admin-dropdown-container" ref={dropdownRef}>
-          <div
-            className="admin-info-trigger"
-            onClick={() => setDropdownOpen(!dropdownOpen)}
+        {/* Action Widgets */}
+        <div className="flex items-center gap-2">
+          
+          {/* Quick Dark/Light Toggle */}
+          <button
+            className="btn btn-ghost btn-sm btn-circle text-base-content/65 hover:text-base-content hover:bg-base-200/50 active:scale-95"
+            onClick={toggleDarkLight}
+            title="Toggle Theme Mode"
           >
-            <div className="admin-avatar">
-              {admin?.name?.charAt(0).toUpperCase() || 'A'}
-            </div>
-            <div className="admin-text">
-              <span className="admin-name">{admin?.name || 'Admin'}</span>
-              <span className="admin-role">Administrator</span>
-            </div>
-            <i className={`dropdown-arrow fas ${dropdownOpen ? 'fa-chevron-up' : 'fa-chevron-down'}`}></i>
+            {isDark ? (
+              <RiSunLine className="w-4 h-4 text-warning" />
+            ) : (
+              <RiMoonLine className="w-4 h-4 text-primary" />
+            )}
+          </button>
+
+          {/* Theme Dropdown */}
+          <div className="relative" ref={themeRef}>
+            <button
+              className="btn btn-ghost btn-sm gap-2 text-xs font-semibold hover:bg-base-200/50 hidden sm:flex active:scale-95"
+              onClick={() => setThemeOpen(!themeOpen)}
+            >
+              <span className="w-2.5 h-2.5 rounded-full bg-primary border border-base-300 shadow-xs" />
+              <span className="capitalize">{currentTheme}</span>
+            </button>
+            {themeOpen && (
+              <div className="absolute right-0 top-full mt-2 w-48 bg-base-100 border border-base-200/60 rounded-2xl shadow-xl z-50 py-2 overflow-hidden animate-scale-up">
+                <p className="px-4 py-1.5 text-[9px] font-bold tracking-widest uppercase text-base-content/30">Select Visual Style</p>
+                <div className="max-h-64 overflow-y-auto divide-y divide-base-200/30">
+                  {THEMES.map(t => (
+                    <button
+                      key={t.id}
+                      onClick={() => applyTheme(t.id)}
+                      className="flex items-center justify-between w-full px-4 py-2 text-xs font-semibold text-base-content/75 hover:bg-base-200 hover:text-base-content transition-all text-left"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full" style={{ background: t.id === currentTheme ? 'hsl(var(--p))' : 'hsl(var(--bc)/0.2)' }} />
+                        <span>{t.label}</span>
+                      </div>
+                      {currentTheme === t.id && <RiCheckLine className="w-3.5 h-3.5 text-primary" />}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
-          {dropdownOpen && (
-            <div className="admin-dropdown-menu">
-              <div className="dropdown-header">
-                <strong>{admin?.name || 'Admin User'}</strong>
-                <span>{admin?.email || 'admin@makemytrip.com'}</span>
+          {/* Notification Center */}
+          <div className="relative" ref={notifRef}>
+            <button
+              className="btn btn-ghost btn-sm btn-circle relative text-base-content/65 hover:text-base-content hover:bg-base-200/50 active:scale-95"
+              onClick={() => {
+                setNotifOpen(!notifOpen);
+                if (!notifOpen) markAllNotificationsRead();
+              }}
+            >
+              <RiBellLine className="w-4 h-4" />
+              {unreadCount > 0 && (
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full animate-ping" />
+              )}
+            </button>
+            {notifOpen && (
+              <div className="absolute right-0 top-full mt-2 w-80 bg-base-100 border border-base-200/60 rounded-2xl shadow-2xl z-50 overflow-hidden animate-scale-up">
+                <div className="flex items-center justify-between px-5 py-4 border-b border-base-200/50 bg-base-200/10">
+                  <h3 className="font-bold text-xs uppercase tracking-wider text-base-content/50">Activity Logs</h3>
+                  {unreadCount > 0 && <span className="badge badge-primary badge-xs text-[9px] font-bold px-2 py-1.5">{unreadCount} New</span>}
+                </div>
+                <div className="divide-y divide-base-200/50 max-h-72 overflow-y-auto">
+                  {notifications.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-10 text-base-content/40">
+                      <RiNotificationBadgeLine className="w-8 h-8 mb-2 opacity-50" />
+                      <p className="text-xs font-semibold">No recent activity log</p>
+                    </div>
+                  ) : (
+                    notifications.map(n => (
+                      <div key={n.id} className={`flex gap-3 px-5 py-3.5 hover:bg-base-200/35 transition-colors ${!n.read ? 'bg-primary/5' : ''}`}>
+                        <div className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${!n.read ? 'bg-primary' : 'bg-base-300'}`} />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-bold text-base-content leading-snug">{n.title}</p>
+                          <p className="text-[10px] text-base-content/55 mt-0.5 leading-relaxed">{n.desc}</p>
+                          <p className="text-[9px] text-base-content/30 mt-1 font-bold">{n.time}</p>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+                <div className="px-5 py-3 border-t border-base-200/50 bg-base-200/5">
+                  <button className="btn btn-ghost btn-xs w-full text-primary hover:bg-transparent font-bold">Clear activity display</button>
+                </div>
               </div>
-              <div className="dropdown-divider"></div>
-              <button className="dropdown-item">
-                <i className="icon fas fa-user"></i> Profile
-              </button>
-              <button className="dropdown-item">
-                <i className="icon fas fa-cog"></i> Account Settings
-              </button>
-              <button className="dropdown-item">
-                <i className="icon fas fa-shield-alt"></i> Security
-              </button>
-              <button className="dropdown-item" onClick={() => {
-                setShowPasswordModal(true)
-                setDropdownOpen(false)
-              }}>
-                <i className="icon fas fa-key"></i> Change Password
-              </button>
-              <button className="dropdown-item">
-                <i className="icon fas fa-question-circle"></i> Help Center
-              </button>
-              <div className="dropdown-divider"></div>
-              <button className="dropdown-item logout" onClick={logout}>
-                <i className="icon fas fa-sign-out-alt"></i> Logout
-              </button>
-            </div>
-          )}
+            )}
+          </div>
+
+          {/* Premium User Profile Dropdown */}
+          <div className="relative" ref={profileRef}>
+            <button
+              className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-2xl hover:bg-base-200/50 transition-all border border-transparent hover:border-base-200/50 active:scale-95"
+              onClick={() => setProfileOpen(!profileOpen)}
+            >
+              <div className="avatar placeholder">
+                <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-primary to-accent text-white text-xs font-bold shadow-xs">
+                  <span>{admin?.name?.charAt(0).toUpperCase() || 'A'}</span>
+                </div>
+              </div>
+              <span className="text-xs font-bold text-base-content hidden sm:block">{admin?.name || 'Admin'}</span>
+            </button>
+            {profileOpen && (
+              <div className="absolute right-0 top-full mt-2 w-56 bg-base-100 border border-base-200/60 rounded-2xl shadow-xl z-50 overflow-hidden animate-scale-up">
+                <div className="px-5 py-4 border-b border-base-200/50 bg-base-200/10">
+                  <p className="font-bold text-xs text-base-content leading-tight">{admin?.name || 'Admin Account'}</p>
+                  <p className="text-[10px] text-base-content/40 font-semibold truncate mt-0.5">{admin?.email || 'admin@antigravity.io'}</p>
+                </div>
+                <div className="py-1">
+                  <button className="flex items-center gap-3 w-full px-5 py-2.5 text-xs font-bold text-base-content/65 hover:bg-base-200 hover:text-base-content transition-colors">
+                    <RiUserLine className="w-4 h-4 shrink-0 text-base-content/40" /> My Profile
+                  </button>
+                  <button className="flex items-center gap-3 w-full px-5 py-2.5 text-xs font-bold text-base-content/65 hover:bg-base-200 hover:text-base-content transition-colors">
+                    <RiSettings4Line className="w-4 h-4 shrink-0 text-base-content/40" /> Settings
+                  </button>
+                  <button
+                    className="flex items-center gap-3 w-full px-5 py-2.5 text-xs font-bold text-base-content/65 hover:bg-base-200 hover:text-base-content transition-colors"
+                    onClick={() => { setShowPasswordModal(true); setProfileOpen(false); }}
+                  >
+                    <RiLockPasswordLine className="w-4 h-4 shrink-0 text-base-content/40" /> Reset Password
+                  </button>
+                </div>
+                <div className="border-t border-base-200/50 py-1 bg-base-200/5">
+                  <button
+                    className="flex items-center gap-3 w-full px-5 py-2.5 text-xs font-bold text-error/80 hover:bg-error/10 hover:text-error transition-colors"
+                    onClick={handleLogout}
+                  >
+                    <RiLogoutBoxLine className="w-4 h-4 shrink-0" /> Sign out
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      </header>
 
-      {/* Password Modal */}
+      {/* Change Password Modal */}
       {showPasswordModal && (
-        <div className="password-modal-overlay">
-          <div className="password-modal">
-            <h3>Change Password</h3>
-            {passwordStatus.error && <p className="error-text">{passwordStatus.error}</p>}
-            {passwordStatus.success && <p className="success-text">{passwordStatus.success}</p>}
-
-            <div className="form-group">
-              <label>Current Password</label>
-              <input
-                type="password"
-                value={passwordData.current}
-                onChange={e => setPasswordData({...passwordData, current: e.target.value})}
-              />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-fade-in">
+          <div className="bg-base-100 border border-base-200/50 rounded-2xl shadow-2xl w-full max-w-sm p-6 animate-scale-up">
+            <h3 className="text-base font-bold text-base-content mb-4 tracking-tight">Security Reset</h3>
+            {pwStatus.error && (
+              <div className="alert alert-error text-xs font-bold py-2.5 rounded-xl mb-4">{pwStatus.error}</div>
+            )}
+            {pwStatus.success && (
+              <div className="alert alert-success text-xs font-bold py-2.5 rounded-xl mb-4">{pwStatus.success}</div>
+            )}
+            <div className="space-y-4">
+              <label className="form-control">
+                <span className="text-xs font-bold text-base-content/75 mb-1.5">Current Password</span>
+                <input
+                  type="password"
+                  className="input input-bordered input-md w-full text-xs font-medium focus:outline-none"
+                  value={pwData.current}
+                  onChange={e => setPwData({ ...pwData, current: e.target.value })}
+                  placeholder="••••••••"
+                />
+              </label>
+              <label className="form-control">
+                <span className="text-xs font-bold text-base-content/75 mb-1.5">New Secure Password</span>
+                <input
+                  type="password"
+                  className="input input-bordered input-md w-full text-xs font-medium focus:outline-none"
+                  value={pwData.next}
+                  onChange={e => setPwData({ ...pwData, next: e.target.value })}
+                  placeholder="••••••••"
+                />
+              </label>
             </div>
-            <div className="form-group">
-              <label>New Password</label>
-              <input
-                type="password"
-                value={passwordData.new}
-                onChange={e => setPasswordData({...passwordData, new: e.target.value})}
-              />
-            </div>
-            <div className="modal-actions">
+            <div className="flex gap-2 mt-6">
               <button
-                className="cancel-btn"
+                className="btn btn-ghost btn-sm flex-1 text-xs font-bold"
                 onClick={() => {
-                  setShowPasswordModal(false)
-                  setPasswordStatus({ loading: false, error: '', success: '' })
-                  setPasswordData({ current: '', new: '' })
-                }}
-              >Cancel</button>
-              <button
-                className="save-btn"
-                disabled={passwordStatus.loading}
-                onClick={async () => {
-                  if (!passwordData.current || !passwordData.new) {
-                    return setPasswordStatus({ ...passwordStatus, error: 'All fields required' })
-                  }
-                  try {
-                    setPasswordStatus({ loading: true, error: '', success: '' })
-                    await adminAuthService.changePassword(passwordData.current, passwordData.new)
-                    setPasswordStatus({ loading: false, error: '', success: 'Password changed successfully!' })
-                    setTimeout(() => {
-                      setShowPasswordModal(false)
-                      setPasswordStatus({ loading: false, error: '', success: '' })
-                      setPasswordData({ current: '', new: '' })
-                    }, 1500)
-                  } catch (err) {
-                    setPasswordStatus({ loading: false, error: err.response?.data?.message || 'Failed to change password', success: '' })
-                  }
+                  setShowPasswordModal(false);
+                  setPwStatus({ loading: false, error: '', success: '' });
+                  setPwData({ current: '', next: '' });
                 }}
               >
-                {passwordStatus.loading ? 'Saving...' : 'Save Password'}
+                Cancel
+              </button>
+              <button
+                className="btn btn-primary btn-sm flex-1 text-xs font-bold"
+                disabled={pwStatus.loading}
+                onClick={handleChangePassword}
+              >
+                {pwStatus.loading ? <span className="loading loading-spinner loading-xs" /> : 'Confirm'}
               </button>
             </div>
           </div>
         </div>
       )}
-    </header>
-  )
-}
+    </>
+  );
+};
 
-export default AdminHeader
+export default AdminHeader;

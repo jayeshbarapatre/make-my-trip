@@ -20,14 +20,12 @@ export default function ThemeSwitcher() {
   return (
     <div
       ref={dropdownRef}
-      className="dropdown dropdown-end"
+      className={`dropdown dropdown-end ${isOpen ? 'dropdown-open' : ''}`}
       title="Change Theme"
       style={{ position: 'relative', display: 'inline-block', zIndex: 1000 }}
     >
-      {/* Theme Switcher Toggle Button (Screenshot 2) */}
-      <div
-        tabIndex={0}
-        role="button"
+      <button
+        type="button"
         aria-label="Change Theme"
         style={{
           display: 'flex',
@@ -43,14 +41,8 @@ export default function ThemeSwitcher() {
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         onClick={(e) => {
-          e.preventDefault()
+          e.stopPropagation()
           setIsOpen(!isOpen)
-        }}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault()
-            setIsOpen(!isOpen)
-          }
         }}
       >
         {/* 2x2 Grid representing the active theme's colors - 26x26 size with 6px right space */}
@@ -91,7 +83,7 @@ export default function ThemeSwitcher() {
         >
           <polyline points="6 9 12 15 18 9"></polyline>
         </svg>
-      </div>
+      </button>
 
       {/* Theme List Dropdown (Screenshot 3) */}
       {isOpen && (

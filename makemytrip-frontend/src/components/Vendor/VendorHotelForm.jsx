@@ -2,7 +2,17 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { vendorHotelsService } from '../../services/vendorService'
 import toast from 'react-hot-toast'
-import './VendorHotelForm.css'
+
+const AMENITIES = [
+  'WiFi', 'Swimming Pool', 'Gym', 'Spa', 'Parking',
+  'Air Conditioning', 'Restaurant', 'Bar', 'Conference Room', 'Laundry Service'
+]
+
+const EMPTY_FORM = {
+  name: '', city: '', location: '', description: '',
+  pricePerNight: '', price: '', rooms: 50, rating: 4,
+  amenities: [], checkin: '14:00', checkout: '11:00', image: ''
+}
 
 const VendorHotelForm = ({ onClose, onSuccess }) => {
   const navigate = useNavigate()
@@ -11,71 +21,34 @@ const VendorHotelForm = ({ onClose, onSuccess }) => {
 
   const [loading, setLoading] = useState(isEditing)
   const [submitting, setSubmitting] = useState(false)
-  const [formData, setFormData] = useState({
-    name: '',
-    city: '',
-    location: '',
-    description: '',
-    pricePerNight: '',
-    price: '',
-    rooms: 50,
-    rating: 4,
-    amenities: [],
-    checkin: '14:00',
-    checkout: '11:00',
-    image: ''
-  })
-
+  const [formData, setFormData] = useState(EMPTY_FORM)
   const [selectedAmenities, setSelectedAmenities] = useState([])
 
-  const amenitiesList = [
-    'WiFi',
-    'Swimming Pool',
-    'Gym',
-    'Spa',
-    'Parking',
-    'Air Conditioning',
-    'Restaurant',
-    'Bar',
-    'Conference Room',
-    'Laundry Service'
-  ]
-
   useEffect(() => {
-    if (isEditing) {
-      fetchHotel()
-    }
+    if (isEditing) fetchHotel()
   }, [id])
 
   const fetchHotel = async () => {
     try {
       setLoading(true)
-      const response = await vendorHotelsService.getById(id)
-      const hotel = response.data.data.hotel
+      const res = await vendorHotelsService.getById(id)
+      const h = res.data.data.hotel
       setFormData({
-        name: hotel.name,
-        city: hotel.city,
-        location: hotel.location || '',
-        description: hotel.description || '',
-        pricePerNight: hotel.pricePerNight,
-        price: hotel.price,
-        rooms: hotel.rooms,
-        rating: hotel.rating,
-        amenities: hotel.amenities || [],
-        checkin: hotel.checkin || '14:00',
-        checkout: hotel.checkout || '11:00',
-        image: hotel.image || ''
+        name: h.name, city: h.city, location: h.location || '',
+        description: h.description || '', pricePerNight: h.pricePerNight,
+        price: h.price, rooms: h.rooms, rating: h.rating,
+        amenities: h.amenities || [], checkin: h.checkin || '14:00',
+        checkout: h.checkout || '11:00', image: h.image || ''
       })
-      setSelectedAmenities(hotel.amenities || [])
-    } catch (err) {
+      setSelectedAmenities(h.amenities || [])
+    } catch {
       toast.error('Failed to load hotel details')
-      console.error(err)
     } finally {
       setLoading(false)
     }
   }
 
-  const handleInputChange = (e) => {
+  const handleChange = (e) => {
     const { name, value } = e.target
     setFormData(prev => ({
       ...prev,
@@ -83,233 +56,220 @@ const VendorHotelForm = ({ onClose, onSuccess }) => {
     }))
   }
 
-  const toggleAmenity = (amenity) => {
+  const toggleAmenity = (a) => {
     setSelectedAmenities(prev =>
-      prev.includes(amenity)
-        ? prev.filter(a => a !== amenity)
-        : [...prev, amenity]
+      prev.includes(a) ? prev.filter(x => x !== a) : [...prev, a]
     )
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-
     if (!formData.name || !formData.city || !formData.pricePerNight || !formData.price) {
       toast.error('Please fill in all required fields')
       return
     }
-
     try {
       setSubmitting(true)
-      const submitData = {
-        ...formData,
-        amenities: selectedAmenities
-      }
-
+      const payload = { ...formData, amenities: selectedAmenities }
       if (isEditing) {
-        await vendorHotelsService.update(id, submitData)
+        await vendorHotelsService.update(id, payload)
         toast.success('Hotel updated successfully')
       } else {
-        await vendorHotelsService.create(submitData)
+        await vendorHotelsService.create(payload)
         toast.success('Hotel created successfully')
       }
-
-      if (onSuccess) {
-        onSuccess()
-      } else {
-        navigate('/vendor/hotels')
-      }
+      onSuccess ? onSuccess() : navigate('/vendor/hotels')
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to save hotel')
-      console.error(err)
     } finally {
       setSubmitting(false)
     }
   }
 
   if (loading) {
-    return <div className="form-loading">Loading...</div>
+    return (
+      <div className="flex flex-col items-center justify-center py-16">
+        <span className="loading loading-spinner loading-lg text-primary mb-3" />
+        <p className="text-sm text-base-content/50">Loading hotel details...</p>
+      </div>
+    )
   }
 
   return (
-    <div className="vendor-hotel-form">
-      <div className="form-header">
-        <h2>{isEditing ? 'Edit Hotel' : 'Create New Hotel'}</h2>
-        {onClose && (
-          <button className="btn-close" onClick={onClose}>
-            <i className="fas fa-times"></i>
-          </button>
-        )}
+    <div className="space-y-6">
+      {/* Page title */}
+      <div>
+        <h2 className="text-xl font-bold text-base-content">
+          {isEditing ? 'Edit Hotel' : 'Create New Hotel'}
+        </h2>
+        <p className="text-sm text-base-content/50 mt-0.5">
+          {isEditing ? 'Update your hotel listing details' : 'Fill in the details to create a new hotel listing'}
+        </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="form-content">
-        <div className="form-section">
-          <h3>Basic Information</h3>
-
-          <div className="form-group">
-            <label htmlFor="name">Hotel Name *</label>
-            <input
-              id="name"
-              name="name"
-              type="text"
-              value={formData.name}
-              onChange={handleInputChange}
-              placeholder="Enter hotel name"
-              required
-            />
-          </div>
-
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="city">City *</label>
-              <input
-                id="city"
-                name="city"
-                type="text"
-                value={formData.city}
-                onChange={handleInputChange}
-                placeholder="e.g., Mumbai, Delhi"
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="location">Location</label>
-              <input
-                id="location"
-                name="location"
-                type="text"
-                value={formData.location}
-                onChange={handleInputChange}
-                placeholder="Specific area/neighborhood"
-              />
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="description">Description</label>
-            <textarea
-              id="description"
-              name="description"
-              value={formData.description}
-              onChange={handleInputChange}
-              placeholder="Tell guests about your hotel"
-              rows="4"
-            />
-          </div>
-        </div>
-
-        <div className="form-section">
-          <h3>Pricing & Inventory</h3>
-
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="pricePerNight">Price Per Night (₹) *</label>
-              <input
-                id="pricePerNight"
-                name="pricePerNight"
-                type="number"
-                value={formData.pricePerNight}
-                onChange={handleInputChange}
-                placeholder="2000"
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="price">Base Price (₹) *</label>
-              <input
-                id="price"
-                name="price"
-                type="number"
-                value={formData.price}
-                onChange={handleInputChange}
-                placeholder="2000"
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="rooms">Total Rooms</label>
-              <input
-                id="rooms"
-                name="rooms"
-                type="number"
-                value={formData.rooms}
-                onChange={handleInputChange}
-                min="1"
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="rating">Rating (0-5)</label>
-              <input
-                id="rating"
-                name="rating"
-                type="number"
-                value={formData.rating}
-                onChange={handleInputChange}
-                min="0"
-                max="5"
-                step="0.1"
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="form-section">
-          <h3>Check-in & Check-out</h3>
-
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="checkin">Check-in Time</label>
-              <input
-                id="checkin"
-                name="checkin"
-                type="time"
-                value={formData.checkin}
-                onChange={handleInputChange}
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="checkout">Check-out Time</label>
-              <input
-                id="checkout"
-                name="checkout"
-                type="time"
-                value={formData.checkout}
-                onChange={handleInputChange}
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="form-section">
-          <h3>Amenities</h3>
-          <div className="amenities-grid">
-            {amenitiesList.map(amenity => (
-              <label key={amenity} className="amenity-checkbox">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Basic Info */}
+        <div className="card bg-base-100 border border-base-200 shadow-sm">
+          <div className="card-body p-5">
+            <h3 className="font-semibold text-base-content mb-4">Basic Information</h3>
+            <div className="space-y-4">
+              <label className="form-control">
+                <div className="label py-1"><span className="label-text text-sm font-medium">Hotel Name *</span></div>
                 <input
-                  type="checkbox"
-                  checked={selectedAmenities.includes(amenity)}
-                  onChange={() => toggleAmenity(amenity)}
+                  type="text" name="name" className="input input-bordered input-sm"
+                  placeholder="Enter hotel name" value={formData.name}
+                  onChange={handleChange} required disabled={submitting}
                 />
-                <span>{amenity}</span>
               </label>
-            ))}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <label className="form-control">
+                  <div className="label py-1"><span className="label-text text-sm font-medium">City *</span></div>
+                  <input
+                    type="text" name="city" className="input input-bordered input-sm"
+                    placeholder="e.g., Mumbai, Delhi" value={formData.city}
+                    onChange={handleChange} required disabled={submitting}
+                  />
+                </label>
+                <label className="form-control">
+                  <div className="label py-1"><span className="label-text text-sm font-medium">Location / Area</span></div>
+                  <input
+                    type="text" name="location" className="input input-bordered input-sm"
+                    placeholder="Specific area or neighborhood" value={formData.location}
+                    onChange={handleChange} disabled={submitting}
+                  />
+                </label>
+              </div>
+              <label className="form-control">
+                <div className="label py-1"><span className="label-text text-sm font-medium">Description</span></div>
+                <textarea
+                  name="description" className="textarea textarea-bordered textarea-sm"
+                  placeholder="Tell guests about your hotel..." rows={4}
+                  value={formData.description} onChange={handleChange} disabled={submitting}
+                />
+              </label>
+              <label className="form-control">
+                <div className="label py-1"><span className="label-text text-sm font-medium">Image URL</span></div>
+                <input
+                  type="url" name="image" className="input input-bordered input-sm"
+                  placeholder="https://..." value={formData.image}
+                  onChange={handleChange} disabled={submitting}
+                />
+              </label>
+            </div>
           </div>
         </div>
 
-        <div className="form-actions">
-          <button type="submit" className="btn-submit" disabled={submitting}>
-            {submitting ? 'Saving...' : (isEditing ? 'Update Hotel' : 'Create Hotel')}
-          </button>
+        {/* Pricing & Inventory */}
+        <div className="card bg-base-100 border border-base-200 shadow-sm">
+          <div className="card-body p-5">
+            <h3 className="font-semibold text-base-content mb-4">Pricing & Inventory</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <label className="form-control">
+                <div className="label py-1"><span className="label-text text-sm font-medium">Price/Night (₹) *</span></div>
+                <input
+                  type="number" name="pricePerNight" className="input input-bordered input-sm"
+                  placeholder="2000" value={formData.pricePerNight}
+                  onChange={handleChange} required disabled={submitting}
+                />
+              </label>
+              <label className="form-control">
+                <div className="label py-1"><span className="label-text text-sm font-medium">Base Price (₹) *</span></div>
+                <input
+                  type="number" name="price" className="input input-bordered input-sm"
+                  placeholder="2000" value={formData.price}
+                  onChange={handleChange} required disabled={submitting}
+                />
+              </label>
+              <label className="form-control">
+                <div className="label py-1"><span className="label-text text-sm font-medium">Total Rooms</span></div>
+                <input
+                  type="number" name="rooms" className="input input-bordered input-sm"
+                  min={1} value={formData.rooms}
+                  onChange={handleChange} disabled={submitting}
+                />
+              </label>
+              <label className="form-control">
+                <div className="label py-1"><span className="label-text text-sm font-medium">Rating (0–5)</span></div>
+                <input
+                  type="number" name="rating" className="input input-bordered input-sm"
+                  min={0} max={5} step={0.1} value={formData.rating}
+                  onChange={handleChange} disabled={submitting}
+                />
+              </label>
+            </div>
+          </div>
+        </div>
+
+        {/* Check-in / Check-out */}
+        <div className="card bg-base-100 border border-base-200 shadow-sm">
+          <div className="card-body p-5">
+            <h3 className="font-semibold text-base-content mb-4">Check-in & Check-out</h3>
+            <div className="grid grid-cols-2 gap-4 max-w-xs">
+              <label className="form-control">
+                <div className="label py-1"><span className="label-text text-sm font-medium">Check-in</span></div>
+                <input
+                  type="time" name="checkin" className="input input-bordered input-sm"
+                  value={formData.checkin} onChange={handleChange} disabled={submitting}
+                />
+              </label>
+              <label className="form-control">
+                <div className="label py-1"><span className="label-text text-sm font-medium">Check-out</span></div>
+                <input
+                  type="time" name="checkout" className="input input-bordered input-sm"
+                  value={formData.checkout} onChange={handleChange} disabled={submitting}
+                />
+              </label>
+            </div>
+          </div>
+        </div>
+
+        {/* Amenities */}
+        <div className="card bg-base-100 border border-base-200 shadow-sm">
+          <div className="card-body p-5">
+            <h3 className="font-semibold text-base-content mb-4">Amenities</h3>
+            <div className="flex flex-wrap gap-2">
+              {AMENITIES.map(amenity => (
+                <label
+                  key={amenity}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-all text-sm font-medium select-none
+                    ${selectedAmenities.includes(amenity)
+                      ? 'bg-primary/10 border-primary text-primary'
+                      : 'bg-base-200 border-base-300 text-base-content/70 hover:border-primary/50'
+                    }`}
+                >
+                  <input
+                    type="checkbox"
+                    className="checkbox checkbox-primary checkbox-xs"
+                    checked={selectedAmenities.includes(amenity)}
+                    onChange={() => toggleAmenity(amenity)}
+                    disabled={submitting}
+                  />
+                  {amenity}
+                </label>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center gap-3 justify-end">
           {onClose && (
-            <button type="button" className="btn-cancel" onClick={onClose} disabled={submitting}>
+            <button type="button" className="btn btn-ghost btn-sm" onClick={onClose} disabled={submitting}>
               Cancel
             </button>
           )}
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm"
+            onClick={() => navigate('/vendor/hotels')}
+            disabled={submitting}
+          >
+            Discard
+          </button>
+          <button type="submit" className="btn btn-primary btn-sm gap-2" disabled={submitting}>
+            {submitting && <span className="loading loading-spinner loading-xs" />}
+            {isEditing ? 'Update Hotel' : 'Create Hotel'}
+          </button>
         </div>
       </form>
     </div>
