@@ -28,17 +28,17 @@
   --clr-text-inverse:   hsl(var(--b1));
   --clr-text-dark:      hsl(var(--bc) / 0.85);
 
-  /* â”€â”€ Backgrounds â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+  /* ── Backgrounds ────────────────────────────────────────────────────────────────────────── */
   --clr-bg-base:        hsl(var(--b2));   /* page background              */
   --clr-bg-white:       hsl(var(--b1));   /* card / surface               */
   --clr-bg-hover:       hsl(var(--b2));
 
-  /* â”€â”€ Borders â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+  /* ── Borders ────────────────────────────────────────────────────────────────────────────── */
   --clr-border:         hsl(var(--b3));
   --clr-border-focus:   hsl(var(--p));
   --clr-divider:        hsl(var(--b3));
 
-  /* â”€â”€ Airline Brand Colors â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+  /* ── Airline Brand Colors ───────────────────────────────────────────────────────────────── */
   --clr-indigo:         hsl(var(--p));
   --clr-airindia:       hsl(var(--er));
   --clr-vistara:        hsl(var(--a));
@@ -46,7 +46,58 @@
   --clr-akasa:          hsl(var(--wa));
   --clr-aiexpress:      hsl(var(--er));
 
-  /* â”€â”€ Dark Mode (surfaces) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+  /* ── Typography (Space Grotesk SaaS System) ─────────────────── */
+  --font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Typography Hierarchy for Admin/Vendor Panels */
+  /* 1. Page Title → large, bold */
+  --fs-page-title: clamp(1.5rem, 2vw, 1.75rem); /* 24px - 28px */
+  --fw-page-title: 700;
+  --lh-page-title: 1.2;
+
+  /* 2. Section Heading → medium bold */
+  --fs-section-heading: clamp(1.25rem, 1.5vw, 1.5rem); /* 20px - 24px */
+  --fw-section-heading: 600;
+  --lh-section-heading: 1.3;
+
+  /* 3. Card Title → semi-bold */
+  --fs-card-title: 1.125rem; /* 18px */
+  --fw-card-title: 600;
+  --lh-card-title: 1.4;
+
+  /* 4. Table Header → readable, medium weight */
+  --fs-table-header: 0.8125rem; /* 13px */
+  --fw-table-header: 500;
+  --ls-table-header: 0.05em; /* subtle letter spacing */
+  --tt-table-header: uppercase;
+
+  /* 5. Body Text → clean and readable */
+  --fs-body: 0.9375rem; /* 15px */
+  --fw-body: 400;
+  --lh-body: 1.5;
+
+  /* 6. Small Labels → subtle but clear */
+  --fs-label: 0.75rem; /* 12px */
+  --fw-label: 500;
+  --lh-label: 1.4;
+
+  /* 7. Button Text → medium weight */
+  --fs-button: 0.875rem; /* 14px */
+  --fw-button: 500;
+  --ls-button: 0.02em;
+
+  /* 8. Sidebar Menu → compact and readable */
+  --fs-sidebar: 0.875rem; /* 14px */
+  --fw-sidebar: 500;
+  --ls-sidebar: 0.01em;
+
+  /* Font Weights */
+  --fw-regular:  400;
+  --fw-medium:   500;
+  --fw-semibold: 600;
+  --fw-bold:     700;
+
+  /* ── Dark Mode (surfaces) ───────────────────────────────────────────────────────────────── */
   --clr-dm-bg:          hsl(var(--bc));
   --clr-dm-surface:     hsl(var(--bc));
   --clr-dm-border:      hsl(var(--bc));

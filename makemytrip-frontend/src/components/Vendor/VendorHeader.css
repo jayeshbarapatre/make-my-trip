@@ -41,9 +41,9 @@
 }
 
 .greeting {
-  font-size: 20px;
-  font-weight: 600;
-  color: hsl(var(--bc));
+  font-size: var(--fs-sidebar);
+  font-weight: var(--fw-sidebar);
+  color: var(--text-primary);
   margin: 0;
   letter-spacing: -0.3px;
 }
@@ -141,8 +141,12 @@
 
 .dropdown-item {
   padding: 10px 14px;
-  font-size: 12px;
-  color: hsl(var(--bc) / 0.6);
+}
+
+.vendor-role {
+  font-size: var(--fs-label);
+  font-weight: var(--fw-label);
+  color: var(--text-secondary);
 }
 
 .vendor-email {

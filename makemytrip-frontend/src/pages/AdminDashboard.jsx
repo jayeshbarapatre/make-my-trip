@@ -132,7 +132,7 @@ const AdminDashboard = () => {
               margin: '0 0 8px 0',
               fontSize: '28px',
               fontWeight: '700',
-              fontFamily: "'Fraunces', serif"
+              fontFamily: "'Space Grotesk', serif"
             }}>
               Good {greetingTime}, {stats?.adminName || 'Admin'}! 👋
             </h1>
@@ -345,7 +345,7 @@ const KPICard = ({ icon, label, value, color, trend }) => (
       </div>
     </div>
     <div style={{ marginBottom: '12px' }}>
-      <p style={{ margin: 0, fontSize: '28px', fontWeight: '700', color: 'var(--text-primary)', fontFamily: "'Fraunces', serif" }}>
+      <p style={{ margin: 0, fontSize: '28px', fontWeight: '700', color: 'var(--text-primary)', fontFamily: "'Space Grotesk', serif" }}>
         {typeof value === 'number' ? value.toLocaleString() : value}
       </p>
     </div>
