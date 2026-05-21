@@ -206,6 +206,30 @@
   margin: 0 0 0.75rem 0;
 }
 
+.vendor-chart-container {
+  width: 100%;
+}
+
+/* Recharts Axis Labels */
+.vendor-chart-container .recharts-text {
+  font-size: 12px !important;
+}
+
+.vendor-chart-container .recharts-cartesian-axis-tick-value {
+  font-size: 12px !important;
+}
+
+/* Recharts Tooltip */
+.vendor-chart-container .recharts-tooltip-wrapper {
+  outline: none;
+}
+
+.vendor-chart-container .recharts-default-tooltip {
+  background: hsl(var(--b1)) !important;
+  border: 1px solid hsl(var(--bc) / 0.1) !important;
+  border-radius: 0.5rem !important;
+}
+
 /* Hotels Card */
 .vendor-hotels-card {
   padding: 1rem;

@@ -168,35 +168,39 @@ const VendorDashboard = () => {
             {/* Booking Trend */}
             <div className="vendor-chart-card">
               <h3 className="vendor-chart-title">Weekly Booking Trend</h3>
-              <ResponsiveContainer width="100%" height={220}>
-                <AreaChart data={bookingData}>
-                  <defs>
-                    <linearGradient id="colorBookings" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor={chartColors.area} stopOpacity={0.3} />
-                      <stop offset="95%" stopColor={chartColors.area} stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
-                  <XAxis dataKey="date" stroke={chartColors.text} style={{ fontSize: '12px' }} />
-                  <YAxis stroke={chartColors.text} style={{ fontSize: '12px' }} />
-                  <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--b1))', border: '1px solid hsl(var(--bc) / 0.1))' }} />
-                  <Area type="monotone" dataKey="bookings" stroke={chartColors.area} fillOpacity={1} fill="url(#colorBookings)" />
-                </AreaChart>
-              </ResponsiveContainer>
+              <div className="vendor-chart-container">
+                <ResponsiveContainer width="100%" height={220}>
+                  <AreaChart data={bookingData}>
+                    <defs>
+                      <linearGradient id="colorBookings" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={chartColors.area} stopOpacity={0.3} />
+                        <stop offset="95%" stopColor={chartColors.area} stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
+                    <XAxis dataKey="date" stroke={chartColors.text} />
+                    <YAxis stroke={chartColors.text} />
+                    <Tooltip />
+                    <Area type="monotone" dataKey="bookings" stroke={chartColors.area} fillOpacity={1} fill="url(#colorBookings)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
             </div>
 
             {/* Revenue by Hotel */}
             <div className="vendor-chart-card">
               <h3 className="vendor-chart-title">Revenue Distribution</h3>
-              <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={revenueData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
-                  <XAxis dataKey="hotel" stroke={chartColors.text} style={{ fontSize: '12px' }} />
-                  <YAxis stroke={chartColors.text} style={{ fontSize: '12px' }} />
-                  <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--b1))', border: '1px solid hsl(var(--bc) / 0.1))' }} />
-                  <Bar dataKey="revenue" fill={chartColors.area} radius={[8, 8, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+              <div className="vendor-chart-container">
+                <ResponsiveContainer width="100%" height={220}>
+                  <BarChart data={revenueData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
+                    <XAxis dataKey="hotel" stroke={chartColors.text} />
+                    <YAxis stroke={chartColors.text} />
+                    <Tooltip />
+                    <Bar dataKey="revenue" fill={chartColors.area} radius={[8, 8, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             </div>
           </div>
         )}
