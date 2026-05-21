@@ -21,6 +21,7 @@
 .vendor-header {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   gap: 1rem;
   margin-bottom: 0.5rem;
 }
@@ -35,14 +36,16 @@
 }
 
 .vendor-title {
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: var(--fs-page-title);
+  font-weight: var(--fw-page-title);
+  line-height: var(--lh-page-title);
   color: hsl(var(--bc));
   margin: 0;
 }
 
 .vendor-subtitle {
-  font-size: 0.875rem;
+  font-size: var(--fs-body);
+  font-weight: var(--fw-body);
   color: hsl(var(--bc) / 0.5);
   margin: 0.25rem 0 0 0;
 }
@@ -99,8 +102,9 @@
 }
 
 .vendor-kpi-label {
-  font-size: 0.7rem;
-  font-weight: 600;
+  font-size: var(--fs-label);
+  font-weight: var(--fw-label);
+  line-height: var(--lh-label);
   color: hsl(var(--bc) / 0.5);
   text-transform: uppercase;
   margin: 0;
@@ -200,8 +204,9 @@
 }
 
 .vendor-chart-title {
-  font-size: 0.875rem;
-  font-weight: 600;
+  font-size: var(--fs-section-heading);
+  font-weight: var(--fw-section-heading);
+  line-height: var(--lh-section-heading);
   color: hsl(var(--bc));
   margin: 0 0 0.75rem 0;
 }
@@ -240,8 +245,9 @@
 }
 
 .vendor-hotels-title {
-  font-size: 0.875rem;
-  font-weight: 600;
+  font-size: var(--fs-section-heading);
+  font-weight: var(--fw-section-heading);
+  line-height: var(--lh-section-heading);
   color: hsl(var(--bc));
   margin: 0 0 1rem 0;
 }
@@ -288,11 +294,11 @@
 }
 
 .vendor-table-header {
-  text-transform: uppercase;
-  font-size: 0.75rem;
-  font-weight: 600;
+  text-transform: var(--tt-table-header);
+  font-size: var(--fs-table-header);
+  font-weight: var(--fw-table-header);
+  letter-spacing: var(--ls-table-header);
   color: hsl(var(--bc) / 0.5);
-  letter-spacing: 0.05em;
   background-color: hsl(var(--b2));
   border-bottom: 1px solid hsl(var(--bc) / 0.1);
 }

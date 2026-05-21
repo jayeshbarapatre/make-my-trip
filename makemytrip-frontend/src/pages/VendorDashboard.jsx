@@ -121,7 +121,7 @@ const VendorDashboard = () => {
             <h2 className="vendor-title">Good {greetingTime}! 👋</h2>
             <p className="vendor-subtitle">Here's your hotel inventory overview</p>
           </div>
-          <button className="btn btn-primary btn-sm gap-2">
+          <button className="btn btn-primary btn-sm gap-2" style={{ width: 'fit-content', flex: 'none' }}>
             <RiAddLine className="icon-sm" /> Add Hotel
           </button>
         </div>

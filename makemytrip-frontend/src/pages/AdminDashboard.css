@@ -1,7 +1,7 @@
 .dashboard {
   display: flex;
   flex-direction: column;
-  gap: 30px;
+  gap: 0;
 }
 
 .dashboard-header {
@@ -11,20 +11,20 @@
   padding-bottom: 8px;
 }
 
-.greeting {
+.stat-label {
+  font-size: var(--fs-label);
+  font-weight: var(--fw-label);
+  text-transform: uppercase;
+  color: var(--text-secondary);
   margin: 0 0 4px 0;
-  font-size: 20px;
-  font-weight: 700;
-  font-family: 'Fraunces', serif;
-  color: var(--text-primary);
-  letter-spacing: -0.3px;
+  letter-spacing: 0.05em;
 }
 
-.dashboard-date {
-  margin: 0;
-  font-size: 12px;
+.dashboard-subtitle {
+  font-size: var(--fs-body);
+  font-weight: var(--fw-body);
   color: var(--text-secondary);
-  font-weight: 500;
+  margin: 4px 0 0 0;
 }
 
 .refresh-btn {
@@ -170,6 +170,7 @@
   padding: 14px;
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--border);
+  margin-bottom: 30px;
 }
 
 .chart-header {
@@ -338,6 +339,13 @@
   flex: 1;
 }
 
+.dashboard-title {
+  font-size: var(--fs-page-title);
+  font-weight: var(--fw-page-title);
+  color: var(--text-primary);
+  margin: 0;
+}
+
 .country-name {
   font-size: 11px;
   font-weight: 600;
@@ -377,6 +385,7 @@
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--border);
   transition: all 0.2s ease;
+  margin-bottom: 30px;
 }
 
 .booking-card:hover {
@@ -427,7 +436,7 @@
 .availability-container h2,
 .chart-container h2,
 .chart-container h3 {
-  font-family: 'Fraunces', serif;
+  font-family: 'Space Grotesk', sans-serif;
 }
 
 .availability-container h2 {

@@ -56,7 +56,7 @@
   margin: 0;
   font-size: 18px;
   font-weight: 600;
-  font-family: 'Fraunces', serif;
+  font-family: 'Space Grotesk', sans-serif;
   color: var(--text-primary);
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -186,8 +186,8 @@
 
 .notification-header h3 {
   margin: 0;
-  font-size: 13px;
-  font-weight: 700;
+  font-size: var(--fs-sidebar);
+  font-weight: var(--fw-sidebar);
   color: var(--text-primary);
 }
 
@@ -368,13 +368,14 @@
 }
 
 .admin-name {
-  font-weight: 600;
+  font-size: var(--fs-sidebar);
+  font-weight: var(--fw-sidebar);
   color: var(--text-primary);
-  font-size: 12px;
 }
 
 .admin-role {
-  font-size: 9px;
+  font-size: var(--fs-label);
+  font-weight: var(--fw-label);
   color: var(--text-secondary);
 }
 
@@ -389,17 +390,21 @@
 
 .admin-dropdown-menu {
   position: absolute;
-  top: 100%;
+  top: calc(100% + 12px);
   right: 0;
-  margin-top: 8px;
-  width: 240px;
   background: var(--bg-surface);
-  border-radius: 8px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
   border: 1px solid var(--border);
-  overflow: hidden;
-  z-index: 1000;
-  animation: slideDown 0.2s ease;
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+  width: 220px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 100;
+  animation: slideDown 0.2s ease-out;
+  transform-origin: top right;
+  font-family: inherit;
 }
 
 .dropdown-header {
@@ -410,15 +415,22 @@
   border-bottom: 1px solid var(--border);
 }
 
-.dropdown-header strong {
-  font-size: 13px;
+.header-greeting {
+  font-size: var(--fs-card-title);
+  font-weight: var(--fw-card-title);
   color: var(--text-primary);
-  margin-bottom: 2px;
+  margin: 0 0 2px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  line-height: var(--lh-card-title);
 }
 
-.dropdown-header span {
-  font-size: 11px;
+.header-date {
+  font-size: var(--fs-label);
+  font-weight: var(--fw-label);
   color: var(--text-secondary);
+  margin: 0;
 }
 
 .dropdown-divider {

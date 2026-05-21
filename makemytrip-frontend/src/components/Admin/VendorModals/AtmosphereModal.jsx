@@ -5,6 +5,7 @@ import {
   RiCloseLine, RiAddLine, RiShieldCheckLine, RiEyeLine,
   RiEyeOffLine, RiGlobalLine, RiBuilding2Line
 } from 'react-icons/ri'
+import { useTheme } from '../../../context/ThemeContext'
 
 const VENDOR_TYPES = {
   flight:    { label: 'Flights',      desc: 'Airlines & charter',          icon: '✈️'  },
@@ -45,13 +46,33 @@ const Icon = ({ name, size = 18, color = 'currentColor' }) => {
   }
 }
 
-const FloatingLabelInput = ({ label, type = 'text', leftIcon, placeholder, defaultValue, onFocus, onBlur, onChange, rightSlot, prefix, accent }) => {
-  const [value, setValue] = useState(defaultValue || '')
+const FloatingLabelInput = ({
+  label,
+  type = 'text',
+  leftIcon,
+  placeholder,
+  value,
+  name,
+  disabled,
+  defaultValue,
+  onFocus,
+  onBlur,
+  onChange,
+  rightSlot,
+  prefix,
+  accent,
+  ...rest
+}) => {
+  const isControlled = value !== undefined
+  const [localValue, setLocalValue] = useState(defaultValue || '')
+  const displayValue = isControlled ? value : localValue
   const [focused, setFocused] = useState(false)
-  const isUp = value.length > 0 || focused
+  const isUp = (displayValue !== undefined && displayValue !== null && displayValue.toString().length > 0) || focused
 
   const handleChange = (e) => {
-    setValue(e.target.value)
+    if (!isControlled) {
+      setLocalValue(e.target.value)
+    }
     onChange?.(e)
   }
 
@@ -68,10 +89,10 @@ const FloatingLabelInput = ({ label, type = 'text', leftIcon, placeholder, defau
   return (
     <div style={{
       position: 'relative',
-      background: '#fff',
+      background: 'var(--bg-surface)',
       borderRadius: '14px',
-      border: `1px solid ${focused ? accent : 'rgba(14,21,48,0.10)'}`,
-      boxShadow: focused ? `0 0 0 4px rgba(52, 97, 224, 0.08)` : '0 1px 0 rgba(14,21,48,0.02)',
+      border: `1px solid ${focused ? accent : 'var(--border)'}`,
+      boxShadow: focused ? `0 0 0 4px var(--accentSoft)` : '0 1px 0 var(--border)',
       transition: '.15s',
       padding: '14px 16px 10px',
       display: 'flex',
@@ -79,7 +100,7 @@ const FloatingLabelInput = ({ label, type = 'text', leftIcon, placeholder, defau
       gap: '10px',
     }}>
       {leftIcon && (
-        <div style={{ color: focused ? accent : 'rgba(14,21,48,0.42)', marginTop: '8px', alignSelf: 'flex-start' }}>
+        <div style={{ color: focused ? accent : 'var(--text-secondary)', marginTop: '8px', alignSelf: 'flex-start' }}>
           {typeof leftIcon === 'string' ? <Icon name={leftIcon} size={16} /> : leftIcon}
         </div>
       )}
@@ -92,17 +113,19 @@ const FloatingLabelInput = ({ label, type = 'text', leftIcon, placeholder, defau
           letterSpacing: isUp ? '0.08em' : 0,
           textTransform: isUp ? 'uppercase' : 'none',
           fontWeight: isUp ? 600 : 500,
-          color: isUp ? (focused ? accent : 'rgba(14,21,48,0.58)') : 'rgba(14,21,48,0.42)',
+          color: isUp ? (focused ? accent : 'var(--text-secondary)') : 'var(--text-muted)',
           transition: '.15s',
           pointerEvents: 'none',
         }}>
           {label}
         </label>
         <div style={{ display: 'flex', alignItems: 'center', paddingTop: '12px' }}>
-          {prefix && <span style={{ fontSize: '14px', color: 'rgba(14,21,48,0.58)', marginRight: '6px' }}>{prefix}</span>}
+          {prefix && <span style={{ fontSize: '14px', color: 'var(--text-secondary)', marginRight: '6px' }}>{prefix}</span>}
           <input
             type={type}
-            value={value}
+            value={displayValue}
+            name={name}
+            disabled={disabled}
             placeholder={focused ? placeholder : ''}
             onChange={handleChange}
             onFocus={handleFocus}
@@ -114,9 +137,10 @@ const FloatingLabelInput = ({ label, type = 'text', leftIcon, placeholder, defau
               background: 'transparent',
               font: 'inherit',
               fontSize: '14px',
-              color: '#0E1530',
+              color: 'var(--text-primary)',
               padding: 0,
             }}
+            {...rest}
           />
         </div>
       </div>
@@ -126,10 +150,11 @@ const FloatingLabelInput = ({ label, type = 'text', leftIcon, placeholder, defau
 }
 
 export function AtmosphereModal({ onClose, formData, onFormChange, onSubmit, submitting, selectedVendor, showPassword, setShowPassword }) {
-  const accent = '#3461E0'
-  const accentSoft = '#E8EEFD'
-  const ink = '#0E1530'
-  const bg = '#F4F7FB'
+  const { theme } = useTheme()
+  const accent = 'var(--accent)'
+  const accentSoft = 'var(--accentSoft)'
+  const ink = 'var(--text-primary)'
+  const bg = 'var(--bg-surface)'
 
   const filteredCats = Object.entries(VENDOR_TYPES).map(([k, v]) => ({ k, ...v }))
   const cats = filteredCats
@@ -142,49 +167,55 @@ export function AtmosphereModal({ onClose, formData, onFormChange, onSubmit, sub
   ].filter(Boolean).length
 
   return createPortal(
-    <div style={{
-      position: 'fixed',
-      inset: 0,
-      zIndex: 99999,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '16px',
-      background: bg,
-    }} onClick={onClose}>
-      {/* Atmospheric backdrop */}
-      <div style={{
-        position: 'absolute',
+    <div 
+      className="admin-layout modal-backdrop-overlay"
+      data-theme={theme}
+      style={{
+        position: 'fixed',
         inset: 0,
-        background: `
-          radial-gradient(900px 500px at 85% -10%, ${accentSoft} 0%, transparent 60%),
-          radial-gradient(700px 400px at -5% 110%, ${accentSoft} 0%, transparent 60%),
-          linear-gradient(180deg, #EAF1FB 0%, ${bg} 60%, ${bg} 100%)
-        `,
-        zIndex: 0,
-      }} />
-
-      {/* Faint horizon line */}
-      <div style={{
-        position: 'absolute',
-        left: 0,
-        right: 0,
-        top: '52%',
-        height: '1px',
-        background: 'linear-gradient(90deg, transparent, rgba(52,97,224,0.18), transparent)',
-        zIndex: 1,
-      }} />
+        zIndex: 99999,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '16px',
+        backgroundColor: 'rgba(15, 17, 23, 0.65)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+      }} 
+      onClick={onClose}
+    >
+      <style>{`
+        @keyframes backdropFade {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes modalScaleUp {
+          from { transform: scale(0.95) translateY(12px); opacity: 0; }
+          to { transform: scale(1) translateY(0); opacity: 1; }
+        }
+        .modal-backdrop-overlay {
+          animation: backdropFade 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .modal-inner-container {
+          animation: modalScaleUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+      `}</style>
 
       {/* Modal */}
-      <div style={{
+      <form onSubmit={onSubmit} className="modal-inner-container" style={{
         position: 'relative',
         width: '100%',
         maxWidth: '780px',
-        maxHeight: '90vh',
-        background: '#fff',
+        maxHeight: '85vh',
+        background: `
+          radial-gradient(600px 300px at 85% -10%, var(--accentSoft) 0%, transparent 70%),
+          radial-gradient(400px 200px at -5% 110%, var(--accentSoft) 0%, transparent 70%),
+          var(--bg-surface)
+        `,
         borderRadius: '24px',
-        boxShadow: '0 60px 90px -30px rgba(14,21,48,0.22), 0 2px 4px rgba(14,21,48,0.04)',
-        border: `1px solid rgba(14,21,48,0.10)`,
+        boxShadow: 'var(--shadow-xl)',
+        border: '1px solid var(--border)',
         overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
@@ -194,8 +225,8 @@ export function AtmosphereModal({ onClose, formData, onFormChange, onSubmit, sub
         {/* Header */}
         <div style={{
           padding: '28px 32px 22px',
-          background: `linear-gradient(180deg, ${accentSoft}55, transparent)`,
-          borderBottom: `1px solid rgba(14,21,48,0.10)`,
+          background: 'linear-gradient(180deg, var(--accentSoft) 30%, transparent)',
+          borderBottom: '1px solid var(--border)',
           position: 'relative',
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -205,8 +236,8 @@ export function AtmosphereModal({ onClose, formData, onFormChange, onSubmit, sub
                 alignItems: 'center',
                 gap: '8px',
                 padding: '4px 10px 4px 6px',
-                background: '#fff',
-                border: `1px solid rgba(14,21,48,0.10)`,
+                background: 'var(--bg-surface)',
+                border: '1px solid var(--border)',
                 borderRadius: '9999px',
                 fontSize: '11px',
                 fontWeight: 600,
@@ -231,7 +262,7 @@ export function AtmosphereModal({ onClose, formData, onFormChange, onSubmit, sub
               <div style={{ fontSize: '26px', fontWeight: 600, letterSpacing: '-0.02em', lineHeight: 1.15, marginBottom: '6px', color: ink }}>
                 Welcome a partner aboard
               </div>
-              <div style={{ fontSize: '13.5px', color: 'rgba(14,21,48,0.58)', lineHeight: 1.5, maxWidth: '460px' }}>
+              <div style={{ fontSize: '13.5px', color: 'var(--text-secondary)', lineHeight: 1.5, maxWidth: '460px' }}>
                 Set up a vendor account so they can list inventory and manage bookings from the Vendor Portal.
               </div>
             </div>
@@ -241,16 +272,29 @@ export function AtmosphereModal({ onClose, formData, onFormChange, onSubmit, sub
               style={{
                 width: '36px',
                 height: '36px',
-                border: `1px solid rgba(14,21,48,0.10)`,
-                borderRadius: '12px',
-                background: '#fff',
+                borderRadius: '50%',
+                border: '1px solid var(--border)',
+                background: 'var(--bg-surface)',
+                color: 'var(--text-secondary)',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: 'rgba(14,21,48,0.58)',
-                transition: '.15s',
+                transition: 'all 0.2s ease',
+                boxShadow: 'var(--shadow-sm)',
                 opacity: submitting ? 0.5 : 1,
+              }}
+              onMouseEnter={e => {
+                if (submitting) return
+                e.currentTarget.style.borderColor = 'var(--accent)'
+                e.currentTarget.style.color = 'var(--accent)'
+                e.currentTarget.style.transform = 'scale(1.05)'
+              }}
+              onMouseLeave={e => {
+                if (submitting) return
+                e.currentTarget.style.borderColor = 'var(--border)'
+                e.currentTarget.style.color = 'var(--text-secondary)'
+                e.currentTarget.style.transform = 'scale(1)'
               }}
               aria-label="Close"
             >
@@ -260,7 +304,7 @@ export function AtmosphereModal({ onClose, formData, onFormChange, onSubmit, sub
         </div>
 
         {/* Body */}
-        <form onSubmit={onSubmit} style={{ padding: '24px 32px 8px', display: 'flex', flexDirection: 'column', gap: '22px', overflowY: 'auto', flex: 1 }}>
+        <div style={{ padding: '24px 32px 8px', display: 'flex', flexDirection: 'column', gap: '22px', overflowY: 'auto', flex: 1 }}>
 
           {/* Category picker */}
           <section>
@@ -278,8 +322,8 @@ export function AtmosphereModal({ onClose, formData, onFormChange, onSubmit, sub
                     style={{
                       aspectRatio: '1 / 1',
                       borderRadius: '12px',
-                      background: on ? accent : '#fff',
-                      border: `1px solid ${on ? accent : 'rgba(14,21,48,0.10)'}`,
+                      background: on ? accent : 'var(--bg-surface)',
+                      border: `1px solid ${on ? accent : 'var(--border)'}`,
                       color: on ? '#fff' : ink,
                       display: 'flex',
                       flexDirection: 'column',
@@ -288,7 +332,7 @@ export function AtmosphereModal({ onClose, formData, onFormChange, onSubmit, sub
                       gap: '4px',
                       cursor: 'pointer',
                       position: 'relative',
-                      boxShadow: on ? `0 8px 18px -8px ${accent}80` : '0 1px 0 rgba(14,21,48,0.02)',
+                      boxShadow: on ? `0 8px 18px -8px var(--accent)` : '0 1px 0 var(--border)',
                       transition: '.15s',
                       fontSize: '0px',
                       padding: '8px',
@@ -307,7 +351,7 @@ export function AtmosphereModal({ onClose, formData, onFormChange, onSubmit, sub
                         width: '16px',
                         height: '16px',
                         borderRadius: '9999px',
-                        background: '#fff',
+                        background: 'var(--bg-surface)',
                         border: `2px solid ${accent}`,
                         display: 'flex',
                         alignItems: 'center',
@@ -334,12 +378,12 @@ export function AtmosphereModal({ onClose, formData, onFormChange, onSubmit, sub
                   width: '32px',
                   height: '32px',
                   borderRadius: '8px',
-                  background: '#fff',
+                  background: 'var(--bg-surface)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   color: accent,
-                  border: `1px solid rgba(14,21,48,0.10)`,
+                  border: '1px solid var(--border)',
                 }}>
                   <span style={{ fontSize: '16px' }}>{VENDOR_TYPES[formData.vendorType].icon}</span>
                 </div>
@@ -363,7 +407,6 @@ export function AtmosphereModal({ onClose, formData, onFormChange, onSubmit, sub
                   onChange={(e) => onFormChange(e)}
                   name="name"
                   placeholder="Legal entity name"
-                  defaultValue={formData.name}
                   accent={accent}
                   disabled={submitting}
                 />
@@ -396,7 +439,7 @@ export function AtmosphereModal({ onClose, formData, onFormChange, onSubmit, sub
                 type="email"
                 name="email"
                 placeholder="ops@example.com"
-                defaultValue={formData.email}
+                value={formData.email}
                 onChange={(e) => onFormChange(e)}
                 accent={accent}
                 disabled={submitting}
@@ -407,7 +450,7 @@ export function AtmosphereModal({ onClose, formData, onFormChange, onSubmit, sub
                 name="phone"
                 prefix="+91"
                 placeholder="98765 43210"
-                defaultValue={formData.phone}
+                value={formData.phone}
                 onChange={(e) => onFormChange(e)}
                 accent={accent}
                 disabled={submitting}
@@ -425,7 +468,7 @@ export function AtmosphereModal({ onClose, formData, onFormChange, onSubmit, sub
                 leftIcon="lock"
                 name="password"
                 placeholder="Minimum 8 characters"
-                defaultValue={formData.password}
+                value={formData.password}
                 onChange={(e) => onFormChange(e)}
                 rightSlot={
                   <button
@@ -469,7 +512,7 @@ export function AtmosphereModal({ onClose, formData, onFormChange, onSubmit, sub
                       flex: 1,
                       height: '4px',
                       borderRadius: '2px',
-                      background: i <= (formData.password.length >= 12 ? 4 : formData.password.length >= 8 ? 3 : 2) ? accent : 'rgba(14,21,48,0.10)',
+                      background: i <= (formData.password.length >= 12 ? 4 : formData.password.length >= 8 ? 3 : 2) ? accent : 'var(--border)',
                     }} />
                   ))}
                 </div>
@@ -485,20 +528,20 @@ export function AtmosphereModal({ onClose, formData, onFormChange, onSubmit, sub
             <div style={{
               marginTop: '12px',
               padding: '10px 12px',
-              background: '#FBFAF6',
-              border: `1px dashed rgba(14,21,48,0.16)`,
+              background: 'var(--surface)',
+              border: '1px dashed var(--border)',
               borderRadius: '10px',
               display: 'flex',
               gap: '10px',
               alignItems: 'flex-start',
             }}>
-              <Icon name="info" size={14} color={'rgba(14,21,48,0.58)'} />
-              <div style={{ fontSize: '12px', color: 'rgba(14,21,48,0.58)', lineHeight: 1.5 }}>
+              <Icon name="info" size={14} color={'var(--text-secondary)'} />
+              <div style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
                 The vendor will use these credentials to sign in to the <strong style={{ color: ink }}>Vendor Portal</strong>. They can rotate the password after first login.
               </div>
             </div>
           </section>
-        </form>
+        </div>
 
         {/* Footer */}
         <div style={{
@@ -506,8 +549,8 @@ export function AtmosphereModal({ onClose, formData, onFormChange, onSubmit, sub
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          borderTop: `1px solid rgba(14,21,48,0.10)`,
-          background: '#FBFCFE',
+          borderTop: '1px solid var(--border)',
+          background: 'var(--surface)',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <div style={{ display: 'flex', gap: '4px' }}>
@@ -516,11 +559,11 @@ export function AtmosphereModal({ onClose, formData, onFormChange, onSubmit, sub
                   width: '18px',
                   height: '4px',
                   borderRadius: '2px',
-                  background: i < sectionsComplete ? accent : 'rgba(14,21,48,0.10)',
+                  background: i < sectionsComplete ? accent : 'var(--border)',
                 }} />
               ))}
             </div>
-            <span style={{ fontSize: '11.5px', color: 'rgba(14,21,48,0.58)', fontWeight: 500 }}>
+            <span style={{ fontSize: '11.5px', color: 'var(--text-secondary)', fontWeight: 500 }}>
               {sectionsComplete} of 4 sections complete
             </span>
           </div>
@@ -532,8 +575,8 @@ export function AtmosphereModal({ onClose, formData, onFormChange, onSubmit, sub
               style={{
                 padding: '11px 18px',
                 borderRadius: '12px',
-                background: '#fff',
-                border: `1px solid rgba(14,21,48,0.10)`,
+                background: 'var(--bg-surface)',
+                border: '1px solid var(--border)',
                 color: ink,
                 fontSize: '13.5px',
                 fontWeight: 500,
@@ -545,7 +588,6 @@ export function AtmosphereModal({ onClose, formData, onFormChange, onSubmit, sub
             </button>
             <button
               type="submit"
-              onClick={onSubmit}
               disabled={submitting}
               style={{
                 padding: '11px 18px',
@@ -559,7 +601,7 @@ export function AtmosphereModal({ onClose, formData, onFormChange, onSubmit, sub
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '8px',
-                boxShadow: `0 6px 18px -6px ${accent}99`,
+                boxShadow: `0 6px 18px -6px var(--accent)`,
                 opacity: submitting ? 0.7 : 1,
               }}
             >
@@ -575,7 +617,7 @@ export function AtmosphereModal({ onClose, formData, onFormChange, onSubmit, sub
             </button>
           </div>
         </div>
-      </div>
+      </form>
     </div>,
     document.body
   )
@@ -600,8 +642,8 @@ function SectionHead({ n, title, hint, accent, accentSoft, ink }) {
         {n}
       </div>
       <div style={{ fontSize: '14px', fontWeight: 600, color: ink, letterSpacing: '-0.01em' }}>{title}</div>
-      {hint && <div style={{ fontSize: '12px', color: 'rgba(14,21,48,0.58)' }}>· {hint}</div>}
-      <div style={{ flex: 1, height: '1px', background: 'rgba(14,21,48,0.06)' }} />
+      {hint && <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>· {hint}</div>}
+      <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
     </div>
   )
 }

@@ -47,8 +47,8 @@ export const createVendor = async (req, res) => {
       return res.status(400).json({ message: 'Name, email, password, and phone are required' })
     }
 
-    if (!['hotel', 'flight', 'multi'].includes(vendorType)) {
-      return res.status(400).json({ message: 'Invalid vendor type. Must be hotel, flight, or multi' })
+    if (!['hotel', 'flight', 'villa', 'holiday', 'train', 'bus', 'cab', 'tour', 'visa', 'cruise', 'forex', 'insurance', 'multi'].includes(vendorType)) {
+      return res.status(400).json({ message: 'Invalid vendor type. Must be one of: hotel, flight, villa, holiday, train, bus, cab, tour, visa, cruise, forex, insurance, multi' })
     }
 
     if (password.length < 8) {

@@ -8,9 +8,7 @@ const ThemeBuilderPanel = () => {
 
   return (
     <>
-      <button className="builder-tab" onClick={() => setIsOpen(!isOpen)} title="Open Theme Builder">
-        <i className="fas fa-palette"></i>
-      </button>
+      
 
       <div className={`theme-builder-panel ${isOpen ? 'open' : ''}`}>
         <div className="builder-header">

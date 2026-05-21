@@ -9,6 +9,7 @@ import {
   RiSearchLine, RiCloseLine, RiMailLine,
   RiPhoneLine, RiLockLine, RiShieldCheckLine
 } from 'react-icons/ri'
+import { useTheme } from '../context/ThemeContext'
 
 const VENDOR_TYPES = {
   flight:    { label: 'Flights',             icon: '✈️',  placeholder: 'e.g., SkyAirways Airlines' },
@@ -30,20 +31,78 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000
 const EMPTY_FORM = { name: '', email: '', password: '', phone: '', vendorType: 'flight' }
 
 function VendorModal({ onClose, children }) {
-  const theme = document.documentElement.getAttribute('data-theme') || 'light'
+  const { theme } = useTheme()
   return createPortal(
     <div
       data-theme={theme}
+      className="admin-layout modal-backdrop-overlay"
       style={{
-        position: 'fixed', inset: 0, zIndex: 99999,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        position: 'fixed',
+        inset: 0,
+        zIndex: 99999,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
         padding: '16px',
-        backgroundColor: 'rgba(0,0,0,0.6)',
+        backgroundColor: 'rgba(15, 17, 23, 0.65)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
       }}
       onClick={onClose}
     >
+      <style>{`
+        @keyframes backdropFade {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes modalScaleUp {
+          from { transform: scale(0.95) translateY(12px); opacity: 0; }
+          to { transform: scale(1) translateY(0); opacity: 1; }
+        }
+        .modal-backdrop-overlay {
+          animation: backdropFade 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .modal-inner-container {
+          animation: modalScaleUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .listing-card-premium {
+          transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), 
+                      box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), 
+                      border-color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .listing-card-premium:hover {
+          transform: translateY(-3px);
+          border-color: var(--accent) !important;
+          box-shadow: var(--shadow-md) !important;
+        }
+        .modal-scroll-area::-webkit-scrollbar {
+          width: 6px;
+        }
+        .modal-scroll-area::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .modal-scroll-area::-webkit-scrollbar-thumb {
+          background: var(--border);
+          border-radius: 99px;
+        }
+        .modal-scroll-area::-webkit-scrollbar-thumb:hover {
+          background: var(--text-muted);
+        }
+      `}</style>
       <div
-        style={{ maxHeight: '90vh', width: '100%', maxWidth: '640px' }}
+        className="modal-inner-container"
+        style={{
+          maxHeight: '85vh',
+          width: '100%',
+          maxWidth: '640px',
+          display: 'flex',
+          boxShadow: 'var(--shadow-xl)',
+          borderRadius: '24px',
+          border: '1px solid var(--border)',
+          background: 'var(--bg-surface)',
+          overflow: 'hidden',
+        }}
         onClick={e => e.stopPropagation()}
       >
         {children}
@@ -84,21 +143,34 @@ const AdminVendors = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    console.log('[Vendor Registration] Form submission triggered', formData)
     if (!formData.name || !formData.email || !formData.password || !formData.phone) {
+      console.warn('[Vendor Registration] Missing fields:', {
+        name: !formData.name,
+        email: !formData.email,
+        password: !formData.password,
+        phone: !formData.phone
+      })
       return toast.error('All fields are required')
     }
-    if (formData.password.length < 8) return toast.error('Password must be at least 8 characters')
+    if (formData.password.length < 8) {
+      console.warn('[Vendor Registration] Password too short')
+      return toast.error('Password must be at least 8 characters')
+    }
     try {
       setSubmitting(true)
       const token = localStorage.getItem('adminToken')
+      console.log('[Vendor Registration] Sending POST request to:', `${API_BASE_URL}/admin/vendors`)
       const res = await axios.post(`${API_BASE_URL}/admin/vendors`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       })
+      console.log('[Vendor Registration] Success response:', res.data)
       toast.success('Vendor registered successfully')
       setVendors([res.data.data.vendor, ...vendors])
       setFormData(EMPTY_FORM)
       setShowForm(false)
     } catch (err) {
+      console.error('[Vendor Registration] Error creating vendor:', err.response?.data || err.message)
       toast.error(err.response?.data?.message || 'Failed to create vendor')
     } finally { setSubmitting(false) }
   }
@@ -142,22 +214,132 @@ const AdminVendors = () => {
     <AdminLayout>
       <div className="space-y-6">
 
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div>
-            <h2 className="text-2xl font-bold text-base-content">Vendors</h2>
-            <p className="text-sm text-base-content/50 mt-0.5">Register and manage platform vendors across all categories</p>
-          </div>
-          <button className="btn btn-primary btn-sm gap-2 w-fit" onClick={() => setShowForm(true)}>
-            <RiAddLine className="w-4 h-4" /> Register New Vendor
-          </button>
-        </div>
+        {/* Premium Header & Search Panel */}
+        <div style={{
+          background: 'var(--bg-surface)',
+          border: '1px solid var(--border)',
+          borderRadius: '16px',
+          padding: '24px',
+          boxShadow: 'var(--shadow-sm)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '20px',
+          position: 'relative',
+          overflow: 'hidden'
+        }}>
+          {/* Subtle accent glow in the background */}
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            width: '200px',
+            height: '200px',
+            background: 'radial-gradient(circle, var(--accentSoft) 0%, transparent 70%)',
+            opacity: 0.5,
+            pointerEvents: 'none',
+            zIndex: 0
+          }} />
 
-        {/* Search */}
-        <label className="input input-bordered input-sm flex items-center gap-2 max-w-sm">
-          <RiSearchLine className="w-4 h-4 text-base-content/40" />
-          <input type="text" className="grow" placeholder="Search vendors..." value={search} onChange={e => setSearch(e.target.value)} />
-        </label>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '16px',
+            zIndex: 1
+          }}>
+            <div>
+              <h2 style={{ fontSize: 'var(--fs-page-title)', fontWeight: 'var(--fw-page-title)', color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.02em' }}>Vendors</h2>
+              <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-secondary)', margin: '4px 0 0' }}>Register and manage platform vendors across all categories</p>
+            </div>
+            <button 
+              onClick={() => setShowForm(true)}
+              className="btn-primary"
+            >
+              <RiAddLine style={{ width: '16px', height: '16px', strokeWidth: 2 }} /> Register New Vendor
+            </button>
+          </div>
+
+          <div style={{
+            height: '1px',
+            background: 'var(--border)',
+            width: '100%',
+            zIndex: 1
+          }} />
+
+          {/* Search bar inside the premium header card */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            zIndex: 1
+          }}>
+            <div style={{
+              position: 'relative',
+              flex: 1,
+              maxWidth: '400px'
+            }}>
+              <RiSearchLine style={{
+                position: 'absolute',
+                left: '14px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                color: 'var(--text-secondary)',
+                width: '16px',
+                height: '16px',
+                pointerEvents: 'none'
+              }} />
+              <input
+                type="text"
+                placeholder="Search vendors by name or email..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '10px 16px 10px 40px',
+                  background: 'var(--surface2)',
+                  border: '1px solid var(--border)',
+                  borderRadius: '12px',
+                  fontSize: 'var(--fs-body)',
+                  color: 'var(--text-primary)',
+                  outline: 'none',
+                  transition: 'all 0.2s ease-in-out'
+                }}
+                onFocus={e => {
+                  e.currentTarget.style.borderColor = 'var(--accent)'
+                  e.currentTarget.style.boxShadow = '0 0 0 4px var(--accentSoft)'
+                  e.currentTarget.style.background = 'var(--bg-surface)'
+                }}
+                onBlur={e => {
+                  e.currentTarget.style.borderColor = 'var(--border)'
+                  e.currentTarget.style.boxShadow = 'none'
+                  e.currentTarget.style.background = 'var(--surface2)'
+                }}
+              />
+              {search && (
+                <button
+                  onClick={() => setSearch('')}
+                  style={{
+                    position: 'absolute',
+                    right: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'transparent',
+                    border: 0,
+                    color: 'var(--text-secondary)',
+                    cursor: 'pointer',
+                    padding: '4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  <RiCloseLine style={{ width: '14px', height: '14px' }} />
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
 
         {/* Table */}
         {loading ? (
@@ -174,11 +356,11 @@ const AdminVendors = () => {
             </div>
           </div>
         ) : (
-          <div className="card bg-base-100 border border-base-200 shadow-sm overflow-hidden">
+          <div className="table-container">
             <div className="overflow-x-auto">
-              <table className="table table-sm">
+              <table className="data-table">
                 <thead>
-                  <tr className="text-xs text-base-content/50 uppercase tracking-wider bg-base-200">
+                  <tr>
                     <th>Vendor</th><th>Type</th><th>Phone</th><th>Status</th><th>Joined</th><th className="text-right">Actions</th>
                   </tr>
                 </thead>
@@ -186,28 +368,61 @@ const AdminVendors = () => {
                   {filtered.map(vendor => {
                     const t = VENDOR_TYPES[vendor.vendorType] || { label: vendor.vendorType, icon: '🏢' }
                     return (
-                      <tr key={vendor.id} className="hover:bg-base-200/50 transition-colors">
+                      <tr key={vendor.id}>
                         <td>
                           <div className="flex items-center gap-3">
                             <div className="avatar placeholder">
-                              <div className="w-8 rounded-full bg-primary/10 text-primary text-xs font-bold">
+                              <div className="w-8 rounded-full bg-primary/10 text-primary text-xs font-bold" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: '32px', height: '32px' }}>
                                 <span>{vendor.name?.charAt(0).toUpperCase()}</span>
                               </div>
                             </div>
                             <div>
-                              <p className="font-semibold text-sm text-base-content">{vendor.name}</p>
-                              <p className="text-[11px] text-base-content/50">{vendor.email}</p>
+                              <p className="font-semibold text-sm" style={{ margin: 0 }}>{vendor.name}</p>
+                              <p className="text-[11px] text-muted" style={{ margin: 0 }}>{vendor.email}</p>
                             </div>
                           </div>
                         </td>
-                        <td><span className="badge badge-outline badge-sm gap-1">{t.icon} {t.label}</span></td>
-                        <td className="text-sm text-base-content/60">{vendor.phone}</td>
-                        <td><span className={`badge badge-sm ${vendor.vendorStatus === 'ACTIVE' ? 'badge-success' : 'badge-error'}`}>{vendor.vendorStatus}</span></td>
-                        <td className="text-xs text-base-content/50">{new Date(vendor.createdAt).toLocaleDateString()}</td>
                         <td>
-                          <div className="flex items-center justify-end gap-1">
-                            <button className="btn btn-ghost btn-xs gap-1" onClick={() => handleViewHotels(vendor)}><RiEyeLine className="w-3.5 h-3.5" /> View</button>
-                            <button className="btn btn-ghost btn-xs text-error hover:bg-error/10 gap-1" onClick={() => handleDelete(vendor.id)}><RiDeleteBinLine className="w-3.5 h-3.5" /> Delete</button>
+                          <span 
+                            style={{ 
+                              padding: '2px 8px', 
+                              borderRadius: '9999px', 
+                              fontSize: '11px', 
+                              fontWeight: 600, 
+                              border: '1px solid var(--border)',
+                              background: 'var(--surface2)',
+                              color: 'var(--text-primary)',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}
+                          >
+                            {t.icon} {t.label}
+                          </span>
+                        </td>
+                        <td style={{ color: 'var(--text-secondary)' }}>{vendor.phone}</td>
+                        <td>
+                          <span 
+                            style={{
+                              padding: '4px 10px',
+                              borderRadius: '9999px',
+                              fontSize: '10px',
+                              fontWeight: 700,
+                              letterSpacing: '0.04em',
+                              textTransform: 'uppercase',
+                              background: vendor.vendorStatus === 'ACTIVE' ? 'rgba(46, 193, 88, 0.12)' : 'rgba(255, 77, 79, 0.12)',
+                              color: vendor.vendorStatus === 'ACTIVE' ? '#2ec158' : '#ff4d4f',
+                              display: 'inline-block'
+                            }}
+                          >
+                            {vendor.vendorStatus}
+                          </span>
+                        </td>
+                        <td style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{new Date(vendor.createdAt).toLocaleDateString()}</td>
+                        <td>
+                          <div className="flex items-center justify-end gap-2">
+                            <button className="btn-sm btn-edit" onClick={() => handleViewHotels(vendor)}><RiEyeLine className="w-3.5 h-3.5" /> View</button>
+                            <button className="btn-sm btn-delete" onClick={() => handleDelete(vendor.id)}><RiDeleteBinLine className="w-3.5 h-3.5" /> Delete</button>
                           </div>
                         </td>
                       </tr>
@@ -237,54 +452,232 @@ const AdminVendors = () => {
       {/* ── View Hotels Modal ── */}
       {showHotels && selectedVendor && (
         <VendorModal onClose={() => !loadingHotels && setShowHotels(false)}>
-          <div className="card bg-base-100 shadow-2xl border border-base-200 w-full" style={{ maxHeight: '85vh', maxWidth: '640px', display: 'flex', flexDirection: 'column', backgroundColor: 'hsl(var(--b1))' }}>
-            <div className="flex items-center justify-between px-6 py-4 border-b border-base-200 shrink-0">
+          <div style={{
+            width: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+            fontFamily: 'Space Grotesk, sans-serif'
+          }}>
+            {/* Header */}
+            <div style={{
+              padding: '24px 28px',
+              borderBottom: '1px solid var(--border)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              background: 'linear-gradient(180deg, var(--accentSoft) 30%, transparent)'
+            }}>
               <div>
-                <h3 className="text-base font-bold text-base-content">{selectedVendor.name}</h3>
-                <p className="text-xs text-base-content/50 mt-0.5">Vendor listings overview</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                  <span style={{ fontSize: '20px' }}>
+                    {VENDOR_TYPES[selectedVendor.vendorType]?.icon || '🏢'}
+                  </span>
+                  <span style={{
+                    padding: '2px 8px',
+                    borderRadius: '9999px',
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    letterSpacing: '0.04em',
+                    textTransform: 'uppercase',
+                    background: selectedVendor.vendorStatus === 'ACTIVE' ? 'var(--accentSoft)' : 'rgba(255, 77, 79, 0.1)',
+                    color: selectedVendor.vendorStatus === 'ACTIVE' ? 'var(--accent)' : '#ff4d4f',
+                  }}>
+                    {selectedVendor.vendorStatus} PARTNER
+                  </span>
+                </div>
+                <h3 style={{ fontSize: 'var(--fs-section-heading)', fontWeight: 'var(--fw-section-heading)', color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.01em' }}>
+                  {selectedVendor.name}
+                </h3>
+                <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-secondary)', margin: '4px 0 0' }}>
+                  {VENDOR_TYPES[selectedVendor.vendorType]?.label || 'Vendor'} · Listings and inventory status
+                </p>
               </div>
-              <button className="btn btn-ghost btn-sm btn-circle" onClick={() => setShowHotels(false)}>
-                <RiCloseLine className="w-5 h-5" />
+              <button 
+                onClick={() => setShowHotels(false)}
+                style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '50%',
+                  border: '1px solid var(--border)',
+                  background: 'var(--bg-surface)',
+                  color: 'var(--text-secondary)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.2s ease',
+                  boxShadow: 'var(--shadow-sm)'
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.borderColor = 'var(--accent)'
+                  e.currentTarget.style.color = 'var(--accent)'
+                  e.currentTarget.style.transform = 'scale(1.05)'
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.borderColor = 'var(--border)'
+                  e.currentTarget.style.color = 'var(--text-secondary)'
+                  e.currentTarget.style.transform = 'scale(1)'
+                }}
+                aria-label="Close"
+              >
+                <RiCloseLine style={{ width: '18px', height: '18px' }} />
               </button>
             </div>
-            <div style={{ overflowY: 'auto', flex: 1 }} className="p-6">
+
+            {/* Content */}
+            <div className="modal-scroll-area" style={{ overflowY: 'auto', flex: 1, padding: '24px 28px' }}>
               {loadingHotels ? (
-                <div className="flex flex-col items-center justify-center py-16">
-                  <span className="loading loading-spinner loading-lg text-primary mb-3" />
-                  <p className="text-sm text-base-content/50">Loading hotels...</p>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 0' }}>
+                  <span className="loading loading-spinner loading-lg text-primary" style={{ marginBottom: '16px', color: 'var(--accent)' }} />
+                  <p style={{ fontSize: '14px', color: 'var(--text-secondary)', margin: 0, fontWeight: 500 }}>Retrieving listing records...</p>
                 </div>
               ) : vendorHotels.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-16 text-base-content/40">
-                  <p className="text-sm">No hotels added yet</p>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 0', color: 'var(--text-secondary)' }}>
+                  <div style={{
+                    width: '64px',
+                    height: '64px',
+                    borderRadius: '50%',
+                    background: 'var(--surface2)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: '16px',
+                    border: '1px solid var(--border)'
+                  }}>
+                    <RiStoreLine style={{ width: '28px', height: '28px', color: 'var(--text-muted)' }} />
+                  </div>
+                  <p style={{ fontSize: '15px', margin: 0, fontWeight: 600, color: 'var(--text-primary)' }}>No active listings</p>
+                  <p style={{ fontSize: '12.5px', margin: '4px 0 0', color: 'var(--text-secondary)' }}>This vendor has not published any listings yet.</p>
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {vendorHotels.map(hotel => (
-                    <div key={hotel.id} className="p-4 bg-base-200 rounded-xl border border-base-300">
-                      <div className="flex items-start justify-between mb-3">
-                        <div>
-                          <h4 className="font-semibold text-base-content">{hotel.name}</h4>
-                          <p className="text-xs text-base-content/50 mt-0.5">📍 {hotel.city}</p>
-                        </div>
-                        <span className={`badge badge-sm ${hotel.listingStatus === 'APPROVED' ? 'badge-success' : hotel.listingStatus === 'PENDING_APPROVAL' ? 'badge-warning' : hotel.listingStatus === 'REJECTED' ? 'badge-error' : 'badge-neutral'}`}>
-                          {hotel.listingStatus?.replace(/_/g, ' ')}
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-3 gap-3">
-                        {[{l:'Price/Night',v:`${hotel.pricePerNight?.toLocaleString()}`},{l:'Rooms',v:hotel.rooms},{l:'Rating',v:`⭐ ${hotel.rating?.toFixed(1)}`}].map(({l,v}) => (
-                          <div key={l} className="bg-base-100 rounded-lg p-2.5 text-center">
-                            <p className="text-[10px] uppercase font-semibold text-base-content/40 mb-0.5">{l}</p>
-                            <p className="text-sm font-bold text-base-content">{v}</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 500, letterSpacing: '0.02em', textTransform: 'uppercase', marginBottom: '-4px' }}>
+                    Active Listings ({vendorHotels.length})
+                  </div>
+                  {vendorHotels.map(hotel => {
+                    const isApproved = hotel.listingStatus === 'APPROVED'
+                    const isPending = hotel.listingStatus === 'PENDING_APPROVAL'
+                    const isRejected = hotel.listingStatus === 'REJECTED'
+
+                    const badgeBg = isApproved ? 'rgba(46, 193, 88, 0.12)' : isPending ? 'rgba(255, 193, 7, 0.12)' : isRejected ? 'rgba(255, 77, 79, 0.12)' : 'var(--surface2)'
+                    const badgeText = isApproved ? '#2ec158' : isPending ? '#d39e00' : isRejected ? '#ff4d4f' : 'var(--text-secondary)'
+
+                    return (
+                      <div key={hotel.id} className="listing-card-premium" style={{
+                        padding: '20px',
+                        background: 'var(--bg-surface)',
+                        border: '1px solid var(--border)',
+                        borderRadius: '16px',
+                        boxShadow: 'var(--shadow-sm)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '16px',
+                      }}>
+                        {/* Info Header Row */}
+                        <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
+                          {/* Thumbnail or placeholder */}
+                          {hotel.image ? (
+                            <img src={hotel.image} alt={hotel.name} style={{ width: '60px', height: '60px', borderRadius: '12px', objectFit: 'cover', border: '1px solid var(--border)', flexShrink: 0 }} />
+                          ) : (
+                            <div style={{
+                              width: '60px',
+                              height: '60px',
+                              borderRadius: '12px',
+                              background: 'linear-gradient(135deg, var(--accentSoft) 0%, transparent 100%)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: '24px',
+                              border: '1px solid var(--border)',
+                              flexShrink: 0
+                            }}>
+                              {VENDOR_TYPES[selectedVendor.vendorType]?.icon || '🏢'}
+                            </div>
+                          )}
+
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' }}>
+                              <h4 style={{ fontSize: 'var(--fs-card-title)', fontWeight: 'var(--fw-card-title)', color: 'var(--text-primary)', margin: 0, lineHeight: 1.25, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '320px' }}>
+                                {hotel.name}
+                              </h4>
+                              <span style={{
+                                padding: '4px 10px',
+                                borderRadius: '9999px',
+                                fontSize: '10px',
+                                fontWeight: 700,
+                                letterSpacing: '0.04em',
+                                textTransform: 'uppercase',
+                                background: badgeBg,
+                                color: badgeText,
+                                display: 'inline-block'
+                              }}>
+                                {hotel.listingStatus?.replace(/_/g, ' ')}
+                              </span>
+                            </div>
+                            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '4px 0 0', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <span style={{ fontSize: '14px' }}>📍</span> {hotel.city} {hotel.location ? `· ${hotel.location}` : ''}
+                            </p>
                           </div>
-                        ))}
-                      </div>
-                      {hotel.listingStatus === 'REJECTED' && hotel.rejectionReason && (
-                        <div className="mt-3 p-2.5 bg-error/10 border border-error/20 rounded-lg text-xs text-error">
-                          <strong>Rejection reason:</strong> {hotel.rejectionReason}
                         </div>
-                      )}
-                    </div>
-                  ))}
+
+                        {/* Specs Grid */}
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
+                          {[
+                            { label: 'Price / Night', value: `₹${(hotel.pricePerNight || hotel.price || 0).toLocaleString()}` },
+                            { label: 'Rooms Inventory', value: hotel.rooms || 0 },
+                            { 
+                              label: `${hotel.reviews || 0} reviews`, 
+                              value: (
+                                <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                                  <span style={{ color: '#F59E0B' }}>★</span> {hotel.rating?.toFixed(1) || '0.0'}
+                                </span>
+                              )
+                            }
+                          ].map(({ label, value }) => (
+                            <div key={label} style={{
+                              background: 'var(--surface2)',
+                              border: '1px solid var(--border)',
+                              borderRadius: '12px',
+                              padding: '10px 8px',
+                              textAlign: 'center',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              justifyContent: 'center'
+                            }}>
+                              <p style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 600, color: 'var(--text-secondary)', margin: '0 0 4px', letterSpacing: '0.05em' }}>
+                                {label}
+                              </p>
+                              <p style={{ fontSize: '13.5px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+                                {value}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Rejection Alert */}
+                        {isRejected && hotel.rejectionReason && (
+                          <div style={{
+                            padding: '12px 14px',
+                            background: 'rgba(255, 77, 79, 0.05)',
+                            border: '1px dashed rgba(255, 77, 79, 0.3)',
+                            borderRadius: '12px',
+                            fontSize: '12.5px',
+                            color: '#ff4d4f',
+                            lineHeight: 1.5,
+                            display: 'flex',
+                            gap: '8px',
+                            alignItems: 'flex-start'
+                          }}>
+                            <span style={{ fontSize: '15px', marginTop: '1px' }}>⚠️</span>
+                            <div>
+                              <strong style={{ fontWeight: 600 }}>Rejection reason:</strong> {hotel.rejectionReason}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
                 </div>
               )}
             </div>
