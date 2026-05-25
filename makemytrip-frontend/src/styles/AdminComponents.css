@@ -9,14 +9,14 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.625rem 1rem;
-  border: none;
-  border-radius: 0.5rem;
-  font-size: var(--fs-button);
-  font-weight: var(--fw-button);
-  letter-spacing: var(--ls-button);
+  padding: 0.5rem 1rem;
+  border: 1px solid transparent;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease-in-out;
   text-decoration: none;
   white-space: nowrap;
   user-select: none;
@@ -80,6 +80,59 @@
   box-shadow: var(--shadow-md);
 }
 
+/* Error Button (alias for danger) */
+.btn-error {
+  background: var(--danger);
+  color: white;
+}
+
+.btn-error:hover {
+  background: #c82333;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-error:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Warning Button */
+.btn-warning {
+  background: var(--warning);
+  color: white;
+}
+
+.btn-warning:hover {
+  background: #d97706;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Outline Button */
+.btn-outline {
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+}
+
+.btn-outline:hover {
+  background: var(--bg-hover);
+  border-color: var(--text-secondary);
+}
+
+/* Ghost Button */
+.btn-ghost {
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid transparent;
+}
+
+.btn-ghost:hover {
+  background: var(--bg-hover);
+}
+
 /* Button Sizes */
 .btn-sm {
   padding: 0.375rem 0.75rem;
@@ -104,8 +157,8 @@
 
 .card {
   background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: 0.5rem;
+  border: 0;
+  border-radius: 0.75rem;
   padding: 1.5rem;
   box-shadow: var(--shadow-sm);
   transition: all 0.3s ease;
@@ -155,18 +208,19 @@
 }
 
 .table thead {
-  background: var(--bg-hover);
-  border-bottom: 2px solid var(--border);
+  background: hsl(var(--b2));
+  border-bottom: 1px solid var(--border);
 }
 
 .table th {
-  padding: 0.75rem 1rem;
+  padding: 0.875rem 1.25rem;
   text-align: left;
-  font-size: var(--fs-table-header);
-  font-weight: var(--fw-table-header);
+  font-size: 0.75rem;
+  font-weight: 600;
   color: var(--text-secondary);
-  text-transform: var(--tt-table-header);
-  letter-spacing: var(--ls-table-header);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
 }
 
 .table tbody tr {
@@ -179,12 +233,13 @@
 }
 
 .table td {
-  padding: 1rem;
+  padding: 1.25rem;
   color: var(--text-primary);
+  font-size: 0.875rem;
 }
 
 .table-sm td {
-  padding: 0.625rem 1rem;
+  padding: 0.75rem 1.25rem;
 }
 
 /* ============================================================================
@@ -273,23 +328,23 @@
 
 .form-control {
   width: 100%;
-  padding: 0.625rem 0.75rem;
+  padding: 0.625rem 1rem;
   border: 1px solid var(--border);
-  border-radius: 0.5rem;
-  font-size: var(--fs-body);
-  font-weight: var(--fw-body);
-  line-height: var(--lh-body);
-  background: var(--bg-surface);
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.5;
+  background: hsl(var(--b2));
   color: var(--text-primary);
-  transition: all 0.3s ease;
+  transition: all 0.2s ease-in-out;
   font-family: inherit;
 }
 
 .form-control:focus {
   outline: none;
   border-color: hsl(var(--p));
-  box-shadow: 0 0 0 3px rgba(0, 53, 128, 0.1);
   background: var(--bg-surface);
+  box-shadow: 0 0 0 4px hsla(var(--p), 0.15);
 }
 
 .form-control:disabled {

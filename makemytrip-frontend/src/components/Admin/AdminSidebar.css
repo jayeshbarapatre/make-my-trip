@@ -18,7 +18,7 @@
   left: 0;
   top: 0;
   bottom: 0;
-  width: 248px;
+  width: 260px;
   background: var(--bg-surface);
   color: var(--text-secondary);
   display: flex;
@@ -40,12 +40,12 @@
 }
 
 .sidebar-header {
-  padding: 14px 12px;
+  padding: 16px 20px;
   border-bottom: 1px solid var(--border);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: var(--bg-sidebar);
+  background: var(--bg-surface);
 }
 
 .sidebar-title {
@@ -59,7 +59,7 @@
 }
 
 .admin-logo-badge {
-  background: linear-gradient(135deg, var(--accent) 0%, #2B4DBE 100%);
+  background: hsl(var(--p));
   width: 28px;
   height: 28px;
   border-radius: 6px;
@@ -71,7 +71,6 @@
   color: white;
   position: relative;
   flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(52, 97, 224, 0.3);
 }
 
 .admin-logo-badge::after {
@@ -170,21 +169,20 @@
   text-decoration: none;
   transition: all 0.2s ease;
   border-radius: 0.375rem;
-  margin: 2px 8px;
-  font-size: var(--fs-sidebar);
-  font-weight: var(--fw-sidebar);
+  margin: 2px 12px;
+  font-size: 0.875rem;
+  font-weight: 500;
   position: relative;
 }
 
 .nav-item:hover {
-  background: var(--accentSoft);
-  color: var(--accent);
+  background: hsla(var(--p), 0.08);
+  color: hsl(var(--p));
 }
 
 .nav-item.active {
-  background: var(--accentSoft);
-  color: var(--accent);
-  box-shadow: none;
+  background: hsla(var(--p), 0.12);
+  color: hsl(var(--p));
   font-weight: 600;
 }
 

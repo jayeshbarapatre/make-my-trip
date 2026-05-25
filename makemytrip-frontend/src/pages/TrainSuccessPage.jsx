@@ -35,7 +35,7 @@ export default function TrainSuccessPage() {
         scale: 2,
         useCORS: true,
         logging: false,
-        backgroundColor: 'hsl(var(--b1))'
+        backgroundColor: '#ffffff'
       });
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF({

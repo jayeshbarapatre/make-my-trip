@@ -178,6 +178,16 @@ const AdminDashboard = () => {
           />
         </div>
 
+        {/* Booking Types */}
+        <div className="booking-section">
+          <div className="booking-grid">
+            <BookingCard icon="fas fa-plane" label="Flights Booked" value={stats?.bookingsBreakdown?.flight || 0} color="hsl(var(--p))" />
+            <BookingCard icon="fas fa-bed" label="Hotels Booked" value={stats?.bookingsBreakdown?.hotel || 0} color="hsl(var(--a))" />
+            <BookingCard icon="fas fa-bus" label="Buses Booked" value={stats?.bookingsBreakdown?.bus || 0} color="hsl(var(--a))" />
+            <BookingCard icon="fas fa-taxi" label="Cabs Booked" value={stats?.bookingsBreakdown?.cab || 0} color="hsl(var(--er))" />
+          </div>
+        </div>
+
         {/* Revenue & New Visitors */}
         <div className="dashboard-row two-col-65-35">
           <div className="chart-container">
@@ -275,16 +285,6 @@ const AdminDashboard = () => {
                 <Bar dataKey="count" fill="var(--accent)" radius={[0, 4, 4, 0]} />
               </BarChart>
             </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Booking Types */}
-        <div className="booking-section">
-          <div className="booking-grid">
-            <BookingCard icon="fas fa-plane" label="Flights Booked" value={stats?.bookingsBreakdown?.flight || 0} color="hsl(var(--p))" />
-            <BookingCard icon="fas fa-bed" label="Hotels Booked" value={stats?.bookingsBreakdown?.hotel || 0} color="hsl(var(--a))" />
-            <BookingCard icon="fas fa-bus" label="Buses Booked" value={stats?.bookingsBreakdown?.bus || 0} color="hsl(var(--a))" />
-            <BookingCard icon="fas fa-taxi" label="Cabs Booked" value={stats?.bookingsBreakdown?.cab || 0} color="hsl(var(--er))" />
           </div>
         </div>
 

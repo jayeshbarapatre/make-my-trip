@@ -147,10 +147,10 @@
   --radius-xl:   20px;
   --radius-full: 9999px;
 
-  /* â”€â”€ Elevation / Shadows â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-  --shadow-sm:  0 2px 8px  rgba(0, 0, 0, 0.08);
-  --shadow-md:  0 4px 16px rgba(0, 0, 0, 0.12);
-  --shadow-lg:  0 8px 32px rgba(0, 0, 0, 0.15);
+  /* ── Elevation / Shadows ── */
+  --shadow-sm:  0 2px 4px rgba(165, 163, 174, 0.15);
+  --shadow-md:  0 4px 12px rgba(165, 163, 174, 0.2);
+  --shadow-lg:  0 8px 24px rgba(165, 163, 174, 0.25);
 
   /* â”€â”€ Transitions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   --transition-fast: all 0.1s ease-out;
@@ -186,43 +186,43 @@
 :root {
   /* Global Raw HSL Value Overrides to Fix Broken hsl(var(--...)) Syntax System-wide */
   --b1: 0 0% 100%;           /* base color 1 (white card surface) */
-  --b2: 210 20% 98%;         /* base color 2 (light page background) */
-  --b3: 210 20% 95%;         /* base color 3 (light border/hover) */
-  --bc: 215 28% 17%;         /* base content (dark gray text) */
-  --p: 211 71% 42%;          /* primary (MakeMyTrip blue) */
+  --b2: 210 17% 98%;         /* base color 2 (light page background #F8F9FA) */
+  --b3: 210 16% 93%;         /* base color 3 (light border/hover) */
+  --bc: 222 47% 11%;         /* base content (dark gray text #0F172A) */
+  --p: 242 60% 58%;          /* primary (NexLink Indigo #5955D1) */
   --pc: 0 0% 100%;           /* primary content (white text) */
-  --s: 198 93% 40%;          /* secondary color */
+  --s: 210 10% 40%;          /* secondary color */
   --sc: 0 0% 100%;           /* secondary content */
-  --a: 34 97% 64%;           /* accent color */
-  --ac: 34 97% 64%;          /* accent content/yellow */
+  --a: 242 60% 58%;          /* accent color */
+  --ac: 0 0% 100%;           /* accent content */
   --n: 215 28% 17%;          /* neutral color */
-  --nc: var(--bc) / 0.65;         /* neutral content/gray text */
-  --nb: var(--bc) / 0.15;         /* neutral background/border */
-  --in: 200 95% 45%;         /* info blue */
-  --su: 142 70% 45%;         /* success green */
-  --wa: 38 92% 50%;          /* warning orange */
-  --er: 0 84% 60%;           /* error red */
+  --nc: var(--bc) / 0.65;    /* neutral content/gray text */
+  --nb: var(--bc) / 0.15;    /* neutral background/border */
+  --in: 186 100% 45%;        /* info cyan */
+  --su: 147 66% 47%;         /* success green */
+  --wa: 42 100% 50%;         /* warning orange */
+  --er: 358 100% 65%;        /* error red */
 }
 
 /* Robust explicit theme overrides to guarantee pixel-perfect theme rendering in all environments */
 [data-theme="light"] {
   --b1: 0 0% 100%;
-  --b2: 210 20% 98%;
-  --b3: 210 20% 95%;
-  --bc: 215 28% 17%;
-  --p: 211 71% 42%;
-  --clr-text-secondary: hsl(215 28% 17% / 0.85);
-  --clr-text-hint: hsl(215 28% 17% / 0.70);
-  --clr-text-dark: hsl(215 28% 17% / 0.90);
+  --b2: 210 17% 98%;
+  --b3: 210 16% 93%;
+  --bc: 222 47% 11%;
+  --p: 242 60% 58%;
+  --clr-text-secondary: hsl(222 47% 11% / 0.70);
+  --clr-text-hint: hsl(222 47% 11% / 0.50);
+  --clr-text-dark: hsl(222 47% 11% / 0.90);
 }
 [data-theme="dark"] {
-  --b1: 220 18% 13%;
-  --b2: 220 18% 10%;
-  --b3: 220 18% 7%;
+  --b1: 222 39% 14%;
+  --b2: 222 53% 10%;
+  --b3: 222 39% 18%;
   --bc: 220 20% 97%;
-  --p: 211 100% 60%;
-  --clr-text-secondary: hsl(220 20% 97% / 0.85);
-  --clr-text-hint: hsl(220 20% 97% / 0.70);
+  --p: 242 60% 65%;
+  --clr-text-secondary: hsl(220 20% 97% / 0.70);
+  --clr-text-hint: hsl(220 20% 97% / 0.50);
   --clr-text-dark: hsl(220 20% 97% / 0.90);
 }
 [data-theme="cupcake"] {

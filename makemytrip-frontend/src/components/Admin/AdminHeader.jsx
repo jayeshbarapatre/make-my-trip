@@ -49,26 +49,14 @@ const AdminHeader = ({ toggleSidebar }) => {
         <i className="fas fa-bars"></i>
       </button>
 
-      <div className="greeting-section">
-        <h2 className="greeting">{getPageName()}</h2>
+      <div className="header-search">
+        <div className="search-wrapper">
+          <i className="fas fa-search search-icon"></i>
+          <input type="text" className="form-control form-control-fill search-input" placeholder="Search anything..." />
+        </div>
       </div>
 
       <div className="header-right">
-        {/* Language Selector */}
-        <div className="language-selector">
-          <button className="lang-btn" title="English">
-            <span className="flag">🇺🇸</span>
-          </button>
-          <button className="lang-btn" title="Spanish">
-            <span className="flag">🇪🇸</span>
-          </button>
-          <button className="lang-btn" title="German">
-            <span className="flag">🇩🇪</span>
-          </button>
-          <button className="lang-btn" title="French">
-            <span className="flag">🇫🇷</span>
-          </button>
-        </div>
 
         {/* Notifications */}
         <div className="notification-container" ref={notificationRef}>
