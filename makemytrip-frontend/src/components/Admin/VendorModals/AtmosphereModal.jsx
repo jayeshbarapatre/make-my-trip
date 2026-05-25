@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import {
   RiStoreLine, RiMailLine, RiPhoneLine, RiLockLine,
@@ -6,17 +6,18 @@ import {
   RiEyeOffLine, RiGlobalLine, RiBuilding2Line
 } from 'react-icons/ri'
 import { useTheme } from '../../../context/ThemeContext'
+import TabIcon from '../../TabIcon'
 
 const VENDOR_TYPES = {
-  flight:    { label: 'Flights',      desc: 'Airlines & charter',          icon: '✈️'  },
-  hotel:     { label: 'Hotels',       desc: 'Stays & resorts',             icon: '🏨'  },
-  villa:     { label: 'Villas',       desc: 'Homestays & villas',          icon: '🏡'  },
-  holiday:   { label: 'Holidays',     desc: 'Vacation packages',           icon: '🧳'  },
-  train:     { label: 'Trains',       desc: 'Rail bookings',               icon: '🚆'  },
-  bus:       { label: 'Buses',        desc: 'Coach & transfers',           icon: '🚌'  },
-  cab:       { label: 'Cabs',         desc: 'Rideshare & transfers',       icon: '🚖'  },
-  tour:      { label: 'Tours',        desc: 'Guided packages',             icon: '🎡'  },
-  visa:      { label: 'Visas',        desc: 'Permits & e-visas',           icon: '🛂'  },
+  flight:    { label: 'Flights',      desc: 'Airlines & charter',          icon: 'flights'  },
+  hotel:     { label: 'Hotels',       desc: 'Stays & resorts',             icon: 'hotels'  },
+  villa:     { label: 'Villas',       desc: 'Homestays & villas',          icon: 'villas'  },
+  holiday:   { label: 'Holidays',     desc: 'Vacation packages',           icon: 'holidays'  },
+  train:     { label: 'Trains',       desc: 'Rail bookings',               icon: 'trains'  },
+  bus:       { label: 'Buses',        desc: 'Coach & transfers',           icon: 'buses'  },
+  cab:       { label: 'Cabs',         desc: 'Rideshare & transfers',       icon: 'cabs'  },
+  tour:      { label: 'Tours',        desc: 'Guided packages',             icon: 'tours'  },
+  visa:      { label: 'Visas',        desc: 'Permits & e-visas',           icon: 'visa'  },
 }
 
 const Icon = ({ name, size = 18, color = 'currentColor' }) => {
@@ -68,6 +69,7 @@ const FloatingLabelInput = ({
   const displayValue = isControlled ? value : localValue
   const [focused, setFocused] = useState(false)
   const isUp = (displayValue !== undefined && displayValue !== null && displayValue.toString().length > 0) || focused
+  const inputRef = useRef(null)
 
   const handleChange = (e) => {
     if (!isControlled) {
@@ -87,41 +89,59 @@ const FloatingLabelInput = ({
   }
 
   return (
-    <div style={{
-      position: 'relative',
-      background: 'var(--bg-surface)',
-      borderRadius: '14px',
-      border: `1px solid ${focused ? accent : 'var(--border)'}`,
-      boxShadow: focused ? `0 0 0 4px var(--accentSoft)` : '0 1px 0 var(--border)',
-      transition: '.15s',
-      padding: '14px 16px 10px',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '10px',
-    }}>
+    <div 
+      style={{
+        position: 'relative',
+        background: 'var(--bg-surface)',
+        borderRadius: '14px',
+        border: `1px solid ${focused ? accent : 'var(--border)'}`,
+        boxShadow: focused ? `0 0 0 4px var(--accentSoft)` : '0 1px 0 var(--border)',
+        transition: '.15s',
+        padding: '0 16px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+        height: '56px',
+        cursor: 'text'
+      }}
+      onClick={() => inputRef.current?.focus()}
+    >
       {leftIcon && (
-        <div style={{ color: focused ? accent : 'var(--text-secondary)', marginTop: '8px', alignSelf: 'flex-start' }}>
-          {typeof leftIcon === 'string' ? <Icon name={leftIcon} size={16} /> : leftIcon}
+        <div style={{ color: focused ? accent : 'var(--text-secondary)', display: 'flex', alignItems: 'center' }}>
+          {typeof leftIcon === 'string' ? <Icon name={leftIcon} size={18} /> : leftIcon}
         </div>
       )}
-      <div style={{ flex: 1, position: 'relative' }}>
+      <div style={{ flex: 1, position: 'relative', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
         <label style={{
           position: 'absolute',
-          left: 0,
-          top: isUp ? -4 : 14,
+          left: (!isUp && prefix) ? 32 : 0,
+          top: isUp ? 10 : 20,
           fontSize: isUp ? '10.5px' : '14px',
           letterSpacing: isUp ? '0.08em' : 0,
           textTransform: isUp ? 'uppercase' : 'none',
           fontWeight: isUp ? 600 : 500,
           color: isUp ? (focused ? accent : 'var(--text-secondary)') : 'var(--text-muted)',
-          transition: '.15s',
+          transition: 'all .15s ease-out',
           pointerEvents: 'none',
+          margin: 0,
+          lineHeight: 1,
         }}>
           {label}
         </label>
-        <div style={{ display: 'flex', alignItems: 'center', paddingTop: '12px' }}>
-          {prefix && <span style={{ fontSize: '14px', color: 'var(--text-secondary)', marginRight: '6px' }}>{prefix}</span>}
+        <div style={{ display: 'flex', alignItems: 'center', transform: isUp ? 'translateY(7px)' : 'translateY(0)', transition: 'transform .15s ease-out' }}>
+          {prefix && (
+            <span style={{ 
+              fontSize: '14px', 
+              color: 'var(--text-primary)', 
+              marginRight: '6px',
+              opacity: isUp ? 1 : 0.6,
+              transition: 'opacity .15s'
+            }}>
+              {prefix}
+            </span>
+          )}
           <input
+            ref={inputRef}
             type={type}
             value={displayValue}
             name={name}
@@ -139,12 +159,18 @@ const FloatingLabelInput = ({
               fontSize: '14px',
               color: 'var(--text-primary)',
               padding: 0,
+              height: '20px',
+              width: '100%'
             }}
             {...rest}
           />
         </div>
       </div>
-      {rightSlot}
+      {rightSlot && (
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          {rightSlot}
+        </div>
+      )}
     </div>
   )
 }
@@ -208,10 +234,10 @@ export function AtmosphereModal({ onClose, formData, onFormChange, onSubmit, sub
         width: '100%',
         maxWidth: '780px',
         maxHeight: '85vh',
-        background: `
+        backgroundColor: 'var(--bg-surface)',
+        backgroundImage: `
           radial-gradient(600px 300px at 85% -10%, var(--accentSoft) 0%, transparent 70%),
-          radial-gradient(400px 200px at -5% 110%, var(--accentSoft) 0%, transparent 70%),
-          var(--bg-surface)
+          radial-gradient(400px 200px at -5% 110%, var(--accentSoft) 0%, transparent 70%)
         `,
         borderRadius: '24px',
         boxShadow: 'var(--shadow-xl)',
@@ -339,9 +365,11 @@ export function AtmosphereModal({ onClose, formData, onFormChange, onSubmit, sub
                       opacity: submitting ? 0.7 : 1,
                     }}
                   >
-                    <span style={{ fontSize: '20px' }}>{c.icon}</span>
-                    <div style={{ fontSize: '9.5px', fontWeight: 600, letterSpacing: '0.04em', opacity: on ? 0.95 : 0.7, textTransform: 'uppercase' }}>
-                      {c.label.slice(0, 4)}
+                    <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '4px' }}>
+                      <TabIcon id={c.icon} size={24} />
+                    </span>
+                    <div style={{ fontSize: '9.5px', fontWeight: 600, letterSpacing: '0.04em', opacity: on ? 0.95 : 0.7, textTransform: 'uppercase', textAlign: 'center' }}>
+                      {c.label}
                     </div>
                     {on && (
                       <div style={{
@@ -385,7 +413,9 @@ export function AtmosphereModal({ onClose, formData, onFormChange, onSubmit, sub
                   color: accent,
                   border: '1px solid var(--border)',
                 }}>
-                  <span style={{ fontSize: '16px' }}>{VENDOR_TYPES[formData.vendorType].icon}</span>
+                  <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <TabIcon id={VENDOR_TYPES[formData.vendorType].icon} size={18} />
+                  </span>
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: '12.5px', fontWeight: 600, color: ink }}>{VENDOR_TYPES[formData.vendorType].label}</div>
@@ -607,7 +637,7 @@ export function AtmosphereModal({ onClose, formData, onFormChange, onSubmit, sub
             >
               {submitting ? (
                 <>
-                  <span className="loading loading-spinner loading-sm" /> Registering...
+                  <span className="loading loading-spinner" style={{ width: '14px', height: '14px' }} /> Registering...
                 </>
               ) : (
                 <>

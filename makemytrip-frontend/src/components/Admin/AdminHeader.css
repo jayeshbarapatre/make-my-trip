@@ -3,13 +3,13 @@
   top: 0;
   background: var(--bg-surface);
   border-bottom: 1px solid var(--border);
-  padding: 10px 16px;
+  padding: 12px 32px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
   z-index: 100;
-  box-shadow: var(--shadow-sm);
+  box-shadow: none; /* NexLink doesn't use strong box-shadow on header, just border */
   transition: all 0.3s ease;
   width: 100%;
   box-sizing: border-box;
@@ -18,7 +18,7 @@
 
 @media (max-width: 768px) {
   .admin-header {
-    padding: 10px 12px;
+    padding: 12px 16px;
     gap: 12px;
   }
 }
@@ -47,73 +47,43 @@
   }
 }
 
-.greeting-section {
+.header-search {
   flex: 1;
   min-width: 0;
+  display: flex;
+  align-items: center;
 }
 
-.greeting {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-  font-family: 'Space Grotesk', sans-serif;
-  color: var(--text-primary);
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
+.search-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 320px;
 }
 
-@media (max-width: 1024px) {
-  .greeting {
-    font-size: 16px;
-  }
+.search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 14px;
+  pointer-events: none;
+}
+
+.search-input {
+  padding-left: 38px !important;
+  background: hsl(var(--b2)) !important;
+  border-color: transparent !important;
+  border-radius: 9999px !important; /* Nexlink style pill search */
+}
+
+.search-input:focus {
+  background: var(--bg-surface) !important;
+  border-color: hsl(var(--p)) !important;
 }
 
 @media (max-width: 768px) {
-  .greeting {
-    font-size: 14px;
-  }
-}
-
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex: 0 0 auto;
-}
-
-/* Language Selector */
-.language-selector {
-  display: flex;
-  gap: 6px;
-  padding-right: 8px;
-  border-right: 1px solid var(--border);
-}
-
-.lang-btn {
-  background: none;
-  border: none;
-  font-size: 18px;
-  cursor: pointer;
-  padding: 6px;
-  border-radius: 4px;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.lang-btn:hover {
-  background: var(--bg-body);
-  transform: scale(1.1);
-}
-
-.flag {
-  display: inline-block;
-}
-
-@media (max-width: 1024px) {
-  .language-selector {
+  .header-search {
     display: none;
   }
 }

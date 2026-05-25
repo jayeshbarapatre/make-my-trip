@@ -10,21 +10,22 @@ import {
   RiPhoneLine, RiLockLine, RiShieldCheckLine
 } from 'react-icons/ri'
 import { useTheme } from '../context/ThemeContext'
+import TabIcon from '../components/TabIcon'
 
 const VENDOR_TYPES = {
-  flight:    { label: 'Flights',             icon: '✈️',  placeholder: 'e.g., SkyAirways Airlines' },
-  hotel:     { label: 'Hotels',              icon: '🏨',  placeholder: 'e.g., Paradise Hotels' },
-  villa:     { label: 'Villas & Homestays',  icon: '🏡',  placeholder: 'e.g., CozyStay Villas' },
-  holiday:   { label: 'Holiday Packages',    icon: '🧳',  placeholder: 'e.g., VacationWonders' },
-  train:     { label: 'Trains',              icon: '🚆',  placeholder: 'e.g., RailTravel Express' },
-  bus:       { label: 'Buses',               icon: '🚌',  placeholder: 'e.g., GoTravel Buses' },
-  cab:       { label: 'Cabs',                icon: '🚖',  placeholder: 'e.g., RideHub Cabs' },
-  tour:      { label: 'Tours & Attractions', icon: '🎡',  placeholder: 'e.g., ExploreWorld Tours' },
-  visa:      { label: 'Visa',                icon: '🛂',  placeholder: 'e.g., TravelVisa Services' },
-  cruise:    { label: 'Cruise',              icon: '🚢',  placeholder: 'e.g., SailingAdventures' },
-  forex:     { label: 'Forex & Currency',    icon: '💳',  placeholder: 'e.g., MoneyExchange Services' },
-  insurance: { label: 'Travel Insurance',    icon: '🛡️', placeholder: 'e.g., SafeTravel Insurance' },
-  multi:     { label: 'Multi-Service',       icon: '🌐',  placeholder: 'e.g., TravelMax Services' },
+  flight:    { label: 'Flights',             icon: 'flights',  placeholder: 'e.g., SkyAirways Airlines' },
+  hotel:     { label: 'Hotels',              icon: 'hotels',  placeholder: 'e.g., Paradise Hotels' },
+  villa:     { label: 'Villas & Homestays',  icon: 'villas',  placeholder: 'e.g., CozyStay Villas' },
+  holiday:   { label: 'Holiday Packages',    icon: 'holidays',  placeholder: 'e.g., VacationWonders' },
+  train:     { label: 'Trains',              icon: 'trains',  placeholder: 'e.g., RailTravel Express' },
+  bus:       { label: 'Buses',               icon: 'buses',  placeholder: 'e.g., GoTravel Buses' },
+  cab:       { label: 'Cabs',                icon: 'cabs',  placeholder: 'e.g., RideHub Cabs' },
+  tour:      { label: 'Tours & Attractions', icon: 'tours',  placeholder: 'e.g., ExploreWorld Tours' },
+  visa:      { label: 'Visa',                icon: 'visa',  placeholder: 'e.g., TravelVisa Services' },
+  cruise:    { label: 'Cruise',              icon: 'cruise',  placeholder: 'e.g., SailingAdventures' },
+  forex:     { label: 'Forex & Currency',    icon: 'forex',  placeholder: 'e.g., MoneyExchange Services' },
+  insurance: { label: 'Travel Insurance',    icon: 'insurance', placeholder: 'e.g., SafeTravel Insurance' },
+  multi:     { label: 'Multi-Service',       icon: 'flights',  placeholder: 'e.g., TravelMax Services' },
 }
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1'
@@ -124,6 +125,8 @@ const AdminVendors = () => {
   const [formData, setFormData]             = useState(EMPTY_FORM)
   const [submitting, setSubmitting]         = useState(false)
   const [showPassword, setShowPassword]     = useState(false)
+  const [deletingVendorId, setDeletingVendorId] = useState(null)
+  const [isDeleting, setIsDeleting]         = useState(false)
 
   useEffect(() => { fetchVendors() }, [])
 
@@ -189,16 +192,26 @@ const AdminVendors = () => {
     finally { setLoadingHotels(false) }
   }
 
-  const handleDelete = async (vendorId) => {
-    if (!window.confirm('Delete this vendor? This cannot be undone.')) return
+  const handleDelete = (vendorId) => {
+    setDeletingVendorId(vendorId)
+  }
+
+  const executeDelete = async () => {
+    if (!deletingVendorId) return
     try {
+      setIsDeleting(true)
       const token = localStorage.getItem('adminToken')
-      await axios.delete(`${API_BASE_URL}/admin/vendors/${vendorId}`, {
+      await axios.delete(`${API_BASE_URL}/admin/vendors/${deletingVendorId}`, {
         headers: { Authorization: `Bearer ${token}` }
       })
       toast.success('Vendor deleted')
-      setVendors(vendors.filter(v => v.id !== vendorId))
-    } catch (err) { toast.error(err.response?.data?.message || 'Failed to delete vendor') }
+      setVendors(vendors.filter(v => v.id !== deletingVendorId))
+      setDeletingVendorId(null)
+    } catch (err) { 
+      toast.error(err.response?.data?.message || 'Failed to delete vendor') 
+    } finally {
+      setIsDeleting(false)
+    }
   }
 
   const closeForm = () => { if (!submitting) { setShowForm(false); setFormData(EMPTY_FORM); setShowPassword(false) } }
@@ -215,64 +228,27 @@ const AdminVendors = () => {
       <div className="space-y-6">
 
         {/* Premium Header & Search Panel */}
-        <div style={{
-          background: 'var(--bg-surface)',
-          border: '1px solid var(--border)',
-          borderRadius: '16px',
-          padding: '24px',
-          boxShadow: 'var(--shadow-sm)',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '20px',
-          position: 'relative',
-          overflow: 'hidden'
-        }}>
-          {/* Subtle accent glow in the background */}
-          <div style={{
-            position: 'absolute',
-            top: 0,
-            right: 0,
-            width: '200px',
-            height: '200px',
-            background: 'radial-gradient(circle, var(--accentSoft) 0%, transparent 70%)',
-            opacity: 0.5,
-            pointerEvents: 'none',
-            zIndex: 0
-          }} />
-
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: '16px',
-            zIndex: 1
-          }}>
+        <div className="card">
+          <div className="card-header" style={{ borderBottom: 'none', paddingBottom: 0, marginBottom: '16px' }}>
             <div>
               <h2 style={{ fontSize: 'var(--fs-page-title)', fontWeight: 'var(--fw-page-title)', color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.02em' }}>Vendors</h2>
               <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-secondary)', margin: '4px 0 0' }}>Register and manage platform vendors across all categories</p>
             </div>
             <button 
               onClick={() => setShowForm(true)}
-              className="btn-primary"
+              className="btn btn-primary"
             >
               <RiAddLine style={{ width: '16px', height: '16px', strokeWidth: 2 }} /> Register New Vendor
             </button>
           </div>
 
-          <div style={{
-            height: '1px',
-            background: 'var(--border)',
-            width: '100%',
-            zIndex: 1
-          }} />
+          <div className="card-body">
 
           {/* Search bar inside the premium header card */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '12px',
-            zIndex: 1
+            gap: '12px'
           }}>
             <div style={{
               position: 'relative',
@@ -284,37 +260,18 @@ const AdminVendors = () => {
                 left: '14px',
                 top: '50%',
                 transform: 'translateY(-50%)',
-                color: 'var(--text-secondary)',
-                width: '16px',
-                height: '16px',
+                color: 'var(--text-muted)',
+                width: '14px',
+                height: '14px',
                 pointerEvents: 'none'
               }} />
               <input
                 type="text"
+                className="form-control"
                 placeholder="Search vendors by name or email..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '10px 16px 10px 40px',
-                  background: 'var(--surface2)',
-                  border: '1px solid var(--border)',
-                  borderRadius: '12px',
-                  fontSize: 'var(--fs-body)',
-                  color: 'var(--text-primary)',
-                  outline: 'none',
-                  transition: 'all 0.2s ease-in-out'
-                }}
-                onFocus={e => {
-                  e.currentTarget.style.borderColor = 'var(--accent)'
-                  e.currentTarget.style.boxShadow = '0 0 0 4px var(--accentSoft)'
-                  e.currentTarget.style.background = 'var(--bg-surface)'
-                }}
-                onBlur={e => {
-                  e.currentTarget.style.borderColor = 'var(--border)'
-                  e.currentTarget.style.boxShadow = 'none'
-                  e.currentTarget.style.background = 'var(--surface2)'
-                }}
+                style={{ paddingLeft: '38px' }}
               />
               {search && (
                 <button
@@ -340,6 +297,7 @@ const AdminVendors = () => {
             </div>
           </div>
         </div>
+        </div>
 
         {/* Table */}
         {loading ? (
@@ -356,80 +314,59 @@ const AdminVendors = () => {
             </div>
           </div>
         ) : (
-          <div className="table-container">
-            <div className="overflow-x-auto">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Vendor</th><th>Type</th><th>Phone</th><th>Status</th><th>Joined</th><th className="text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map(vendor => {
-                    const t = VENDOR_TYPES[vendor.vendorType] || { label: vendor.vendorType, icon: '🏢' }
-                    return (
-                      <tr key={vendor.id}>
-                        <td>
-                          <div className="flex items-center gap-3">
-                            <div className="avatar placeholder">
-                              <div className="w-8 rounded-full bg-primary/10 text-primary text-xs font-bold" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: '32px', height: '32px' }}>
-                                <span>{vendor.name?.charAt(0).toUpperCase()}</span>
+          <div className="card">
+            <div className="card-body" style={{ padding: 0 }}>
+              <div style={{ overflowX: 'auto' }}>
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Vendor</th><th>Type</th><th>Phone</th><th>Status</th><th>Joined</th><th style={{ textAlign: 'right' }}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filtered.map(vendor => {
+                      const t = VENDOR_TYPES[vendor.vendorType] || { label: vendor.vendorType, icon: 'flights' }
+                      return (
+                        <tr key={vendor.id}>
+                          <td>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                              <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'hsla(var(--p), 0.1)', color: 'hsl(var(--p))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 700 }}>
+                                {vendor.name?.charAt(0).toUpperCase()}
+                              </div>
+                              <div>
+                                <p style={{ margin: 0, fontWeight: 600, fontSize: '14px' }}>{vendor.name}</p>
+                                <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-muted)' }}>{vendor.email}</p>
                               </div>
                             </div>
-                            <div>
-                              <p className="font-semibold text-sm" style={{ margin: 0 }}>{vendor.name}</p>
-                              <p className="text-[11px] text-muted" style={{ margin: 0 }}>{vendor.email}</p>
+                          </td>
+                          <td>
+                            <span className="badge badge-primary" style={{ textTransform: 'none', background: 'var(--bg-hover)', color: 'var(--text-primary)', border: '1px solid var(--border)' }}>
+                              <span style={{ marginRight: '4px', display: 'inline-flex', alignItems: 'center' }}><TabIcon id={t.icon} size={14} /></span> {t.label}
+                            </span>
+                          </td>
+                          <td style={{ color: 'var(--text-secondary)' }}>{vendor.phone}</td>
+                          <td>
+                            <span className={`badge ${vendor.vendorStatus === 'ACTIVE' ? 'badge-success' : 'badge-danger'}`}>
+                              {vendor.vendorStatus}
+                            </span>
+                          </td>
+                          <td style={{ color: 'var(--text-secondary)' }}>{new Date(vendor.createdAt).toLocaleDateString()}</td>
+                          <td>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px' }}>
+                              <button className="btn btn-sm btn-secondary" onClick={() => handleViewHotels(vendor)}>
+                                <RiEyeLine /> View
+                              </button>
+                              <button className="btn btn-sm btn-danger" style={{ background: 'hsla(var(--er), 0.1)', color: 'hsl(var(--er))', border: '1px solid transparent' }} onClick={() => handleDelete(vendor.id)}>
+                                <RiDeleteBinLine /> Delete
+                              </button>
                             </div>
-                          </div>
-                        </td>
-                        <td>
-                          <span 
-                            style={{ 
-                              padding: '2px 8px', 
-                              borderRadius: '9999px', 
-                              fontSize: '11px', 
-                              fontWeight: 600, 
-                              border: '1px solid var(--border)',
-                              background: 'var(--surface2)',
-                              color: 'var(--text-primary)',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '4px'
-                            }}
-                          >
-                            {t.icon} {t.label}
-                          </span>
-                        </td>
-                        <td style={{ color: 'var(--text-secondary)' }}>{vendor.phone}</td>
-                        <td>
-                          <span 
-                            style={{
-                              padding: '4px 10px',
-                              borderRadius: '9999px',
-                              fontSize: '10px',
-                              fontWeight: 700,
-                              letterSpacing: '0.04em',
-                              textTransform: 'uppercase',
-                              background: vendor.vendorStatus === 'ACTIVE' ? 'rgba(46, 193, 88, 0.12)' : 'rgba(255, 77, 79, 0.12)',
-                              color: vendor.vendorStatus === 'ACTIVE' ? '#2ec158' : '#ff4d4f',
-                              display: 'inline-block'
-                            }}
-                          >
-                            {vendor.vendorStatus}
-                          </span>
-                        </td>
-                        <td style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{new Date(vendor.createdAt).toLocaleDateString()}</td>
-                        <td>
-                          <div className="flex items-center justify-end gap-2">
-                            <button className="btn-sm btn-edit" onClick={() => handleViewHotels(vendor)}><RiEyeLine className="w-3.5 h-3.5" /> View</button>
-                            <button className="btn-sm btn-delete" onClick={() => handleDelete(vendor.id)}><RiDeleteBinLine className="w-3.5 h-3.5" /> Delete</button>
-                          </div>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         )}
@@ -470,8 +407,8 @@ const AdminVendors = () => {
             }}>
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                  <span style={{ fontSize: '20px' }}>
-                    {VENDOR_TYPES[selectedVendor.vendorType]?.icon || '🏢'}
+                  <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <TabIcon id={VENDOR_TYPES[selectedVendor.vendorType]?.icon || 'flights'} size={24} />
                   </span>
                   <span style={{
                     padding: '2px 8px',
@@ -592,7 +529,7 @@ const AdminVendors = () => {
                               border: '1px solid var(--border)',
                               flexShrink: 0
                             }}>
-                              {VENDOR_TYPES[selectedVendor.vendorType]?.icon || '🏢'}
+                              <TabIcon id={VENDOR_TYPES[selectedVendor.vendorType]?.icon || 'flights'} size={24} />
                             </div>
                           )}
 
@@ -684,6 +621,70 @@ const AdminVendors = () => {
           </div>
         </VendorModal>
       )}
+      {/* Delete Confirmation Modal */}
+      {deletingVendorId && (
+        <VendorModal onClose={() => !isDeleting && setDeletingVendorId(null)}>
+          <div style={{ padding: '32px 24px', width: '100%', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
+              <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+                <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(255, 77, 79, 0.1)', color: '#ff4d4f', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>
+                  <RiDeleteBinLine />
+                </div>
+                <div>
+                  <h3 style={{ margin: '0 0 4px', fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)' }}>
+                    Delete Vendor
+                  </h3>
+                  <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-secondary)' }}>
+                    This action cannot be undone
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => !isDeleting && setDeletingVendorId(null)}
+                disabled={isDeleting}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'var(--text-secondary)',
+                  cursor: 'pointer',
+                  padding: '4px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                <RiCloseLine style={{ fontSize: '24px' }} />
+              </button>
+            </div>
+
+            <div style={{ marginBottom: '32px', color: 'var(--text-primary)', fontSize: '15px', lineHeight: 1.6 }}>
+              Are you sure you want to delete this vendor? All associated data and listings will be permanently removed from the platform.
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: 'auto' }}>
+              <button
+                className="btn btn-outline"
+                onClick={() => setDeletingVendorId(null)}
+                disabled={isDeleting}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn btn-error"
+                style={{ background: '#ff4d4f', color: '#fff', border: 'none' }}
+                onClick={executeDelete}
+                disabled={isDeleting}
+              >
+                {isDeleting ? (
+                  <span className="loading loading-spinner loading-sm" style={{ marginRight: '8px' }}></span>
+                ) : null}
+                Delete Vendor
+              </button>
+            </div>
+          </div>
+        </VendorModal>
+      )}
+
     </AdminLayout>
   )
 }
