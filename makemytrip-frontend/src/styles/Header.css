@@ -242,3 +242,48 @@ body {
   color: hsl(var(--bc)) !important;
 }
 
+/* ==========================================================================
+   Responsive Breakpoints
+   ========================================================================== */
+
+/* Tablet and below */
+@media (max-width: 1024px) {
+  .common-header-inner {
+    padding: 0 20px !important;
+  }
+  .header-right-link {
+    display: none !important; /* Hide secondary links on smaller screens */
+  }
+}
+
+/* Mobile */
+@media (max-width: 767px) {
+  .common-header-inner {
+    padding: 0 16px !important;
+    height: 60px !important;
+  }
+  .mmt-logo-badge {
+    width: 32px !important;
+    height: 32px !important;
+    font-size: 14px !important;
+  }
+  .mmt-logo-brand {
+    font-size: 16px !important;
+  }
+  .mmt-logo-sub {
+    font-size: 9px !important;
+  }
+  .header-lang-select {
+    display: none !important; /* Hide language selector on mobile */
+  }
+  .common-header-right {
+    gap: 12px !important;
+  }
+  .common-user-container {
+    padding: 4px 8px !important;
+  }
+  .common-user-name {
+    display: none !important; /* Hide user name on very small screens, keep avatar */
+  }
+}
+

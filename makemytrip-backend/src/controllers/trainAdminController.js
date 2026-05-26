@@ -41,7 +41,7 @@ export const getAllTraines = async (req, res) => {
     const { page = 1, limit = 10, search, type, status } = req.query
     const skip = (parseInt(page) - 1) * parseInt(limit)
 
-    const query = {}
+    const query = { listingStatus: 'APPROVED' }
     
     if (search) {
       query.OR = [

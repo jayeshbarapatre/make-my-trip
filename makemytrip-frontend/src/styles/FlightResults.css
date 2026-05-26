@@ -728,7 +728,7 @@
   font-weight: var(--fw-bold);
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• PROMO BANNERS â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* ──────────────── PROMO BANNERS ────────────────  */
 .fr-promo-wrapper { margin: var(--sp-xs) 0; }
 .fr-promo-banner {
   border-radius: var(--radius-sm);

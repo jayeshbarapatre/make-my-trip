@@ -887,19 +887,34 @@
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 767px) {
   .hero-topbar { padding: 16px 20px; }
   .hero-card-wrap { padding: 20px 12px 0; }
   .service-tabs { padding: 10px; }
   .service-tab { min-width: 60px; padding: 10px 8px; }
-  .service-tab .tab-icon { font-size: 22px; }
+  .service-tab .tab-icon { width: 22px; height: 22px; }
+  .service-tab .tab-icon svg { width: 22px; height: 22px; }
   .service-tab .tab-lbl { font-size: 9px; }
   .ai-banner { margin: 12px 12px 0; padding: 8px 12px; }
   .ai-banner .ai-icon { font-size: 18px; }
   .ai-banner .ai-text { font-size: 11px; }
   .trip-type-row { padding: 12px 12px 0; gap: 12px; }
   .trip-intl { display: none; }
-  .search-inputs { margin: 12px 12px 0; }
+  
+  .search-inputs { 
+    margin: 12px 12px 0; 
+    display: flex;
+    flex-direction: column;
+  }
+  .swap-btn {
+    align-self: center;
+    margin: -10px 0;
+    transform: rotate(90deg);
+  }
+  .swap-btn:hover {
+    transform: rotate(270deg) scale(1.08);
+  }
+  
   .fares-row { flex-direction: column; padding: 12px 12px 0; gap: 8px; }
   .fares-chips { gap: 6px; }
   .fare-chip { padding: 6px 10px; font-size: 11px; }

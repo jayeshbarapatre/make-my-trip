@@ -667,7 +667,7 @@
 
 /* ============ RESPONSIVE ============ */
 
-@media (max-width: 900px) {
+@media (max-width: 1024px) {
   .flight-header {
     grid-template-columns: 1fr;
     gap: 16px;
@@ -686,25 +686,28 @@
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 767px) {
   .flight-header {
     grid-template-columns: 1fr;
   }
 
   .flight-times {
     grid-template-columns: 1fr;
+    gap: 8px;
   }
 
   .hotel-image-wrapper {
-    height: 150px;
+    height: 180px;
   }
 
   .bus-times {
     grid-template-columns: 1fr;
+    gap: 8px;
   }
 
   .cab-route {
     grid-template-columns: 1fr;
+    gap: 8px;
   }
 
   .flight-footer,
@@ -722,20 +725,12 @@
     width: 100%;
   }
 
-  .flight-price {
-    font-size: 16px;
-  }
-
-  .total-price {
-    font-size: 16px;
-  }
-
-  .bus-price {
-    font-size: 16px;
-  }
-
+  .flight-price,
+  .total-price,
+  .bus-price,
   .price {
-    font-size: 16px;
+    font-size: 22px;
+    text-align: left;
   }
 }
 
