@@ -263,6 +263,7 @@ input, textarea, select
   - Font-size: 0.8125rem
   - Font-weight: 600
   - Text-transform: uppercase
+  - line-height: 1;
 
 .badge-primary
   - Background: rgba(var(--primary), 0.1)

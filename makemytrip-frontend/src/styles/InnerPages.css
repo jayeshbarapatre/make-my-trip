@@ -55,66 +55,55 @@ body {
 /* Page backdrops */
 .phero.hotels {
   background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
-  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
               url('https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1920&q=80') center / cover no-repeat !important;
 }
 
 .phero.trains {
-  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
   background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
               url('https://images.unsplash.com/photo-1518609878373-06d740f60d8b?auto=format&fit=crop&w=1920&q=80') center / cover no-repeat !important;
 }
 
 .phero.holidays {
   background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
-  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
               url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1920&q=80') center / cover no-repeat !important;
 }
 
 .phero.homestays {
-  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
   background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
               url('https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1920&q=80') center / cover no-repeat !important;
 }
 
 .phero.cabs {
   background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
-  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
               url('https://images.unsplash.com/photo-1517524206127-48bbd363f3d7?auto=format&fit=crop&w=1920&q=80') center / cover no-repeat !important;
 }
 
 .phero.buses {
-  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
   background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
               url('https://images.unsplash.com/photo-1570125909232-eb263c188f7e?auto=format&fit=crop&w=1920&q=80') center / cover no-repeat !important;
 }
 
 .phero.cruise {
   background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
-  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
               url('https://images.unsplash.com/photo-1500835556837-99ac94a94552?auto=format&fit=crop&w=1920&q=80') center / cover no-repeat !important;
 }
 
 .phero.forex {
-  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
   background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
               url('https://images.unsplash.com/photo-1580584126903-c17d41830450?auto=format&fit=crop&w=1920&q=80') center / cover no-repeat !important;
 }
 
 .phero.insurance {
   background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
-  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
               url('https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1920&q=80') center / cover no-repeat !important;
 }
 
 .phero.tours {
   background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
-  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
               url('https://images.unsplash.com/photo-1513622470522-26c3c8a854bc?auto=format&fit=crop&w=1920&q=80') center / cover no-repeat !important;
 }
 
 .phero.visa {
-  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
   background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
               url('https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=1920&q=80') center / cover no-repeat !important;
 }

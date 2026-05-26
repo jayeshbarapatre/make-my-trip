@@ -1,25 +1,18 @@
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { createPortal } from 'react-dom'
 import VendorLayout from '../components/Vendor/VendorLayout'
 import VendorFlightForm from '../components/Vendor/VendorFlightForm'
-import VendorFlightForm from '../components/Vendor/VendorFlightForm'
 import { vendorFlightsService } from '../services/vendorService'
-import { useTheme } from '../context/ThemeContext'
 import { useTheme } from '../context/ThemeContext'
 import toast from 'react-hot-toast'
 
 const VendorFlights = () => {
-  const { theme, accentColor } = useTheme()
   const { theme, accentColor } = useTheme()
   const [flights, setFlights] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [confirmDialog, setConfirmDialog] = useState(null)
   const [processingId, setProcessingId] = useState(null)
-  
-  const [showFormModal, setShowFormModal] = useState(false)
-  const [editingFlightId, setEditingFlightId] = useState(null)
   
   const [showFormModal, setShowFormModal] = useState(false)
   const [editingFlightId, setEditingFlightId] = useState(null)
@@ -48,7 +41,6 @@ const VendorFlights = () => {
       flightId: id,
       title: 'Submit for Approval',
       message: 'This will send your flight for admin review. Are you sure you want to submit it?'
-      message: 'This will send your flight for admin review. Are you sure you want to submit it?'
     })
   }
 
@@ -57,7 +49,6 @@ const VendorFlights = () => {
       type: 'delete',
       flightId: id,
       title: 'Delete Flight',
-      message: 'Are you sure you want to delete this flight? This action is permanent and cannot be undone.'
       message: 'Are you sure you want to delete this flight? This action is permanent and cannot be undone.'
     })
   }
@@ -90,20 +81,12 @@ const VendorFlights = () => {
       case 'APPROVED': return 'badge-success'
       case 'REJECTED': return 'badge-danger'
       default: return 'badge-secondary'
-      case 'DRAFT': return 'badge-secondary'
-      case 'PENDING_APPROVAL': return 'badge-warning'
-      case 'APPROVED': return 'badge-success'
-      case 'REJECTED': return 'badge-danger'
-      default: return 'badge-secondary'
     }
   }
 
   if (loading) {
     return (
       <VendorLayout>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '100px 0' }}>
-          <span className="loading loading-spinner loading-lg text-primary" style={{ marginBottom: '16px', color: 'var(--accent)' }} />
-          <p style={{ color: 'var(--text-secondary)' }}>Loading your flights...</p>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '100px 0' }}>
           <span className="loading loading-spinner loading-lg text-primary" style={{ marginBottom: '16px', color: 'var(--accent)' }} />
           <p style={{ color: 'var(--text-secondary)' }}>Loading your flights...</p>
@@ -135,42 +118,13 @@ const VendorFlights = () => {
                   <i className="fas fa-check-circle" style={{ color: '#2ec158' }}></i> Approved: <strong style={{ color: 'var(--text-primary)' }}>{flights.filter(f => f.listingStatus === 'APPROVED').length}</strong>
                 </span>
               </div>
-      <div style={{ padding: '0 0 24px' }}>
-        
-        {/* Header Card */}
-        <div className="card" style={{ marginBottom: '24px' }}>
-          <div className="card-body" style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
-            <div style={{ flex: 1, minWidth: '280px' }}>
-              <h1 style={{ fontSize: '24px', fontWeight: 600, color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.02em' }}>My Flights</h1>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px 24px', marginTop: '12px', fontSize: '13px', color: 'var(--text-secondary)' }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <i className="fas fa-plane" style={{ color: 'var(--text-muted)' }}></i> Total: <strong style={{ color: 'var(--text-primary)' }}>{flights.length}</strong>
-                </span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <i className="fas fa-pencil-alt" style={{ color: 'var(--text-muted)' }}></i> Draft: <strong style={{ color: 'var(--text-primary)' }}>{flights.filter(f => f.listingStatus === 'DRAFT').length}</strong>
-                </span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <i className="fas fa-hourglass-half" style={{ color: '#d39e00' }}></i> Pending: <strong style={{ color: 'var(--text-primary)' }}>{flights.filter(f => f.listingStatus === 'PENDING_APPROVAL').length}</strong>
-                </span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <i className="fas fa-check-circle" style={{ color: '#2ec158' }}></i> Approved: <strong style={{ color: 'var(--text-primary)' }}>{flights.filter(f => f.listingStatus === 'APPROVED').length}</strong>
-                </span>
-              </div>
             </div>
-            <button className="btn btn-primary" onClick={() => { setEditingFlightId(null); setShowFormModal(true); }} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: 'auto' }}>
-              <i className="fas fa-plus"></i> Add New Flight
-            </button>
             <button className="btn btn-primary" onClick={() => { setEditingFlightId(null); setShowFormModal(true); }} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: 'auto' }}>
               <i className="fas fa-plus"></i> Add New Flight
             </button>
           </div>
         </div>
 
-        {error && (
-          <div style={{ padding: '16px', background: 'rgba(255, 77, 79, 0.1)', border: '1px solid rgba(255, 77, 79, 0.3)', borderRadius: '12px', color: '#ff4d4f', marginBottom: '24px' }}>
-            {error}
-          </div>
-        )}
         {error && (
           <div style={{ padding: '16px', background: 'rgba(255, 77, 79, 0.1)', border: '1px solid rgba(255, 77, 79, 0.3)', borderRadius: '12px', color: '#ff4d4f', marginBottom: '24px' }}>
             {error}
@@ -190,7 +144,6 @@ const VendorFlights = () => {
           </div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '20px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '20px' }}>
             {flights.map(flight => (
               <div key={flight.id} className="card" style={{ display: 'flex', flexDirection: 'column' }}>
                 <div className="card-body" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '16px', padding: '24px' }}>
@@ -209,33 +162,7 @@ const VendorFlights = () => {
                       {flight.listingStatus.replace(/_/g, ' ')}
                     </span>
                   </div>
-              <div key={flight.id} className="card" style={{ display: 'flex', flexDirection: 'column' }}>
-                <div className="card-body" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '16px', padding: '24px' }}>
-                  
-                  {/* Header */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <h3 style={{ fontSize: '18px', fontWeight: 600, margin: '0 0 4px', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {flight.airline} - {flight.flightNumber}
-                      </h3>
-                      <p style={{ fontSize: '13.5px', color: 'var(--text-secondary)', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <i className="fas fa-route"></i> {flight.from} to {flight.to}
-                      </p>
-                    </div>
-                    <span className={`badge ${getStatusBadgeClass(flight.listingStatus)}`} style={{ textTransform: 'uppercase', fontSize: '10px', letterSpacing: '0.04em', fontWeight: 700, padding: '4px 8px' }}>
-                      {flight.listingStatus.replace(/_/g, ' ')}
-                    </span>
-                  </div>
 
-                  {/* Rejection Alert */}
-                  {flight.listingStatus === 'REJECTED' && flight.rejectionReason && (
-                    <div style={{ padding: '12px', background: 'rgba(255, 77, 79, 0.05)', borderRadius: '10px', border: '1px dashed rgba(255, 77, 79, 0.3)', color: '#ff4d4f', fontSize: '12.5px', display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
-                      <i className="fas fa-exclamation-triangle" style={{ marginTop: '2px' }}></i>
-                      <div>
-                        <strong style={{ fontWeight: 600 }}>Rejection Reason:</strong> {flight.rejectionReason}
-                      </div>
-                    </div>
-                  )}
                   {/* Rejection Alert */}
                   {flight.listingStatus === 'REJECTED' && flight.rejectionReason && (
                     <div style={{ padding: '12px', background: 'rgba(255, 77, 79, 0.05)', borderRadius: '10px', border: '1px dashed rgba(255, 77, 79, 0.3)', color: '#ff4d4f', fontSize: '12.5px', display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
@@ -260,27 +187,7 @@ const VendorFlights = () => {
                       <p style={{ fontSize: '9.5px', textTransform: 'uppercase', color: 'var(--text-secondary)', margin: '0 0 4px', fontWeight: 600, letterSpacing: '0.04em' }}>Time</p>
                       <p style={{ fontSize: '14px', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>{flight.departureTime}</p>
                     </div>
-                  {/* Details Grid */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', background: 'var(--surface2)', padding: '12px', borderRadius: '12px', border: '1px solid var(--border)' }}>
-                    <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                      <p style={{ fontSize: '9.5px', textTransform: 'uppercase', color: 'var(--text-secondary)', margin: '0 0 4px', fontWeight: 600, letterSpacing: '0.04em' }}>Price</p>
-                      <p style={{ fontSize: '14px', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>₹{flight.price.toLocaleString()}</p>
-                    </div>
-                    <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                      <p style={{ fontSize: '9.5px', textTransform: 'uppercase', color: 'var(--text-secondary)', margin: '0 0 4px', fontWeight: 600, letterSpacing: '0.04em' }}>Seats</p>
-                      <p style={{ fontSize: '14px', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>{flight.seatsAvailable}</p>
-                    </div>
-                    <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                      <p style={{ fontSize: '9.5px', textTransform: 'uppercase', color: 'var(--text-secondary)', margin: '0 0 4px', fontWeight: 600, letterSpacing: '0.04em' }}>Time</p>
-                      <p style={{ fontSize: '14px', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>{flight.departureTime}</p>
-                    </div>
                   </div>
-
-                  {/* Actions */}
-                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: 'auto' }}>
-                    <button className="btn btn-sm" onClick={() => { setEditingFlightId(flight.id); setShowFormModal(true); }} style={{ flex: 1, display: 'flex', gap: '6px', justifyContent: 'center', alignItems: 'center' }}>
-                      <i className="fas fa-edit" style={{ opacity: 0.7 }}></i> Edit
-                    </button>
 
                   {/* Actions */}
                   <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: 'auto' }}>
@@ -289,14 +196,6 @@ const VendorFlights = () => {
                     </button>
                   </div>
                   {['DRAFT', 'REJECTED'].includes(flight.listingStatus) && (
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <button className="btn btn-sm btn-primary" onClick={() => handleSubmitForApproval(flight.id)} style={{ flex: 2, display: 'flex', gap: '6px', justifyContent: 'center', alignItems: 'center' }}>
-                        <i className="fas fa-paper-plane" style={{ opacity: 0.9 }}></i> Submit for Approval
-                      </button>
-                      <button className="btn btn-sm btn-danger" onClick={() => handleDelete(flight.id)} style={{ flex: 1, display: 'flex', gap: '6px', justifyContent: 'center', alignItems: 'center' }}>
-                        <i className="fas fa-trash" style={{ opacity: 0.9 }}></i> Delete
-                      </button>
-                    </div>
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <button className="btn btn-sm btn-primary" onClick={() => handleSubmitForApproval(flight.id)} style={{ flex: 2, display: 'flex', gap: '6px', justifyContent: 'center', alignItems: 'center' }}>
                         <i className="fas fa-paper-plane" style={{ opacity: 0.9 }}></i> Submit for Approval
@@ -349,59 +248,16 @@ const VendorFlights = () => {
                 color: confirmDialog.type === 'delete' ? '#ff4d4f' : '#2ec158'
               }}>
                 <i className={confirmDialog.type === 'delete' ? 'fas fa-exclamation-triangle' : 'fas fa-paper-plane'}></i>
-      {confirmDialog && createPortal(
-        <div 
-          className="admin-layout modal-backdrop-overlay" 
-          data-theme={theme}
-          style={{
-            position: 'fixed', inset: 0, zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            backgroundColor: theme === 'light' ? 'rgba(0, 0, 0, 0.4)' : 'rgba(15, 17, 23, 0.65)', backdropFilter: 'blur(12px)', padding: '24px',
-            '--accent': accentColor
-          }}
-          onClick={() => !processingId && setConfirmDialog(null)}
-        >
-          <style>{`
-            @keyframes modalScaleUp {
-              0% { opacity: 0; transform: scale(0.95); }
-              100% { opacity: 1; transform: scale(1); }
-            }
-            .confirm-modal-box {
-              animation: modalScaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            }
-          `}</style>
-          
-          <div 
-            className="confirm-modal-box" 
-            style={{ 
-              width: '100%', maxWidth: '440px', background: 'var(--surface)', borderRadius: '16px',
-              boxShadow: 'var(--shadow-xl)', overflow: 'hidden', border: '1px solid var(--border)' 
-            }}
-            onClick={e => e.stopPropagation()}
-          >
-            <div style={{ padding: '24px', display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
-              <div style={{ 
-                width: '48px', height: '48px', borderRadius: '12px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px',
-                background: confirmDialog.type === 'delete' ? 'rgba(255, 77, 79, 0.1)' : 'rgba(46, 193, 88, 0.1)',
-                color: confirmDialog.type === 'delete' ? '#ff4d4f' : '#2ec158'
-              }}>
-                <i className={confirmDialog.type === 'delete' ? 'fas fa-exclamation-triangle' : 'fas fa-paper-plane'}></i>
               </div>
-              <div>
-                <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 8px' }}>
               <div>
                 <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 8px' }}>
                   {confirmDialog.title}
                 </h3>
                 <p style={{ fontSize: '14px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>
                   {confirmDialog.message}
-                <p style={{ fontSize: '14px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>
-                  {confirmDialog.message}
                 </p>
               </div>
             </div>
-            <div style={{ padding: '16px 24px', background: 'var(--surface2)', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
-              <button 
-                className="btn" 
             <div style={{ padding: '16px 24px', background: 'var(--surface2)', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
               <button 
                 className="btn" 
@@ -412,18 +268,10 @@ const VendorFlights = () => {
               </button>
               <button 
                 className={`btn ${confirmDialog.type === 'delete' ? 'btn-danger' : 'btn-primary'}`}
-              <button 
-                className={`btn ${confirmDialog.type === 'delete' ? 'btn-danger' : 'btn-primary'}`}
                 onClick={confirmAction}
                 disabled={processingId !== null}
                 style={{ minWidth: '120px' }}
-                style={{ minWidth: '120px' }}
               >
-                {processingId === confirmDialog.flightId ? (
-                  <span className="loading loading-spinner" style={{ width: '16px', height: '16px' }}></span>
-                ) : (
-                  confirmDialog.type === 'delete' ? 'Delete Flight' : 'Submit Flight'
-                )}
                 {processingId === confirmDialog.flightId ? (
                   <span className="loading loading-spinner" style={{ width: '16px', height: '16px' }}></span>
                 ) : (
@@ -432,23 +280,6 @@ const VendorFlights = () => {
               </button>
             </div>
           </div>
-        </div>,
-        document.body
-      )}
-
-      {showFormModal && (
-        <VendorFlightForm 
-          flightId={editingFlightId} 
-          onClose={() => {
-            setShowFormModal(false);
-            setEditingFlightId(null);
-          }}
-          onSuccess={() => {
-            setShowFormModal(false);
-            setEditingFlightId(null);
-            fetchFlights();
-          }}
-        />
         </div>,
         document.body
       )}

@@ -1,14 +1,9 @@
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { createPortal } from 'react-dom'
 import { vendorHotelsService } from '../../services/vendorService'
-import { useTheme } from '../../context/ThemeContext'
 import { useTheme } from '../../context/ThemeContext'
 import toast from 'react-hot-toast'
 
-const VendorHotelForm = ({ hotelId, onClose, onSuccess }) => {
-  const isEditing = !!hotelId
-  const { theme, accentColor } = useTheme()
 const VendorHotelForm = ({ hotelId, onClose, onSuccess }) => {
   const isEditing = !!hotelId
   const { theme, accentColor } = useTheme()
@@ -39,13 +34,10 @@ const VendorHotelForm = ({ hotelId, onClose, onSuccess }) => {
   useEffect(() => {
     if (isEditing) fetchHotel()
   }, [hotelId])
-    if (isEditing) fetchHotel()
-  }, [hotelId])
 
   const fetchHotel = async () => {
     try {
       setLoading(true)
-      const response = await vendorHotelsService.getById(hotelId)
       const response = await vendorHotelsService.getById(hotelId)
       const hotel = response.data.data.hotel
       setFormData({
@@ -60,7 +52,6 @@ const VendorHotelForm = ({ hotelId, onClose, onSuccess }) => {
       setSelectedRoomTypes(hotel.roomTypes || [])
     } catch (err) {
       toast.error('Failed to load hotel details')
-      onClose()
       onClose()
     } finally {
       setLoading(false)
@@ -104,14 +95,12 @@ const VendorHotelForm = ({ hotelId, onClose, onSuccess }) => {
 
       if (isEditing) {
         await vendorHotelsService.update(hotelId, submitData)
-        await vendorHotelsService.update(hotelId, submitData)
         toast.success('Hotel updated successfully')
       } else {
         await vendorHotelsService.create(submitData)
         toast.success('Hotel created successfully')
       }
 
-      if (onSuccess) onSuccess()
       if (onSuccess) onSuccess()
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to save hotel')
@@ -178,72 +167,10 @@ const VendorHotelForm = ({ hotelId, onClose, onSuccess }) => {
               background: 'transparent', color: 'var(--text-primary)', cursor: 'pointer' 
             }}
           >
-  const inputStyle = {
-    width: '100%', padding: '10px 14px', borderRadius: '8px',
-    border: '1px solid var(--border)', background: 'var(--bg-hover)',
-    color: 'var(--text-primary)', fontSize: '14px', outline: 'none',
-    transition: 'border-color 0.2s', marginTop: '6px'
-  }
-
-  const labelStyle = {
-    fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)'
-  }
-
-  return createPortal(
-    <div 
-      className="admin-layout modal-backdrop-overlay" 
-      data-theme={theme}
-      style={{
-        position: 'fixed', inset: 0, zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center',
-        backgroundColor: theme === 'light' ? 'rgba(0, 0, 0, 0.4)' : 'rgba(15, 17, 23, 0.65)', backdropFilter: 'blur(12px)', padding: '24px',
-        '--accent': accentColor
-      }}
-      onClick={onClose}
-    >
-      <style>{`
-        @keyframes modalSlideUp {
-          from { transform: translateY(20px) scale(0.98); opacity: 0; }
-          to { transform: translateY(0) scale(1); opacity: 1; }
-        }
-        .hotel-modal-container {
-          animation: modalSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-        .hotel-modal-container input:focus, .hotel-modal-container textarea:focus {
-          border-color: var(--accent) !important;
-          background: var(--surface) !important;
-        }
-      `}</style>
-      
-      <div 
-        className="hotel-modal-container" 
-        style={{ width: '100%', maxWidth: '720px', maxHeight: '90vh', display: 'flex', flexDirection: 'column', boxShadow: 'var(--shadow-xl)', overflow: 'hidden', border: '1px solid var(--border)', background: 'var(--surface)', padding: 0 }}
-        onClick={e => e.stopPropagation()}
-      >
-        <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--surface)' }}>
-          <h2 style={{ fontSize: '20px', fontWeight: 600, margin: 0, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(46, 193, 88, 0.15)', color: '#2ec158', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }}>
-              <i className={isEditing ? 'fas fa-pen' : 'fas fa-plus'}></i>
-            </div>
-            {isEditing ? 'Edit Hotel Listing' : 'Create New Hotel'}
-          </h2>
-          <button 
-            type="button" 
-            onClick={onClose} 
-            style={{ 
-              width: '32px', height: '32px', minWidth: '32px', minHeight: '32px', 
-              padding: 0, borderRadius: '50%', display: 'flex', alignItems: 'center', 
-              justifyContent: 'center', flex: '0 0 32px', border: '1px solid var(--border)', 
-              background: 'transparent', color: 'var(--text-primary)', cursor: 'pointer' 
-            }}
-          >
             <i className="fas fa-times"></i>
           </button>
         </div>
-        </div>
 
-        {loading ? (
-          <div style={{ padding: '60px', textAlign: 'center', flex: 1 }}>
-            <span className="loading loading-spinner loading-lg text-primary" style={{ color: 'var(--accent)' }} />
         {loading ? (
           <div style={{ padding: '60px', textAlign: 'center', flex: 1 }}>
             <span className="loading loading-spinner loading-lg text-primary" style={{ color: 'var(--accent)' }} />
