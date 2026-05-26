@@ -118,7 +118,7 @@ export default function TrainPaymentPage() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div 
                   onClick={() => handleProcessPayment('UPI / Google Pay')}
-                  style={{ padding: '20px', border: '1px solid hsl(var(--b3))', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', background: '#fff' }}
+                  style={{ padding: '20px', border: '1px solid hsl(var(--bc) / 0.1)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', background: 'hsl(var(--b2))', transition: 'border-color 0.2s' }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                     <span style={{ fontSize: '24px' }}>📱</span>
@@ -132,7 +132,7 @@ export default function TrainPaymentPage() {
 
                 <div 
                   onClick={() => handleProcessPayment('Credit / Debit Card')}
-                  style={{ padding: '20px', border: '1px solid hsl(var(--b3))', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', background: '#fff' }}
+                  style={{ padding: '20px', border: '1px solid hsl(var(--bc) / 0.1)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', background: 'hsl(var(--b2))', transition: 'border-color 0.2s' }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                     <span style={{ fontSize: '24px' }}>💳</span>
@@ -146,7 +146,7 @@ export default function TrainPaymentPage() {
 
                 <div 
                   onClick={() => handleProcessPayment('Net Banking')}
-                  style={{ padding: '20px', border: '1px solid hsl(var(--b3))', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', background: '#fff' }}
+                  style={{ padding: '20px', border: '1px solid hsl(var(--bc) / 0.1)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', background: 'hsl(var(--b2))', transition: 'border-color 0.2s' }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                     <span style={{ fontSize: '24px' }}>🏦</span>

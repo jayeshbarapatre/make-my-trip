@@ -137,18 +137,18 @@ export default function Profile() {
           </Link>
         </div>
 
-        <div style={{ maxWidth: '600px', margin: '0 auto', background: '#fff', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.08)', border: '1px solid hsl(var(--b3))', overflow: 'hidden' }}>
+        <div style={{ maxWidth: '600px', margin: '0 auto', background: 'hsl(var(--b1))', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.08)', border: '1px solid hsl(var(--b3))', overflow: 'hidden' }}>
 
           {/* Header */}
-          <div style={{ background: 'linear-gradient(135deg, hsl(var(--bc)) 0%, hsl(var(--bc) / 0.6) 100%)', color: '#fff', padding: '32px 40px', display: 'flex', alignItems: 'center', gap: '20px' }}>
-            <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: isMobileUser ? 'hsl(var(--p))' : 'hsl(var(--p))', color: 'hsl(var(--bc))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', fontWeight: 900 }}>
+          <div style={{ background: 'linear-gradient(135deg, hsl(var(--bc)) 0%, hsl(var(--bc) / 0.6) 100%)', color: 'hsl(var(--b1))', padding: '32px 40px', display: 'flex', alignItems: 'center', gap: '20px' }}>
+            <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: isMobileUser ? 'hsl(var(--p))' : 'hsl(var(--p))', color: 'hsl(var(--pc))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', fontWeight: 900 }}>
               {avatarText}
             </div>
             <div>
               <h1 style={{ margin: 0, fontSize: '28px', fontWeight: 900, color: 'hsl(var(--b1))' }}>
                 {displayName || 'Mobile User'}
               </h1>
-              <div style={{ color: 'hsl(var(--bc) / 0.5)', fontSize: '15px', marginTop: '4px' }}>
+              <div style={{ color: 'hsl(var(--b1) / 0.7)', fontSize: '15px', marginTop: '4px' }}>
                 +91 {displayPhone}
               </div>
               {isMobileUser && (
@@ -169,7 +169,7 @@ export default function Profile() {
               </div>
               <button
                 onClick={() => setEditing(true)}
-                style={{ marginLeft: 'auto', background: 'hsl(var(--wa))', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '13px', fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap' }}
+                style={{ marginLeft: 'auto', background: 'hsl(var(--wa))', color: 'hsl(var(--b1))', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '13px', fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap' }}
               >
                 Add Now
               </button>
@@ -208,7 +208,7 @@ export default function Profile() {
                   value={nameInput}
                   onChange={e => setNameInput(e.target.value)}
                   placeholder={editing ? 'Enter your full name' : '—'}
-                  style={{ width: '100%', padding: '14px 16px', borderRadius: '10px', border: `1px solid ${editing ? 'hsl(var(--p))' : 'hsl(var(--b3))'}`, fontSize: '16px', fontWeight: 600, color: editing ? 'hsl(var(--bc))' : 'hsl(var(--bc) / 0.55)', background: editing ? '#fff' : 'hsl(var(--b2))', outline: 'none', boxSizing: 'border-box' }}
+                  style={{ width: '100%', padding: '14px 16px', borderRadius: '10px', border: `1px solid ${editing ? 'hsl(var(--p))' : 'hsl(var(--b3))'}`, fontSize: '16px', fontWeight: 600, color: editing ? 'hsl(var(--bc))' : 'hsl(var(--bc) / 0.55)', background: editing ? 'hsl(var(--b1))' : 'hsl(var(--b2))', outline: 'none', boxSizing: 'border-box' }}
                 />
               </div>
 
@@ -234,7 +234,7 @@ export default function Profile() {
                   value={emailInput}
                   onChange={e => setEmailInput(e.target.value)}
                   placeholder={editing ? 'Enter your email address' : '—'}
-                  style={{ width: '100%', padding: '14px 16px', borderRadius: '10px', border: `1px solid ${editing ? 'hsl(var(--p))' : 'hsl(var(--b3))'}`, fontSize: '16px', fontWeight: 600, color: editing ? 'hsl(var(--bc))' : 'hsl(var(--bc) / 0.55)', background: editing ? '#fff' : 'hsl(var(--b2))', outline: 'none', boxSizing: 'border-box' }}
+                  style={{ width: '100%', padding: '14px 16px', borderRadius: '10px', border: `1px solid ${editing ? 'hsl(var(--p))' : 'hsl(var(--b3))'}`, fontSize: '16px', fontWeight: 600, color: editing ? 'hsl(var(--bc))' : 'hsl(var(--bc) / 0.55)', background: editing ? 'hsl(var(--b1))' : 'hsl(var(--b2))', outline: 'none', boxSizing: 'border-box' }}
                 />
               </div>
 
@@ -242,7 +242,7 @@ export default function Profile() {
                 <button
                   type="submit"
                   disabled={loading}
-                  style={{ background: 'hsl(var(--er))', color: '#fff', border: 'none', padding: '16px', borderRadius: '10px', fontSize: '16px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(235,32,38,0.3)', marginTop: '12px' }}
+                  style={{ background: 'hsl(var(--p))', color: 'hsl(var(--pc))', border: 'none', padding: '16px', borderRadius: '10px', fontSize: '16px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px hsl(var(--p) / 0.3)', marginTop: '12px' }}
                 >
                   {loading ? 'Saving...' : 'Save Profile Changes'}
                 </button>
@@ -257,7 +257,7 @@ export default function Profile() {
         <div style={{
           position: 'fixed', bottom: '40px', left: '50%', transform: 'translateX(-50%)',
           background: toast.type === 'success' ? 'hsl(var(--su))' : 'hsl(var(--er))',
-          color: '#fff', padding: '14px 28px', borderRadius: '12px', fontSize: '16px',
+          color: 'hsl(var(--b1))', padding: '14px 28px', borderRadius: '12px', fontSize: '16px',
           fontWeight: '600', boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
           display: 'flex', alignItems: 'center', gap: '12px', zIndex: 9999,
           animation: 'toastSlideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards'

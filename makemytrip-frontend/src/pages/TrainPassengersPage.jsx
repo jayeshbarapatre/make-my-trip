@@ -121,7 +121,7 @@ export default function TrainPassengersPage() {
             <p>{searchParams.fromCity} ({train.depTime}) → {searchParams.toCity} ({train.arrTime}) · Date: {searchParams.travelDate}</p>
           </div>
           <div>
-            <span className="train-rb-badge" style={{ background: 'hsl(var(--su))' }}>Class: {selectedClass.name}</span>
+            <span className="train-rb-badge">Class: {selectedClass.name}</span>
           </div>
         </div>
 

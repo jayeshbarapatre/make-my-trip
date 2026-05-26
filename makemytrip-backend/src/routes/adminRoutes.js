@@ -26,6 +26,7 @@ import { getPendingCabs, approveCab, rejectCab } from '../controllers/adminCabAp
 import { getPendingTraines, approveTrain, rejectTrain } from '../controllers/adminTrainApprovalController.js'
 import { getAllVendors, createVendor, deleteVendor, toggleVendorStatus, getVendorHotels } from '../controllers/adminVendorController.js'
 import { getAllBookings } from '../controllers/bookingController.js'
+import { getAllUsers, deleteUser, getUserDetails } from '../controllers/adminUserController.js'
 
 const router = express.Router()
 
@@ -104,5 +105,9 @@ router.delete('/vendors/:id', authenticateAdmin, adminOnly, deleteVendor)
 router.patch('/vendors/:id/toggle', authenticateAdmin, adminOnly, toggleVendorStatus)
 
 router.get('/bookings', authenticateAdmin, adminOnly, getAllBookings)
+
+router.get('/users', authenticateAdmin, adminOnly, getAllUsers)
+router.get('/users/:id', authenticateAdmin, adminOnly, getUserDetails)
+router.delete('/users/:id', authenticateAdmin, adminOnly, deleteUser)
 
 export default router

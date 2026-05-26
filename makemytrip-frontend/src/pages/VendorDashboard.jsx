@@ -138,7 +138,7 @@ const VendorDashboard = () => {
                   <p className="vendor-kpi-label">{kpi.label}</p>
                   <p className="vendor-kpi-value">{kpi.value}</p>
                 </div>
-                <Icon className="vendor-kpi-icon" />
+                <Icon className={`vendor-kpi-icon vendor-kpi-icon-${kpi.color}`} />
               </div>
             )
           })}

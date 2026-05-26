@@ -59,9 +59,9 @@ export default function TrainSuccessPage() {
     <div className="train-flow-wrapper" style={{ background: 'hsl(var(--b2))', minHeight: '100vh', padding: '40px 20px' }}>
       <div className="train-flow-container" style={{ maxWidth: '860px', margin: '0 auto' }}>
 
-        <div id="train-ticket-content" style={{ background: '#fff', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', border: '1px solid hsl(var(--b3))', marginBottom: '24px' }}>
+        <div id="train-ticket-content" style={{ background: 'hsl(var(--b1))', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.08)', border: '1px solid hsl(var(--bc) / 0.1)', marginBottom: '24px' }}>
           
-          <div style={{ background: 'linear-gradient(135deg, hsl(var(--p) / 0.8) 0%, hsl(var(--p)) 100%)', color: '#fff', padding: '48px 32px', textAlign: 'center' }}>
+          <div className="train-success-hero">
             <div style={{ width: '64px', height: '64px', background: 'hsl(var(--su))', color: '#fff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', margin: '0 auto 20px', boxShadow: '0 0 20px rgba(5,150,105,0.4)' }}>
               ✓
             </div>
@@ -132,21 +132,20 @@ export default function TrainSuccessPage() {
         </div>
 
         <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
-          <button 
-            className="btn-primary"
-            style={{ flex: '1 1 280px', padding: '16px', fontSize: '14px', fontWeight: 800 }}
+          <button
+            className="train-btn-primary"
             onClick={handleDownloadPDF}
           >
             📥 DOWNLOAD PDF TICKET
           </button>
-          <button 
-            style={{ flex: '1 1 200px', padding: '16px', background: '#fff', border: '1.5px solid hsl(var(--er))', color: 'hsl(var(--er))', borderRadius: '10px', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }}
+          <button
+            className="train-btn-danger-outline"
             onClick={() => navigate('/my-trips')}
           >
             🧳 MY BOOKINGS
           </button>
-          <button 
-            style={{ flex: '1 1 200px', padding: '16px', background: 'hsl(var(--bc) / 0.9)', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }}
+          <button
+            className="train-btn-neutral"
             onClick={() => navigate('/')}
           >
             🏠 GO HOME

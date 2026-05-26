@@ -97,5 +97,11 @@ export const adminBookingsService = {
   getAll: (params) => adminAPI.get('/bookings', { params })
 }
 
+export const adminUsersService = {
+  getAll: (params) => adminAPI.get('/users', { params }),
+  getById: (id) => adminAPI.get(`/users/${id}`),
+  delete: (id) => adminAPI.delete(`/users/${id}`)
+}
+
 export default adminAPI
 

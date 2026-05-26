@@ -122,9 +122,32 @@
 .vendor-kpi-icon {
   width: 1.5rem;
   height: 1.5rem;
-  color: hsl(var(--p));
-  opacity: 0.6;
   flex-shrink: 0;
+}
+
+.vendor-kpi-icon-primary {
+  color: hsl(var(--p));
+  opacity: 0.8;
+}
+
+.vendor-kpi-icon-success {
+  color: hsl(var(--su));
+  opacity: 0.8;
+}
+
+.vendor-kpi-icon-warning {
+  color: hsl(var(--wa));
+  opacity: 0.8;
+}
+
+.vendor-kpi-icon-info {
+  color: hsl(var(--in));
+  opacity: 0.8;
+}
+
+.vendor-kpi-icon-error {
+  color: hsl(var(--er));
+  opacity: 0.8;
 }
 
 /* Metrics Grid */
@@ -177,7 +200,7 @@
   width: 1.5rem;
   height: 1.5rem;
   color: hsl(var(--p));
-  opacity: 0.2;
+  opacity: 0.6;
   flex-shrink: 0;
 }
 
