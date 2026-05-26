@@ -25,6 +25,7 @@ import { getPendingCabs, approveCab, rejectCab } from '../controllers/adminCabAp
 import { getAllVendors, createVendor, deleteVendor, toggleVendorStatus, getVendorHotels } from '../controllers/adminVendorController.js'
 import { getAllBookings } from '../controllers/bookingController.js'
 import { getAllUsers, deleteUser, getUserDetails } from '../controllers/adminUserController.js'
+import { getApiHealth, flushCache } from '../controllers/apiHealthController.js'
 
 const router = express.Router()
 
@@ -99,5 +100,8 @@ router.get('/bookings', authenticateAdmin, adminOnly, getAllBookings)
 router.get('/users', authenticateAdmin, adminOnly, getAllUsers)
 router.get('/users/:id', authenticateAdmin, adminOnly, getUserDetails)
 router.delete('/users/:id', authenticateAdmin, adminOnly, deleteUser)
+
+router.get('/api-health', authenticateAdmin, adminOnly, getApiHealth)
+router.post('/cache/flush', authenticateAdmin, adminOnly, flushCache)
 
 export default router

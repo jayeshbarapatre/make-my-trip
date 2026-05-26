@@ -3,6 +3,7 @@
 // Future: Can be swapped for Redis without changing the interface
 
 const store = new Map()
+let lastFlushTime = new Date().toISOString()
 
 export const cacheService = {
   get: (key) => {
@@ -30,6 +31,7 @@ export const cacheService = {
 
   clear: () => {
     store.clear()
+    lastFlushTime = new Date().toISOString()
   },
 
   // Get cache statistics
@@ -41,9 +43,22 @@ export const cacheService = {
     return {
       totalKeys: store.size,
       expiredKeys: expiredCount,
-      activeKeys: store.size - expiredCount
+      activeKeys: store.size - expiredCount,
+      lastFlush: lastFlushTime
     }
+  },
+
+  // Get keys matching a prefix
+  getKeysByPrefix: (prefix) => {
+    const keys = []
+    store.forEach((entry, key) => {
+      if (key.startsWith(prefix)) {
+        keys.push(key)
+      }
+    })
+    return keys
   }
+}
 }
 
 export default cacheService
