@@ -1,4 +1,5 @@
 import prisma from '../config/prismaClient.js'
+import flightSearchService from '../services/flights/flightSearchService.js'
 import { validateCity, validatePageNumber, validatePageSize, validateGuestCount, validateDateFormat, validatePrice } from '../utils/validation.js'
 
 // Generate mock flights for any city pair
@@ -35,27 +36,20 @@ export const searchFlights = async (req, res) => {
   try {
     const { from, to, date, passengers, page = 1, limit = 20, minPrice, maxPrice } = req.query
 
-    // Fetch active flights from database
-    const allFlights = await prisma.flight.findMany({
-      where: {
-        isActive: true
-      },
-      orderBy: { price: 'asc' }
-    })
-
-    // Filter by route and criteria
-    let results = allFlights.filter(f => {
-      const fromMatch = !from || (f.from && f.from.toLowerCase() === from.toLowerCase())
-      const toMatch = !to || (f.to && f.to.toLowerCase() === to.toLowerCase())
-      const matchPassengers = !passengers || f.seatsAvailable >= parseInt(passengers)
-      const matchMinPrice = !minPrice || f.price >= parseFloat(minPrice)
-      const matchMaxPrice = !maxPrice || f.price <= parseFloat(maxPrice)
-      return fromMatch && toMatch && matchPassengers && matchMinPrice && matchMaxPrice
+    // Use service layer (cache → DB)
+    const allFlights = await flightSearchService.search({
+      from,
+      to,
+      date,
+      passengers,
+      minPrice,
+      maxPrice
     })
 
     const pageNum = Math.max(1, parseInt(page) || 1)
     const pageSize = Math.min(20, parseInt(limit) || 20)
     const skip = (pageNum - 1) * pageSize
+    const results = allFlights
     const total = results.length
     const paged = results.slice(skip, skip + pageSize)
 
