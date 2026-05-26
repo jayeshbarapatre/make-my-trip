@@ -135,8 +135,8 @@ const AdminTrains = () => {
                       <td>₹{train.price.toLocaleString()}</td>
                       <td>{train.seatsAvailable}/{train.seats}</td>
                       <td>
-                        <span className={`badge ${train.listingStatus === 'APPROVED' && train.isActive ? 'badge-active' : train.listingStatus === 'PENDING_APPROVAL' ? 'badge-warning' : 'badge-inactive'}`}>
-                          {train.listingStatus === 'PENDING_APPROVAL' ? 'Pending' : train.listingStatus === 'REJECTED' ? 'Rejected' : train.listingStatus === 'DRAFT' ? 'Draft' : train.isActive ? 'Active' : 'Inactive'}
+                        <span className={`badge ${train.isActive ? 'badge-active' : 'badge-inactive'}`}>
+                          {train.isActive ? 'Active' : 'Inactive'}
                         </span>
                       </td>
                       <td>

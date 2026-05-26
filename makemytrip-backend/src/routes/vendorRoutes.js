@@ -7,17 +7,11 @@ import {
   getRoomsByHotel, createRoom, updateRoom, deleteRoom, toggleRoomStatus
 } from '../controllers/vendorRoomController.js'
 import {
-  getMyFlights, createFlight, getMyFlightById, updateFlight, deleteFlight, submitForApproval as submitFlightForApproval, toggleFlightStatus
-} from '../controllers/vendorFlightController.js'
-import {
   getMyBuses, createBus, updateBus, deleteBus, submitBusForApproval
 } from '../controllers/vendorBusController.js'
 import {
   getMyCabs, createCab, updateCab, deleteCab, submitCabForApproval
 } from '../controllers/vendorCabController.js'
-import {
-  getMyTraines, createTrain as createVendorTrain, updateTrain as updateVendorTrain, deleteTrain as deleteVendorTrain, submitTrainForApproval
-} from '../controllers/vendorTrainController.js'
 import { authenticateVendor, vendorOnly } from '../middleware/vendorAuth.js'
 
 const router = express.Router()
@@ -42,13 +36,6 @@ router.put('/hotels/:hotelId/rooms/:roomId', authenticateVendor, vendorOnly, upd
 router.delete('/hotels/:hotelId/rooms/:roomId', authenticateVendor, vendorOnly, deleteRoom)
 router.patch('/hotels/:hotelId/rooms/:roomId/toggle', authenticateVendor, vendorOnly, toggleRoomStatus)
 
-router.post('/flights', authenticateVendor, vendorOnly, createFlight)
-router.get('/flights', authenticateVendor, vendorOnly, getMyFlights)
-router.get('/flights/:id', authenticateVendor, vendorOnly, getMyFlightById)
-router.put('/flights/:id', authenticateVendor, vendorOnly, updateFlight)
-router.delete('/flights/:id', authenticateVendor, vendorOnly, deleteFlight)
-router.patch('/flights/:id/submit', authenticateVendor, vendorOnly, submitFlightForApproval)
-router.patch('/flights/:id/toggle', authenticateVendor, vendorOnly, toggleFlightStatus)
 
 router.post('/buses', authenticateVendor, vendorOnly, createBus)
 router.get('/buses', authenticateVendor, vendorOnly, getMyBuses)
@@ -62,10 +49,5 @@ router.put('/cabs/:id', authenticateVendor, vendorOnly, updateCab)
 router.delete('/cabs/:id', authenticateVendor, vendorOnly, deleteCab)
 router.patch('/cabs/:id/submit', authenticateVendor, vendorOnly, submitCabForApproval)
 
-router.post('/trains', authenticateVendor, vendorOnly, createVendorTrain)
-router.get('/trains', authenticateVendor, vendorOnly, getMyTraines)
-router.put('/trains/:id', authenticateVendor, vendorOnly, updateVendorTrain)
-router.delete('/trains/:id', authenticateVendor, vendorOnly, deleteVendorTrain)
-router.patch('/trains/:id/submit', authenticateVendor, vendorOnly, submitTrainForApproval)
 
 export default router

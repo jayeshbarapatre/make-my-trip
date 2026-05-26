@@ -24,10 +24,8 @@ model User {
   updatedAt     DateTime  @updatedAt
   bookings      Booking[]
   hotels        Hotel[]   @relation("HotelVendor")
-  flights       Flight[]  @relation("FlightVendor")
   buses         Bus[]     @relation("BusVendor")
   cabs          Cab[]     @relation("CabVendor")
-  trains        Train[]   @relation("TrainVendor")
 }
 
 model Booking {
@@ -66,13 +64,6 @@ model Flight {
   stops           Int      @default(0)
   aircraft        String?
   image           String?
-  vendorId        String?
-  vendor          User?    @relation("FlightVendor", fields: [vendorId], references: [id], onDelete: SetNull)
-  listingStatus   String   @default("DRAFT") // "DRAFT" | "PENDING_APPROVAL" | "APPROVED" | "REJECTED"
-  rejectionReason String?
-  submittedAt     DateTime?
-  approvedAt      DateTime?
-  approvedBy      String?
   isActive        Boolean  @default(true)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -178,8 +169,6 @@ model Cab {
 
 model Train {
   id              String   @id @default(uuid())
-  vendorId        String?
-  vendor          User?    @relation("TrainVendor", fields: [vendorId], references: [id], onDelete: SetNull)
   operatorName    String
   trainNumber     String   @unique
   type            String
@@ -192,11 +181,6 @@ model Train {
   amenities       Json?
   image           String?
   isActive        Boolean  @default(true)
-  listingStatus   String   @default("DRAFT")
-  rejectionReason String?
-  submittedAt     DateTime?
-  approvedAt      DateTime?
-  approvedBy      String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }

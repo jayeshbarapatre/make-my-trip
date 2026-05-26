@@ -18,10 +18,8 @@ const VendorSidebar = ({ isOpen, toggleSidebar }) => {
       title: 'MY PROPERTY',
       items: [
         { path: '/vendor/hotels', label: 'My Hotels', icon: 'fas fa-hotel' },
-        { path: '/vendor/flights', label: 'My Flights', icon: 'fas fa-plane' },
         { path: '/vendor/buses', label: 'My Buses', icon: 'fas fa-bus' },
-        { path: '/vendor/cabs', label: 'My Cabs', icon: 'fas fa-taxi' },
-        { path: '/vendor/trains', label: 'My Trains', icon: 'fas fa-train' }
+        { path: '/vendor/cabs', label: 'My Cabs', icon: 'fas fa-taxi' }
       ]
     },
     {
@@ -83,7 +81,7 @@ const VendorSidebar = ({ isOpen, toggleSidebar }) => {
             <div>
               <div className="vendor-name-small">{vendor?.name || 'Vendor'}</div>
               <div className="vendor-role">
-                {vendor?.vendorType === 'flight' ? 'Flight Vendor' : vendor?.vendorType === 'bus' ? 'Bus Vendor' : vendor?.vendorType === 'multi' ? 'Multi-Service' : 'Hotel Vendor'}
+                {vendor?.vendorType === 'bus' ? 'Bus Vendor' : vendor?.vendorType === 'multi' ? 'Multi-Service' : 'Hotel Vendor'}
               </div>
             </div>
           </div>

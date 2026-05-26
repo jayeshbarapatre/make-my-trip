@@ -35,7 +35,8 @@ export const createFlight = async (req, res) => {
         baggage: baggage ? parseInt(baggage) : 15,
         stops: parseInt(stops) || 0,
         aircraft: aircraft || 'Boeing 737',
-        image
+        image,
+        isActive: true
       }
     })
 

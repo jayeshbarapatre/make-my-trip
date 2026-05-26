@@ -35,13 +35,11 @@ export const searchFlights = async (req, res) => {
   try {
     const { from, to, date, passengers, page = 1, limit = 20, minPrice, maxPrice } = req.query
 
-    // Fetch active AND approved flights from database (vendor listings must be approved to show)
+    // Fetch active flights from database
     const allFlights = await prisma.flight.findMany({
       where: {
-        isActive: true,
-        listingStatus: 'APPROVED'
+        isActive: true
       },
-      include: { vendor: { select: { id: true, name: true } } },
       orderBy: { price: 'asc' }
     })
 

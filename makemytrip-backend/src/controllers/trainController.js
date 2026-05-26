@@ -4,7 +4,7 @@ export const searchTraines = async (req, res) => {
   try {
     const { from, to, date, type, minPrice, maxPrice, page = 1, limit = 10, search } = req.query
 
-    let where = { isActive: true, listingStatus: 'APPROVED' }
+    let where = { isActive: true,  }
 
     if (from) {
       where.departure = { path: ['city'], string_contains: from }
@@ -38,7 +38,7 @@ export const searchTraines = async (req, res) => {
 
     // A better approach for JSON search in Prisma:
     // We will do a basic query and filter the JSON fields in JS.
-    let baseWhere = { isActive: true, listingStatus: 'APPROVED' }
+    let baseWhere = { isActive: true,  }
     if (type) baseWhere.type = type
     if (minPrice || maxPrice) {
       baseWhere.price = {}
