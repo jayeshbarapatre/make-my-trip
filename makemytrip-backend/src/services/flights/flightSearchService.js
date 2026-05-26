@@ -6,10 +6,8 @@ const normalizeFlightResult = (flight, source = 'db') => ({
   id: flight.id,
   airline: flight.airline,
   flightNumber: flight.flightNumber,
-  from: flight.from,
-  to: flight.to,
-  departureTime: flight.departureTime,
-  arrivalTime: flight.arrivalTime,
+  departure: flight.departure || { city: flight.from, time: flight.departureTime },
+  arrival: flight.arrival || { city: flight.to, time: flight.arrivalTime },
   duration: flight.duration,
   price: flight.price,
   seatsAvailable: flight.seatsAvailable,
@@ -40,18 +38,21 @@ export const flightSearchService = {
     const flights = await prisma.flight.findMany({
       where: {
         isActive: true,
-        ...(from && { from: { contains: from, mode: 'insensitive' } }),
-        ...(to && { to: { contains: to, mode: 'insensitive' } }),
         ...(minPrice && { price: { gte: parseFloat(minPrice) } }),
         ...(maxPrice && { price: { lte: parseFloat(maxPrice) } })
       },
       orderBy: { price: 'asc' }
     })
 
-    // Filter by seat availability
-    const available = flights.filter(f =>
-      !passengers || f.seatsAvailable >= parseInt(passengers)
-    )
+    // Filter by departure/arrival cities and seat availability
+    let available = flights.filter(f => {
+      const depCity = f.departure?.city || f.from || ''
+      const arrCity = f.arrival?.city || f.to || ''
+      const matchesFrom = !from || depCity.toLowerCase().includes(from.toLowerCase())
+      const matchesTo = !to || arrCity.toLowerCase().includes(to.toLowerCase())
+      const hasSeat = !passengers || f.seatsAvailable >= parseInt(passengers)
+      return matchesFrom && matchesTo && hasSeat
+    })
 
     // Cache results for 5 minutes
     cacheService.set(cacheKey, available, 300)

@@ -42,7 +42,7 @@ export const getTrainById = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Train not found' })
     }
 
-    if (!train.isActive || train.listingStatus !== 'APPROVED') {
+    if (!train.isActive) {
       return res.status(403).json({ success: false, message: 'Train not available' })
     }
 

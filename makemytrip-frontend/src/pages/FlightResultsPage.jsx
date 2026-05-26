@@ -1,18 +1,65 @@
-import React, { useState, useMemo } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import axios from 'axios';
 import '../styles/FlightBookingFlow.css';
 
 export default function FlightResultsPage() {
   const location = useLocation();
   const navigate = useNavigate();
+  const [queryParams] = useSearchParams();
 
-  const flights = location.state?.flights || [];
-  const searchParams = location.state?.searchParams || { from: 'Delhi', to: 'Mumbai', date: new Date().toISOString().split('T')[0] };
+  const [flights, setFlights] = useState(location.state?.flights || []);
+  const [loading, setLoading] = useState(!location.state?.flights);
+  const [error, setError] = useState('');
+
+  const searchParams = location.state?.searchParams || {
+    from: queryParams.get('from') || 'Delhi',
+    to: queryParams.get('to') || 'Mumbai',
+    date: queryParams.get('date') || new Date().toISOString().split('T')[0],
+    passengers: queryParams.get('passengers') || 1,
+    cabinClass: queryParams.get('class') || 'Economy'
+  };
 
   const [sortBy, setSortBy] = useState('price');
   const [filterAirline, setFilterAirline] = useState('');
   const [filterMaxPrice, setFilterMaxPrice] = useState(10000);
   const [filterNonstop, setFilterNonstop] = useState(false);
+
+  // Fetch flights from API if not passed via location.state
+  useEffect(() => {
+    if (location.state?.flights) {
+      setLoading(false);
+      return;
+    }
+
+    const fetchFlights = async () => {
+      try {
+        setError('');
+        const response = await axios.get('http://localhost:5000/api/v1/flights', {
+          params: {
+            from: searchParams.from,
+            to: searchParams.to,
+            date: searchParams.date,
+            passengers: searchParams.passengers
+          }
+        });
+
+        if (response.data.data && response.data.data.length > 0) {
+          setFlights(response.data.data);
+        } else {
+          setFlights([]);
+        }
+      } catch (err) {
+        console.error('Failed to fetch flights:', err);
+        setError('Unable to load flights. Please try again.');
+        setFlights([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFlights();
+  }, [location.state?.flights, searchParams.from, searchParams.to, searchParams.date, searchParams.passengers]);
 
   const airlines = useMemo(() => {
     return [...new Set(flights.map(f => f.airline))];
@@ -52,6 +99,49 @@ export default function FlightResultsPage() {
     });
   };
 
+  if (loading) {
+    return (
+      <div className="flight-flow-wrapper">
+        <div className="flight-flow-container">
+          <div style={{ background: 'hsl(var(--b2))', padding: '60px 40px', borderRadius: '12px', textAlign: 'center' }}>
+            <div style={{ fontSize: '24px', fontWeight: 700, marginBottom: '16px' }}>Loading flights...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flight-flow-wrapper">
+        <div className="flight-flow-container">
+          <div style={{ background: 'hsl(var(--b2))', padding: '60px 40px', borderRadius: '12px', textAlign: 'center' }}>
+            <div style={{ fontSize: '48px', marginBottom: '16px' }}>⚠️</div>
+            <h2 style={{ fontSize: '24px', fontWeight: 800, marginBottom: '8px' }}>Error Loading Flights</h2>
+            <p style={{ fontSize: '16px', color: 'hsl(var(--bc) / 0.6)', marginBottom: '24px' }}>
+              {error}
+            </p>
+            <button
+              onClick={() => navigate('/flights')}
+              style={{
+                background: 'var(--color-primary)',
+                color: '#ffffff',
+                border: 'none',
+                padding: '12px 28px',
+                borderRadius: '8px',
+                fontSize: '14px',
+                fontWeight: 700,
+                cursor: 'pointer'
+              }}
+            >
+              Try New Search
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (flights.length === 0) {
     return (
       <div className="flight-flow-wrapper">
@@ -60,7 +150,7 @@ export default function FlightResultsPage() {
             <div style={{ fontSize: '48px', marginBottom: '16px' }}>✈️</div>
             <h2 style={{ fontSize: '24px', fontWeight: 800, marginBottom: '8px' }}>No Flights Found</h2>
             <p style={{ fontSize: '16px', color: 'hsl(var(--bc) / 0.6)', marginBottom: '24px' }}>
-              No flights available for your search. Please try different dates or cities.
+              No flights available for {searchParams.from} → {searchParams.to} on {searchParams.date}. Try different dates or cities.
             </p>
             <button
               onClick={() => navigate('/flights')}
