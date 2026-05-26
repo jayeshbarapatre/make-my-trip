@@ -18,6 +18,7 @@ const AdminHeader = ({ toggleSidebar }) => {
   const [pendingCabsCount, setPendingCabsCount] = useState(0)
   const [pendingHotelsCount, setPendingHotelsCount] = useState(0)
   const [pendingFlightsCount, setPendingFlightsCount] = useState(0)
+  const [pendingTrainsCount, setPendingTrainsCount] = useState(0)
   const dropdownRef = useRef(null)
   const notificationRef = useRef(null)
   const navigate = useNavigate()
@@ -42,21 +43,24 @@ const AdminHeader = ({ toggleSidebar }) => {
   useEffect(() => {
     const fetchPendingNotifications = async () => {
       try {
-        const [busRes, cabRes, hotelRes, flightRes] = await Promise.all([
+        const [busRes, cabRes, hotelRes, flightRes, trainRes] = await Promise.all([
           adminService.getPendingBuses(),
           adminService.getPendingCabs(),
           adminService.getPendingHotels(),
-          adminService.getPendingFlights()
+          adminService.getPendingFlights(),
+          adminService.getPendingTrains()
         ])
         const buses = busRes.data?.data?.buses || []
         const cabs = cabRes.data?.data?.cabs || []
         const hotels = hotelRes.data?.data?.hotels || []
         const flights = flightRes.data?.data?.flights || []
+        const trains = trainRes.data?.data?.trains || trainRes.data?.data?.traines || []
         
         setPendingBusesCount(buses.length)
         setPendingCabsCount(cabs.length)
         setPendingHotelsCount(hotels.length)
         setPendingFlightsCount(flights.length)
+        setPendingTrainsCount(trains.length)
       } catch (err) {
         console.error('Failed to fetch pending notifications', err)
       }
@@ -83,7 +87,7 @@ const AdminHeader = ({ toggleSidebar }) => {
     navigate(path);
   };
 
-  const totalNotifications = pendingBusesCount + pendingCabsCount + pendingHotelsCount + pendingFlightsCount;
+  const totalNotifications = pendingBusesCount + pendingCabsCount + pendingHotelsCount + pendingFlightsCount + pendingTrainsCount;
 
   return (
     <header className="admin-header">
@@ -120,7 +124,7 @@ const AdminHeader = ({ toggleSidebar }) => {
               </div>
 
               <div className="notification-tabs">
-                <button className="tab-btn active">All</button>
+                <span className="tab-btn active">All</span>
               </div>
 
               <div className="notification-list">
@@ -165,6 +169,17 @@ const AdminHeader = ({ toggleSidebar }) => {
                     <div className="notification-content">
                       <p className="notification-title">Pending Cab Approvals</p>
                       <p className="notification-time">You have {pendingCabsCount} new cab listing(s) awaiting approval.</p>
+                    </div>
+                  </div>
+                )}
+                {pendingTrainsCount > 0 && (
+                  <div className="notification-item" onClick={() => handleNotificationClick('/admin/train-approvals')} style={{ cursor: 'pointer' }}>
+                    <div className="notification-icon" style={{ background: 'var(--warning)', color: 'white' }}>
+                      <i className="fas fa-train"></i>
+                    </div>
+                    <div className="notification-content">
+                      <p className="notification-title">Pending Train Approvals</p>
+                      <p className="notification-time">You have {pendingTrainsCount} new train listing(s) awaiting approval.</p>
                     </div>
                   </div>
                 )}

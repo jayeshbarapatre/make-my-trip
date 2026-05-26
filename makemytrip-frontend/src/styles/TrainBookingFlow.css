@@ -1,7 +1,7 @@
 .train-flow-wrapper {
   background-color: hsl(var(--b2));
   min-height: 100vh;
-  padding: 112px 0 80px;
+  padding: 40px 0 80px;
   font-family: 'Space Grotesk', sans-serif;
   color: hsl(var(--bc));
 }
@@ -39,7 +39,7 @@
 }
 
 .train-step.active {
-  color: hsl(var(--er));
+  color: #0099D9;
 }
 
 .train-step.completed {
@@ -59,8 +59,8 @@
 }
 
 .train-step.active .train-step-num {
-  background: hsl(var(--er));
-  color: hsl(var(--b1));
+  background: #0099D9;
+  color: #ffffff;
 }
 
 .train-step.completed .train-step-num {
@@ -69,7 +69,7 @@
 }
 
 .train-step-sep {
-  color: hsl(var(--b2));
+  color: hsl(var(--bc) / 0.2);
   font-weight: 900;
 }
 
@@ -77,8 +77,9 @@
 .train-route-banner {
   width: 100%;
   box-sizing: border-box;
-  background: hsl(var(--b3));
-  color: hsl(var(--b1));
+  background: var(--surface2, hsl(var(--b2)));
+  border: 1px solid hsl(var(--bc) / 0.1);
+  color: hsl(var(--bc));
   padding: 24px 32px;
   border-radius: 12px;
   margin-bottom: 24px;
@@ -96,7 +97,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  color: hsl(var(--b1));
+  color: hsl(var(--bc));
 }
 
 .train-rb-left p {
@@ -106,8 +107,8 @@
 }
 
 .train-rb-badge {
-  background: hsl(var(--er));
-  color: hsl(var(--b1));
+  background: var(--color-primary);
+  color: #ffffff;
   font-size: 12px;
   font-weight: 800;
   padding: 4px 12px;
@@ -378,11 +379,12 @@
   font-size: 14px;
   outline: none;
   background: hsl(var(--b1));
+  color: hsl(var(--bc));
 }
 
 .train-add-pass-btn {
   background: hsl(var(--b2));
-  color: hsl(var(--p));
+  color: var(--color-primary);
   border: 1px solid hsl(var(--b2));
   padding: 12px 24px;
   border-radius: 8px;
@@ -421,5 +423,78 @@
   padding-top: 16px;
   margin-top: 16px;
 }
+/* =====================================================
+   Train Flow Action Buttons — theme-variable based
+   ===================================================== */
 
+/* Primary brand button — uses --color-primary set per theme in index.css */
+.train-btn-primary {
+  flex: 1 1 280px;
+  padding: 16px;
+  font-size: 14px;
+  font-weight: 800;
+  background: var(--color-primary);
+  color: var(--color-primary-content, #ffffff);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: opacity 0.2s ease;
+}
 
+.train-btn-primary:hover {
+  opacity: 0.88;
+}
+
+/* Outline danger button */
+.train-btn-danger-outline {
+  flex: 1 1 200px;
+  padding: 16px;
+  background: transparent;
+  border: 1.5px solid var(--color-error, #e53e3e);
+  color: var(--color-error, #e53e3e);
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.train-btn-danger-outline:hover {
+  background: color-mix(in srgb, var(--color-error, #e53e3e) 10%, transparent);
+}
+
+/* Neutral dark button — always dark bg with white text on all themes */
+.train-btn-neutral {
+  flex: 1 1 200px;
+  padding: 16px;
+  background: var(--color-neutral, #374151);
+  color: var(--color-neutral-content, #ffffff);
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.train-btn-neutral:hover {
+  opacity: 0.88;
+}
+
+/* Step bar badge using primary */
+.train-step-active-num {
+  background: var(--color-primary);
+  color: #ffffff;
+}
+
+/* Success hero header — fixed gradient that always has white text readability */
+.train-success-hero {
+  background: linear-gradient(135deg, var(--color-primary, #0099D9) 0%, oklch(from var(--color-primary, oklch(0.6 0.15 230)) calc(l - 0.15) c h) 100%);
+  color: #ffffff;
+  padding: 48px 32px;
+  text-align: center;
+}

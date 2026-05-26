@@ -75,6 +75,7 @@
   font-size: 0.75rem;
   font-weight: 600;
   white-space: nowrap;
+  line-height: 1;
 }
 
 .badge-secondary {

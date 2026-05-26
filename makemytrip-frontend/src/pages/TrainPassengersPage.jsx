@@ -115,13 +115,13 @@ export default function TrainPassengersPage() {
         </div>
 
         {/* Top Summary Banner */}
-        <div className="train-route-banner" style={{ background: 'hsl(var(--bc) / 0.6)' }}>
+        <div className="train-route-banner">
           <div className="train-rb-left">
             <h2>{train.name} ({train.number})</h2>
             <p>{searchParams.fromCity} ({train.depTime}) → {searchParams.toCity} ({train.arrTime}) · Date: {searchParams.travelDate}</p>
           </div>
           <div>
-            <span className="train-rb-badge" style={{ background: 'hsl(var(--su))' }}>Class: {selectedClass.name}</span>
+            <span className="train-rb-badge">Class: {selectedClass.name}</span>
           </div>
         </div>
 
