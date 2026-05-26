@@ -142,7 +142,7 @@ const VendorHotels = () => {
             </div>
             <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 8px' }}>No hotels found</h3>
             <p style={{ color: 'var(--text-secondary)', margin: '0 0 24px', fontSize: '14px' }}>You haven't listed any hotels yet. Get started by adding your first property.</p>
-            <button className="btn btn-primary" onClick={() => { setEditingHotelId(null); setShowFormModal(true); }}>
+            <button className="btn btn-primary" onClick={() => { setEditingHotelId(null); setShowFormModal(true); }} style={{ width: 'fit-content', margin: '0 auto' }}>
               <i className="fas fa-plus" style={{ marginRight: '8px' }}></i> Add New Hotel
             </button>
           </div>
