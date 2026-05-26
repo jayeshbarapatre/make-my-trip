@@ -570,6 +570,35 @@
 .tr-trip-option:hover { background: hsl(var(--p) / 0.06); color: hsl(var(--p)); }
 .tr-trip-option-active { color: hsl(var(--p)); font-weight: 700; background: hsl(var(--p) / 0.05); }
 
+/* ══════════════ CAB CARDS ═══════════════════════ */
+.tc-cab-card {
+  cursor: pointer;
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+}
+.tc-cab-img {
+  width: 150px;
+  height: 100px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background-color: hsl(var(--b2));
+}
+.tc-cab-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.tc-cab-main-row {
+  flex: 1;
+  padding: 0;
+  margin: 0;
+  align-items: stretch;
+  display: flex;
+  gap: 16px;
+}
+
 /* Responsive adjustments */
 @media (max-width: 1024px) {
   .tr-layout {
@@ -590,6 +619,11 @@
     border-radius: 0 0 8px 8px;
     padding: 16px;
   }
+  .tr-sort-bar {
+    overflow-x: auto;
+    white-space: nowrap;
+    border-radius: 8px;
+  }
 }
 @media (max-width: 767px) {
   .tr-search-field {
@@ -602,13 +636,32 @@
     border-right: none;
     border-bottom: 1px solid hsl(var(--b3));
     padding: 8px;
+    transform: rotate(90deg);
   }
-  .tc-main-row {
+  .tc-main-row, .tc-cab-main-row {
     flex-direction: column;
     align-items: flex-start;
+    gap: 12px;
   }
   .tc-times-col {
     width: 100%;
+    flex-direction: row;
     justify-content: space-between;
+    align-items: center;
+    border-top: 1px dashed hsl(var(--b3));
+    padding-top: 12px;
+    margin-top: 4px;
+  }
+  .tc-book-btn {
+    margin-top: 0 !important;
+  }
+  .tc-cab-card {
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+  }
+  .tc-cab-img {
+    width: 100%;
+    height: 180px;
   }
 }

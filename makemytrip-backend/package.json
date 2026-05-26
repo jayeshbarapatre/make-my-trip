@@ -8,7 +8,8 @@
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
     "seed": "node scripts/seed.js",
-    "seed:flights": "node scripts/seedFlights.js"
+    "seed:flights": "node scripts/seedFlights.js",
+    "seed:trains": "node scripts/seedTrains.js"
   },
   "keywords": [],
   "author": "",

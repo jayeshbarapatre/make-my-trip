@@ -58,10 +58,16 @@ export const searchBuses = async (req, res) => {
     })
 
     if (from) {
-      allBuses = allBuses.filter(b => b.departure?.city?.toLowerCase().includes(from.toLowerCase()))
+      allBuses = allBuses.filter(b => {
+        const dep = typeof b.departure === 'string' ? JSON.parse(b.departure) : (b.departure || {})
+        return (dep.city || b.from || '').toLowerCase().includes(from.toLowerCase())
+      })
     }
     if (to) {
-      allBuses = allBuses.filter(b => b.arrival?.city?.toLowerCase().includes(to.toLowerCase()))
+      allBuses = allBuses.filter(b => {
+        const arr = typeof b.arrival === 'string' ? JSON.parse(b.arrival) : (b.arrival || {})
+        return (arr.city || b.to || '').toLowerCase().includes(to.toLowerCase())
+      })
     }
 
     const skip = (Number(page) - 1) * Number(limit)

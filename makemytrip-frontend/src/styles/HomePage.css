@@ -1528,7 +1528,7 @@
 }
 
 /* ── Responsive ─────────────────────────────────────────────── */
-@media (max-width: 980px) {
+@media (max-width: 1024px) {
   .hp-nav-menu {
     display: none;
   }
@@ -1587,7 +1587,7 @@
   }
 }
 
-@media (max-width: 560px) {
+@media (max-width: 767px) {
   .hp-grid {
     grid-template-columns: 1fr;
   }
@@ -2276,7 +2276,7 @@
   border-color: hsl(var(--bc) / 0.5);
 }
 
-@media (max-width: 980px) {
+@media (max-width: 1024px) {
   .hp-flight-card {
     grid-template-columns: 1fr 1fr;
     gap: 15px;
@@ -2311,7 +2311,7 @@
   }
 }
 
-@media (max-width: 560px) {
+@media (max-width: 767px) {
   .hp-flight-card {
     grid-template-columns: 1fr;
     gap: 10px;

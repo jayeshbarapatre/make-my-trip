@@ -10,8 +10,43 @@ export default function BusesPage() {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('buses')
   const [activeChip, setActiveChip] = useState('All Buses')
-  const [travelDate, setTravelDate] = useState('2026-05-15')
+  const [travelDate, setTravelDate] = useState(() => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    return today.toISOString().split('T')[0]
+  })
   const [showTravelCal, setShowTravelCal] = useState(false)
+  const [fromCity, setFromCity] = useState({ name: 'Chennai', state: 'Tamil Nadu, India' })
+  const [toCity, setToCity] = useState({ name: 'Bengaluru', state: 'Karnataka, India' })
+  const [activePopup, setActivePopup] = useState(null)
+  const [searchQuery, setSearchQuery] = useState('')
+
+  const CITIES = [
+    { name: 'Chennai', state: 'Tamil Nadu, India' },
+    { name: 'Bengaluru', state: 'Karnataka, India' },
+    { name: 'Mumbai', state: 'Maharashtra, India' },
+    { name: 'Delhi', state: 'Delhi, India' },
+    { name: 'Hyderabad', state: 'Telangana, India' },
+    { name: 'Pune', state: 'Maharashtra, India' },
+    { name: 'Ahmedabad', state: 'Gujarat, India' },
+    { name: 'Kolkata', state: 'West Bengal, India' },
+    { name: 'Jaipur', state: 'Rajasthan, India' },
+    { name: 'Surat', state: 'Gujarat, India' },
+    { name: 'Lucknow', state: 'Uttar Pradesh, India' },
+    { name: 'Kanpur', state: 'Uttar Pradesh, India' },
+    { name: 'Nagpur', state: 'Maharashtra, India' },
+    { name: 'Indore', state: 'Madhya Pradesh, India' },
+    { name: 'Thane', state: 'Maharashtra, India' },
+    { name: 'Bhopal', state: 'Madhya Pradesh, India' },
+    { name: 'Visakhapatnam', state: 'Andhra Pradesh, India' },
+    { name: 'Pimpri-Chinchwad', state: 'Maharashtra, India' },
+    { name: 'Patna', state: 'Bihar, India' },
+    { name: 'Vadodara', state: 'Gujarat, India' }
+  ]
+
+  const filteredCities = CITIES.filter(c => 
+    c.name.toLowerCase().includes(searchQuery.toLowerCase())
+  )
 
   // Helper to format date into Day, Month Name, Year and Weekday
   const formatDateDisplay = (dateStr) => {
@@ -94,6 +129,16 @@ export default function BusesPage() {
     if (id === 'visa') navigate('/visa')
   }
 
+  const handleSearchBuses = () => {
+    navigate('/buses/results', {
+      state: {
+        fromCity: fromCity.name,
+        toCity: toCity.name,
+        travelDate: travelDate
+      }
+    })
+  }
+
   return (
     <div className="homepage-viewport-wrapper">
       
@@ -138,15 +183,121 @@ export default function BusesPage() {
 
             {/* Inputs Grid */}
             <div className="inner-search-grid cabs-grid">
-              <div className="inner-search-field">
+              
+              {/* FROM CITY FIELD */}
+              <div 
+                className="inner-search-field" 
+                onClick={(e) => { e.stopPropagation(); setActivePopup('from'); setSearchQuery(''); }}
+                style={{ position: 'relative', cursor: 'pointer' }}
+              >
                 <div className="inner-field-lbl">From</div>
-                <div className="inner-field-val">Chennai</div>
-                <div className="inner-field-sub">Tamil Nadu, India</div>
+                <div className="inner-field-val">{fromCity.name}</div>
+                <div className="inner-field-sub">{fromCity.state}</div>
+
+                {activePopup === 'from' && (
+                  <div className="popup-dropdown" onClick={(e) => e.stopPropagation()} style={{ position: 'absolute', top: '100%', left: 0, width: '320px', background: 'hsl(var(--b1))', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.2)', padding: '16px', zIndex: 1000, border: '1px solid hsl(var(--b3))', marginTop: '8px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                      <span style={{ fontSize: '13px', fontWeight: 800, color: 'hsl(var(--bc))' }}>SEARCH ORIGIN CITY</span>
+                      <button onClick={() => setActivePopup(null)} style={{ border: 'none', background: 'none', fontSize: '16px', cursor: 'pointer', fontWeight: 800, color: 'hsl(var(--bc))' }}>✕</button>
+                    </div>
+                    <input 
+                      type="text" 
+                      placeholder="City Name" 
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      style={{ width: '100%', padding: '12px 14px', border: '2px solid hsl(var(--p))', borderRadius: '8px', fontSize: '14px', outline: 'none', marginBottom: '12px', boxSizing: 'border-box', color: 'hsl(var(--bc))', background: 'transparent' }}
+                      autoFocus
+                    />
+                    <div style={{ maxHeight: '240px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      {filteredCities.map((ct) => (
+                        <div 
+                          key={ct.name} 
+                          onClick={() => { setFromCity(ct); setActivePopup(null); }}
+                          style={{ padding: '10px 12px', borderRadius: '6px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'hsl(var(--b2))' }}
+                        >
+                          <div>
+                            <div style={{ fontSize: '14px', fontWeight: 700, color: 'hsl(var(--bc))' }}>{ct.name}</div>
+                            <div style={{ fontSize: '11px', color: 'hsl(var(--bc) / 0.55)' }}>{ct.state}</div>
+                          </div>
+                        </div>
+                      ))}
+
+                      {filteredCities.length === 0 && searchQuery.trim() && (
+                        <div 
+                          onClick={() => { 
+                            setFromCity({ name: searchQuery.trim(), state: 'India' });
+                            setActivePopup(null);
+                          }}
+                          style={{ padding: '10px 12px', borderRadius: '6px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'hsl(var(--p) / 0.06)', border: '1px solid hsl(var(--p) / 0.2)' }}
+                        >
+                          <div>
+                            <div style={{ fontSize: '14px', fontWeight: 700, color: 'hsl(var(--p))' }}>🚌 Origin: "{searchQuery.trim()}"</div>
+                            <div style={{ fontSize: '11px', color: 'hsl(var(--bc) / 0.55)' }}>Click to select this custom city</div>
+                          </div>
+                          <span style={{ background: 'hsl(var(--p))', color: '#fff', padding: '2px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: 800 }}>CUSTOM</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
-              <div className="inner-search-field">
+
+              {/* TO CITY FIELD */}
+              <div 
+                className="inner-search-field" 
+                onClick={(e) => { e.stopPropagation(); setActivePopup('to'); setSearchQuery(''); }}
+                style={{ position: 'relative', cursor: 'pointer' }}
+              >
                 <div className="inner-field-lbl">To</div>
-                <div className="inner-field-val">Bengaluru</div>
-                <div className="inner-field-sub">Karnataka, India</div>
+                <div className="inner-field-val">{toCity.name}</div>
+                <div className="inner-field-sub">{toCity.state}</div>
+
+                {activePopup === 'to' && (
+                  <div className="popup-dropdown" onClick={(e) => e.stopPropagation()} style={{ position: 'absolute', top: '100%', left: 0, width: '320px', background: 'hsl(var(--b1))', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.2)', padding: '16px', zIndex: 1000, border: '1px solid hsl(var(--b3))', marginTop: '8px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                      <span style={{ fontSize: '13px', fontWeight: 800, color: 'hsl(var(--bc))' }}>SEARCH DESTINATION CITY</span>
+                      <button onClick={() => setActivePopup(null)} style={{ border: 'none', background: 'none', fontSize: '16px', cursor: 'pointer', fontWeight: 800, color: 'hsl(var(--bc))' }}>✕</button>
+                    </div>
+                    <input 
+                      type="text" 
+                      placeholder="City Name" 
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      style={{ width: '100%', padding: '12px 14px', border: '2px solid hsl(var(--p))', borderRadius: '8px', fontSize: '14px', outline: 'none', marginBottom: '12px', boxSizing: 'border-box', color: 'hsl(var(--bc))', background: 'transparent' }}
+                      autoFocus
+                    />
+                    <div style={{ maxHeight: '240px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      {filteredCities.map((ct) => (
+                        <div 
+                          key={ct.name} 
+                          onClick={() => { setToCity(ct); setActivePopup(null); }}
+                          style={{ padding: '10px 12px', borderRadius: '6px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'hsl(var(--b2))' }}
+                        >
+                          <div>
+                            <div style={{ fontSize: '14px', fontWeight: 700, color: 'hsl(var(--bc))' }}>{ct.name}</div>
+                            <div style={{ fontSize: '11px', color: 'hsl(var(--bc) / 0.55)' }}>{ct.state}</div>
+                          </div>
+                        </div>
+                      ))}
+
+                      {filteredCities.length === 0 && searchQuery.trim() && (
+                        <div 
+                          onClick={() => { 
+                            setToCity({ name: searchQuery.trim(), state: 'India' });
+                            setActivePopup(null);
+                          }}
+                          style={{ padding: '10px 12px', borderRadius: '6px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'hsl(var(--p) / 0.06)', border: '1px solid hsl(var(--p) / 0.2)' }}
+                        >
+                          <div>
+                            <div style={{ fontSize: '14px', fontWeight: 700, color: 'hsl(var(--p))' }}>🚌 Destination: "{searchQuery.trim()}"</div>
+                            <div style={{ fontSize: '11px', color: 'hsl(var(--bc) / 0.55)' }}>Click to select this custom city</div>
+                          </div>
+                          <span style={{ background: 'hsl(var(--p))', color: '#fff', padding: '2px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: 800 }}>CUSTOM</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="inner-search-field" onClick={(e) => { e.stopPropagation(); setShowTravelCal(true); }} style={{ position: 'relative', cursor: 'pointer' }}>
                 <div className="inner-field-lbl">Travel Date</div>
@@ -167,7 +318,7 @@ export default function BusesPage() {
                 <div className="inner-field-val">Sleeper <span className="unit-suffix">Class</span></div>
                 <div className="inner-field-sub">AC Preferred</div>
               </div>
-              <button className="inner-search-cta" onClick={() => alert('Searching Buses...!')}>
+              <button className="inner-search-cta" onClick={handleSearchBuses}>
                 SEARCH
               </button>
             </div>

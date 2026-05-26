@@ -24,7 +24,7 @@
   color: var(--text);
   background: var(--bg);
   min-height: 100vh;
-  padding-top: 70px;
+  padding-top: 0px;
   padding-bottom: 80px;
 }
 
@@ -1257,7 +1257,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--card);
   padding: 6px 12px;
   border-radius: 30px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
@@ -1568,8 +1568,91 @@
   margin-top: 1px;
 }
 
-/* ðŸš€ Header styles compatibility */
-.phero.hotels {
-  min-height: 380px;
+/* 🚀 Header styles compatibility */
+
+/* ==========================================================================
+   Responsive Breakpoints for Hotels
+   ========================================================================== */
+
+/* Tablet & Smaller Desktop */
+@media (max-width: 1024px) {
+  .udaipur-page-wrapper .page-layout {
+    grid-template-columns: 1fr; /* Stack sidebar above results */
+  }
+  .udaipur-page-wrapper .sidebar {
+    position: static;
+    max-height: none;
+    margin-bottom: 20px;
+  }
+  .udaipur-page-wrapper .searchbar {
+    flex-wrap: wrap;
+  }
+  .udaipur-page-wrapper .sb-field {
+    min-width: calc(33.33% - 20px);
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+/* Mobile */
+@media (max-width: 767px) {
+  .udaipur-page-wrapper {
+    padding-top: 60px;
+  }
+  .udaipur-page-wrapper .sb-field {
+    min-width: 100%;
+    border-right: 1px solid var(--border) !important;
+    border-radius: 4px;
+    margin-bottom: 4px;
+  }
+  .udaipur-page-wrapper .sb-search {
+    width: 100%;
+    padding: 14px;
+    border-radius: 4px;
+  }
+  .udaipur-page-wrapper .page-layout {
+    padding: 16px 12px 0;
+  }
+  .udaipur-page-wrapper .results-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .udaipur-page-wrapper .sort-tabs {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .udaipur-page-wrapper .sort-list {
+    flex-wrap: wrap;
+  }
+  .udaipur-page-wrapper .sort-tab {
+    flex: 1 1 50%;
+    border-bottom: 1px solid var(--border);
+  }
+  
+  /* Hotel Card Mobile Stacking */
+  .udaipur-page-wrapper .hotel-card,
+  .udaipur-page-wrapper .hotel-card.d-compact,
+  .udaipur-page-wrapper .hotel-card.d-spacious {
+    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
+  }
+  .udaipur-page-wrapper .carousel {
+    height: 200px;
+    min-height: 200px;
+  }
+  .udaipur-page-wrapper .hc-top {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .udaipur-page-wrapper .hc-meta {
+    padding-bottom: 12px;
+    border-bottom: 1px dashed var(--border-l);
+  }
+  .udaipur-page-wrapper .m-price-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
 }
 

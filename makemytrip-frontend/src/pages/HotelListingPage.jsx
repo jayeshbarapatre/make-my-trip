@@ -1015,7 +1015,7 @@ export default function HotelListingPage() {
             <span>›</span> 
             <span style={{ cursor: 'pointer' }} onClick={() => navigate('/hotels')}>Rajasthan</span>
             <span>›</span> 
-            <span style={{ color: '#222', fontWeight: 600 }}>Hotels in {cityQuery}</span>
+            <span style={{ color: 'var(--text)', fontWeight: 600 }}>Hotels in {cityQuery}</span>
           </div>
 
           {/* Results Heading Area */}

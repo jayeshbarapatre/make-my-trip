@@ -10,8 +10,38 @@ export default function CabsPage() {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('cabs')
   const [activeChip, setActiveChip] = useState('Outstation One-Way')
-  const [departDate, setDepartDate] = useState('2026-05-15')
+  const [departDate, setDepartDate] = useState(() => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    return today.toISOString().split('T')[0]
+  })
   const [showDepartCal, setShowDepartCal] = useState(false)
+  const [fromCity, setFromCity] = useState({ name: 'Delhi', state: 'Delhi, India' })
+  const [toCity, setToCity] = useState({ name: 'Jaipur', state: 'Rajasthan, India' })
+  const [activePopup, setActivePopup] = useState(null)
+  const [searchQuery, setSearchQuery] = useState('')
+
+  const CITIES = [
+    { name: 'Delhi', state: 'Delhi, India' },
+    { name: 'Jaipur', state: 'Rajasthan, India' },
+    { name: 'Agra', state: 'Uttar Pradesh, India' },
+    { name: 'Chandigarh', state: 'Punjab, India' },
+    { name: 'Dehradun', state: 'Uttarakhand, India' },
+    { name: 'Mumbai', state: 'Maharashtra, India' },
+    { name: 'Pune', state: 'Maharashtra, India' },
+    { name: 'Lonavala', state: 'Maharashtra, India' },
+    { name: 'Bengaluru', state: 'Karnataka, India' },
+    { name: 'Mysuru', state: 'Karnataka, India' },
+    { name: 'Chennai', state: 'Tamil Nadu, India' },
+    { name: 'Pondicherry', state: 'Puducherry, India' },
+    { name: 'Hyderabad', state: 'Telangana, India' },
+    { name: 'Ahmedabad', state: 'Gujarat, India' },
+    { name: 'Udaipur', state: 'Rajasthan, India' }
+  ]
+
+  const filteredCities = CITIES.filter(c => 
+    c.name.toLowerCase().includes(searchQuery.toLowerCase())
+  )
 
   // Helper to format date into Day, Month Name, Year and Weekday
   const formatDateDisplay = (dateStr) => {
@@ -92,6 +122,16 @@ export default function CabsPage() {
     if (id === 'visa') navigate('/visa')
   }
 
+  const handleSearchCabs = () => {
+    navigate('/cabs/results', {
+      state: {
+        fromCity: fromCity.name,
+        toCity: toCity.name,
+        departDate: departDate
+      }
+    })
+  }
+
   return (
     <div className="homepage-viewport-wrapper">
       
@@ -136,15 +176,121 @@ export default function CabsPage() {
 
             {/* Inputs Grid */}
             <div className="inner-search-grid cabs-grid">
-              <div className="inner-search-field">
+              
+              {/* FROM CITY FIELD */}
+              <div 
+                className="inner-search-field" 
+                onClick={(e) => { e.stopPropagation(); setActivePopup('from'); setSearchQuery(''); }}
+                style={{ position: 'relative', cursor: 'pointer' }}
+              >
                 <div className="inner-field-lbl">From</div>
-                <div className="inner-field-val">Delhi</div>
-                <div className="inner-field-sub">Delhi, India</div>
+                <div className="inner-field-val">{fromCity.name}</div>
+                <div className="inner-field-sub">{fromCity.state}</div>
+
+                {activePopup === 'from' && (
+                  <div className="popup-dropdown" onClick={(e) => e.stopPropagation()} style={{ position: 'absolute', top: '100%', left: 0, width: '320px', background: 'hsl(var(--b1))', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.2)', padding: '16px', zIndex: 1000, border: '1px solid hsl(var(--b3))', marginTop: '8px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                      <span style={{ fontSize: '13px', fontWeight: 800, color: 'hsl(var(--bc))' }}>SEARCH ORIGIN CITY</span>
+                      <button onClick={() => setActivePopup(null)} style={{ border: 'none', background: 'none', fontSize: '16px', cursor: 'pointer', fontWeight: 800, color: 'hsl(var(--bc))' }}>✕</button>
+                    </div>
+                    <input 
+                      type="text" 
+                      placeholder="City Name" 
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      style={{ width: '100%', padding: '12px 14px', border: '2px solid hsl(var(--p))', borderRadius: '8px', fontSize: '14px', outline: 'none', marginBottom: '12px', boxSizing: 'border-box', color: 'hsl(var(--bc))', background: 'transparent' }}
+                      autoFocus
+                    />
+                    <div style={{ maxHeight: '240px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      {filteredCities.map((ct) => (
+                        <div 
+                          key={ct.name} 
+                          onClick={() => { setFromCity(ct); setActivePopup(null); }}
+                          style={{ padding: '10px 12px', borderRadius: '6px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'hsl(var(--b2))' }}
+                        >
+                          <div>
+                            <div style={{ fontSize: '14px', fontWeight: 700, color: 'hsl(var(--bc))' }}>{ct.name}</div>
+                            <div style={{ fontSize: '11px', color: 'hsl(var(--bc) / 0.55)' }}>{ct.state}</div>
+                          </div>
+                        </div>
+                      ))}
+
+                      {filteredCities.length === 0 && searchQuery.trim() && (
+                        <div 
+                          onClick={() => { 
+                            setFromCity({ name: searchQuery.trim(), state: 'India' });
+                            setActivePopup(null);
+                          }}
+                          style={{ padding: '10px 12px', borderRadius: '6px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'hsl(var(--p) / 0.06)', border: '1px solid hsl(var(--p) / 0.2)' }}
+                        >
+                          <div>
+                            <div style={{ fontSize: '14px', fontWeight: 700, color: 'hsl(var(--p))' }}>🚕 Origin: "{searchQuery.trim()}"</div>
+                            <div style={{ fontSize: '11px', color: 'hsl(var(--bc) / 0.55)' }}>Click to select this custom city</div>
+                          </div>
+                          <span style={{ background: 'hsl(var(--p))', color: '#fff', padding: '2px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: 800 }}>CUSTOM</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
-              <div className="inner-search-field">
+
+              {/* TO CITY FIELD */}
+              <div 
+                className="inner-search-field" 
+                onClick={(e) => { e.stopPropagation(); setActivePopup('to'); setSearchQuery(''); }}
+                style={{ position: 'relative', cursor: 'pointer' }}
+              >
                 <div className="inner-field-lbl">To</div>
-                <div className="inner-field-val">Jaipur</div>
-                <div className="inner-field-sub">Rajasthan, India</div>
+                <div className="inner-field-val">{toCity.name}</div>
+                <div className="inner-field-sub">{toCity.state}</div>
+
+                {activePopup === 'to' && (
+                  <div className="popup-dropdown" onClick={(e) => e.stopPropagation()} style={{ position: 'absolute', top: '100%', left: 0, width: '320px', background: 'hsl(var(--b1))', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.2)', padding: '16px', zIndex: 1000, border: '1px solid hsl(var(--b3))', marginTop: '8px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                      <span style={{ fontSize: '13px', fontWeight: 800, color: 'hsl(var(--bc))' }}>SEARCH DESTINATION CITY</span>
+                      <button onClick={() => setActivePopup(null)} style={{ border: 'none', background: 'none', fontSize: '16px', cursor: 'pointer', fontWeight: 800, color: 'hsl(var(--bc))' }}>✕</button>
+                    </div>
+                    <input 
+                      type="text" 
+                      placeholder="City Name" 
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      style={{ width: '100%', padding: '12px 14px', border: '2px solid hsl(var(--p))', borderRadius: '8px', fontSize: '14px', outline: 'none', marginBottom: '12px', boxSizing: 'border-box', color: 'hsl(var(--bc))', background: 'transparent' }}
+                      autoFocus
+                    />
+                    <div style={{ maxHeight: '240px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      {filteredCities.map((ct) => (
+                        <div 
+                          key={ct.name} 
+                          onClick={() => { setToCity(ct); setActivePopup(null); }}
+                          style={{ padding: '10px 12px', borderRadius: '6px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'hsl(var(--b2))' }}
+                        >
+                          <div>
+                            <div style={{ fontSize: '14px', fontWeight: 700, color: 'hsl(var(--bc))' }}>{ct.name}</div>
+                            <div style={{ fontSize: '11px', color: 'hsl(var(--bc) / 0.55)' }}>{ct.state}</div>
+                          </div>
+                        </div>
+                      ))}
+
+                      {filteredCities.length === 0 && searchQuery.trim() && (
+                        <div 
+                          onClick={() => { 
+                            setToCity({ name: searchQuery.trim(), state: 'India' });
+                            setActivePopup(null);
+                          }}
+                          style={{ padding: '10px 12px', borderRadius: '6px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'hsl(var(--p) / 0.06)', border: '1px solid hsl(var(--p) / 0.2)' }}
+                        >
+                          <div>
+                            <div style={{ fontSize: '14px', fontWeight: 700, color: 'hsl(var(--p))' }}>🚕 Destination: "{searchQuery.trim()}"</div>
+                            <div style={{ fontSize: '11px', color: 'hsl(var(--bc) / 0.55)' }}>Click to select this custom city</div>
+                          </div>
+                          <span style={{ background: 'hsl(var(--p))', color: '#fff', padding: '2px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: 800 }}>CUSTOM</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="inner-search-field" onClick={(e) => { e.stopPropagation(); setShowDepartCal(true); }} style={{ position: 'relative', cursor: 'pointer' }}>
                 <div className="inner-field-lbl">Departure Date</div>
@@ -165,7 +311,7 @@ export default function CabsPage() {
                 <div className="inner-field-val">10:00 <span className="unit-suffix">AM</span></div>
                 <div className="inner-field-sub">Morning departure</div>
               </div>
-              <button className="inner-search-cta" onClick={() => alert('Searching Cabs...!')}>
+              <button className="inner-search-cta" onClick={handleSearchCabs}>
                 SEARCH
               </button>
             </div>
