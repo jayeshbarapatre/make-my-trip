@@ -87,8 +87,12 @@ const AdminFlightApprovals = () => {
         </div>
 
         {flights.length === 0 ? (
-          <div className="text-center py-16 text-base-content/60">
-            <p>No pending flight approvals</p>
+          <div className="empty-approval-state">
+            <div className="animated-icon flight-animation">
+              <i className="fas fa-plane"></i>
+            </div>
+            <h3>All Caught Up!</h3>
+            <p>No pending flight approvals at the moment.</p>
           </div>
         ) : (
           <div className="table-container">

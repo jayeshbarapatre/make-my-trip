@@ -24,6 +24,7 @@ function HotelReviewPage() {
   };
 
   const getImageUrl = (h) => {
+    if (h.image) return h.image;
     if (h.images && h.images.length > 0) return h.images[0].includes('unsplash.com') ? h.images[0] : `https://images.unsplash.com/photo-${h.images[0]}?auto=format&fit=crop&w=240&h=180&q=80`;
     if (h.seed && h.seed.length > 0) return h.seed[0].includes('unsplash.com') ? h.seed[0] : `https://images.unsplash.com/photo-${h.seed[0]}?auto=format&fit=crop&w=240&h=180&q=80`;
     if (h.img) return h.img;
@@ -45,7 +46,7 @@ function HotelReviewPage() {
 
   // Calculations matching MakeMyTrip Price Breakup
   const basePrice = bookEntireHotel 
-    ? Math.round(hotel.price * 4.5 * nights)
+    ? Math.round(hotel.price * ((hotel.rooms || 10) * 0.9) * nights)
     : hotel.price * nights * rooms;
   const discount = Math.round(basePrice * 0.15);       // 15% property discount
   const priceAfterDiscount = basePrice - discount;

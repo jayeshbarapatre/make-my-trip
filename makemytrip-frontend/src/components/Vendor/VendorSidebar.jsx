@@ -19,7 +19,9 @@ const VendorSidebar = ({ isOpen, toggleSidebar }) => {
       items: [
         { path: '/vendor/hotels', label: 'My Hotels', icon: 'fas fa-hotel' },
         { path: '/vendor/flights', label: 'My Flights', icon: 'fas fa-plane' },
-        { path: '/vendor/buses', label: 'My Buses', icon: 'fas fa-bus' }
+        { path: '/vendor/buses', label: 'My Buses', icon: 'fas fa-bus' },
+        { path: '/vendor/cabs', label: 'My Cabs', icon: 'fas fa-taxi' },
+        { path: '/vendor/trains', label: 'My Trains', icon: 'fas fa-train' }
       ]
     },
     {

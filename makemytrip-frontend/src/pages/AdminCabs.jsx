@@ -105,7 +105,7 @@ const AdminCabs = () => {
         </div>
 
         {loading ? (
-          <div className="loading">Loading cabs...</div>
+          <div className="loading-container">Loading cabs...</div>
         ) : cabs.length === 0 ? (
           <div className="empty-state"><p>No cabs found. Create your first cab!</p></div>
         ) : (
@@ -134,7 +134,9 @@ const AdminCabs = () => {
                       <td>₹{cab.baseFare}</td>
                       <td>{cab.cabs_available}/{cab.cabs}</td>
                       <td><span className={`badge ${cab.isActive ? 'badge-active' : 'badge-inactive'}`}>{cab.isActive ? 'Active' : 'Inactive'}</span></td>
-                      <td className="actions">
+                      <td>
+
+                        <div className="actions">
                         <button className="btn-sm btn-edit" onClick={() => handleEdit(cab)} title="Edit" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
                           {Icons.edit({ size: 14 })} Edit
                         </button>
@@ -144,6 +146,9 @@ const AdminCabs = () => {
                         <button className="btn-sm btn-delete" onClick={() => handleDelete(cab._id)} title="Delete" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
                           {Icons.delete({ size: 14 })} Delete
                         </button>
+
+                        </div>
+
                       </td>
                     </tr>
                   ))}

@@ -145,12 +145,12 @@ export default function MyTrips() {
   })
 
   return (
-    <div style={{ minHeight: '100vh', background: 'hsl(var(--b2))', padding: '40px 0', }}>
+    <div style={{ minHeight: '100vh', background: 'hsl(var(--b2))', padding: '100px 0 40px', }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px', boxSizing: 'border-box' }}>
 
         {/* Top Header Banner & Wallet Balance */}
         <div style={{
-          background: 'linear-gradient(135deg, hsl(var(--bc)) 0%, hsl(var(--bc) / 0.6) 100%)',
+          background: 'linear-gradient(135deg, hsl(var(--p)) 0%, hsl(var(--p) / 0.8) 100%)',
           color: '#fff',
           borderRadius: '16px',
           padding: '32px 40px',
@@ -164,18 +164,18 @@ export default function MyTrips() {
         }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-              <span style={{ fontSize: '14px', color: 'hsl(var(--bc) / 0.5)' }}>Secure Traveller History</span>
+              <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.7)' }}>Secure Traveller History</span>
             </div>
-            <h1 style={{ margin: 0, fontSize: '32px', fontWeight: 900, letterSpacing: '-0.5px', color: 'hsl(var(--b1))' }}>My Trips & Bookings</h1>
-            <p style={{ margin: '6px 0 0', color: 'hsl(var(--b3))', fontSize: '15px' }}>Manage all your flight and hotel bookings, download e-tickets, and simulate refunds.</p>
+            <h1 style={{ margin: 0, fontSize: '32px', fontWeight: 900, letterSpacing: '-0.5px', color: '#fff' }}>My Trips & Bookings</h1>
+            <p style={{ margin: '6px 0 0', color: 'rgba(255,255,255,0.8)', fontSize: '15px' }}>Manage all your flight and hotel bookings, download e-tickets, and simulate refunds.</p>
           </div>
 
           <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
             {/* User Info */}
             {user && (
               <div style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', padding: '12px 20px', borderRadius: '12px' }}>
-                <div style={{ fontSize: '12px', color: 'hsl(var(--b3))', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Welcome</div>
-                <div style={{ fontSize: '16px', fontWeight: 700, color: 'hsl(var(--p))', marginTop: '2px' }}>{user.name || user.email || 'Traveller'}</div>
+                <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Welcome</div>
+                <div style={{ fontSize: '16px', fontWeight: 700, color: '#fff', marginTop: '2px' }}>{user.name || user.email || 'Traveller'}</div>
               </div>
             )}
           </div>
@@ -186,13 +186,16 @@ export default function MyTrips() {
           {[
             { id: 'all', label: 'All Services', icon: '📋' },
             { id: 'flight', label: 'Flights', icon: '✈️' },
-            { id: 'hotel', label: 'Hotels', icon: '🏨' }
+            { id: 'hotel', label: 'Hotels', icon: '🏨' },
+            { id: 'bus', label: 'Buses', icon: '🚌' },
+            { id: 'cab', label: 'Cabs', icon: '🚕' },
+            { id: 'train', label: 'Trains', icon: '🚆' }
           ].map(type => (
             <button
               key={type.id}
               onClick={() => setTypeFilter(type.id)}
               style={{
-                background: typeFilter === type.id ? 'hsl(var(--er))' : '#fff',
+                background: typeFilter === type.id ? 'hsl(var(--er))' : 'hsl(var(--b1))',
                 color: typeFilter === type.id ? '#fff' : 'hsl(var(--bc))',
                 border: typeFilter === type.id ? '1px solid hsl(var(--er))' : '1px solid hsl(var(--b3))',
                 padding: '10px 20px',
@@ -224,8 +227,8 @@ export default function MyTrips() {
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               style={{
-                background: activeTab === tab.id ? 'hsl(var(--bc))' : '#fff',
-                color: activeTab === tab.id ? '#fff' : 'hsl(var(--bc) / 0.65)',
+                background: activeTab === tab.id ? 'hsl(var(--bc))' : 'hsl(var(--b1))',
+                color: activeTab === tab.id ? 'hsl(var(--b1))' : 'hsl(var(--bc) / 0.65)',
                 border: activeTab === tab.id ? '1px solid hsl(var(--bc))' : '1px solid hsl(var(--b3))',
                 padding: '12px 24px',
                 borderRadius: '30px',
@@ -247,7 +250,7 @@ export default function MyTrips() {
             ⏳ Loading your trips...
           </div>
         ) : filteredBookings.length === 0 ? (
-          <div style={{ background: '#fff', borderRadius: '16px', padding: '80px 20px', textAlign: 'center', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', border: '1px solid hsl(var(--b3))' }}>
+          <div style={{ background: 'hsl(var(--b1))', borderRadius: '16px', padding: '80px 20px', textAlign: 'center', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', border: '1px solid hsl(var(--b3))' }}>
             <div style={{ fontSize: '48px', marginBottom: '16px' }}>🧳</div>
             <h3 style={{ margin: '0 0 8px', fontSize: '22px', fontWeight: 800, color: 'hsl(var(--bc))' }}>No {activeTab} bookings found</h3>
             <p style={{ margin: 0, color: 'hsl(var(--bc) / 0.55)', fontSize: '15px' }}>Plan your next vacation or flight search from the MakeMyTrip homepage.</p>
@@ -272,13 +275,13 @@ export default function MyTrips() {
       {/* ── Modal 1: Booking Details view ── */}
       {selectedBooking && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px' }}>
-          <div style={{ background: '#fff', width: '100%', maxWidth: '650px', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}>
-            <div style={{ background: 'hsl(var(--bc))', color: '#fff', padding: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ background: 'hsl(var(--b1))', width: '100%', maxWidth: '650px', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}>
+            <div style={{ background: 'hsl(var(--b2))', borderBottom: '1px solid hsl(var(--b3))', padding: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 800, color: 'hsl(var(--b1))' }}>Trip Reference Sheet</h3>
-                <div style={{ fontSize: '13px', color: 'hsl(var(--bc) / 0.5)', marginTop: '4px' }}>PNR: {selectedBooking.pnr}</div>
+                <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 800, color: 'hsl(var(--bc))' }}>Trip Reference Sheet</h3>
+                <div style={{ fontSize: '13px', color: 'hsl(var(--bc) / 0.55)', marginTop: '4px' }}>PNR: {selectedBooking.pnr}</div>
               </div>
-              <button onClick={() => setSelectedBooking(null)} style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer' }}>✕</button>
+              <button onClick={() => setSelectedBooking(null)} style={{ background: 'transparent', border: 'none', color: 'hsl(var(--bc))', fontSize: '24px', cursor: 'pointer' }}>✕</button>
             </div>
 
             <div style={{ padding: '28px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -313,7 +316,7 @@ export default function MyTrips() {
       {/* ── Modal 2: Razorpay Payment Simulation Checkout ── */}
       {showRazorpay && razorpayOrder && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1100, padding: '20px' }}>
-          <div style={{ background: '#fff', width: '100%', maxWidth: '500px', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 25px 50px rgba(0,0,0,0.3)' }}>
+          <div style={{ background: 'hsl(var(--b1))', width: '100%', maxWidth: '500px', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 25px 50px rgba(0,0,0,0.3)' }}>
 
             {/* Razorpay Brand Header */}
             <div style={{ background: 'hsl(var(--p))', color: '#fff', padding: '24px', textAlign: 'center', position: 'relative' }}>
@@ -373,12 +376,12 @@ export default function MyTrips() {
       {/* ── Modal 3: Razorpay Style Mobile OTP Wallet Login ── */}
       {showOtpModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1200, padding: '20px' }}>
-          <div style={{ background: '#fff', width: '100%', maxWidth: '440px', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 25px 50px rgba(0,0,0,0.3)' }}>
+          <div style={{ background: 'hsl(var(--b1))', width: '100%', maxWidth: '440px', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 25px 50px rgba(0,0,0,0.3)' }}>
 
-            <div style={{ background: 'hsl(var(--bc))', color: '#fff', padding: '28px 28px 20px', position: 'relative' }}>
-              <h2 style={{ margin: 0, fontSize: '24px', fontWeight: 800, color: 'hsl(var(--b1))' }}>Mobile OTP Login</h2>
-              <p style={{ margin: '4px 0 0', color: 'hsl(var(--bc) / 0.5)', fontSize: '14px' }}>Razorpay Wallet Style 6-digit secure authentication</p>
-              <button onClick={() => setShowOtpModal(false)} style={{ position: 'absolute', right: '20px', top: '24px', background: 'transparent', border: 'none', color: '#fff', fontSize: '22px', cursor: 'pointer' }}>✕</button>
+            <div style={{ background: 'hsl(var(--b2))', borderBottom: '1px solid hsl(var(--b3))', padding: '28px 28px 20px', position: 'relative' }}>
+              <h2 style={{ margin: 0, fontSize: '24px', fontWeight: 800, color: 'hsl(var(--bc))' }}>Mobile OTP Login</h2>
+              <p style={{ margin: '4px 0 0', color: 'hsl(var(--bc) / 0.55)', fontSize: '14px' }}>Razorpay Wallet Style 6-digit secure authentication</p>
+              <button onClick={() => setShowOtpModal(false)} style={{ position: 'absolute', right: '20px', top: '24px', background: 'transparent', border: 'none', color: 'hsl(var(--bc))', fontSize: '22px', cursor: 'pointer' }}>✕</button>
             </div>
 
             <div style={{ padding: '28px' }}>
@@ -481,7 +484,7 @@ export default function MyTrips() {
           zIndex: 1500
         }}>
           <div style={{
-            background: 'white',
+            background: 'hsl(var(--b1))',
             borderRadius: '12px',
             padding: '32px',
             maxWidth: '400px',

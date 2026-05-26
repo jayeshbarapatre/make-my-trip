@@ -13,14 +13,22 @@ const VendorHotelForm = ({ hotelId, onClose, onSuccess }) => {
   const [formData, setFormData] = useState({
     name: '', city: '', location: '', description: '',
     pricePerNight: '', price: '', rooms: 50, rating: 4,
-    amenities: [], checkin: '14:00', checkout: '11:00', image: ''
+    amenities: [], checkin: '14:00', checkout: '11:00', image: '', imagesInput: ''
   })
 
   const [selectedAmenities, setSelectedAmenities] = useState([])
+  const [selectedRoomTypes, setSelectedRoomTypes] = useState([])
 
   const amenitiesList = [
     'WiFi', 'Swimming Pool', 'Gym', 'Spa', 'Parking',
     'Air Conditioning', 'Restaurant', 'Bar', 'Conference Room', 'Laundry Service'
+  ]
+
+  const roomTypesList = [
+    'Standard Room', 'Deluxe Room', 'Superior Room', 'Executive Room', 'Family Room',
+    'Suite', 'Junior Suite', 'King Room', 'Twin Room', 'Single Room',
+    'Double Room', 'Studio Room', 'Villa', 'Cottage', 'Penthouse',
+    'Dormitory Room', 'Economy Room', 'Honeymoon Suite'
   ]
 
   useEffect(() => {
@@ -37,9 +45,11 @@ const VendorHotelForm = ({ hotelId, onClose, onSuccess }) => {
         description: hotel.description || '', pricePerNight: hotel.pricePerNight,
         price: hotel.price, rooms: hotel.rooms, rating: hotel.rating,
         amenities: hotel.amenities || [], checkin: hotel.checkin || '14:00',
-        checkout: hotel.checkout || '11:00', image: hotel.image || ''
+        checkout: hotel.checkout || '11:00', image: hotel.image || '',
+        imagesInput: hotel.images && Array.isArray(hotel.images) ? hotel.images.join('\n') : ''
       })
       setSelectedAmenities(hotel.amenities || [])
+      setSelectedRoomTypes(hotel.roomTypes || [])
     } catch (err) {
       toast.error('Failed to load hotel details')
       onClose()
@@ -62,6 +72,12 @@ const VendorHotelForm = ({ hotelId, onClose, onSuccess }) => {
     )
   }
 
+  const toggleRoomType = (rt) => {
+    setSelectedRoomTypes(prev =>
+      prev.includes(rt) ? prev.filter(r => r !== rt) : [...prev, rt]
+    )
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!formData.name || !formData.city || !formData.pricePerNight || !formData.price) {
@@ -71,7 +87,11 @@ const VendorHotelForm = ({ hotelId, onClose, onSuccess }) => {
 
     try {
       setSubmitting(true)
-      const submitData = { ...formData, amenities: selectedAmenities }
+      const imageArray = formData.imagesInput
+        ? formData.imagesInput.split(/[\n,]+/).map(url => url.trim()).filter(url => url.length > 0)
+        : []
+      const submitData = { ...formData, amenities: selectedAmenities, images: imageArray, roomTypes: selectedRoomTypes }
+      delete submitData.imagesInput
 
       if (isEditing) {
         await vendorHotelsService.update(hotelId, submitData)
@@ -185,6 +205,21 @@ const VendorHotelForm = ({ hotelId, onClose, onSuccess }) => {
 
               <div style={{ marginBottom: '32px' }}>
                 <h3 style={{ fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)', marginBottom: '16px', fontWeight: 700, borderBottom: '1px solid var(--border)', paddingBottom: '8px' }}>
+                  Hotel Images
+                </h3>
+                <div style={{ marginBottom: '16px' }}>
+                  <label htmlFor="image" style={labelStyle}>Primary Image URL <span style={{ color: '#ff4d4f' }}>*</span></label>
+                  <input id="image" name="image" type="url" value={formData.image} onChange={handleInputChange} placeholder="Main thumbnail image URL" required style={inputStyle} />
+                </div>
+                <div>
+                  <label htmlFor="imagesInput" style={labelStyle}>Additional Images (Bulk URLs)</label>
+                  <textarea id="imagesInput" name="imagesInput" value={formData.imagesInput} onChange={handleInputChange} placeholder="Paste multiple image URLs here (separated by commas or new lines)" rows="4" style={{ ...inputStyle, resize: 'vertical' }} />
+                  <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>Add as many URLs as you want, separated by a new line or comma.</p>
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '32px' }}>
+                <h3 style={{ fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)', marginBottom: '16px', fontWeight: 700, borderBottom: '1px solid var(--border)', paddingBottom: '8px' }}>
                   Pricing & Inventory
                 </h3>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
@@ -225,26 +260,55 @@ const VendorHotelForm = ({ hotelId, onClose, onSuccess }) => {
 
               <div>
                 <h3 style={{ fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)', marginBottom: '16px', fontWeight: 700, borderBottom: '1px solid var(--border)', paddingBottom: '8px' }}>
-                  Amenities
+                  Room Categories & Amenities
                 </h3>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
-                  {amenitiesList.map(amenity => {
-                    const isSelected = selectedAmenities.includes(amenity);
-                    return (
-                      <label 
-                        key={amenity} 
-                        style={{ 
-                          display: 'flex', alignItems: 'center', gap: '8px', padding: '10px', 
-                          borderRadius: '8px', border: `1px solid ${isSelected ? 'var(--accent)' : 'var(--border)'}`, 
-                          background: isSelected ? 'rgba(46, 193, 88, 0.05)' : 'var(--bg-hover)', 
-                          cursor: 'pointer', transition: 'all 0.2s', fontSize: '13px', color: isSelected ? 'var(--text-primary)' : 'var(--text-secondary)'
-                        }}
-                      >
-                        <input type="checkbox" checked={isSelected} onChange={() => toggleAmenity(amenity)} style={{ accentColor: 'var(--accent)', width: '16px', height: '16px', cursor: 'pointer' }} />
-                        {amenity}
-                      </label>
-                    );
-                  })}
+                
+                <div style={{ marginTop: '20px' }}>
+                  <label style={labelStyle}>Room Categories</label>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '10px', marginTop: '10px' }}>
+                    {roomTypesList.map(rt => {
+                      const isSelected = selectedRoomTypes.includes(rt);
+                      return (
+                        <div 
+                          key={rt}
+                          onClick={() => toggleRoomType(rt)}
+                          style={{
+                            padding: '8px 12px', borderRadius: '8px', border: `1px solid ${isSelected ? 'var(--accent)' : 'var(--border)'}`,
+                            background: isSelected ? 'rgba(46, 193, 88, 0.05)' : 'var(--bg-hover)', color: isSelected ? 'var(--accent)' : 'var(--text-secondary)',
+                            fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', transition: 'all 0.2s',
+                            userSelect: 'none'
+                          }}
+                        >
+                          <i className={`fas fa-${isSelected ? 'check-square' : 'square'}`} style={{ fontSize: '14px', opacity: isSelected ? 1 : 0.4 }}></i>
+                          <span style={{ fontWeight: isSelected ? 600 : 500 }}>{rt}</span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                <div style={{ marginTop: '20px' }}>
+                  <label style={labelStyle}>Amenities</label>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '10px', marginTop: '10px' }}>
+                    {amenitiesList.map(amenity => {
+                      const isSelected = selectedAmenities.includes(amenity);
+                      return (
+                        <div 
+                          key={amenity}
+                          onClick={() => toggleAmenity(amenity)}
+                          style={{
+                            padding: '8px 12px', borderRadius: '8px', border: `1px solid ${isSelected ? 'var(--accent)' : 'var(--border)'}`,
+                            background: isSelected ? 'rgba(46, 193, 88, 0.05)' : 'var(--bg-hover)', color: isSelected ? 'var(--accent)' : 'var(--text-secondary)',
+                            fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', transition: 'all 0.2s',
+                            userSelect: 'none'
+                          }}
+                        >
+                          <i className={`fas fa-${isSelected ? 'check-square' : 'square'}`} style={{ fontSize: '14px', opacity: isSelected ? 1 : 0.4 }}></i>
+                          <span style={{ fontWeight: isSelected ? 600 : 500 }}>{amenity}</span>
+                        </div>
+                      )
+                    })}
+                  </div>
                 </div>
               </div>
 

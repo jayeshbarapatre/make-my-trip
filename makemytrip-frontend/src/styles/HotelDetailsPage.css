@@ -170,7 +170,7 @@
 .hd-main-swiper .swiper-button-next {
   width: 32px;
   height: 32px;
-  background: rgba(255,255,255,0.9);
+  background: hsl(var(--b1) / 0.9);
   backdrop-filter: blur(8px);
   border-radius: 50%;
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
@@ -640,80 +640,99 @@
 .custom-alert-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
+  background: rgba(10, 15, 30, 0.7);
+  backdrop-filter: blur(12px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 10000;
-  animation: fadeIn 0.3s ease;
+  animation: fadeIn 0.4s ease;
 }
 
 .custom-alert-box {
-  background: hsl(var(--b1));
-  padding: 32px;
-  border-radius: 20px;
-  max-width: 400px;
+  background: linear-gradient(145deg, hsl(var(--b1) / 0.9) 0%, hsl(var(--b2) / 0.95) 100%);
+  border: 1px solid hsl(var(--bc) / 0.1);
+  backdrop-filter: blur(20px);
+  padding: 40px 32px;
+  border-radius: 24px;
+  max-width: 420px;
   width: 90%;
   text-align: center;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-  animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+  animation: modalScaleUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.custom-alert-box::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(to right, transparent, rgba(255,255,255,0.05), transparent);
+  transform: skewX(-20deg);
+  animation: shimmer 2.5s infinite;
 }
 
 .alert-icon {
-  width: 64px;
-  height: 64px;
-  background: hsl(var(--b2));
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 32px;
-  margin: 0 auto 20px;
+  font-size: 36px;
+  margin: 0 auto 24px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
 }
 
 .alert-icon.success {
-  background: hsl(var(--suc));
-  color: hsl(var(--su));
+  background: linear-gradient(135deg, hsl(var(--su)) 0%, #059669 100%);
+  color: #fff;
+  border: 4px solid hsl(var(--suc) / 0.3);
 }
 
 .alert-icon.error {
-  background: hsl(var(--erc));
-  color: hsl(var(--er));
+  background: linear-gradient(135deg, hsl(var(--er)) 0%, #dc2626 100%);
+  color: #fff;
+  border: 4px solid hsl(var(--erc) / 0.3);
 }
 
 .alert-title {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 900;
   color: hsl(var(--bc));
   margin-bottom: 12px;
+  letter-spacing: -0.5px;
 }
 
 .alert-message {
-  font-size: 15px;
+  font-size: 16px;
   color: hsl(var(--nc));
-  margin-bottom: 24px;
+  margin-bottom: 32px;
   line-height: 1.6;
 }
 
 .alert-btn {
-  background: hsl(var(--ac));
-  color: hsl(var(--b1));
+  background: linear-gradient(135deg, hsl(var(--a)) 0%, hsl(var(--wa)) 100%);
+  color: #ffffff;
   border: none;
-  padding: 12px 40px;
-  border-radius: 10px;
+  padding: 14px 48px;
+  border-radius: 12px;
   font-size: 15px;
   font-weight: 800;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
+  box-shadow: 0 8px 20px rgba(50, 102, 179, 0.4);
 }
 
 .alert-btn:hover {
-  background: hsl(var(--p));
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(50, 102, 179, 0.3);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 12px 28px rgba(50, 102, 179, 0.6);
 }
 
 @keyframes fadeIn {
@@ -721,8 +740,13 @@
   to { opacity: 1; }
 }
 
-@keyframes slideUp {
-  from { transform: translateY(30px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+@keyframes modalScaleUp {
+  0% { transform: scale(0.8) translateY(20px); opacity: 0; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 200%; }
 }
 

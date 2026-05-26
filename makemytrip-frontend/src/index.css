@@ -7,9 +7,43 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap');
 
 /* Tailwind CSS directives */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@plugin "daisyui" {
+  themes: all;
+}
+
+@plugin "daisyui/theme" {
+  name: "light";
+  --color-primary: #0099D9;
+  --color-primary-content: #ffffff;
+  --color-secondary-content: #ffffff;
+  --color-accent-content: #ffffff;
+  --color-neutral: #3d4451;
+  --color-neutral-content: #ffffff;
+  --color-info-content: #ffffff;
+  --color-success-content: #ffffff;
+  --color-warning-content: #ffffff;
+  --color-error-content: #ffffff;
+}
+
+@plugin "daisyui/theme" {
+  name: "black";
+  --color-primary: #0099D9;
+  --color-primary-content: #ffffff;
+  --color-secondary: #9CA3AF;
+  --color-secondary-content: #ffffff;
+}
+
+@plugin "daisyui/theme" {
+  name: "business";
+  --color-primary: #0099D9;
+  --color-primary-content: #ffffff;
+}
+
+@theme {
+  --font-sans: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+}
 
 /* Global Styles */
 @layer base {
@@ -71,5 +105,37 @@
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+
+
+/* Empty approval animations */
+.empty-approval-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  text-align: center;
+  border: 2px dashed hsl(var(--b3));
+  border-radius: 1rem;
+  background-color: hsl(var(--b1));
+  margin: 2rem 0;
+}
+
+.animated-icon {
+  font-size: 4rem;
+  color: hsl(var(--p));
+  margin-bottom: 1.5rem;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
   }
 }

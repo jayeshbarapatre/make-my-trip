@@ -15,7 +15,7 @@ export const getMyHotels = async (req, res) => {
 
 export const createHotel = async (req, res) => {
   try {
-    const { name, city, location, description, image, images, rating, reviews, price, pricePerNight, rooms, amenities, checkin, checkout } = req.body
+    const { name, city, location, description, image, images, rating, reviews, price, pricePerNight, rooms, amenities, roomTypes, checkin, checkout } = req.body
 
     if (!name || !city || !price || !pricePerNight) {
       return res.status(400).json({ message: 'Missing required fields' })
@@ -36,6 +36,7 @@ export const createHotel = async (req, res) => {
         rooms: rooms || 50,
         roomsAvailable: rooms || 50,
         amenities: amenities || [],
+        roomTypes: roomTypes || [],
         checkin,
         checkout,
         vendorId: req.vendorId,
@@ -83,11 +84,11 @@ export const updateHotel = async (req, res) => {
       return res.status(403).json({ message: 'Forbidden: You do not own this hotel' })
     }
 
-    if (!['DRAFT', 'REJECTED'].includes(hotel.listingStatus)) {
-      return res.status(400).json({ message: 'Can only edit hotels in DRAFT or REJECTED status' })
-    }
-
     const { id, createdAt, updatedAt, _id, vendorId, listingStatus, isActive, ...updates } = req.body
+
+    if (updates.rooms !== undefined) {
+      updates.roomsAvailable = updates.rooms
+    }
 
     const updatedHotel = await prisma.hotel.update({
       where: { id: req.params.id },

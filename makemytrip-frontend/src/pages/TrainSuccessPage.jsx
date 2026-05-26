@@ -13,7 +13,7 @@ export default function TrainSuccessPage() {
     bookingId: "MMT-TR-849210",
     fromCity: "New Delhi (NDLS)",
     toCity: "Mumbai Central (BCT)",
-    departureDate: "2026-05-18",
+    departureDate: new Date().toISOString().split('T')[0],
     travellers: { 
       passengers: [{ name: "Jayesh Sharma", age: 29, gender: "Male", berth: "Lower Berth" }],
       classCode: "3A",

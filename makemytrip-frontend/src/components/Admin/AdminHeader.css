@@ -3,7 +3,7 @@
   top: 0;
   background: var(--bg-surface);
   border-bottom: 1px solid var(--border);
-  padding: 12px 32px;
+  padding: 9px 30px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -303,24 +303,24 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 10px 6px 6px;
-  background: var(--bg-body);
+  padding: 0;
+  background: transparent;
   border-radius: 6px;
   cursor: pointer;
-  border: 1px solid var(--border);
+  border: 0px solid var(--border);
   transition: all 0.2s ease;
 }
 
 .admin-info-trigger:hover {
   background: var(--border);
-  border-color: var(--accent);
+  border-color: hsl(var(--p));
 }
 
 .admin-avatar {
   width: 28px;
   height: 28px;
-  background: linear-gradient(135deg, var(--accent), #2B4DBE);
-  color: white;
+  background: hsl(var(--p));
+  color: hsl(var(--pc));
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -341,12 +341,14 @@
   font-size: var(--fs-sidebar);
   font-weight: var(--fw-sidebar);
   color: var(--text-primary);
+  line-height: 1;
 }
 
 .admin-role {
   font-size: var(--fs-label);
   font-weight: var(--fw-label);
   color: var(--text-secondary);
+  line-height: 1;
 }
 
 .dropdown-arrow {
@@ -383,6 +385,24 @@
   flex-direction: column;
   background: var(--bg-body);
   border-bottom: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.dropdown-header strong {
+  color: var(--text-primary);
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dropdown-header span {
+  color: var(--text-secondary);
+  font-size: 12px;
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .header-greeting {

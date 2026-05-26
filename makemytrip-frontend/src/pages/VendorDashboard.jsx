@@ -116,7 +116,7 @@ const VendorDashboard = () => {
     <VendorLayout>
       <div className="vendor-dashboard-wrapper">
         {/* Header */}
-        <div className="vendor-header">
+        <div className="vendor-dashboard-header">
           <div>
             <h2 className="vendor-title">Good {greetingTime}! 👋</h2>
             <p className="vendor-subtitle">Here's your hotel inventory overview</p>
@@ -162,6 +162,47 @@ const VendorDashboard = () => {
           </div>
         )}
 
+        {/* Recent Hotels */}
+        <div className="vendor-hotels-card">
+          <h3 className="vendor-hotels-title">Recent Hotels</h3>
+          {hotels.length === 0 ? (
+            <div className="vendor-empty-state">
+              <RiHotelLine className="vendor-empty-icon" />
+              <p className="vendor-empty-title">No hotels yet</p>
+              <p className="vendor-empty-subtitle">Create your first hotel to get started</p>
+            </div>
+          ) : (
+            <div className="vendor-table-container">
+              <table className="vendor-table">
+                <thead>
+                  <tr className="vendor-table-header">
+                    <th>Hotel</th>
+                    <th>City</th>
+                    <th>Rooms</th>
+                    <th>Rating</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {hotels.slice(0, 5).map(hotel => (
+                    <tr key={hotel.id} className="vendor-table-row">
+                      <td className="vendor-table-name">{hotel.name}</td>
+                      <td className="vendor-table-cell">{hotel.city}</td>
+                      <td className="vendor-table-cell">{hotel.rooms}</td>
+                      <td className="vendor-table-cell">{hotel.rating ? `⭐ ${hotel.rating.toFixed(1)}` : '-'}</td>
+                      <td>
+                        <span className={`vendor-status-badge vendor-status-${hotel.listingStatus?.toLowerCase().replace(/_/g, '-')}`}>
+                          {hotel.listingStatus?.replace(/_/g, ' ')}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+        
         {/* Charts Row */}
         {stats.approved > 0 && bookingData.length > 0 && (
           <div className="vendor-charts-grid">
@@ -205,46 +246,7 @@ const VendorDashboard = () => {
           </div>
         )}
 
-        {/* Recent Hotels */}
-        <div className="vendor-hotels-card">
-          <h3 className="vendor-hotels-title">Recent Hotels</h3>
-          {hotels.length === 0 ? (
-            <div className="vendor-empty-state">
-              <RiHotelLine className="vendor-empty-icon" />
-              <p className="vendor-empty-title">No hotels yet</p>
-              <p className="vendor-empty-subtitle">Create your first hotel to get started</p>
-            </div>
-          ) : (
-            <div className="vendor-table-container">
-              <table className="vendor-table">
-                <thead>
-                  <tr className="vendor-table-header">
-                    <th>Hotel</th>
-                    <th>City</th>
-                    <th>Rooms</th>
-                    <th>Rating</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {hotels.slice(0, 5).map(hotel => (
-                    <tr key={hotel.id} className="vendor-table-row">
-                      <td className="vendor-table-name">{hotel.name}</td>
-                      <td className="vendor-table-cell">{hotel.city}</td>
-                      <td className="vendor-table-cell">{hotel.rooms}</td>
-                      <td className="vendor-table-cell">{hotel.rating ? `⭐ ${hotel.rating.toFixed(1)}` : '-'}</td>
-                      <td>
-                        <span className={`vendor-status-badge vendor-status-${hotel.listingStatus?.toLowerCase().replace(/_/g, '-')}`}>
-                          {hotel.listingStatus?.replace(/_/g, ' ')}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+        
       </div>
     </VendorLayout>
   )

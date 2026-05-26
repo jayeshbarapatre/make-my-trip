@@ -160,7 +160,9 @@ const AdminHotelRooms = () => {
                         {room.isActive ? 'Active' : 'Inactive'}
                       </span>
                     </td>
-                    <td className="actions">
+                    <td>
+
+                      <div className="actions">
                       <button
                         className="btn-sm btn-edit"
                         onClick={() => {
@@ -188,6 +190,9 @@ const AdminHotelRooms = () => {
                       >
                         🗑️ Delete
                       </button>
+
+                      </div>
+
                     </td>
                   </tr>
                 ))}

@@ -10,7 +10,7 @@ export default function TrainPaymentPage() {
   const { train, selectedClass, searchParams, passengers, contact, totalAmount } = location.state || {
     train: { name: "Rajdhani Express", number: "12952", depTime: "16:55", arrTime: "08:30" },
     selectedClass: { code: "3A", name: "AC 3 Tier", price: 2125 },
-    searchParams: { fromCity: "New Delhi", toCity: "Mumbai", travelDate: "2026-05-18", quota: "General" },
+    searchParams: { fromCity: "New Delhi", toCity: "Mumbai", travelDate: new Date().toISOString().split('T')[0], quota: "General" },
     passengers: [{ name: "Jayesh Sharma", age: 29, gender: "Male", berth: "Lower Berth" }],
     contact: { mobile: "9876543210", email: "jayesh@gmail.com" },
     totalAmount: 2160

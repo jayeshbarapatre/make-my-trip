@@ -10,7 +10,8 @@ export default function CustomCalendarPicker({
   onChange,
   onClose,
   isOpen,
-  labelText = 'Departure'
+  labelText = 'Departure',
+  disabledDates = []
 }) {
   const containerRef = useRef(null);
 
@@ -125,18 +126,21 @@ export default function CustomCalendarPicker({
     for (let d = 1; d <= daysInMonth; d++) {
       const dateObj = new Date(year, month, d);
       const isPast = dateObj < today;
+      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
       const isSelected = selectedDate && 
                          selectedDate.getDate() === d && 
                          selectedDate.getMonth() === month && 
                          selectedDate.getFullYear() === year;
 
+      const isBlocked = disabledDates && disabledDates.includes(dateStr);
       const fare = getDayPrice(year, month, d);
 
       daySlots.push({
         day: d,
-        dateStr: `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`,
+        dateStr,
         isPast,
         isSelected,
+        isBlocked,
         fare
       });
     }
@@ -144,8 +148,8 @@ export default function CustomCalendarPicker({
     return daySlots;
   };
 
-  const leftMonthDays = useMemo(() => generateMonthDays(currentYear, currentMonth), [currentYear, currentMonth, selectedDate]);
-  const rightMonthDays = useMemo(() => generateMonthDays(rightMonthObj.year, rightMonthObj.month), [rightMonthObj, selectedDate]);
+  const leftMonthDays = useMemo(() => generateMonthDays(currentYear, currentMonth), [currentYear, currentMonth, selectedDate, disabledDates]);
+  const rightMonthDays = useMemo(() => generateMonthDays(rightMonthObj.year, rightMonthObj.month), [rightMonthObj, selectedDate, disabledDates]);
 
   const formattedSelectedDate = useMemo(() => {
     if (!selectedDate) return 'Select Date';
@@ -205,20 +209,23 @@ export default function CustomCalendarPicker({
                   <button
                     key={`day-l-${item.day}`}
                     type="button"
-                    disabled={item.isPast}
-                    className={`mmt-cal-day-cell active-day${item.isSelected ? ' selected' : ''}${item.isPast ? ' disabled' : ''}`}
+                    disabled={item.isPast || item.isBlocked}
+                    className={`mmt-cal-day-cell active-day${item.isSelected ? ' selected' : ''}${(item.isPast || item.isBlocked) ? ' disabled' : ''}`}
                     onClick={() => {
-                      if (!item.isPast && onChange) {
+                      if (!item.isPast && !item.isBlocked && onChange) {
                         onChange(item.dateStr);
                         if (onClose) onClose();
                       }
                     }}
                   >
-                    <span className="mmt-cal-day-num">{item.day}</span>
-                    {!item.isPast && (
+                    <span className="mmt-cal-day-num" style={item.isBlocked ? { textDecoration: 'line-through', opacity: 0.5 } : {}}>{item.day}</span>
+                    {!(item.isPast || item.isBlocked) && (
                       <span className={`mmt-cal-day-fare${item.fare.cheap ? ' cheap' : ''}`}>
                         {item.fare.val}
                       </span>
+                    )}
+                    {item.isBlocked && (
+                      <span style={{ fontSize: '9px', color: 'red', marginTop: '2px', fontWeight: 'bold' }}>FULL</span>
                     )}
                   </button>
                 );
@@ -245,20 +252,23 @@ export default function CustomCalendarPicker({
                   <button
                     key={`day-r-${item.day}`}
                     type="button"
-                    disabled={item.isPast}
-                    className={`mmt-cal-day-cell active-day${item.isSelected ? ' selected' : ''}${item.isPast ? ' disabled' : ''}`}
+                    disabled={item.isPast || item.isBlocked}
+                    className={`mmt-cal-day-cell active-day${item.isSelected ? ' selected' : ''}${(item.isPast || item.isBlocked) ? ' disabled' : ''}`}
                     onClick={() => {
-                      if (!item.isPast && onChange) {
+                      if (!item.isPast && !item.isBlocked && onChange) {
                         onChange(item.dateStr);
                         if (onClose) onClose();
                       }
                     }}
                   >
-                    <span className="mmt-cal-day-num">{item.day}</span>
-                    {!item.isPast && (
+                    <span className="mmt-cal-day-num" style={item.isBlocked ? { textDecoration: 'line-through', opacity: 0.5 } : {}}>{item.day}</span>
+                    {!(item.isPast || item.isBlocked) && (
                       <span className={`mmt-cal-day-fare${item.fare.cheap ? ' cheap' : ''}`}>
                         {item.fare.val}
                       </span>
+                    )}
+                    {item.isBlocked && (
+                      <span style={{ fontSize: '9px', color: 'red', marginTop: '2px', fontWeight: 'bold' }}>FULL</span>
                     )}
                   </button>
                 );

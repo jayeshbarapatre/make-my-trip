@@ -134,7 +134,7 @@ const AdminHotels = () => {
 
 
         {loading ? (
-          <div className="loading">Loading hotels...</div>
+          <div className="loading-container">Loading hotels...</div>
         ) : hotels.length === 0 ? (
           <div className="empty-state"><p>No hotels found. Create your first hotel!</p></div>
         ) : (
@@ -165,7 +165,9 @@ const AdminHotels = () => {
                           {hotel.isActive ? 'Active' : 'Inactive'}
                         </span>
                       </td>
-                      <td className="actions">
+                      <td>
+
+                        <div className="actions">
                         <button className="btn-sm btn-edit" onClick={() => handleEdit(hotel)} title="Edit" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
                           {Icons.edit({ size: 14 })} Edit
                         </button>
@@ -175,6 +177,9 @@ const AdminHotels = () => {
                         <button className="btn-sm btn-delete" onClick={() => handleDelete(hotel.id)} title="Delete" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
                           {Icons.delete({ size: 14 })} Delete
                         </button>
+
+                        </div>
+
                       </td>
                     </tr>
                   ))}

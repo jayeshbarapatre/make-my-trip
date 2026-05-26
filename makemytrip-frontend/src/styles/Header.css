@@ -144,29 +144,7 @@ body {
   background: hsl(var(--p) / 0.05) !important;
 }
 
-/* Login Button styling */
-.common-login-btn {
-  padding: 10px 24px !important;
-  background: linear-gradient(135deg, hsl(var(--p)) 0%, hsl(var(--p)) 100%) !important;
-  color: hsl(var(--b1)) !important; /* ensure white text inside the button */
-  border: none !important;
-  border-radius: 30px !important;
-  cursor: pointer !important;
-  font-size: 14px !important;
-  font-weight: 800 !important;
-  box-shadow: 0 4px 14px rgba(31, 109, 184, 0.3) !important;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-}
 
-.common-login-btn:hover {
-  transform: translateY(-1px) !important;
-  box-shadow: 0 6px 20px rgba(31, 109, 184, 0.4) !important;
-  filter: brightness(1.05) !important;
-}
-
-.common-login-btn:active {
-  transform: translateY(1px) !important;
-}
 
 /* Logged-in User Info section */
 .common-user-container {

@@ -229,10 +229,10 @@ const AdminVendors = () => {
 
         {/* Premium Header & Search Panel */}
         <div className="card">
-          <div className="card-header" style={{ borderBottom: 'none', paddingBottom: 0, marginBottom: '16px' }}>
+          <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
             <div>
-              <h2 style={{ fontSize: 'var(--fs-page-title)', fontWeight: 'var(--fw-page-title)', color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.02em' }}>Vendors</h2>
-              <p style={{ fontSize: 'var(--fs-body)', color: 'var(--text-secondary)', margin: '4px 0 0' }}>Register and manage platform vendors across all categories</p>
+              <h1>Vendors</h1>
+              <p className="subtitle">Register and manage platform vendors across all categories</p>
             </div>
             <button 
               onClick={() => setShowForm(true)}
@@ -242,7 +242,7 @@ const AdminVendors = () => {
             </button>
           </div>
 
-          <div className="card-body">
+          <div className="card-body" style={{ padding: 0 }}>
 
           {/* Search bar inside the premium header card */}
           <div style={{

@@ -6,20 +6,9 @@
   gap: 1.5rem;
 }
 
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
 
-.page-header h1 {
-  margin: 0;
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: var(--text-primary);
-}
+
+
 
 /* Button Override - Using card class for consistency */
 .btn-primary {
@@ -130,7 +119,7 @@
 }
 
 /* Loading & Empty States */
-.loading,
+.loading-container,
 .empty-state {
   display: flex;
   align-items: center;
@@ -223,9 +212,10 @@
 
 /* Action Buttons */
 .actions {
+  white-space: nowrap;
+  vertical-align: middle;
+  gap: 10px;
   display: flex;
-  gap: 0.5rem;
-  align-items: center;
 }
 
 .btn-sm {
@@ -316,22 +306,13 @@
 
 /* Responsive */
 @media (max-width: 1024px) {
-  .page-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
+  
 }
 
 @media (max-width: 768px) {
-  .page-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-  }
+  
 
-  .page-header h1 {
-    font-size: 1.5rem;
-  }
+  
 
   .data-table {
     font-size: 0.875rem;

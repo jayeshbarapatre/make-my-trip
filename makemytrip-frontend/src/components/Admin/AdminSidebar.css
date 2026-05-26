@@ -213,16 +213,16 @@
   align-items: center;
   gap: 8px;
   padding: 8px;
-  background: rgba(26, 115, 232, 0.06);
+  background: hsl(var(--p) / 0.06);
   border-radius: 4px;
-  border: 1px solid rgba(26, 115, 232, 0.12);
+  border: 1px solid hsl(var(--p) / 0.12);
 }
 
 .admin-avatar-small {
   width: 28px;
   height: 28px;
-  background: linear-gradient(135deg, var(--accent), #2B4DBE);
-  color: white;
+  background: hsl(var(--p));
+  color: hsl(var(--pc));
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -236,12 +236,14 @@
   font-size: var(--fs-sidebar);
   font-weight: var(--fw-sidebar);
   color: var(--sidebar-text);
+  line-height: 1;
 }
 
 .admin-role {
   font-size: 9px;
   color: var(--text-secondary);
   margin-top: 2px;
+  line-height: 1;
 }
 
 .logout-btn {

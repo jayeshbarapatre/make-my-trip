@@ -1197,11 +1197,11 @@ html[data-theme="dark"] .footer-lower {
 .social-label {
   font-size: 13px;
   font-weight: 700;
-  color: hsl(var(--b1));
+  color: hsl(var(--bc));
 }
 
 html[data-theme="dark"] .social-label {
-  color: hsl(var(--b1));
+  color: hsl(var(--bc));
 }
 
 .social-icons {

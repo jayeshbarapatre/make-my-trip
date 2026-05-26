@@ -8,7 +8,7 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 1050;
 }
 
 .menu-toggle {
@@ -83,8 +83,8 @@
   background: hsl(var(--su) / 0.1);
   border: 1px solid hsl(var(--su) / 0.2);
   color: hsl(var(--bc));
-  padding: 6px 12px;
-  border-radius: 6px;
+  padding: 3px 10px 3px 4px;
+  border-radius: 16px;
   cursor: pointer;
   font-size: 12px;
   font-weight: 600;
@@ -130,6 +130,7 @@
   position: absolute;
   top: 100%;
   right: 0;
+  left: auto;
   margin-top: 4px;
   background: hsl(var(--b1));
   border: 1px solid hsl(var(--bc) / 0.1);

@@ -57,8 +57,15 @@ import VendorFlights from './pages/VendorFlights'
 import VendorFlightFormPage from './pages/VendorFlightFormPage'
 import VendorBuses from './pages/VendorBuses'
 import VendorBusForm from './components/Vendor/VendorBusForm'
+import VendorCabs from './pages/VendorCabs'
 import AdminFlightApprovals from './pages/AdminFlightApprovals'
+import AdminBusApprovals from './pages/AdminBusApprovals'
+import AdminCabApprovals from './pages/AdminCabApprovals'
+import AdminTrains from './pages/AdminTrains'
+import AdminTrainApprovals from './pages/AdminTrainApprovals'
 import ProtectedVendorRoute from './components/Vendor/ProtectedVendorRoute'
+import VendorTrains from './pages/VendorTrains'
+import VendorTrainForm from './components/Vendor/VendorTrainForm'
 
 function NotFound() {
   return (
@@ -172,6 +179,10 @@ function AppContent() {
         <Route path="/admin/vendors" element={<ProtectedAdminRoute><AdminVendors /></ProtectedAdminRoute>} />
         <Route path="/admin/approvals" element={<ProtectedAdminRoute><AdminApprovals /></ProtectedAdminRoute>} />
         <Route path="/admin/flight-approvals" element={<ProtectedAdminRoute><AdminFlightApprovals /></ProtectedAdminRoute>} />
+        <Route path="/admin/bus-approvals" element={<ProtectedAdminRoute><AdminBusApprovals /></ProtectedAdminRoute>} />
+        <Route path="/admin/cab-approvals" element={<ProtectedAdminRoute><AdminCabApprovals /></ProtectedAdminRoute>} />
+        <Route path="/admin/trains" element={<ProtectedAdminRoute><AdminTrains /></ProtectedAdminRoute>} />
+        <Route path="/admin/train-approvals" element={<ProtectedAdminRoute><AdminTrainApprovals /></ProtectedAdminRoute>} />
 
         <Route path="/vendor/login" element={<VendorLoginPage />} />
         <Route path="/vendor/dashboard" element={<ProtectedVendorRoute><VendorDashboard /></ProtectedVendorRoute>} />
@@ -185,6 +196,10 @@ function AppContent() {
         <Route path="/vendor/buses" element={<ProtectedVendorRoute><VendorBuses /></ProtectedVendorRoute>} />
         <Route path="/vendor/buses/create" element={<ProtectedVendorRoute><VendorBusForm /></ProtectedVendorRoute>} />
         <Route path="/vendor/buses/:id/edit" element={<ProtectedVendorRoute><VendorBusForm /></ProtectedVendorRoute>} />
+        <Route path="/vendor/cabs" element={<ProtectedVendorRoute><VendorCabs /></ProtectedVendorRoute>} />
+        <Route path="/vendor/trains" element={<ProtectedVendorRoute><VendorTrains /></ProtectedVendorRoute>} />
+        <Route path="/vendor/trains/create" element={<ProtectedVendorRoute><VendorTrainForm /></ProtectedVendorRoute>} />
+        <Route path="/vendor/trains/:id/edit" element={<ProtectedVendorRoute><VendorTrainForm /></ProtectedVendorRoute>} />
 
         <Route path="*" element={<NotFound />} />
       </Routes>

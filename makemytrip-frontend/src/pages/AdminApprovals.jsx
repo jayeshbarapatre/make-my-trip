@@ -87,8 +87,12 @@ const AdminApprovals = () => {
         </div>
 
         {hotels.length === 0 ? (
-          <div style={{ padding: '60px 20px', textAlign: 'center', color: 'hsl(var(--bc) / 0.6))' }}>
-            <p style={{ margin: 0 }}>No pending hotel approvals</p>
+          <div className="empty-approval-state">
+            <div className="animated-icon hotel-animation">
+              <i className="fas fa-hotel"></i>
+            </div>
+            <h3>All Caught Up!</h3>
+            <p>No pending hotel approvals at the moment.</p>
           </div>
         ) : (
           <div className="table-container">

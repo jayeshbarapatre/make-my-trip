@@ -152,6 +152,38 @@
 }
 
 /* ============================================================================
+   PAGE HEADER
+   ============================================================================ */
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.page-header > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.page-header h1 {
+  margin: 0 0 4px 0;
+  font-size: var(--fs-page-title);
+  font-weight: var(--fw-page-title);
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  line-height: var(--lh-page-title);
+}
+
+.page-header p,
+.page-header .subtitle {
+  margin: 0;
+  font-size: var(--fs-body);
+  color: var(--text-secondary);
+}
+
+/* ============================================================================
    CARDS
    ============================================================================ */
 
@@ -642,7 +674,8 @@
 .dropdown-menu {
   position: absolute;
   top: 100%;
-  left: 0;
+  right: 0;
+  left: auto;
   background: var(--bg-surface);
   border: 1px solid var(--border);
   border-radius: 0.5rem;

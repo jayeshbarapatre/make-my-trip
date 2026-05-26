@@ -16,7 +16,6 @@ module.exports = {
     themes: [
       {
         light: {
-          ...require("daisyui/src/theming/themes")["light"],
           "primary": "#0099D9",
           "primary-content": "#ffffff",
           "secondary-content": "#ffffff",
@@ -31,7 +30,6 @@ module.exports = {
       },
       {
         black: {
-          ...require("daisyui/src/theming/themes")["black"],
           "primary": "#0099D9",
           "primary-content": "#ffffff",
           "secondary": "#9CA3AF",
@@ -40,7 +38,6 @@ module.exports = {
       },
       {
         business: {
-          ...require("daisyui/src/theming/themes")["business"],
           "primary": "#0099D9",
           "primary-content": "#ffffff",
         },

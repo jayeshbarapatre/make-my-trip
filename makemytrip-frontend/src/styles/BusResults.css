@@ -606,7 +606,8 @@
 }
 
 .custom-login-card {
-  background: white;
+  background: hsl(var(--b1));
+  color: hsl(var(--bc));
   border-radius: 0.5rem;
   padding: 2rem;
   max-width: 400px;
@@ -623,6 +624,7 @@
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
+  color: hsl(var(--bc) / 0.7);
 }
 
 .custom-login-header {
@@ -640,6 +642,7 @@
   margin: 0 0 0.5rem;
   font-size: 1.25rem;
   font-weight: 700;
+  color: hsl(var(--bc));
 }
 
 .custom-login-header p {
@@ -735,7 +738,8 @@
 }
 
 .custom-alert-card {
-  background: white;
+  background: hsl(var(--b1));
+  color: hsl(var(--bc));
   border-radius: 0.5rem;
   padding: 2rem;
   max-width: 400px;
@@ -752,6 +756,7 @@
   margin: 0 0 0.5rem;
   font-size: 1.25rem;
   font-weight: 700;
+  color: hsl(var(--bc));
 }
 
 .custom-alert-msg {

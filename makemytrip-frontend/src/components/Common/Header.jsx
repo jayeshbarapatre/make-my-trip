@@ -55,6 +55,7 @@ export default function Header() {
   }
 
   return (
+    <>
     <header className="common-sticky-header">
       <div className="common-header-inner">
         
@@ -163,12 +164,14 @@ export default function Header() {
               )}
             </div>
           ) : (
-            <button className="common-login-btn" onClick={() => navigate('/login')}>
+            <button className="btn btn-primary rounded-full px-6" onClick={() => navigate('/login')}>
               Login / Sign up
             </button>
           )}
         </div>
       </div>
     </header>
+    <div style={{ height: 'var(--header-h)' }} />
+    </>
   )
 }

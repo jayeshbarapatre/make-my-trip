@@ -1,9 +1,10 @@
 import { Router } from 'express'
-import { createBooking, getUserBookings, getBooking, cancelBooking } from '../controllers/bookingController.js'
+import { createBooking, getUserBookings, getBooking, cancelBooking, checkHotelOverlap } from '../controllers/bookingController.js'
 import { authenticate } from '../middleware/auth.js'
 
 const router = Router()
 
+router.post('/check-overlap', checkHotelOverlap)
 router.post('/create', authenticate, createBooking)
 router.get('/user/:userId', authenticate, getUserBookings)
 router.get('/:id', authenticate, getBooking)

@@ -152,28 +152,28 @@ const AdminDashboard = () => {
             icon="fas fa-dollar-sign"
             label="Total Revenue"
             value={`₹${(stats?.summary?.totalRevenue || 0).toLocaleString()}`}
-            color="var(--accent)"
+            color="hsl(var(--p))"
             trend="+12.5% from last month"
           />
           <KPICard
             icon="fas fa-plane"
             label="Active Flights"
             value={stats?.active?.activeFlights || 0}
-            color="#8B5CF6"
+            color="hsl(var(--p))"
             trend="+8 new this month"
           />
           <KPICard
             icon="fas fa-hotel"
             label="Total Hotels"
             value={stats?.summary?.totalHotels || 0}
-            color="#06B6D4"
+            color="hsl(var(--p))"
             trend="+5 new this month"
           />
           <KPICard
             icon="fas fa-calendar-check"
             label="Total Bookings"
             value={(stats?.bookingsBreakdown?.flight || 0) + (stats?.bookingsBreakdown?.hotel || 0) + (stats?.bookingsBreakdown?.bus || 0) + (stats?.bookingsBreakdown?.cab || 0)}
-            color="#F59E0B"
+            color="hsl(var(--p))"
             trend="+2.4% today"
           />
         </div>
@@ -182,9 +182,9 @@ const AdminDashboard = () => {
         <div className="booking-section">
           <div className="booking-grid">
             <BookingCard icon="fas fa-plane" label="Flights Booked" value={stats?.bookingsBreakdown?.flight || 0} color="hsl(var(--p))" />
-            <BookingCard icon="fas fa-bed" label="Hotels Booked" value={stats?.bookingsBreakdown?.hotel || 0} color="hsl(var(--a))" />
-            <BookingCard icon="fas fa-bus" label="Buses Booked" value={stats?.bookingsBreakdown?.bus || 0} color="hsl(var(--a))" />
-            <BookingCard icon="fas fa-taxi" label="Cabs Booked" value={stats?.bookingsBreakdown?.cab || 0} color="hsl(var(--er))" />
+            <BookingCard icon="fas fa-bed" label="Hotels Booked" value={stats?.bookingsBreakdown?.hotel || 0} color="hsl(var(--p))" />
+            <BookingCard icon="fas fa-bus" label="Buses Booked" value={stats?.bookingsBreakdown?.bus || 0} color="hsl(var(--p))" />
+            <BookingCard icon="fas fa-taxi" label="Cabs Booked" value={stats?.bookingsBreakdown?.cab || 0} color="hsl(var(--p))" />
           </div>
         </div>
 
@@ -353,7 +353,7 @@ const KPICard = ({ icon, label, value, color, trend }) => (
       <p style={{
         margin: 0,
         fontSize: '12px',
-        color: trend.includes('+') ? '#10b981' : '#ef4444',
+        color: trend.includes('+') ? 'hsl(var(--su))' : 'hsl(var(--er))',
         fontWeight: '600'
       }}>
         {trend}

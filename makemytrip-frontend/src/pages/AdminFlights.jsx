@@ -145,7 +145,7 @@ const AdminFlights = () => {
         </div>
 
         {loading ? (
-          <div className="loading">Loading flights...</div>
+          <div className="loading-container">Loading flights...</div>
         ) : flights.length === 0 ? (
           <div className="empty-state">
             <p>No flights found. Create your first flight!</p>
@@ -178,7 +178,9 @@ const AdminFlights = () => {
                           {flight.isActive ? 'Active' : 'Inactive'}
                         </span>
                       </td>
-                      <td className="actions">
+                      <td>
+
+                        <div className="actions">
                         <button className="btn-sm btn-edit" onClick={() => handleEdit(flight)} title="Edit" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
                           {Icons.edit({ size: 14 })} Edit
                         </button>
@@ -188,6 +190,9 @@ const AdminFlights = () => {
                         <button className="btn-sm btn-delete" onClick={() => handleDelete(flight.id)} title="Delete" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
                           {Icons.delete({ size: 14 })} Delete
                         </button>
+
+                        </div>
+
                       </td>
                     </tr>
                   ))}
