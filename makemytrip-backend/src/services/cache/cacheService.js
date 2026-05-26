@@ -59,6 +59,5 @@ export const cacheService = {
     return keys
   }
 }
-}
 
 export default cacheService
