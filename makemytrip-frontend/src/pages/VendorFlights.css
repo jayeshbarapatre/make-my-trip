@@ -2,20 +2,9 @@
   padding: 2rem;
 }
 
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 2rem;
-  margin-bottom: 2rem;
-}
 
-.page-header h1 {
-  margin: 0;
-  font-size: 1.875rem;
-  font-weight: 700;
-  color: hsl(var(--bc));
-}
+
+
 
 .flights-list {
   display: grid;
@@ -153,9 +142,7 @@
 }
 
 @media (max-width: 600px) {
-  .page-header {
-    flex-direction: column;
-  }
+  
 
   .flights-list {
     grid-template-columns: 1fr;

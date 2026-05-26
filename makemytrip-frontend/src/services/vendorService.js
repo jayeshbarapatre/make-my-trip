@@ -59,4 +59,20 @@ export const vendorBusesService = {
   submit: (id) => vendorAPI.patch(`/buses/${id}/submit`)
 }
 
+export const vendorCabsService = {
+  getAll: (params) => vendorAPI.get('/cabs', { params }),
+  create: (data) => vendorAPI.post('/cabs', data),
+  update: (id, data) => vendorAPI.put(`/cabs/${id}`, data),
+  delete: (id) => vendorAPI.delete(`/cabs/${id}`),
+  submit: (id) => vendorAPI.patch(`/cabs/${id}/submit`)
+}
+
+export const vendorTrainsService = {
+  getAll: (params) => vendorAPI.get('/trains', { params }),
+  create: (data) => vendorAPI.post('/trains', data),
+  update: (id, data) => vendorAPI.put(`/trains/${id}`, data),
+  delete: (id) => vendorAPI.delete(`/trains/${id}`),
+  submit: (id) => vendorAPI.patch(`/trains/${id}/submit`)
+}
+
 export default vendorAPI

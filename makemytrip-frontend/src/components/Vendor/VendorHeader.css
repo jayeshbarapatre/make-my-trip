@@ -8,7 +8,7 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 1050;
 }
 
 .menu-toggle {
@@ -41,9 +41,12 @@
 }
 
 .greeting {
-  font-size: 20px;
-  font-weight: 600;
-  color: hsl(var(--bc));
+  font-size: var(--fs-sidebar);
+  font-weight: var(--fw-sidebar);
+  color: var(--text-primary);
+  font-size: var(--fs-sidebar);
+  font-weight: var(--fw-sidebar);
+  color: var(--text-primary);
   margin: 0;
   letter-spacing: -0.3px;
 }
@@ -83,8 +86,8 @@
   background: hsl(var(--su) / 0.1);
   border: 1px solid hsl(var(--su) / 0.2);
   color: hsl(var(--bc));
-  padding: 6px 12px;
-  border-radius: 6px;
+  padding: 3px 10px 3px 4px;
+  border-radius: 16px;
   cursor: pointer;
   font-size: 12px;
   font-weight: 600;
@@ -130,6 +133,7 @@
   position: absolute;
   top: 100%;
   right: 0;
+  left: auto;
   margin-top: 4px;
   background: hsl(var(--b1));
   border: 1px solid hsl(var(--bc) / 0.1);
@@ -141,8 +145,13 @@
 
 .dropdown-item {
   padding: 10px 14px;
-  font-size: 12px;
-  color: hsl(var(--bc) / 0.6);
+}
+
+.vendor-role {
+  font-size: var(--fs-label);
+  font-weight: var(--fw-label);
+  color: var(--text-secondary);
+  line-height: 1.2;
 }
 
 .vendor-email {

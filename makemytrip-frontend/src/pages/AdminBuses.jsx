@@ -24,7 +24,8 @@ const AdminBuses = () => {
     try {
       setLoading(true)
       const response = await adminBusesService.getAll({ page, limit: 10, search })
-      setBuses(response.data.data || [])
+      setBuses(response.data.data?.buses || [])
+      setPagination(response.data.data?.pagination || {})
     } catch (err) {
       setError('Failed to load buses')
     } finally {
@@ -36,7 +37,7 @@ const AdminBuses = () => {
     if (window.confirm('Delete this bus?')) {
       try {
         await adminBusesService.delete(id)
-        setBuses(buses.filter(b => b._id !== id))
+        setBuses(buses.filter(b => b.id !== id))
       } catch (err) {
         setError('Failed to delete bus')
       }
@@ -46,7 +47,7 @@ const AdminBuses = () => {
   const handleToggleStatus = async (id) => {
     try {
       await adminBusesService.toggleStatus(id)
-      setBuses(buses.map(b => b._id === id ? { ...b, isActive: !b.isActive } : b))
+      setBuses(buses.map(b => b.id === id ? { ...b, isActive: !b.isActive } : b))
     } catch (err) {
       setError('Failed to update status')
     }
@@ -54,7 +55,7 @@ const AdminBuses = () => {
 
   const handleEdit = (bus) => {
     setEditingBus(bus)
-    setEditingId(bus._id)
+    setEditingId(bus.id)
     setShowForm(true)
   }
 
@@ -68,10 +69,10 @@ const AdminBuses = () => {
     try {
       if (editingId) {
         await adminBusesService.update(editingId, formData)
-        setBuses(buses.map(b => b._id === editingId ? { ...b, ...formData } : b))
+        setBuses(buses.map(b => b.id === editingId ? { ...b, ...formData } : b))
       } else {
         const response = await adminBusesService.create(formData)
-        const newBus = response.data.data
+        const newBus = response.data.data.bus
         setBuses([newBus, ...buses])
       }
       handleCloseForm()
@@ -105,7 +106,7 @@ const AdminBuses = () => {
         </div>
 
         {loading ? (
-          <div className="loading">Loading buses...</div>
+          <div className="loading-container">Loading buses...</div>
         ) : buses.length === 0 ? (
           <div className="empty-state"><p>No buses found. Create your first bus!</p></div>
         ) : (
@@ -126,7 +127,7 @@ const AdminBuses = () => {
                 </thead>
                 <tbody>
                   {buses.map(bus => (
-                    <tr key={bus._id}>
+                    <tr key={bus.id}>
                       <td className="font-bold">{bus.busNumber}</td>
                       <td>{bus.operatorName}</td>
                       <td>{bus.type}</td>
@@ -134,16 +135,21 @@ const AdminBuses = () => {
                       <td>₹{bus.price.toLocaleString()}</td>
                       <td>{bus.seatsAvailable}/{bus.seats}</td>
                       <td><span className={`badge ${bus.isActive ? 'badge-active' : 'badge-inactive'}`}>{bus.isActive ? 'Active' : 'Inactive'}</span></td>
-                      <td className="actions">
+                      <td>
+
+                        <div className="actions">
                         <button className="btn-sm btn-edit" onClick={() => handleEdit(bus)} title="Edit" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
                           {Icons.edit({ size: 14 })} Edit
                         </button>
-                        <button className="btn-sm btn-toggle" onClick={() => handleToggleStatus(bus._id)} title={bus.isActive ? 'Deactivate' : 'Activate'} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <button className="btn-sm btn-toggle" onClick={() => handleToggleStatus(bus.id)} title={bus.isActive ? 'Deactivate' : 'Activate'} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           {bus.isActive ? Icons.toggleOn({ size: 14 }) : Icons.toggleOff({ size: 14 })}
                         </button>
-                        <button className="btn-sm btn-delete" onClick={() => handleDelete(bus._id)} title="Delete" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                        <button className="btn-sm btn-delete" onClick={() => handleDelete(bus.id)} title="Delete" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
                           {Icons.delete({ size: 14 })} Delete
                         </button>
+
+                        </div>
+
                       </td>
                     </tr>
                   ))}

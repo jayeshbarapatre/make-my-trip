@@ -61,8 +61,8 @@ export default function BookingCard({ booking, onCancel, onViewDetails, onTrigge
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', borderBottom: '1px solid hsl(var(--b3))', paddingBottom: '16px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div style={{
-            background: isFlight ? 'hsl(var(--b2))' : isTrain ? 'hsl(var(--b2))' : 'hsl(var(--b2))',
-            color: isFlight ? 'hsl(var(--p))' : isTrain ? 'hsl(var(--su))' : 'hsl(var(--wa))',
+            background: 'hsl(var(--b2))',
+            color: isFlight ? 'hsl(var(--p))' : isTrain ? 'hsl(var(--su))' : (booking.type === 'bus') ? 'hsl(var(--wa))' : (booking.type === 'cab') ? 'hsl(var(--p))' : 'hsl(var(--wa))',
             width: '40px',
             height: '40px',
             borderRadius: '8px',
@@ -72,11 +72,11 @@ export default function BookingCard({ booking, onCancel, onViewDetails, onTrigge
             fontSize: '20px',
             fontWeight: 'bold'
           }}>
-            {isFlight ? '✈️' : isTrain ? '🚂' : '🏨'}
+            {isFlight ? '✈️' : isTrain ? '🚂' : (booking.type === 'bus') ? '🚌' : (booking.type === 'cab') ? '🚕' : '🏨'}
           </div>
           <div>
             <div style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', color: 'hsl(var(--bc) / 0.6)', fontWeight: 700 }}>
-              {isFlight ? 'Flight Booking' : isTrain ? 'Train Ticket (IRCTC)' : 'Hotel Stay'}
+              {isFlight ? 'Flight Booking' : isTrain ? 'Train Ticket (IRCTC)' : (booking.type === 'bus') ? 'Bus Booking' : (booking.type === 'cab') ? 'Cab Booking' : 'Hotel Stay'}
             </div>
             <div style={{ fontSize: '14px', fontWeight: 800, color: 'hsl(var(--bc))' }}>
               ID: {booking.bookingId || booking.id}
@@ -95,12 +95,12 @@ export default function BookingCard({ booking, onCancel, onViewDetails, onTrigge
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', alignItems: 'center' }}>
         <div>
           <div style={{ fontSize: '11px', textTransform: 'uppercase', color: 'hsl(var(--bc) / 0.5)', fontWeight: 700, marginBottom: '4px' }}>
-            {isFlight || isTrain ? 'Route' : 'Property / Location'}
+            {isFlight || isTrain || booking.type === 'bus' || booking.type === 'cab' ? 'Route' : 'Property / Location'}
           </div>
           <div style={{ fontSize: '18px', fontWeight: 800, color: 'hsl(var(--bc))', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span>{booking.fromCity}</span>
-            {(isFlight || isTrain) && <span style={{ color: 'hsl(var(--er))' }}>→</span>}
-            {(isFlight || isTrain) && <span>{booking.toCity}</span>}
+            {(isFlight || isTrain || booking.type === 'bus' || booking.type === 'cab') && <span style={{ color: 'hsl(var(--er))' }}>→</span>}
+            {(isFlight || isTrain || booking.type === 'bus' || booking.type === 'cab') && <span>{booking.toCity}</span>}
           </div>
         </div>
 

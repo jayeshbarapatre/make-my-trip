@@ -52,13 +52,13 @@
   align-items: center;
   gap: 6px;
   margin: 0;
-  font-size: 12px;
-  font-weight: 700;
+  font-size: var(--fs-card-title);
+  font-weight: var(--fw-card-title);
   color: var(--sidebar-text);
 }
 
 .vendor-logo-badge {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: hsl(var(--p));
   width: 28px;
   height: 28px;
   border-radius: 6px;
@@ -67,10 +67,10 @@
   justify-content: center;
   font-size: 14px;
   font-weight: 800;
-  color: white;
+  color: hsl(var(--pc));
   position: relative;
   flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 4px 12px hsl(var(--p) / 0.3);
 }
 
 .vendor-logo-badge::after {
@@ -152,37 +152,37 @@
 }
 
 .nav-section-label {
-  font-size: 9px;
-  letter-spacing: 1.5px;
+  font-size: var(--fs-label);
+  font-weight: var(--fw-label);
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--text-secondary);
   padding: 14px 14px 4px;
-  font-weight: 700;
   opacity: 0.6;
 }
 
 .nav-item {
   display: flex;
   align-items: center;
-  padding: 7px 14px;
+  padding: 0.625rem 1rem;
   color: var(--text-secondary);
   text-decoration: none;
   transition: all 0.2s ease;
   border-radius: 4px;
   margin: 1px 8px;
-  font-size: 11.5px;
-  font-weight: 500;
+  font-size: var(--fs-sidebar);
+  font-weight: var(--fw-sidebar);
 }
 
 .nav-item:hover {
-  background: rgba(16, 185, 129, 0.08);
-  color: hsl(var(--su));
+  background: hsl(var(--p) / 0.1);
+  color: hsl(var(--p));
 }
 
 .nav-item.active {
-  background: hsl(var(--su));
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+  background: hsl(var(--p));
+  color: hsl(var(--pc));
+  box-shadow: 0 2px 8px hsl(var(--p) / 0.3);
 }
 
 .nav-icon {
@@ -212,16 +212,16 @@
   align-items: center;
   gap: 8px;
   padding: 8px;
-  background: rgba(16, 185, 129, 0.06);
+  background: hsl(var(--p) / 0.06);
   border-radius: 4px;
-  border: 1px solid rgba(16, 185, 129, 0.12);
+  border: 1px solid hsl(var(--p) / 0.12);
 }
 
 .vendor-avatar-small {
   width: 28px;
   height: 28px;
-  background: linear-gradient(135deg, #10b981, #34d399);
-  color: white;
+  background: hsl(var(--p));
+  color: hsl(var(--pc));
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -232,28 +232,30 @@
 }
 
 .vendor-name-small {
-  font-size: 11px;
-  font-weight: 600;
+  font-size: var(--fs-sidebar);
+  font-weight: var(--fw-sidebar);
   color: var(--sidebar-text);
+  line-height: 1;
 }
 
 .vendor-role {
   font-size: 9px;
   color: var(--text-secondary);
   margin-top: 2px;
+  line-height: 1.2;
 }
 
 .logout-btn {
   width: 100%;
-  padding: 6px;
+  padding: 8px;
   background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
   color: white;
   border: none;
   border-radius: 4px;
-  font-weight: 600;
+  font-weight: var(--fw-button);
   cursor: pointer;
   transition: all 0.2s ease;
-  font-size: 11px;
+  font-size: var(--fs-button);
   display: flex;
   align-items: center;
   justify-content: center;

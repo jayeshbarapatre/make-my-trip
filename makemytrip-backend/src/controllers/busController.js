@@ -1,42 +1,80 @@
-import Bus from '../models/Bus.js'
+import prisma from '../config/prismaClient.js'
 
 export const searchBuses = async (req, res) => {
   try {
     const { from, to, date, type, minPrice, maxPrice, page = 1, limit = 10, search } = req.query
 
-    let query = { isActive: true, listingStatus: 'APPROVED' }
+    let where = { isActive: true, listingStatus: 'APPROVED' }
 
-    if (from) query['departure.city'] = { $regex: from, $options: 'i' }
-    if (to) query['arrival.city'] = { $regex: to, $options: 'i' }
-    if (type) query.type = type
-    if (minPrice || maxPrice) {
-      query.price = {}
-      if (minPrice) query.price.$gte = Number(minPrice)
-      if (maxPrice) query.price.$lte = Number(maxPrice)
+    if (from) {
+      where.departure = { path: ['city'], string_contains: from }
     }
+    if (to) {
+      where.arrival = { path: ['city'], string_contains: to }
+    }
+    if (type) where.type = type
+    
+    if (minPrice || maxPrice) {
+      where.price = {}
+      if (minPrice) where.price.gte = parseFloat(minPrice)
+      if (maxPrice) where.price.lte = parseFloat(maxPrice)
+    }
+
     if (search) {
-      query.$or = [
-        { operatorName: { $regex: search, $options: 'i' } },
-        { busNumber: { $regex: search, $options: 'i' } }
+      where.OR = [
+        { operatorName: { contains: search, mode: 'insensitive' } },
+        { busNumber: { contains: search, mode: 'insensitive' } }
       ]
     }
 
-    const skip = (Number(page) - 1) * Number(limit)
-    const buses = await Bus.find(query)
-      .skip(skip)
-      .limit(Number(limit))
-      .sort({ price: 1 })
+    // In Prisma, filtering JSON fields strongly in PostgreSQL requires raw queries or specific json operations.
+    // Since from and to are JSON fields ({ city, time }), we use stringification or raw.
+    // For simplicity, we can fetch all approved and do an in-memory filter if complex, but let's try the basic where if possible.
+    // Actually Prisma supports JSON filtering in Postgres!
+    // But since it's simpler, let's just fetch them and filter if needed, or use the basic Prisma where.
+    // To be safe with JSON in Prisma:
+    // departure: { equals: ... } is strict. We will fetch and filter if from/to are passed, or use a raw query.
+    // Given the small scale, let's just use Prisma where without deep JSON matching, and filter in memory for JSON parts.
 
-    const total = await Bus.countDocuments(query)
+    // A better approach for JSON search in Prisma:
+    // We will do a basic query and filter the JSON fields in JS.
+    let baseWhere = { isActive: true, listingStatus: 'APPROVED' }
+    if (type) baseWhere.type = type
+    if (minPrice || maxPrice) {
+      baseWhere.price = {}
+      if (minPrice) baseWhere.price.gte = parseFloat(minPrice)
+      if (maxPrice) baseWhere.price.lte = parseFloat(maxPrice)
+    }
+    if (search) {
+      baseWhere.OR = [
+        { operatorName: { contains: search, mode: 'insensitive' } },
+        { busNumber: { contains: search, mode: 'insensitive' } }
+      ]
+    }
+
+    let allBuses = await prisma.bus.findMany({
+      where: baseWhere,
+      orderBy: { price: 'asc' }
+    })
+
+    if (from) {
+      allBuses = allBuses.filter(b => b.departure?.city?.toLowerCase().includes(from.toLowerCase()))
+    }
+    if (to) {
+      allBuses = allBuses.filter(b => b.arrival?.city?.toLowerCase().includes(to.toLowerCase()))
+    }
+
+    const skip = (Number(page) - 1) * Number(limit)
+    const paginatedBuses = allBuses.slice(skip, skip + Number(limit))
 
     res.status(200).json({
       success: true,
-      data: buses,
+      data: paginatedBuses,
       pagination: {
-        total,
+        total: allBuses.length,
         page: Number(page),
         limit: Number(limit),
-        pages: Math.ceil(total / Number(limit))
+        pages: Math.ceil(allBuses.length / Number(limit))
       }
     })
   } catch (error) {
@@ -46,7 +84,7 @@ export const searchBuses = async (req, res) => {
 
 export const getBusById = async (req, res) => {
   try {
-    const bus = await Bus.findById(req.params.id)
+    const bus = await prisma.bus.findUnique({ where: { id: req.params.id } })
 
     if (!bus) {
       return res.status(404).json({ success: false, message: 'Bus not found' })

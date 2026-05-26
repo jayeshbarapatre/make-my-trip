@@ -3,13 +3,18 @@ import { useNavigate } from 'react-router-dom'
 import { SERVICE_TABS } from '../data/homepageData'
 import { useWeather } from '../hooks/useWeather'
 import CustomCalendarPicker from '../components/CustomCalendarPicker'
+import TabIcon from '../components/TabIcon'
 import '../styles/Hero.css'
 
 export default function TrainsPage() {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('trains')
   const [activeChip, setActiveChip] = useState('General')
-  const [travelDate, setTravelDate] = useState('2026-05-13')
+  const [travelDate, setTravelDate] = useState(() => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    return today.toISOString().split('T')[0]
+  })
   const [showTravelCal, setShowTravelCal] = useState(false)
 
   // Helper to format date into Day, Month Name, Year and Weekday
@@ -232,7 +237,7 @@ export default function TrainsPage() {
                   onClick={() => handleTabChange(t.id)}
                 >
                   {t.isNew && <span className="tab-new">new</span>}
-                  <span className="tab-icon">{t.icon}</span>
+                  <span className="tab-icon"><TabIcon id={t.id} size={26} /></span>
                   <span className="tab-lbl" style={{ whiteSpace: 'pre-line' }}>{t.label}</span>
                   {activeTab === t.id && <div className="tab-bar" />}
                 </button>
@@ -253,17 +258,17 @@ export default function TrainsPage() {
                 <div className="inner-field-sub">{fromStation.state}</div>
 
                 {activePopup === 'from' && (
-                  <div className="popup-dropdown" onClick={(e) => e.stopPropagation()} style={{ position: 'absolute', top: '100%', left: 0, width: '320px', background: '#fff', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.2)', padding: '16px', zIndex: 1000, border: '1px solid hsl(var(--b3))', marginTop: '8px' }}>
+                  <div className="popup-dropdown" onClick={(e) => e.stopPropagation()} style={{ position: 'absolute', top: '100%', left: 0, width: '320px', background: 'hsl(var(--b1))', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.2)', padding: '16px', zIndex: 1000, border: '1px solid hsl(var(--b3))', marginTop: '8px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                       <span style={{ fontSize: '13px', fontWeight: 800, color: 'hsl(var(--bc))' }}>SEARCH ORIGIN STATION</span>
-                      <button onClick={() => setActivePopup(null)} style={{ border: 'none', background: 'none', fontSize: '16px', cursor: 'pointer', fontWeight: 800 }}>✕</button>
+                      <button onClick={() => setActivePopup(null)} style={{ border: 'none', background: 'none', fontSize: '16px', cursor: 'pointer', fontWeight: 800, color: 'hsl(var(--bc))' }}>✕</button>
                     </div>
                     <input 
                       type="text" 
                       placeholder="City or Station" 
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      style={{ width: '100%', padding: '12px 14px', border: '2px solid hsl(var(--p))', borderRadius: '8px', fontSize: '14px', outline: 'none', marginBottom: '12px', boxSizing: 'border-box' }}
+                      style={{ width: '100%', padding: '12px 14px', border: '2px solid hsl(var(--p))', borderRadius: '8px', fontSize: '14px', outline: 'none', marginBottom: '12px', boxSizing: 'border-box', color: 'hsl(var(--bc))', background: 'transparent' }}
                       autoFocus
                     />
                     <div style={{ maxHeight: '240px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -312,17 +317,17 @@ export default function TrainsPage() {
                 <div className="inner-field-sub">{toStation.state}</div>
 
                 {activePopup === 'to' && (
-                  <div className="popup-dropdown" onClick={(e) => e.stopPropagation()} style={{ position: 'absolute', top: '100%', left: 0, width: '320px', background: '#fff', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.2)', padding: '16px', zIndex: 1000, border: '1px solid hsl(var(--b3))', marginTop: '8px' }}>
+                  <div className="popup-dropdown" onClick={(e) => e.stopPropagation()} style={{ position: 'absolute', top: '100%', left: 0, width: '320px', background: 'hsl(var(--b1))', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.2)', padding: '16px', zIndex: 1000, border: '1px solid hsl(var(--b3))', marginTop: '8px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                       <span style={{ fontSize: '13px', fontWeight: 800, color: 'hsl(var(--bc))' }}>SEARCH DESTINATION STATION</span>
-                      <button onClick={() => setActivePopup(null)} style={{ border: 'none', background: 'none', fontSize: '16px', cursor: 'pointer', fontWeight: 800 }}>✕</button>
+                      <button onClick={() => setActivePopup(null)} style={{ border: 'none', background: 'none', fontSize: '16px', cursor: 'pointer', fontWeight: 800, color: 'hsl(var(--bc))' }}>✕</button>
                     </div>
                     <input 
                       type="text" 
                       placeholder="City or Station" 
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      style={{ width: '100%', padding: '12px 14px', border: '2px solid hsl(var(--p))', borderRadius: '8px', fontSize: '14px', outline: 'none', marginBottom: '12px', boxSizing: 'border-box' }}
+                      style={{ width: '100%', padding: '12px 14px', border: '2px solid hsl(var(--p))', borderRadius: '8px', fontSize: '14px', outline: 'none', marginBottom: '12px', boxSizing: 'border-box', color: 'hsl(var(--bc))', background: 'transparent' }}
                       autoFocus
                     />
                     <div style={{ maxHeight: '240px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '4px' }}>

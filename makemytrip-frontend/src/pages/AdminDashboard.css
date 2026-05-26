@@ -1,7 +1,7 @@
 .dashboard {
   display: flex;
   flex-direction: column;
-  gap: 30px;
+  gap: 0;
 }
 
 .dashboard-header {
@@ -11,40 +11,42 @@
   padding-bottom: 8px;
 }
 
-.greeting {
+.stat-label {
+  font-size: var(--fs-label);
+  font-weight: var(--fw-label);
+  text-transform: uppercase;
+  color: var(--text-secondary);
   margin: 0 0 4px 0;
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--text-primary);
-  letter-spacing: -0.3px;
+  letter-spacing: 0.05em;
 }
 
-.dashboard-date {
-  margin: 0;
-  font-size: 12px;
+.dashboard-subtitle {
+  font-size: var(--fs-body);
+  font-weight: var(--fw-body);
   color: var(--text-secondary);
-  font-weight: 500;
+  margin: 4px 0 0 0;
 }
 
 .refresh-btn {
-  padding: 7px 12px;
+  padding: 0.625rem 1rem;
   background: var(--accent);
   color: white;
   border: none;
-  border-radius: 5px;
+  border-radius: 0.5rem;
   font-weight: 600;
-  font-size: 11px;
+  font-size: 0.875rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   white-space: nowrap;
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 0.5rem;
 }
 
 .refresh-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+  background: #2B4DBE;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .kpi-section {
@@ -67,13 +69,13 @@
   gap: 10px;
   position: relative;
   border: 1px solid var(--border);
-  box-shadow: var(--card-shadow);
+  box-shadow: var(--shadow-sm);
   transition: all 0.2s ease;
   overflow: hidden;
 }
 
 .kpi-card:hover {
-  box-shadow: var(--hover-shadow);
+  box-shadow: var(--shadow-md);
   transform: translateY(-2px);
 }
 
@@ -166,8 +168,9 @@
   background: var(--bg-surface);
   border-radius: 8px;
   padding: 14px;
-  box-shadow: var(--card-shadow);
+  box-shadow: var(--shadow-sm);
   border: 1px solid var(--border);
+  margin-bottom: 30px;
 }
 
 .chart-header {
@@ -283,25 +286,26 @@
 
 .more-detail-btn {
   width: 100%;
-  padding: 8px;
-  margin-top: 10px;
+  padding: 0.625rem 1rem;
+  margin-top: 1rem;
   background: var(--accent);
   color: white;
   border: none;
-  border-radius: 5px;
-  font-size: 11px;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 0.5rem;
 }
 
 .more-detail-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+  background: #2B4DBE;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .world-map {
@@ -333,6 +337,13 @@
 
 .legend-info {
   flex: 1;
+}
+
+.dashboard-title {
+  font-size: var(--fs-page-title);
+  font-weight: var(--fw-page-title);
+  color: var(--text-primary);
+  margin: 0;
 }
 
 .country-name {
@@ -371,13 +382,14 @@
   padding: 10px;
   display: flex;
   gap: 8px;
-  box-shadow: var(--card-shadow);
+  box-shadow: var(--shadow-sm);
   border: 1px solid var(--border);
   transition: all 0.2s ease;
+  margin-bottom: 30px;
 }
 
 .booking-card:hover {
-  box-shadow: var(--hover-shadow);
+  box-shadow: var(--shadow-md);
 }
 
 .booking-icon-container {
@@ -417,8 +429,14 @@
   background: var(--bg-surface);
   border-radius: 8px;
   padding: 14px;
-  box-shadow: var(--card-shadow);
+  box-shadow: var(--shadow-sm);
   border: 1px solid var(--border);
+}
+
+.availability-container h2,
+.chart-container h2,
+.chart-container h3 {
+  font-family: 'Space Grotesk', sans-serif;
 }
 
 .availability-container h2 {
@@ -443,7 +461,7 @@
 }
 
 .availability-card:hover {
-  box-shadow: var(--card-shadow);
+  box-shadow: var(--shadow-sm);
 }
 
 .avail-header {

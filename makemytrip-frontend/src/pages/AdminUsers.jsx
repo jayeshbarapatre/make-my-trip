@@ -54,13 +54,18 @@ const AdminUsers = () => {
                   <td>{user.phone}</td>
                   <td>{user.bookings}</td>
                   <td>{user.joinDate}</td>
-                  <td className="actions">
+                  <td>
+
+                    <div className="actions">
                     <button className="btn-sm btn-edit" title="View" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
                       {Icons.eye({ size: 14 })} View
                     </button>
                     <button className="btn-sm btn-delete" title="Delete" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
                       {Icons.delete({ size: 14 })} Delete
                     </button>
+
+                    </div>
+
                   </td>
                 </tr>
               ))}

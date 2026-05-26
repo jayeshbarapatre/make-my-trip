@@ -15,10 +15,28 @@ const AdminDashboard = () => {
   const [availability, setAvailability] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [greetingTime, setGreetingTime] = useState('Morning')
+  const [greetingTime, setGreetingTime] = useState('Morning')
 
   useEffect(() => {
     fetchData()
+    updateGreeting()
+    updateGreeting()
   }, [])
+
+  const updateGreeting = () => {
+    const hour = new Date().getHours()
+    if (hour < 12) setGreetingTime('Morning')
+    else if (hour < 18) setGreetingTime('Afternoon')
+    else setGreetingTime('Evening')
+  }
+
+  const updateGreeting = () => {
+    const hour = new Date().getHours()
+    if (hour < 12) setGreetingTime('Morning')
+    else if (hour < 18) setGreetingTime('Afternoon')
+    else setGreetingTime('Evening')
+  }
 
   const fetchData = async () => {
     try {
@@ -95,50 +113,124 @@ const AdminDashboard = () => {
   return (
     <AdminLayout>
       <div className="dashboard">
-        {/* Greeting Row */}
-        <div className="dashboard-header">
-          <div>
-            <h1 className="greeting">Good Morning, {stats?.adminName || 'Admin'}! 👋</h1>
-            <p className="dashboard-date">
+        {/* Greeting Banner with Atmospheric Design */}
+        <div className="greeting-banner" style={{
+          background: `linear-gradient(135deg, var(--accent) 0%, #2B4DBE 100%)`,
+          borderRadius: '12px',
+          padding: '32px 24px',
+          marginBottom: '28px',
+          position: 'relative',
+          overflow: 'hidden',
+          color: 'white',
+          boxShadow: 'var(--shadow-md)'
+        }}>
+          {/* Atmospheric background circles */}
+          <svg style={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            width: '200px',
+            height: '200px',
+            opacity: 0.1
+          }} viewBox="0 0 200 200">
+            <circle cx="100" cy="100" r="80" fill="white" />
+            <circle cx="100" cy="100" r="60" fill="none" stroke="white" strokeWidth="1" />
+          </svg>
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <h1 style={{
+              margin: '0 0 8px 0',
+              fontSize: '28px',
+              fontWeight: '700',
+              fontFamily: "'Space Grotesk', serif"
+            }}>
+              Good {greetingTime}, {stats?.adminName || 'Admin'}! 👋
+            </h1>
+            <p style={{
+              margin: 0,
+              fontSize: '14px',
+              opacity: 0.9
+            }}>
+        {/* Greeting Banner with Atmospheric Design */}
+        <div className="greeting-banner" style={{
+          background: `linear-gradient(135deg, var(--accent) 0%, #2B4DBE 100%)`,
+          borderRadius: '12px',
+          padding: '32px 24px',
+          marginBottom: '28px',
+          position: 'relative',
+          overflow: 'hidden',
+          color: 'white',
+          boxShadow: 'var(--shadow-md)'
+        }}>
+          {/* Atmospheric background circles */}
+          <svg style={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            width: '200px',
+            height: '200px',
+            opacity: 0.1
+          }} viewBox="0 0 200 200">
+            <circle cx="100" cy="100" r="80" fill="white" />
+            <circle cx="100" cy="100" r="60" fill="none" stroke="white" strokeWidth="1" />
+          </svg>
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <h1 style={{
+              margin: '0 0 8px 0',
+              fontSize: '28px',
+              fontWeight: '700',
+              fontFamily: "'Space Grotesk', serif"
+            }}>
+              Good {greetingTime}, {stats?.adminName || 'Admin'}! 👋
+            </h1>
+            <p style={{
+              margin: 0,
+              fontSize: '14px',
+              opacity: 0.9
+            }}>
               {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
             </p>
           </div>
-          <button className="refresh-btn" onClick={fetchData}>
-            <i className="fas fa-sync"></i> Refresh
-          </button>
         </div>
 
-        {/* KPI Cards - Rizz Style */}
-        <div className="kpi-section">
-          <div className="kpi-grid">
-            <KPICard
-              icon="fas fa-dollar-sign"
-              label="Total Revenue"
-              value={`₹${(stats?.summary?.totalRevenue || 0).toLocaleString()}`}
-              color="hsl(var(--su))"
-              trend="+12.5% from last month"
-            />
-            <KPICard
-              icon="fas fa-plane"
-              label="Active Flights"
-              value={stats?.active?.activeFlights || 0}
-              color="hsl(var(--p))"
-              trend="+8 new this month"
-            />
-            <KPICard
-              icon="fas fa-hotel"
-              label="Total Hotels"
-              value={stats?.summary?.totalHotels || 0}
-              color="hsl(var(--in))"
-              trend="+5 new this month"
-            />
-            <KPICard
-              icon="fas fa-calendar-check"
-              label="Total Bookings"
-              value={(stats?.bookingsBreakdown?.flight || 0) + (stats?.bookingsBreakdown?.hotel || 0) + (stats?.bookingsBreakdown?.bus || 0) + (stats?.bookingsBreakdown?.cab || 0)}
-              color="hsl(var(--wa))"
-              trend="+2.4% today"
-            />
+        {/* KPI Cards Grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px', marginBottom: '28px' }}>
+          <KPICard
+            icon="fas fa-dollar-sign"
+            label="Total Revenue"
+            value={`₹${(stats?.summary?.totalRevenue || 0).toLocaleString()}`}
+            color="hsl(var(--p))"
+            trend="+12.5% from last month"
+          />
+          <KPICard
+            icon="fas fa-plane"
+            label="Active Flights"
+            value={stats?.active?.activeFlights || 0}
+            color="hsl(var(--p))"
+            trend="+8 new this month"
+          />
+          <KPICard
+            icon="fas fa-hotel"
+            label="Total Hotels"
+            value={stats?.summary?.totalHotels || 0}
+            color="hsl(var(--p))"
+            trend="+5 new this month"
+          />
+          <KPICard
+            icon="fas fa-calendar-check"
+            label="Total Bookings"
+            value={(stats?.bookingsBreakdown?.flight || 0) + (stats?.bookingsBreakdown?.hotel || 0) + (stats?.bookingsBreakdown?.bus || 0) + (stats?.bookingsBreakdown?.cab || 0)}
+            color="hsl(var(--p))"
+            trend="+2.4% today"
+          />
+        </div>
+
+        {/* Booking Types */}
+        <div className="booking-section">
+          <div className="booking-grid">
+            <BookingCard icon="fas fa-plane" label="Flights Booked" value={stats?.bookingsBreakdown?.flight || 0} color="hsl(var(--p))" />
+            <BookingCard icon="fas fa-bed" label="Hotels Booked" value={stats?.bookingsBreakdown?.hotel || 0} color="hsl(var(--p))" />
+            <BookingCard icon="fas fa-bus" label="Buses Booked" value={stats?.bookingsBreakdown?.bus || 0} color="hsl(var(--p))" />
+            <BookingCard icon="fas fa-taxi" label="Cabs Booked" value={stats?.bookingsBreakdown?.cab || 0} color="hsl(var(--p))" />
           </div>
         </div>
 
@@ -242,16 +334,6 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        {/* Booking Types */}
-        <div className="booking-section">
-          <div className="booking-grid">
-            <BookingCard icon="fas fa-plane" label="Flights Booked" value={stats?.bookingsBreakdown?.flight || 0} color="hsl(var(--p))" />
-            <BookingCard icon="fas fa-bed" label="Hotels Booked" value={stats?.bookingsBreakdown?.hotel || 0} color="hsl(var(--a))" />
-            <BookingCard icon="fas fa-bus" label="Buses Booked" value={stats?.bookingsBreakdown?.bus || 0} color="hsl(var(--a))" />
-            <BookingCard icon="fas fa-taxi" label="Cabs Booked" value={stats?.bookingsBreakdown?.cab || 0} color="hsl(var(--er))" />
-          </div>
-        </div>
-
         {/* Availability */}
         {availability && (
           <div className="availability-container">
@@ -280,15 +362,80 @@ const AdminDashboard = () => {
 }
 
 const KPICard = ({ icon, label, value, color, trend }) => (
-  <div className="kpi-card" style={{ '--card-accent': color }}>
-    <div className="kpi-content">
-      <p className="kpi-label">{label}</p>
-      <p className="kpi-value">{typeof value === 'number' ? value.toLocaleString() : value}</p>
+  <div style={{
+    background: 'var(--bg-surface)',
+    border: '1px solid var(--border)',
+    borderRadius: '8px',
+    padding: '20px',
+    transition: 'all 0.3s ease',
+    boxShadow: 'var(--shadow-sm)',
+    cursor: 'pointer'
+  }} onMouseEnter={e => e.currentTarget.style.boxShadow = 'var(--shadow-md)'}
+  onMouseLeave={e => e.currentTarget.style.boxShadow = 'var(--shadow-sm)'}>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+      <p style={{ margin: 0, fontSize: '12px', fontWeight: '600', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+        {label}
+      </p>
+      <div style={{
+        width: '40px',
+        height: '40px',
+        background: `${color}20`,
+        borderRadius: '8px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: color,
+        fontSize: '20px'
+      }}>
+        <i className={icon}></i>
+      </div>
+  <div style={{
+    background: 'var(--bg-surface)',
+    border: '1px solid var(--border)',
+    borderRadius: '8px',
+    padding: '20px',
+    transition: 'all 0.3s ease',
+    boxShadow: 'var(--shadow-sm)',
+    cursor: 'pointer'
+  }} onMouseEnter={e => e.currentTarget.style.boxShadow = 'var(--shadow-md)'}
+  onMouseLeave={e => e.currentTarget.style.boxShadow = 'var(--shadow-sm)'}>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+      <p style={{ margin: 0, fontSize: '12px', fontWeight: '600', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+        {label}
+      </p>
+      <div style={{
+        width: '40px',
+        height: '40px',
+        background: `${color}20`,
+        borderRadius: '8px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: color,
+        fontSize: '20px'
+      }}>
+        <i className={icon}></i>
+      </div>
     </div>
-    <div className="kpi-icon-container" style={{ backgroundColor: `${color}15`, color }}>
-      <i className={icon}></i>
+    <div style={{ marginBottom: '12px' }}>
+      <p style={{ margin: 0, fontSize: '28px', fontWeight: '700', color: 'var(--text-primary)', fontFamily: "'Space Grotesk', serif" }}>
+        {typeof value === 'number' ? value.toLocaleString() : value}
+      </p>
+    <div style={{ marginBottom: '12px' }}>
+      <p style={{ margin: 0, fontSize: '28px', fontWeight: '700', color: 'var(--text-primary)', fontFamily: "'Space Grotesk', serif" }}>
+        {typeof value === 'number' ? value.toLocaleString() : value}
+      </p>
     </div>
-    <div className="kpi-trend" style={{ backgroundColor: color }}></div>
+    {trend && (
+      <p style={{
+        margin: 0,
+        fontSize: '12px',
+        color: trend.includes('+') ? 'hsl(var(--su))' : 'hsl(var(--er))',
+        fontWeight: '600'
+      }}>
+        {trend}
+      </p>
+    )}
   </div>
 )
 

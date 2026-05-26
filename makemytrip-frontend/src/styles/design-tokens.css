@@ -28,17 +28,17 @@
   --clr-text-inverse:   hsl(var(--b1));
   --clr-text-dark:      hsl(var(--bc) / 0.85);
 
-  /* â”€â”€ Backgrounds â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+  /* ── Backgrounds ────────────────────────────────────────────────────────────────────────── */
   --clr-bg-base:        hsl(var(--b2));   /* page background              */
   --clr-bg-white:       hsl(var(--b1));   /* card / surface               */
   --clr-bg-hover:       hsl(var(--b2));
 
-  /* â”€â”€ Borders â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+  /* ── Borders ────────────────────────────────────────────────────────────────────────────── */
   --clr-border:         hsl(var(--b3));
   --clr-border-focus:   hsl(var(--p));
   --clr-divider:        hsl(var(--b3));
 
-  /* â”€â”€ Airline Brand Colors â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+  /* ── Airline Brand Colors ───────────────────────────────────────────────────────────────── */
   --clr-indigo:         hsl(var(--p));
   --clr-airindia:       hsl(var(--er));
   --clr-vistara:        hsl(var(--a));
@@ -46,7 +46,58 @@
   --clr-akasa:          hsl(var(--wa));
   --clr-aiexpress:      hsl(var(--er));
 
-  /* â”€â”€ Dark Mode (surfaces) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+  /* ── Typography (Space Grotesk SaaS System) ─────────────────── */
+  --font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Typography Hierarchy for Admin/Vendor Panels */
+  /* 1. Page Title → large, bold */
+  --fs-page-title: clamp(1.5rem, 2vw, 1.75rem); /* 24px - 28px */
+  --fw-page-title: 700;
+  --lh-page-title: 1.2;
+
+  /* 2. Section Heading → medium bold */
+  --fs-section-heading: clamp(1.25rem, 1.5vw, 1.5rem); /* 20px - 24px */
+  --fw-section-heading: 600;
+  --lh-section-heading: 1.3;
+
+  /* 3. Card Title → semi-bold */
+  --fs-card-title: 1.125rem; /* 18px */
+  --fw-card-title: 600;
+  --lh-card-title: 1.4;
+
+  /* 4. Table Header → readable, medium weight */
+  --fs-table-header: 0.8125rem; /* 13px */
+  --fw-table-header: 500;
+  --ls-table-header: 0.05em; /* subtle letter spacing */
+  --tt-table-header: uppercase;
+
+  /* 5. Body Text → clean and readable */
+  --fs-body: 0.9375rem; /* 15px */
+  --fw-body: 400;
+  --lh-body: 1.5;
+
+  /* 6. Small Labels → subtle but clear */
+  --fs-label: 0.75rem; /* 12px */
+  --fw-label: 500;
+  --lh-label: 1.4;
+
+  /* 7. Button Text → medium weight */
+  --fs-button: 0.875rem; /* 14px */
+  --fw-button: 500;
+  --ls-button: 0.02em;
+
+  /* 8. Sidebar Menu → compact and readable */
+  --fs-sidebar: 0.875rem; /* 14px */
+  --fw-sidebar: 500;
+  --ls-sidebar: 0.01em;
+
+  /* Font Weights */
+  --fw-regular:  400;
+  --fw-medium:   500;
+  --fw-semibold: 600;
+  --fw-bold:     700;
+
+  /* ── Dark Mode (surfaces) ───────────────────────────────────────────────────────────────── */
   --clr-dm-bg:          hsl(var(--bc));
   --clr-dm-surface:     hsl(var(--bc));
   --clr-dm-border:      hsl(var(--bc));
@@ -96,10 +147,10 @@
   --radius-xl:   20px;
   --radius-full: 9999px;
 
-  /* â”€â”€ Elevation / Shadows â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-  --shadow-sm:  0 2px 8px  rgba(0, 0, 0, 0.08);
-  --shadow-md:  0 4px 16px rgba(0, 0, 0, 0.12);
-  --shadow-lg:  0 8px 32px rgba(0, 0, 0, 0.15);
+  /* ── Elevation / Shadows ── */
+  --shadow-sm:  0 2px 4px rgba(165, 163, 174, 0.15);
+  --shadow-md:  0 4px 12px rgba(165, 163, 174, 0.2);
+  --shadow-lg:  0 8px 24px rgba(165, 163, 174, 0.25);
 
   /* â”€â”€ Transitions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   --transition-fast: all 0.1s ease-out;
@@ -108,7 +159,7 @@
 
   /* â”€â”€ Layout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   --max-width:  1200px;
-  --header-h:   64px;   /* matches .common-header-inner height  */
+  --header-h:   70px;   /* matches .common-header-inner height  */
   --sidebar-w:  268px;
 
   /* â”€â”€ Button Sizes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
@@ -125,7 +176,7 @@
   --btn-lg-h:    48px;
 
   /* â”€â”€ Input â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-  --input-border: 1px solid var(--clr-border);
+  --input-border: 1px solid hsl(var(--b3));
   --input-radius: var(--radius-sm);
   --input-pad:    12px 16px;
   --input-fs:     var(--fs-body);
@@ -135,43 +186,43 @@
 :root {
   /* Global Raw HSL Value Overrides to Fix Broken hsl(var(--...)) Syntax System-wide */
   --b1: 0 0% 100%;           /* base color 1 (white card surface) */
-  --b2: 210 20% 98%;         /* base color 2 (light page background) */
-  --b3: 210 20% 95%;         /* base color 3 (light border/hover) */
-  --bc: 215 28% 17%;         /* base content (dark gray text) */
-  --p: 211 71% 42%;          /* primary (MakeMyTrip blue) */
+  --b2: 210 17% 98%;         /* base color 2 (light page background #F8F9FA) */
+  --b3: 210 16% 93%;         /* base color 3 (light border/hover) */
+  --bc: 222 47% 11%;         /* base content (dark gray text #0F172A) */
+  --p: 242 60% 58%;          /* primary (NexLink Indigo #5955D1) */
   --pc: 0 0% 100%;           /* primary content (white text) */
-  --s: 198 93% 40%;          /* secondary color */
+  --s: 210 10% 40%;          /* secondary color */
   --sc: 0 0% 100%;           /* secondary content */
-  --a: 34 97% 64%;           /* accent color */
-  --ac: 34 97% 64%;          /* accent content/yellow */
+  --a: 242 60% 58%;          /* accent color */
+  --ac: 0 0% 100%;           /* accent content */
   --n: 215 28% 17%;          /* neutral color */
-  --nc: var(--bc) / 0.65;         /* neutral content/gray text */
-  --nb: var(--bc) / 0.15;         /* neutral background/border */
-  --in: 200 95% 45%;         /* info blue */
-  --su: 142 70% 45%;         /* success green */
-  --wa: 38 92% 50%;          /* warning orange */
-  --er: 0 84% 60%;           /* error red */
+  --nc: var(--bc) / 0.65;    /* neutral content/gray text */
+  --nb: var(--bc) / 0.15;    /* neutral background/border */
+  --in: 186 100% 45%;        /* info cyan */
+  --su: 147 66% 47%;         /* success green */
+  --wa: 42 100% 50%;         /* warning orange */
+  --er: 358 100% 65%;        /* error red */
 }
 
 /* Robust explicit theme overrides to guarantee pixel-perfect theme rendering in all environments */
 [data-theme="light"] {
   --b1: 0 0% 100%;
-  --b2: 210 20% 98%;
-  --b3: 210 20% 95%;
-  --bc: 215 28% 17%;
-  --p: 211 71% 42%;
-  --clr-text-secondary: hsl(215 28% 17% / 0.85);
-  --clr-text-hint: hsl(215 28% 17% / 0.70);
-  --clr-text-dark: hsl(215 28% 17% / 0.90);
+  --b2: 210 17% 98%;
+  --b3: 210 16% 93%;
+  --bc: 222 47% 11%;
+  --p: 242 60% 58%;
+  --clr-text-secondary: hsl(222 47% 11% / 0.70);
+  --clr-text-hint: hsl(222 47% 11% / 0.50);
+  --clr-text-dark: hsl(222 47% 11% / 0.90);
 }
 [data-theme="dark"] {
-  --b1: 220 18% 13%;
-  --b2: 220 18% 10%;
-  --b3: 220 18% 7%;
+  --b1: 222 39% 14%;
+  --b2: 222 53% 10%;
+  --b3: 222 39% 18%;
   --bc: 220 20% 97%;
-  --p: 211 100% 60%;
-  --clr-text-secondary: hsl(220 20% 97% / 0.85);
-  --clr-text-hint: hsl(220 20% 97% / 0.70);
+  --p: 242 60% 65%;
+  --clr-text-secondary: hsl(220 20% 97% / 0.70);
+  --clr-text-hint: hsl(220 20% 97% / 0.50);
   --clr-text-dark: hsl(220 20% 97% / 0.90);
 }
 [data-theme="cupcake"] {
@@ -408,13 +459,13 @@
 
 
 /* â”€â”€ Utility classes used across every page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-.ds-page-bg   { background: var(--clr-bg-base); min-height: 100vh; }
+.ds-page-bg   { background: hsl(var(--b2)); min-height: 100vh; }
 .ds-container { max-width: var(--max-width); margin: 0 auto; padding: 0 var(--sp-m); }
 
 /* Primary Button */
 .ds-btn-primary {
-  background: var(--clr-primary);
-  color: var(--clr-text-inverse);
+  background: hsl(var(--p));
+  color: hsl(var(--pc));
   border: none;
   border-radius: var(--radius-sm);
   font-family: var(--font-family);
@@ -423,41 +474,41 @@
   transition: var(--transition-fast);
   letter-spacing: 0.5px;
 }
-.ds-btn-primary:hover  { background: var(--clr-primary-hover); box-shadow: var(--shadow-sm); }
+.ds-btn-primary:hover  { background: hsl(var(--p) / 0.85); box-shadow: var(--shadow-sm); }
 .ds-btn-primary:active { transform: translateY(1px); }
 .ds-btn-primary:disabled { opacity: 0.55; cursor: not-allowed; }
 
 /* Secondary Button */
 .ds-btn-secondary {
   background: transparent;
-  color: var(--clr-primary);
-  border: 1.5px solid var(--clr-primary);
+  color: hsl(var(--p));
+  border: 1.5px solid hsl(var(--p));
   border-radius: var(--radius-sm);
   font-family: var(--font-family);
   font-weight: var(--fw-semibold);
   cursor: pointer;
   transition: var(--transition-fast);
 }
-.ds-btn-secondary:hover { background: var(--clr-info-bg); }
+.ds-btn-secondary:hover { background: hsl(var(--p) / 0.08); }
 
 /* Card shell */
 .ds-card {
-  background: var(--clr-bg-white);
+  background: hsl(var(--b1));
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
 }
 .ds-card:hover { box-shadow: var(--shadow-md); }
 
 /* Status badges */
-.ds-badge-success { color: var(--clr-success); background: var(--clr-success-bg); }
-.ds-badge-error   { color: var(--clr-error);   background: var(--clr-error-bg);   }
-.ds-badge-warning { color: var(--clr-warning);  background: var(--clr-warning-bg); }
-.ds-badge-info    { color: var(--clr-info);     background: var(--clr-info-bg);    }
+.ds-badge-success { color: hsl(var(--su)); background: hsl(var(--su) / 0.12); }
+.ds-badge-error   { color: hsl(var(--er));   background: hsl(var(--er) / 0.12);   }
+.ds-badge-warning { color: hsl(var(--wa));  background: hsl(var(--wa) / 0.12); }
+.ds-badge-info    { color: var(--clr-info);     background: hsl(var(--p) / 0.08);    }
 
 /* Divider */
 .ds-divider {
   height: 1px;
-  background: var(--clr-divider);
+  background: hsl(var(--b3));
   border: none;
   margin: var(--sp-m) 0;
 }

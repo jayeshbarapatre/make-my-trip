@@ -1,4 +1,4 @@
-﻿.container {
+.container {
   position: relative;
   width: 100%;
 }
@@ -22,7 +22,7 @@
 .input {
   width: 100%;
   padding: 12px 14px;
-  border: 1px solid var(--clr-border);
+  border: 1px solid hsl(var(--b3));
   border-radius: 8px;
   font-size: 15px;
   font-family: inherit;
@@ -40,7 +40,7 @@
 }
 
 .input::placeholder {
-  color: var(--clr-text-secondary);
+  color: hsl(var(--bc) / 0.6);
 }
 
 .spinner {
@@ -73,7 +73,7 @@
   left: 0;
   right: 0;
   background: hsl(var(--b1));
-  border: 1px solid var(--clr-border);
+  border: 1px solid hsl(var(--b3));
   border-top: none;
   border-radius: 0 0 8px 8px;
   list-style: none;
@@ -90,7 +90,7 @@
   cursor: pointer;
   font-size: 15px;
   transition: all 0.15s ease;
-  color: var(--clr-text-primary);
+  color: hsl(var(--bc));
 }
 
 .suggestion:hover {
@@ -107,10 +107,10 @@
 .noResults {
   padding: 12px 14px;
   text-align: center;
-  color: var(--clr-text-secondary);
+  color: hsl(var(--bc) / 0.6);
   font-size: 14px;
   background: hsl(var(--b2));
-  border: 1px solid var(--clr-border);
+  border: 1px solid hsl(var(--b3));
   border-radius: 0 0 8px 8px;
 }
 

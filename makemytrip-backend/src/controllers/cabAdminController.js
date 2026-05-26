@@ -1,113 +1,143 @@
-import Cab from '../models/Cab.js'
+import prisma from '../config/prismaClient.js'
 
 export const createCab = async (req, res) => {
   try {
     const { operatorName, cabNumber, type, baseFare, perKmRate, perMinuteRate, location, currentCity, cabs, image } = req.body
 
     if (!operatorName || !cabNumber || !type || !baseFare || !perKmRate || !perMinuteRate) {
-      return res.status(400).json({ message: 'Missing required fields' })
+      return res.status(400).json({ success: false, message: 'Missing required fields' })
     }
 
-    const cab = await Cab.create({
-      operatorName,
-      cabNumber,
-      type,
-      baseFare,
-      perKmRate,
-      perMinuteRate,
-      location,
-      currentCity,
-      cabs: cabs || 20,
-      cabs_available: cabs || 20,
-      image
+    const cab = await prisma.cab.create({
+      data: {
+        operatorName,
+        cabNumber,
+        type,
+        baseFare: parseFloat(baseFare),
+        perKmRate: parseFloat(perKmRate),
+        perMinuteRate: parseFloat(perMinuteRate),
+        location,
+        currentCity,
+        cabs: parseInt(cabs) || 20,
+        cabsAvailable: parseInt(cabs) || 20,
+        image,
+        listingStatus: 'APPROVED' // Admins can create pre-approved cabs
+      }
     })
 
-    res.status(201).json({ message: 'Cab created successfully', data: { cab } })
+    res.status(201).json({ success: true, message: 'Cab created successfully', data: { cab } })
   } catch (err) {
-    if (err.code === 11000) {
-      return res.status(409).json({ message: 'Cab number already exists' })
+    if (err.code === 'P2002') {
+      return res.status(409).json({ success: false, message: 'Cab number already exists' })
     }
-    res.status(500).json({ message: err.message })
+    res.status(500).json({ success: false, message: err.message })
   }
 }
 
 export const getAllCabs = async (req, res) => {
   try {
     const { page = 1, limit = 10, search, type, status } = req.query
-    const skip = (page - 1) * limit
+    const skip = (parseInt(page) - 1) * parseInt(limit)
 
-    const query = {}
+    const where = {}
     if (search) {
-      query.$or = [
-        { operatorName: { $regex: search, $options: 'i' } },
-        { cabNumber: { $regex: search, $options: 'i' } },
-        { currentCity: { $regex: search, $options: 'i' } }
+      where.OR = [
+        { operatorName: { contains: search, mode: 'insensitive' } },
+        { cabNumber: { contains: search, mode: 'insensitive' } },
+        { currentCity: { contains: search, mode: 'insensitive' } }
       ]
     }
-    if (type) query.type = type
-    if (status === 'active') query.isActive = true
-    if (status === 'inactive') query.isActive = false
+    if (type) where.type = type
+    if (status === 'active') where.isActive = true
+    if (status === 'inactive') where.isActive = false
 
-    const total = await Cab.countDocuments(query)
-    const cabs = await Cab.find(query).skip(skip).limit(parseInt(limit)).sort({ createdAt: -1 })
+    const total = await prisma.cab.count({ where })
+    const cabs = await prisma.cab.findMany({
+      where,
+      skip,
+      take: parseInt(limit),
+      orderBy: { createdAt: 'desc' }
+    })
 
     res.json({
+      success: true,
       data: { cabs, pagination: { page: parseInt(page), limit: parseInt(limit), total, pages: Math.ceil(total / limit) } }
     })
   } catch (err) {
-    res.status(500).json({ message: err.message })
+    res.status(500).json({ success: false, message: err.message })
   }
 }
 
 export const getCabById = async (req, res) => {
   try {
-    const cab = await Cab.findById(req.params.id)
+    const cab = await prisma.cab.findUnique({ where: { id: req.params.id } })
     if (!cab) {
-      return res.status(404).json({ message: 'Cab not found' })
+      return res.status(404).json({ success: false, message: 'Cab not found' })
     }
-    res.json({ data: { cab } })
+    res.json({ success: true, data: { cab } })
   } catch (err) {
-    res.status(500).json({ message: err.message })
+    res.status(500).json({ success: false, message: err.message })
   }
 }
 
 export const updateCab = async (req, res) => {
   try {
-    const updates = req.body
-    const cab = await Cab.findByIdAndUpdate(req.params.id, { ...updates, updatedAt: new Date() }, { new: true })
+    const { id } = req.params
+    const { operatorName, cabNumber, type, baseFare, perKmRate, perMinuteRate, location, currentCity, cabs, image } = req.body
 
-    if (!cab) {
-      return res.status(404).json({ message: 'Cab not found' })
-    }
+    const data = {}
+    if (operatorName !== undefined) data.operatorName = operatorName
+    if (cabNumber !== undefined) data.cabNumber = cabNumber
+    if (type !== undefined) data.type = type
+    if (baseFare !== undefined) data.baseFare = parseFloat(baseFare)
+    if (perKmRate !== undefined) data.perKmRate = parseFloat(perKmRate)
+    if (perMinuteRate !== undefined) data.perMinuteRate = parseFloat(perMinuteRate)
+    if (location !== undefined) data.location = location
+    if (currentCity !== undefined) data.currentCity = currentCity
+    if (cabs !== undefined) data.cabs = parseInt(cabs)
+    if (image !== undefined) data.image = image
 
-    res.json({ message: 'Cab updated successfully', data: { cab } })
+    const cab = await prisma.cab.update({
+      where: { id },
+      data
+    })
+
+    res.json({ success: true, message: 'Cab updated successfully', data: { cab } })
   } catch (err) {
-    res.status(500).json({ message: err.message })
+    if (err.code === 'P2025') {
+      return res.status(404).json({ success: false, message: 'Cab not found' })
+    }
+    res.status(500).json({ success: false, message: err.message })
   }
 }
 
 export const deleteCab = async (req, res) => {
   try {
-    const cab = await Cab.findByIdAndDelete(req.params.id)
-    if (!cab) {
-      return res.status(404).json({ message: 'Cab not found' })
-    }
-    res.json({ message: 'Cab deleted successfully' })
+    await prisma.cab.delete({ where: { id: req.params.id } })
+    res.json({ success: true, message: 'Cab deleted successfully' })
   } catch (err) {
-    res.status(500).json({ message: err.message })
+    if (err.code === 'P2025') {
+      return res.status(404).json({ success: false, message: 'Cab not found' })
+    }
+    res.status(500).json({ success: false, message: err.message })
   }
 }
 
 export const toggleCabStatus = async (req, res) => {
   try {
-    const cab = await Cab.findById(req.params.id)
+    const { id } = req.params
+    const cab = await prisma.cab.findUnique({ where: { id } })
     if (!cab) {
-      return res.status(404).json({ message: 'Cab not found' })
+      return res.status(404).json({ success: false, message: 'Cab not found' })
     }
-    cab.isActive = !cab.isActive
-    await cab.save()
-    res.json({ message: `Cab ${cab.isActive ? 'activated' : 'deactivated'}`, data: { cab } })
+    
+    const updatedCab = await prisma.cab.update({
+      where: { id },
+      data: { isActive: !cab.isActive }
+    })
+    
+    res.json({ success: true, message: `Cab ${updatedCab.isActive ? 'activated' : 'deactivated'}`, data: { cab: updatedCab } })
   } catch (err) {
-    res.status(500).json({ message: err.message })
+    res.status(500).json({ success: false, message: err.message })
   }
 }

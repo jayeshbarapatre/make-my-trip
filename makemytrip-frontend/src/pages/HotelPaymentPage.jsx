@@ -27,6 +27,7 @@ export default function HotelPaymentPage() {
   };
 
   const getImageUrl = (h) => {
+    if (h.image) return h.image;
     if (h.images && h.images.length > 0) return h.images[0].includes('unsplash.com') ? h.images[0] : `https://images.unsplash.com/photo-${h.images[0]}?auto=format&fit=crop&w=240&h=180&q=80`;
     if (h.seed && h.seed.length > 0) return h.seed[0].includes('unsplash.com') ? h.seed[0] : `https://images.unsplash.com/photo-${h.seed[0]}?auto=format&fit=crop&w=240&h=180&q=80`;
     if (h.img) return h.img;
@@ -156,7 +157,8 @@ export default function HotelPaymentPage() {
                 rooms,
                 adults: guestsObj.adults,
                 method: methodName || selectedMethod,
-                roomName
+                roomName,
+                bookEntireHotel
               },
               totalAmount: finalDue,
               paymentId: response.razorpay_payment_id,

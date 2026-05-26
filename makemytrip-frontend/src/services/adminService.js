@@ -1,4 +1,4 @@
-﻿import axios from 'axios'
+import axios from 'axios'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1'
 
@@ -59,6 +59,15 @@ export const adminCabsService = {
   toggleStatus: (id) => adminAPI.patch(`/cabs/${id}/toggle`)
 }
 
+export const adminTrainsService = {
+  getAll: (params) => adminAPI.get('/trains', { params }),
+  getById: (id) => adminAPI.get(`/trains/${id}`),
+  create: (data) => adminAPI.post('/trains', data),
+  update: (id, data) => adminAPI.put(`/trains/${id}`, data),
+  delete: (id) => adminAPI.delete(`/trains/${id}`),
+  toggleStatus: (id) => adminAPI.patch(`/trains/${id}/toggle`)
+}
+
 export const adminDashboardService = {
   getStats: () => adminAPI.get('/dashboard/stats'),
   getRevenue: () => adminAPI.get('/dashboard/revenue'),
@@ -72,7 +81,20 @@ export const adminService = {
   rejectHotel: (id, data) => adminAPI.patch(`/approvals/hotels/${id}/reject`, data),
   getPendingFlights: () => adminAPI.get('/approvals/flights'),
   approveFlight: (id) => adminAPI.patch(`/approvals/flights/${id}/approve`),
-  rejectFlight: (id, data) => adminAPI.patch(`/approvals/flights/${id}/reject`, data)
+  rejectFlight: (id, data) => adminAPI.patch(`/approvals/flights/${id}/reject`, data),
+  getPendingBuses: () => adminAPI.get('/approvals/buses'),
+  approveBus: (id) => adminAPI.patch(`/approvals/buses/${id}/approve`),
+  rejectBus: (id, data) => adminAPI.patch(`/approvals/buses/${id}/reject`, data),
+  getPendingCabs: () => adminAPI.get('/approvals/cabs'),
+  approveCab: (id) => adminAPI.patch(`/approvals/cabs/${id}/approve`),
+  rejectCab: (id, data) => adminAPI.patch(`/approvals/cabs/${id}/reject`, data),
+  getPendingTrains: () => adminAPI.get('/approvals/trains'),
+  approveTrain: (id) => adminAPI.patch(`/approvals/trains/${id}/approve`),
+  rejectTrain: (id, data) => adminAPI.patch(`/approvals/trains/${id}/reject`, data)
+}
+
+export const adminBookingsService = {
+  getAll: (params) => adminAPI.get('/bookings', { params })
 }
 
 export default adminAPI

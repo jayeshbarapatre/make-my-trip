@@ -3,6 +3,7 @@ import { useTheme } from '../../context/ThemeContext'
 import VendorSidebar from './VendorSidebar'
 import VendorHeader from './VendorHeader'
 import './VendorLayout.css'
+import '../../styles/AdminComponents.css'
 
 const VendorLayout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false)

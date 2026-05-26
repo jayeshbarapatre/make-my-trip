@@ -14,6 +14,7 @@ import adminRoutes from './routes/adminRoutes.js'
 import vendorRoutes from './routes/vendorRoutes.js'
 import autocompleteRoutes from './routes/autocomplete.js'
 import hotelRoutes from './routes/hotels.js'
+import trainRoutes from './routes/trains.js'
 
 const app = express()
 const PORT = process.env.PORT || 5000
@@ -47,6 +48,8 @@ app.use('/api/autocomplete', autocompleteRoutes)
 app.use('/api/v1/autocomplete', autocompleteRoutes)
 app.use('/api/hotels', hotelRoutes)
 app.use('/api/v1/hotels', hotelRoutes)
+app.use('/api/trains', trainRoutes)
+app.use('/api/v1/trains', trainRoutes)
 
 app.use((_req, res) => res.status(404).json({ message: 'Route not found' }))
 

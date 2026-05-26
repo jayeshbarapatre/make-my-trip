@@ -1,10 +1,13 @@
-import Bus from '../models/Bus.js'
+import prisma from '../config/prismaClient.js'
 
 export const getMyBuses = async (req, res) => {
   try {
-    const vendorId = req.vendor.id
-    const buses = await Bus.find({ vendorId }).sort({ createdAt: -1 })
-    res.status(200).json({ success: true, data: buses })
+    const vendorId = req.user.id
+    const buses = await prisma.bus.findMany({
+      where: { vendorId },
+      orderBy: { createdAt: 'desc' }
+    })
+    res.status(200).json({ success: true, data: { buses } })
   } catch (error) {
     res.status(500).json({ success: false, message: error.message })
   }
@@ -12,34 +15,36 @@ export const getMyBuses = async (req, res) => {
 
 export const createBus = async (req, res) => {
   try {
-    const { operatorName, busNumber, type, departure, arrival, duration, price, seats, amenities, image } = req.body
+    const vendorId = req.user.id
+    const { operatorName, busNumber, type, departure, arrival, durationMinutes, price, seats, amenities, image } = req.body
 
     if (!operatorName || !busNumber || !type || !price) {
       return res.status(400).json({ success: false, message: 'Missing required fields' })
     }
 
-    const existing = await Bus.findOne({ busNumber })
+    const existing = await prisma.bus.findUnique({ where: { busNumber } })
     if (existing) {
       return res.status(400).json({ success: false, message: 'Bus number already exists' })
     }
 
-    const bus = new Bus({
-      vendorId: req.vendor.id,
-      operatorName,
-      busNumber,
-      type,
-      departure,
-      arrival,
-      duration,
-      price,
-      seats: seats || 45,
-      seatsAvailable: seats || 45,
-      amenities: amenities || [],
-      image,
-      listingStatus: 'DRAFT'
+    const bus = await prisma.bus.create({
+      data: {
+        vendorId,
+        operatorName,
+        busNumber,
+        type,
+        departure: departure || {},
+        arrival: arrival || {},
+        durationMinutes: parseInt(durationMinutes) || 0,
+        price: parseFloat(price),
+        seats: parseInt(seats) || 45,
+        seatsAvailable: parseInt(seats) || 45,
+        amenities: amenities || [],
+        image: image || null,
+        listingStatus: 'DRAFT'
+      }
     })
 
-    await bus.save()
     res.status(201).json({ success: true, data: bus })
   } catch (error) {
     res.status(500).json({ success: false, message: error.message })
@@ -48,41 +53,55 @@ export const createBus = async (req, res) => {
 
 export const updateBus = async (req, res) => {
   try {
-    const bus = await Bus.findById(req.params.id)
+    const { id } = req.params
+    const vendorId = req.user.id
+
+    const bus = await prisma.bus.findFirst({ where: { id, vendorId } })
 
     if (!bus) {
       return res.status(404).json({ success: false, message: 'Bus not found' })
     }
 
-    if (bus.vendorId.toString() !== req.vendor.id) {
-      return res.status(403).json({ success: false, message: 'Not authorized' })
-    }
-
-    const { operatorName, busNumber, type, departure, arrival, duration, price, seats, amenities, image } = req.body
+    const { operatorName, busNumber, type, departure, arrival, durationMinutes, price, seats, amenities, image } = req.body
 
     if (busNumber && busNumber !== bus.busNumber) {
-      const existing = await Bus.findOne({ busNumber })
+      const existing = await prisma.bus.findUnique({ where: { busNumber } })
       if (existing) {
         return res.status(400).json({ success: false, message: 'Bus number already exists' })
       }
     }
 
-    Object.assign(bus, {
+    const updateData = {
       operatorName: operatorName || bus.operatorName,
       busNumber: busNumber || bus.busNumber,
       type: type || bus.type,
       departure: departure || bus.departure,
       arrival: arrival || bus.arrival,
-      duration: duration || bus.duration,
-      price: price || bus.price,
-      seats: seats || bus.seats,
-      seatsAvailable: seats || bus.seatsAvailable,
+      price: price ? parseFloat(price) : bus.price,
+      seats: seats ? parseInt(seats) : bus.seats,
+      seatsAvailable: seats ? parseInt(seats) : bus.seatsAvailable,
       amenities: amenities || bus.amenities,
       image: image || bus.image
+    }
+
+    if (durationMinutes !== undefined) {
+      updateData.durationMinutes = parseInt(durationMinutes)
+    }
+
+    // If bus is already approved, editing it requires re-approval
+    if (bus.listingStatus === 'APPROVED') {
+      updateData.listingStatus = 'PENDING_APPROVAL'
+      updateData.submittedAt = new Date()
+      updateData.approvedAt = null
+      updateData.approvedBy = null
+    }
+
+    const updatedBus = await prisma.bus.update({
+      where: { id },
+      data: updateData
     })
 
-    await bus.save()
-    res.status(200).json({ success: true, data: bus })
+    res.status(200).json({ success: true, data: updatedBus })
   } catch (error) {
     res.status(500).json({ success: false, message: error.message })
   }
@@ -90,17 +109,16 @@ export const updateBus = async (req, res) => {
 
 export const deleteBus = async (req, res) => {
   try {
-    const bus = await Bus.findById(req.params.id)
+    const { id } = req.params
+    const vendorId = req.user.id
+
+    const bus = await prisma.bus.findFirst({ where: { id, vendorId } })
 
     if (!bus) {
       return res.status(404).json({ success: false, message: 'Bus not found' })
     }
 
-    if (bus.vendorId.toString() !== req.vendor.id) {
-      return res.status(403).json({ success: false, message: 'Not authorized' })
-    }
-
-    await Bus.findByIdAndDelete(req.params.id)
+    await prisma.bus.delete({ where: { id } })
     res.status(200).json({ success: true, message: 'Bus deleted' })
   } catch (error) {
     res.status(500).json({ success: false, message: error.message })
@@ -109,20 +127,31 @@ export const deleteBus = async (req, res) => {
 
 export const submitBusForApproval = async (req, res) => {
   try {
-    const bus = await Bus.findById(req.params.id)
+    const { id } = req.params
+    const vendorId = req.user.id
+
+    const bus = await prisma.bus.findFirst({ where: { id, vendorId } })
 
     if (!bus) {
       return res.status(404).json({ success: false, message: 'Bus not found' })
     }
 
-    if (bus.vendorId.toString() !== req.vendor.id) {
-      return res.status(403).json({ success: false, message: 'Not authorized' })
+    if (bus.listingStatus !== 'DRAFT' && bus.listingStatus !== 'REJECTED') {
+      return res.status(400).json({
+        success: false,
+        message: 'Only draft or rejected buses can be submitted'
+      })
     }
 
-    bus.listingStatus = 'PENDING_APPROVAL'
-    await bus.save()
+    const updatedBus = await prisma.bus.update({
+      where: { id },
+      data: {
+        listingStatus: 'PENDING_APPROVAL',
+        submittedAt: new Date()
+      }
+    })
 
-    res.status(200).json({ success: true, data: bus, message: 'Bus submitted for approval' })
+    res.status(200).json({ success: true, data: updatedBus, message: 'Bus submitted for approval' })
   } catch (error) {
     res.status(500).json({ success: false, message: error.message })
   }

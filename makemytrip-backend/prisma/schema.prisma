@@ -25,6 +25,9 @@ model User {
   bookings      Booking[]
   hotels        Hotel[]   @relation("HotelVendor")
   flights       Flight[]  @relation("FlightVendor")
+  buses         Bus[]     @relation("BusVendor")
+  cabs          Cab[]     @relation("CabVendor")
+  trains        Train[]   @relation("TrainVendor")
 }
 
 model Booking {
@@ -89,6 +92,7 @@ model Hotel {
   pricePerNight   Float
   rooms           Int      @default(50)
   roomsAvailable  Int      @default(50)
+  roomTypes       Json?
   amenities       Json?
   checkin         String?
   checkout        String?
@@ -118,6 +122,81 @@ model RoomCategory {
   amenities       Json?
   images          Json?
   isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Bus {
+  id              String   @id @default(uuid())
+  vendorId        String?
+  vendor          User?    @relation("BusVendor", fields: [vendorId], references: [id], onDelete: SetNull)
+  operatorName    String
+  busNumber       String   @unique
+  type            String
+  departure       Json?
+  arrival         Json?
+  durationMinutes Int?
+  price           Float
+  seats           Int      @default(45)
+  seatsAvailable  Int      @default(45)
+  amenities       Json?
+  image           String?
+  isActive        Boolean  @default(true)
+  listingStatus   String   @default("DRAFT")
+  rejectionReason String?
+  submittedAt     DateTime?
+  approvedAt      DateTime?
+  approvedBy      String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Cab {
+  id              String   @id @default(uuid())
+  vendorId        String?
+  vendor          User?    @relation("CabVendor", fields: [vendorId], references: [id], onDelete: SetNull)
+  operatorName    String
+  cabNumber       String   @unique
+  type            String   // 'Economy', 'Premium', 'XL', 'Luxury'
+  baseFare        Float
+  perKmRate       Float
+  perMinuteRate   Float
+  location        String?
+  currentCity     String?
+  cabs            Int      @default(20)
+  cabsAvailable   Int      @default(20)
+  image           String?
+  isActive        Boolean  @default(true)
+  listingStatus   String   @default("DRAFT")
+  rejectionReason String?
+  submittedAt     DateTime?
+  approvedAt      DateTime?
+  approvedBy      String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Train {
+  id              String   @id @default(uuid())
+  vendorId        String?
+  vendor          User?    @relation("TrainVendor", fields: [vendorId], references: [id], onDelete: SetNull)
+  operatorName    String
+  trainNumber     String   @unique
+  type            String
+  departure       Json?
+  arrival         Json?
+  durationMinutes Int?
+  price           Float
+  seats           Int      @default(400)
+  seatsAvailable  Int      @default(400)
+  amenities       Json?
+  image           String?
+  isActive        Boolean  @default(true)
+  listingStatus   String   @default("DRAFT")
+  rejectionReason String?
+  submittedAt     DateTime?
+  approvedAt      DateTime?
+  approvedBy      String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }

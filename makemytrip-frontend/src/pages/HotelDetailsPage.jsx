@@ -24,42 +24,56 @@ export default function HotelDetailsPage() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    if (!hotel) {
-      const fetchHotel = async () => {
-        try {
-          const res = await getHotelDetails(hotelId)
-          if (res.data) {
-            const h = res.data
-            setHotel({
-              ...h,
-              id: h.id,
-              locality: h.location || h.city,
-              distance: '2.0 km from City Center',
-              ratingLabel: h.rating >= 4.5 ? 'Excellent' : h.rating >= 4 ? 'Very Good' : 'Good',
-              strike: h.price + 1000,
-              taxes: h.price * 0.18,
-              roomType: 'Deluxe Room',
-              amenities: h.amenities || ['Free WiFi'],
-              review: h.description || "A wonderful stay.",
-              longStay: [],
-              seed: [1, 2, 3],
-              photos: 10,
-              starHost: h.rating >= 4.5,
-              coupleFriendly: true,
-              promo: ""
-            })
-          } else {
-            setError('Hotel not found')
-          }
-        } catch (err) {
-          setError('Failed to fetch hotel details')
-        } finally {
-          setLoading(false)
+    const fetchHotel = async () => {
+      try {
+        const res = await getHotelDetails(hotelId)
+        if (res.data) {
+          const h = res.data
+          setHotel(prev => ({
+            ...prev,
+            ...h,
+            id: h.id,
+            locality: h.location || h.city,
+            distance: '2.0 km from City Center',
+            ratingLabel: h.rating >= 4.5 ? 'Excellent' : h.rating >= 4 ? 'Very Good' : 'Good',
+            strike: h.price + 1000,
+            taxes: h.price * 0.18,
+            roomType: 'Deluxe Room',
+            amenities: h.amenities || ['Free WiFi'],
+            review: h.description || "A wonderful stay.",
+            longStay: [],
+            seed: [1, 2, 3],
+            photos: 10,
+            starHost: h.rating >= 4.5,
+            coupleFriendly: true,
+            promo: ""
+          }))
+        } else {
+          setError('Hotel not found')
         }
+      } catch (err) {
+        setError('Failed to fetch hotel details')
+      } finally {
+        setLoading(false)
       }
-      fetchHotel()
     }
-  }, [hotel, hotelId])
+    fetchHotel()
+  }, [hotelId])
+
+  const [disabledDates, setDisabledDates] = useState([])
+
+  useEffect(() => {
+    if (hotel?.name) {
+      fetch(`${import.meta.env.VITE_API_BASE_URL}/bookings/hotel/${encodeURIComponent(hotel.name)}/blocked-dates`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.data) {
+            setDisabledDates(data.data)
+          }
+        })
+        .catch(err => console.error('Failed to fetch blocked dates', err))
+    }
+  }, [hotel?.name])
 
   // Default fallback images - Premium hotel & resort images
   const defaultImages = [
@@ -149,9 +163,11 @@ export default function HotelDetailsPage() {
   }
 
   const nights = calculateNights()
-  const rooms = bookEntireHotel ? 10 : (guestsObj.rooms || 1)
+  const totalHotelRooms = hotel?.rooms || 10;
+  const takeoverMultiplier = totalHotelRooms * 0.9;
+  const rooms = bookEntireHotel ? totalHotelRooms : (guestsObj.rooms || 1)
   const basePriceForStay = hotel 
-    ? (bookEntireHotel ? Math.round(hotel.price * 4.5 * nights) : hotel.price * nights * (guestsObj.rooms || 1))
+    ? (bookEntireHotel ? Math.round(hotel.price * takeoverMultiplier * nights) : hotel.price * nights * (guestsObj.rooms || 1))
     : 0
   // Taxes = 18% of base price (GST standard rate)
   const taxesForStay = Math.round(basePriceForStay * 0.18)
@@ -201,11 +217,38 @@ export default function HotelDetailsPage() {
   }
 
   // Trigger Booking flow -> Review Page
-  const handleReserve = (roomName) => {
+  const handleReserve = async (roomName, customPrice) => {
     const isEntire = roomName === "Entire Property Takeover (All Rooms)" || bookEntireHotel;
+
+    try {
+      // Check availability overlap
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/bookings/check-overlap`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          hotelName: hotel.name,
+          checkIn,
+          checkOut,
+          bookEntireHotel: isEntire
+        })
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        if (!data.available) {
+          showNotify('Not Available', data.message || 'Property is not available for these dates.', 'error');
+          return;
+        }
+      }
+    } catch (err) {
+      console.error("Availability check failed:", err);
+      showNotify('Verification Failed', 'Failed to verify availability. Please try again.', 'error');
+      return;
+    }
+
     navigate('/hotels/review', {
       state: {
-        hotel,
+        hotel: customPrice ? { ...hotel, price: customPrice } : hotel,
         roomName: roomName || (isEntire ? 'Entire Property Takeover (All Rooms)' : hotel.roomType || 'Deluxe Room'),
         checkIn,
         checkOut,
@@ -399,12 +442,12 @@ export default function HotelDetailsPage() {
                 </div>
                 <div className="hd-room-info">
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', flexWrap: 'wrap' }}>
-                    <h4 style={{ margin: 0, color: 'hsl(var(--a))' }}>👑 Entire Property Takeover (All Rooms)</h4>
+                    <h4 style={{ margin: 0, color: 'hsl(var(--a))' }}>👑 Entire Property Takeover (All {hotel?.rooms || 10} Rooms)</h4>
                     <span style={{ background: 'hsl(var(--a) / 0.15)', color: 'hsl(var(--a))', fontSize: '10px', fontWeight: 800, padding: '2px 8px', borderRadius: '4px', textTransform: 'uppercase' }}>Exclusive Takeover</span>
                   </div>
                   <div className="hd-room-tags">
                     <span className="hd-room-tag">🏰 Private Resort Takeover</span>
-                    <span className="hd-room-tag">👥 Accommodates up to 30 Guests</span>
+                    <span className="hd-room-tag">👥 Accommodates up to {(hotel?.rooms || 10) * 3} Guests</span>
                     <span className="hd-room-tag">🛎️ Exclusive Dedicated Staff</span>
                     <span className="hd-room-tag">🍽️ All Meals &amp; Events Included</span>
                   </div>
@@ -412,8 +455,8 @@ export default function HotelDetailsPage() {
                 </div>
                 <div className="hd-room-price-area" style={{ background: 'hsl(var(--a) / 0.02)' }}>
                   <div className="hd-room-sub" style={{ color: 'hsl(var(--a))' }}>Takeover Price / Night</div>
-                  <div className="hd-room-price" style={{ color: 'hsl(var(--a))' }}>₹ {(hotel.price * 4.5).toLocaleString("en-IN")}</div>
-                  <div style={{ fontSize: '11px', color: 'hsl(var(--bc) / 0.55)', marginBottom: '8px' }}>+ ₹{Math.round((hotel.price * 4.5) * 0.18).toLocaleString('en-IN')} taxes &amp; fees</div>
+                  <div className="hd-room-price" style={{ color: 'hsl(var(--a))' }}>₹ {(hotel.price * ((hotel?.rooms || 10) * 0.9)).toLocaleString("en-IN")}</div>
+                  <div style={{ fontSize: '11px', color: 'hsl(var(--bc) / 0.55)', marginBottom: '8px' }}>+ ₹{Math.round((hotel.price * ((hotel?.rooms || 10) * 0.9)) * 0.18).toLocaleString('en-IN')} taxes &amp; fees</div>
                   <button 
                     className="btn-primary hd-btn-compact" 
                     style={{ background: 'linear-gradient(135deg, hsl(var(--a)) 0%, hsl(var(--wa)) 100%)', color: 'white', border: 'none', boxShadow: '0 4px 12px rgba(251, 191, 36, 0.3)' }}
@@ -427,51 +470,49 @@ export default function HotelDetailsPage() {
                 </div>
               </div>
 
-              <div className="hd-room-card">
-                <div className="hd-room-image-side">
-                  <img src="https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=400&h=300&q=80" alt="Luxury Heritage Suite" />
-                </div>
-                <div className="hd-room-info">
-                  <h4>{hotel.roomType || "Luxury Heritage Suite"}</h4>
-                  <div className="hd-room-tags">
-                    <span className="hd-room-tag">👑 King Size Bed</span>
-                    <span className="hd-room-tag">🌅 Lake / City View</span>
-                    <span className="hd-room-tag">🛁 Bathtub Included</span>
-                  </div>
-                  <span className="hd-room-status">✓ Available On Instant Confirmation</span>
-                </div>
-                <div className="hd-room-price-area">
-                  <div className="hd-room-sub">Base Price / Night</div>
-                  <div className="hd-room-price">₹ {hotel.price.toLocaleString("en-IN")}</div>
-                  <div style={{ fontSize: '11px', color: 'hsl(var(--bc) / 0.55)', marginBottom: '8px' }}>+ ₹{Math.round(hotel.price * 0.18).toLocaleString('en-IN')} taxes & fees</div>
-                  <button className="btn-primary hd-btn-compact" onClick={() => handleReserve(hotel.roomType || "Luxury Heritage Suite")}>
-                    BOOK NOW
-                  </button>
-                </div>
-              </div>
+              {/* Dynamic Room Options */}
+              {(hotel?.roomTypes && hotel.roomTypes.length > 0 ? hotel.roomTypes : [hotel.roomType || 'Deluxe Room']).map((rt, index) => {
+                const priceMultiplier = 1 + (index * 0.35); // Increases price by 35% for each higher tier room
+                const calculatedPrice = Math.round(hotel.price * priceMultiplier);
+                
+                const roomImages = [
+                  "https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=400&h=300&q=80",
+                  "https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&w=400&h=300&q=80",
+                  "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=400&h=300&q=80",
+                  "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=400&h=300&q=80"
+                ];
+                const img = roomImages[index % roomImages.length];
 
-              <div className="hd-room-card">
-                <div className="hd-room-image-side">
-                  <img src="https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&w=400&h=300&q=80" alt="Royal Maharaja Suite" />
-                </div>
-                <div className="hd-room-info">
-                  <h4>Royal Maharaja Suite with Private Terrace</h4>
-                  <div className="hd-room-tags">
-                    <span className="hd-room-tag">💎 Premium Bedding</span>
-                    <span className="hd-room-tag">🏊 Plunge Pool Access</span>
-                    <span className="hd-room-tag">🥂 Complimentary Wine</span>
+                return (
+                  <div className="hd-room-card" key={rt}>
+                    <div className="hd-room-image-side">
+                      <img src={img} alt={rt} />
+                    </div>
+                    <div className="hd-room-info">
+                      <h4>{rt}</h4>
+                      <div className="hd-room-tags">
+                        <span className="hd-room-tag">{index > 0 ? '👑 Premium Bedding' : '👑 King Size Bed'}</span>
+                        <span className="hd-room-tag">{index > 1 ? '🏊 Private Pool/Balcony' : '🌅 Great View'}</span>
+                        <span className="hd-room-tag">🛁 Ensuite Bathroom</span>
+                      </div>
+                      <span className="hd-room-status" style={index % 2 === 1 ? { color: 'hsl(var(--er))', background: 'hsl(var(--er) / 0.1)' } : {}}>
+                        {index % 2 === 1 ? '⚡ Only a few rooms left!' : '✓ Available On Instant Confirmation'}
+                      </span>
+                    </div>
+                    <div className="hd-room-price-area">
+                      <div className="hd-room-sub">Base Price / Night</div>
+                      <div className="hd-room-price">₹ {calculatedPrice.toLocaleString("en-IN")}</div>
+                      <div style={{ fontSize: '11px', color: 'hsl(var(--bc) / 0.55)', marginBottom: '8px' }}>+ ₹{Math.round(calculatedPrice * 0.18).toLocaleString('en-IN')} taxes & fees</div>
+                      <button 
+                        className="btn-primary hd-btn-compact" 
+                        onClick={() => handleReserve(rt, calculatedPrice)}
+                      >
+                        BOOK NOW
+                      </button>
+                    </div>
                   </div>
-                  <span className="hd-room-status few">⚡ Only 2 Rooms Left</span>
-                </div>
-                <div className="hd-room-price-area">
-                  <div className="hd-room-sub">Base Price / Night</div>
-                  <div className="hd-room-price">₹ {(hotel.price + 3200).toLocaleString("en-IN")}</div>
-                  <div style={{ fontSize: '11px', color: 'hsl(var(--bc) / 0.55)', marginBottom: '8px' }}>+ ₹{Math.round((hotel.price + 3200) * 0.18).toLocaleString('en-IN')} taxes & fees</div>
-                  <button className="btn-primary hd-btn-compact" onClick={() => handleReserve("Royal Maharaja Suite with Private Terrace")}>
-                    BOOK NOW
-                  </button>
-                </div>
-              </div>
+                );
+              })}
 
             </div>
           </div>
@@ -595,6 +636,7 @@ export default function HotelDetailsPage() {
                   onChange={v => { setCheckIn(v); setShowCheckInCal(false) }}
                   onClose={() => setShowCheckInCal(false)}
                   labelText="Check-in"
+                  disabledDates={disabledDates}
                 />
               </div>
 
@@ -610,6 +652,7 @@ export default function HotelDetailsPage() {
                   onChange={v => { setCheckOut(v); setShowCheckOutCal(false) }}
                   onClose={() => setShowCheckOutCal(false)}
                   labelText="Check-out"
+                  disabledDates={disabledDates}
                 />
               </div>
 
@@ -618,7 +661,7 @@ export default function HotelDetailsPage() {
                 <input 
                   type="text" 
                   className="hd-input-field" 
-                  value={bookEntireHotel ? 'Entire Hotel (10 Rooms, All Guests)' : guests} 
+                  value={bookEntireHotel ? `Entire Hotel (${hotel?.rooms || 10} Rooms, All Guests)` : guests} 
                   onChange={(e) => setGuests(e.target.value)} 
                   disabled={bookEntireHotel}
                   style={{ cursor: bookEntireHotel ? 'not-allowed' : 'text' }}

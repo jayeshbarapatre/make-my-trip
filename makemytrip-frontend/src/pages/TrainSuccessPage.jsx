@@ -13,7 +13,7 @@ export default function TrainSuccessPage() {
     bookingId: "MMT-TR-849210",
     fromCity: "New Delhi (NDLS)",
     toCity: "Mumbai Central (BCT)",
-    departureDate: "2026-05-18",
+    departureDate: new Date().toISOString().split('T')[0],
     travellers: { 
       passengers: [{ name: "Jayesh Sharma", age: 29, gender: "Male", berth: "Lower Berth" }],
       classCode: "3A",
@@ -35,7 +35,7 @@ export default function TrainSuccessPage() {
         scale: 2,
         useCORS: true,
         logging: false,
-        backgroundColor: 'hsl(var(--b1))'
+        backgroundColor: '#ffffff'
       });
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF({

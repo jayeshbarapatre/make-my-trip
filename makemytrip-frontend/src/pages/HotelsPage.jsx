@@ -5,6 +5,7 @@ import { CITIES as AUTOCOMPLETE_CITIES } from '../data/cities'
 import { UDAIPUR_HOTELS } from '../data/udaipurHotelsData'
 import { useWeather } from '../hooks/useWeather'
 import CustomCalendarPicker from '../components/CustomCalendarPicker'
+import TabIcon from '../components/TabIcon'
 import '../styles/Hero.css' // Navigation and topbar imports
 import '../styles/HomePage.css' // Dynamic style imports
 
@@ -259,7 +260,7 @@ export default function HotelsPage() {
                   onClick={() => handleTabChange(t.id)}
                 >
                   {t.isNew && <span className="tab-new">new</span>}
-                  <span className="tab-icon">{t.icon}</span>
+                  <span className="tab-icon"><TabIcon id={t.id} size={26} /></span>
                   <span className="tab-lbl" style={{ whiteSpace: 'pre-line' }}>{t.label}</span>
                   {activeTab === t.id && <div className="tab-bar" />}
                 </button>

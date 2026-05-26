@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { useAdmin } from '../context/AdminContext'
+import { FaEnvelope, FaLock, FaArrowLeft, FaUserShield } from 'react-icons/fa'
 import './AdminLoginPage.css'
 
 const AdminLoginPage = () => {
@@ -38,14 +39,22 @@ const AdminLoginPage = () => {
   return (
     <div className="admin-login-container">
       <div className="admin-login-card">
+        <Link to="/" className="back-to-home-link">
+          <FaArrowLeft className="back-icon" />
+          <span>Back to Home</span>
+        </Link>
+
         <div className="login-header">
+          <div className="portal-icon-wrapper">
+            <FaUserShield className="portal-icon" />
+          </div>
           <h1 className="login-title">MakeMyTrip Admin</h1>
           <p className="login-subtitle">Admin Portal</p>
         </div>
 
         {(error || localError) && (
           <div className="error-alert">
-            <span>⚠️</span>
+            <span className="error-icon">⚠️</span>
             <p>{error || localError}</p>
           </div>
         )}
@@ -53,26 +62,34 @@ const AdminLoginPage = () => {
         <form onSubmit={handleSubmit} className="login-form">
           <div className="form-group">
             <label htmlFor="email">Email Address</label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@makemytrip.com"
-              disabled={loading}
-            />
+            <div className="input-wrapper">
+              <FaEnvelope className="input-field-icon" />
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="admin@makemytrip.com"
+                disabled={loading}
+                required
+              />
+            </div>
           </div>
 
           <div className="form-group">
             <label htmlFor="password">Password</label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
-              disabled={loading}
-            />
+            <div className="input-wrapper">
+              <FaLock className="input-field-icon" />
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your password"
+                disabled={loading}
+                required
+              />
+            </div>
           </div>
 
           <button type="submit" className="login-btn" disabled={loading}>
@@ -91,3 +108,4 @@ const AdminLoginPage = () => {
 }
 
 export default AdminLoginPage
+

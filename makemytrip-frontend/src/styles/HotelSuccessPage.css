@@ -1,7 +1,7 @@
-﻿.succ-wrapper {
+.succ-wrapper {
   background-color: hsl(var(--b2));
   min-height: 100vh;
-  padding: 40px 20px 80px;
+  padding: 100px 20px 80px;
   font-family: var(--font-family, 'Space Grotesk', sans-serif);
   color: hsl(var(--bc));
 }
@@ -229,12 +229,12 @@
   }
 }
 
-/* â”€â”€ Section spacing â”€â”€ */
+/* ── Section spacing ── */
 .succ-sec {
   margin-bottom: 24px;
 }
 
-/* â”€â”€ Meta chips (nights / rooms / guests) â”€â”€ */
+/* ── Meta chips (nights / rooms / guests) ── */
 .succ-meta-chip {
   display: inline-flex;
   align-items: center;
@@ -248,7 +248,7 @@
   color: hsl(var(--nc));
 }
 
-/* â”€â”€ Price Breakdown Table â”€â”€ */
+/* ── Price Breakdown Table ── */
 .succ-price-table {
   background: hsl(var(--b2));
   border: 1px solid hsl(var(--b3));
@@ -288,7 +288,7 @@
 
 .succ-price-row.total {
   background: hsl(var(--b3));
-  color: hsl(var(--b1));
+  color: hsl(var(--bc));
   font-size: 16px;
   font-weight: 900;
   padding: 16px 20px;

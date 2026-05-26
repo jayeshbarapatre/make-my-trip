@@ -1,18 +1,41 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap');
+
 .admin-layout {
   display: flex;
   min-height: 100vh;
+  font-family: 'Space Grotesk', sans-serif;
 
-  /* Light mode tokens */
-  --bg-body: #f8f9fa;
-  --bg-surface: #ffffff;
-  --bg-sidebar: #f3f4f6;
-  --text-primary: #1a1f36;
-  --text-secondary: #6b7280;
-  --sidebar-text: #374151;
-  --border: #e5e7eb;
-  --accent: #1a73e8;
-  --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  --hover-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  /* Light mode - Map to global design tokens */
+  --accent: hsl(var(--p));
+  --accentSoft: hsla(var(--p), 0.1);
+  --accentInk: hsl(var(--bc));
+  --surface: hsl(var(--b1));
+  --surface2: hsl(var(--b2));
+  --border: hsl(var(--b3));
+  --ink: hsl(var(--bc));
+  --inkMuted: hsla(var(--bc), 0.7);
+  --inkLight: hsla(var(--bc), 0.5);
+
+  --bg-body: hsl(var(--b2));
+  --bg-surface: hsl(var(--b1));
+  --bg-hover: hsla(var(--b3), 0.5);
+  --text-primary: hsl(var(--bc));
+  --text-secondary: hsla(var(--bc), 0.7);
+  --text-muted: hsla(var(--bc), 0.5);
+
+  --success: #27ae60;
+  --success-bg: rgba(39, 174, 96, 0.1);
+  --danger: #dc3545;
+  --danger-bg: rgba(220, 53, 69, 0.1);
+  --warning: #f59e0b;
+  --warning-bg: rgba(245, 158, 11, 0.1);
+  --error: #dc3545;
+  --error-bg: rgba(220, 53, 69, 0.1);
+
+  --shadow-sm: var(--shadow-sm, 0 2px 4px rgba(165, 163, 174, 0.15));
+  --shadow-md: var(--shadow-md, 0 4px 12px rgba(165, 163, 174, 0.2));
+  --shadow-lg: var(--shadow-lg, 0 8px 24px rgba(165, 163, 174, 0.25));
+  --shadow-xl: 0 12px 32px rgba(165, 163, 174, 0.3);
 
   background: var(--bg-body);
   color: var(--text-primary);
@@ -20,22 +43,41 @@
 }
 
 .admin-layout[data-theme="dark"] {
-  /* Dark mode tokens */
-  --bg-body: #0f1117;
-  --bg-surface: #1a1f36;
-  --bg-sidebar: #13161f;
-  --text-primary: #f3f4f6;
-  --text-secondary: #9ca3af;
-  --sidebar-text: #e5e7eb;
-  --border: #374151;
-  --accent: #3b82f6;
-  --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-  --hover-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  /* Dark mode - Inherits automatically from global tokens now, but we map them */
+  --accent: hsl(var(--p));
+  --accentSoft: hsla(var(--p), 0.15);
+  --surface: hsl(var(--b1));
+  --surface2: hsl(var(--b2));
+  --border: hsl(var(--b3));
+  --ink: hsl(var(--bc));
+  --inkMuted: hsla(var(--bc), 0.7);
+  --inkLight: hsla(var(--bc), 0.5);
+
+  --bg-body: hsl(var(--b2));
+  --bg-surface: hsl(var(--b1));
+  --bg-hover: hsla(var(--b3), 0.5);
+  --text-primary: hsl(var(--bc));
+  --text-secondary: hsla(var(--bc), 0.7);
+  --text-muted: hsla(var(--bc), 0.5);
+
+  --success: #2ecc71;
+  --success-bg: rgba(46, 204, 113, 0.12);
+  --danger: #e74c3c;
+  --danger-bg: rgba(231, 76, 60, 0.12);
+  --warning: #f59e0b;
+  --warning-bg: rgba(245, 158, 11, 0.12);
+  --error: #e74c3c;
+  --error-bg: rgba(231, 76, 60, 0.12);
+
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6);
+  --shadow-xl: 0 12px 32px rgba(0, 0, 0, 0.7);
 }
 
 .admin-main {
   flex: 1;
-  margin-left: 250px;
+  margin-left: 260px; /* NexLink sidebar width */
   display: flex;
   flex-direction: column;
   min-width: 0;
@@ -49,7 +91,7 @@
 
 .admin-content {
   flex: 1;
-  padding: 16px;
+  padding: 24px 32px; /* Generous desktop padding (8px grid) */
   overflow-y: auto;
   background: var(--bg-body);
 }
@@ -64,4 +106,20 @@
   .admin-content {
     padding: 16px;
   }
+}
+
+/* Typography */
+.admin-layout h1,
+.admin-layout h2,
+.admin-layout h3,
+.admin-layout h4,
+.admin-layout h5,
+.admin-layout h6 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 600;
+}
+
+.admin-layout code,
+.admin-layout pre {
+  font-family: 'JetBrains Mono', monospace;
 }

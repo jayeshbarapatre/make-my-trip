@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useAdmin } from '../../context/AdminContext'
 import { useTheme } from '../../context/ThemeContext'
-import { adminAuthService } from '../../services/adminService'
+import { adminAuthService, adminService } from '../../services/adminService'
 import './AdminHeader.css'
 
 const AdminHeader = ({ toggleSidebar }) => {
@@ -14,8 +14,13 @@ const AdminHeader = ({ toggleSidebar }) => {
   const [showPasswordModal, setShowPasswordModal] = useState(false)
   const [passwordData, setPasswordData] = useState({ current: '', new: '' })
   const [passwordStatus, setPasswordStatus] = useState({ loading: false, error: '', success: '' })
+  const [pendingBusesCount, setPendingBusesCount] = useState(0)
+  const [pendingCabsCount, setPendingCabsCount] = useState(0)
+  const [pendingHotelsCount, setPendingHotelsCount] = useState(0)
+  const [pendingFlightsCount, setPendingFlightsCount] = useState(0)
   const dropdownRef = useRef(null)
   const notificationRef = useRef(null)
+  const navigate = useNavigate()
 
   const getPageName = () => {
     const pathMap = {
@@ -25,12 +30,42 @@ const AdminHeader = ({ toggleSidebar }) => {
       '/admin/buses': 'Buses',
       '/admin/cabs': 'Cabs',
       '/admin/bookings': 'Bookings',
-      '/admin/users': 'Users'
+      '/admin/users': 'Users',
+      '/admin/approvals': 'Hotel Approvals',
+      '/admin/flight-approvals': 'Flight Approvals',
+      '/admin/bus-approvals': 'Bus Approvals',
+      '/admin/cab-approvals': 'Cab Approvals'
     }
     return pathMap[location.pathname] || 'Admin'
   }
 
   useEffect(() => {
+    const fetchPendingNotifications = async () => {
+      try {
+        const [busRes, cabRes, hotelRes, flightRes] = await Promise.all([
+          adminService.getPendingBuses(),
+          adminService.getPendingCabs(),
+          adminService.getPendingHotels(),
+          adminService.getPendingFlights()
+        ])
+        const buses = busRes.data?.data?.buses || []
+        const cabs = cabRes.data?.data?.cabs || []
+        const hotels = hotelRes.data?.data?.hotels || []
+        const flights = flightRes.data?.data?.flights || []
+        
+        setPendingBusesCount(buses.length)
+        setPendingCabsCount(cabs.length)
+        setPendingHotelsCount(hotels.length)
+        setPendingFlightsCount(flights.length)
+      } catch (err) {
+        console.error('Failed to fetch pending notifications', err)
+      }
+    }
+    
+    if (admin) {
+      fetchPendingNotifications()
+    }
+
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setDropdownOpen(false)
@@ -41,7 +76,14 @@ const AdminHeader = ({ toggleSidebar }) => {
     }
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+  }, [admin])
+
+  const handleNotificationClick = (path) => {
+    setNotificationOpen(false);
+    navigate(path);
+  };
+
+  const totalNotifications = pendingBusesCount + pendingCabsCount + pendingHotelsCount + pendingFlightsCount;
 
   return (
     <header className="admin-header">
@@ -49,26 +91,14 @@ const AdminHeader = ({ toggleSidebar }) => {
         <i className="fas fa-bars"></i>
       </button>
 
-      <div className="greeting-section">
-        <h2 className="greeting">{getPageName()}</h2>
+      <div className="header-search">
+        <div className="search-wrapper">
+          <i className="fas fa-search search-icon"></i>
+          <input type="text" className="form-control form-control-fill search-input" placeholder="Search anything..." />
+        </div>
       </div>
 
       <div className="header-right">
-        {/* Language Selector */}
-        <div className="language-selector">
-          <button className="lang-btn" title="English">
-            <span className="flag">🇺🇸</span>
-          </button>
-          <button className="lang-btn" title="Spanish">
-            <span className="flag">🇪🇸</span>
-          </button>
-          <button className="lang-btn" title="German">
-            <span className="flag">🇩🇪</span>
-          </button>
-          <button className="lang-btn" title="French">
-            <span className="flag">🇫🇷</span>
-          </button>
-        </div>
 
         {/* Notifications */}
         <div className="notification-container" ref={notificationRef}>
@@ -77,7 +107,7 @@ const AdminHeader = ({ toggleSidebar }) => {
             onClick={() => setNotificationOpen(!notificationOpen)}
           >
             <i className="fas fa-bell"></i>
-            <span className="notification-badge">24</span>
+            {totalNotifications > 0 && <span className="notification-badge">{totalNotifications}</span>}
           </button>
 
           {notificationOpen && (
@@ -91,50 +121,58 @@ const AdminHeader = ({ toggleSidebar }) => {
 
               <div className="notification-tabs">
                 <button className="tab-btn active">All</button>
-                <button className="tab-btn">Projects</button>
-                <button className="tab-btn">Team</button>
               </div>
 
               <div className="notification-list">
-                <div className="notification-item">
-                  <div className="notification-icon">
-                    <i className="fas fa-shopping-cart"></i>
+                {pendingHotelsCount > 0 && (
+                  <div className="notification-item" onClick={() => handleNotificationClick('/admin/approvals')} style={{ cursor: 'pointer' }}>
+                    <div className="notification-icon" style={{ background: 'var(--warning)', color: 'white' }}>
+                      <i className="fas fa-building"></i>
+                    </div>
+                    <div className="notification-content">
+                      <p className="notification-title">Pending Hotel Approvals</p>
+                      <p className="notification-time">You have {pendingHotelsCount} new hotel listing(s) awaiting approval.</p>
+                    </div>
                   </div>
-                  <div className="notification-content">
-                    <p className="notification-title">New Order Placed</p>
-                    <p className="notification-time">2 min ago</p>
+                )}
+                {pendingFlightsCount > 0 && (
+                  <div className="notification-item" onClick={() => handleNotificationClick('/admin/flight-approvals')} style={{ cursor: 'pointer' }}>
+                    <div className="notification-icon" style={{ background: 'var(--warning)', color: 'white' }}>
+                      <i className="fas fa-plane"></i>
+                    </div>
+                    <div className="notification-content">
+                      <p className="notification-title">Pending Flight Approvals</p>
+                      <p className="notification-time">You have {pendingFlightsCount} new flight listing(s) awaiting approval.</p>
+                    </div>
                   </div>
-                </div>
-
-                <div className="notification-item">
-                  <div className="notification-icon">
-                    <i className="fas fa-tasks"></i>
+                )}
+                {pendingBusesCount > 0 && (
+                  <div className="notification-item" onClick={() => handleNotificationClick('/admin/bus-approvals')} style={{ cursor: 'pointer' }}>
+                    <div className="notification-icon" style={{ background: 'var(--warning)', color: 'white' }}>
+                      <i className="fas fa-bus"></i>
+                    </div>
+                    <div className="notification-content">
+                      <p className="notification-title">Pending Bus Approvals</p>
+                      <p className="notification-time">You have {pendingBusesCount} new bus listing(s) awaiting approval.</p>
+                    </div>
                   </div>
-                  <div className="notification-content">
-                    <p className="notification-title">Task Completed</p>
-                    <p className="notification-time">5 min ago</p>
+                )}
+                {pendingCabsCount > 0 && (
+                  <div className="notification-item" onClick={() => handleNotificationClick('/admin/cab-approvals')} style={{ cursor: 'pointer' }}>
+                    <div className="notification-icon" style={{ background: 'var(--warning)', color: 'white' }}>
+                      <i className="fas fa-taxi"></i>
+                    </div>
+                    <div className="notification-content">
+                      <p className="notification-title">Pending Cab Approvals</p>
+                      <p className="notification-time">You have {pendingCabsCount} new cab listing(s) awaiting approval.</p>
+                    </div>
                   </div>
-                </div>
-
-                <div className="notification-item">
-                  <div className="notification-icon">
-                    <i className="fas fa-user-plus"></i>
+                )}
+                {totalNotifications === 0 && (
+                  <div style={{ padding: '20px', textAlign: 'center', color: 'hsl(var(--bc) / 0.6)' }}>
+                    No new notifications
                   </div>
-                  <div className="notification-content">
-                    <p className="notification-title">New User Registration</p>
-                    <p className="notification-time">15 min ago</p>
-                  </div>
-                </div>
-
-                <div className="notification-item">
-                  <div className="notification-icon">
-                    <i className="fas fa-file-alt"></i>
-                  </div>
-                  <div className="notification-content">
-                    <p className="notification-title">Report Generated</p>
-                    <p className="notification-time">1 hour ago</p>
-                  </div>
-                </div>
+                )}
               </div>
 
               <button className="view-all-btn">View All Notifications</button>

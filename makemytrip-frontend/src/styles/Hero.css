@@ -241,10 +241,20 @@
 }
 
 .service-tab .tab-icon {
-  font-size: 26px;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   line-height: 1;
   transition: var(--transition-smooth);
-  color: inherit !important;
+  color: inherit;
+  flex-shrink: 0;
+}
+
+.service-tab .tab-icon svg {
+  width: 26px;
+  height: 26px;
 }
 
 .service-tab.active .tab-icon {
@@ -480,7 +490,7 @@
 }
 
 .input-value.date-val.placeholder {
-  color: var(--clr-text-hint);
+  color: hsl(var(--bc) / 0.4);
   font-size: 16px;
   font-weight: 600;
 }
@@ -512,7 +522,7 @@
 }
 
 .input-sub.muted {
-  color: var(--clr-text-hint);
+  color: hsl(var(--bc) / 0.4);
   line-height: 1.4;
   white-space: normal;
 }

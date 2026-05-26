@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { setCriteria } from '../../store/reducers/searchReducer'
 import { logout } from '../../store/reducers/authReducer'
 import { SERVICE_TABS, SPECIAL_FARES } from '../../data/homepageData'
+import TabIcon from '../TabIcon'
 import '../../styles/Hero.css'
 
 export default function HeroSearch() {
@@ -84,7 +85,7 @@ export default function HeroSearch() {
                 }}
               >
                 {t.isNew && <span className="tab-new">new</span>}
-                <span className="tab-icon">{t.icon}</span>
+                <span className="tab-icon"><TabIcon id={t.id} size={26} /></span>
                 <span className="tab-lbl" style={{ whiteSpace: 'pre-line' }}>{t.label}</span>
                 {activeTab === t.id && <div className="tab-bar" />}
               </button>

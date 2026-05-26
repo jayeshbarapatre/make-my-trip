@@ -1,15 +1,20 @@
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-   MakeMyTrip â€” Inner Pages Modern Award-Level Stylesheet
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* ═══════════════════════════════════════════════════════════════
+   MakeMyTrip — Inner Pages Modern Award-Level Stylesheet
+   ═══════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════
+   MakeMyTrip — Inner Pages Modern Award-Level Stylesheet
+   ═══════════════════════════════════════════════════════════════ */
 
-/* â”€â”€ Hero Backdrop Gradients â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Hero Backdrop Gradients ─────────────────────────────────── */
+/* ── Hero Backdrop Gradients ─────────────────────────────────── */
 body {
   overflow-x: clip;
 }
 
 .phero {
   padding: 40px 0 80px;
-  color: var(--clr-text-inverse);
+  color: hsl(var(--pc));
+  color: hsl(var(--pc));
   position: relative;
   overflow: visible;
 }
@@ -33,7 +38,8 @@ body {
 .phero-inner h1 {
   font-size: 36px;
   font-weight: 800;
-  color: var(--clr-text-inverse);
+  color: hsl(var(--pc));
+  color: hsl(var(--pc));
   margin-bottom: 6px;
   letter-spacing: -0.5px;
   text-shadow: 0 2px 4px rgba(0,0,0,0.15);
@@ -48,57 +54,68 @@ body {
 
 /* Page backdrops */
 .phero.hotels {
-  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, var(--clr-bg-base) 100%),
+  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
+  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
               url('https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1920&q=80') center / cover no-repeat !important;
 }
 
 .phero.trains {
-  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, var(--clr-bg-base) 100%),
+  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
+  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
               url('https://images.unsplash.com/photo-1518609878373-06d740f60d8b?auto=format&fit=crop&w=1920&q=80') center / cover no-repeat !important;
 }
 
 .phero.holidays {
-  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, var(--clr-bg-base) 100%),
+  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
+  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
               url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1920&q=80') center / cover no-repeat !important;
 }
 
 .phero.homestays {
-  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, var(--clr-bg-base) 100%),
+  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
+  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
               url('https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1920&q=80') center / cover no-repeat !important;
 }
 
 .phero.cabs {
-  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, var(--clr-bg-base) 100%),
+  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
+  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
               url('https://images.unsplash.com/photo-1517524206127-48bbd363f3d7?auto=format&fit=crop&w=1920&q=80') center / cover no-repeat !important;
 }
 
 .phero.buses {
-  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, var(--clr-bg-base) 100%),
+  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
+  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
               url('https://images.unsplash.com/photo-1570125909232-eb263c188f7e?auto=format&fit=crop&w=1920&q=80') center / cover no-repeat !important;
 }
 
 .phero.cruise {
-  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, var(--clr-bg-base) 100%),
+  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
+  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
               url('https://images.unsplash.com/photo-1500835556837-99ac94a94552?auto=format&fit=crop&w=1920&q=80') center / cover no-repeat !important;
 }
 
 .phero.forex {
-  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, var(--clr-bg-base) 100%),
+  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
+  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
               url('https://images.unsplash.com/photo-1580584126903-c17d41830450?auto=format&fit=crop&w=1920&q=80') center / cover no-repeat !important;
 }
 
 .phero.insurance {
-  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, var(--clr-bg-base) 100%),
+  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
+  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
               url('https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1920&q=80') center / cover no-repeat !important;
 }
 
 .phero.tours {
-  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, var(--clr-bg-base) 100%),
+  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
+  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
               url('https://images.unsplash.com/photo-1513622470522-26c3c8a854bc?auto=format&fit=crop&w=1920&q=80') center / cover no-repeat !important;
 }
 
 .phero.visa {
-  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, var(--clr-bg-base) 100%),
+  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
+  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
               url('https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=1920&q=80') center / cover no-repeat !important;
 }
 
@@ -108,14 +125,16 @@ body {
   margin: 16px auto 0;
   padding: 0 var(--sp-m);
   font-size: 12px;
-  color: var(--clr-text-secondary);
+  color: hsl(var(--bc) / 0.6);
+  color: hsl(var(--bc) / 0.6);
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
 .crumb-link {
-  color: var(--clr-primary);
+  color: hsl(var(--p));
+  color: hsl(var(--p));
   font-weight: 500;
 }
 
@@ -124,7 +143,8 @@ body {
 }
 
 .crumb-sep {
-  color: var(--clr-text-hint);
+  color: hsl(var(--bc) / 0.4);
+  color: hsl(var(--bc) / 0.4);
 }
 
 /* Breadcrumb styling inside Hero banners */
@@ -160,7 +180,8 @@ body {
   font-weight: 500;
 }
 
-/* â”€â”€ Integrated Search Widgets â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Integrated Search Widgets ────────────────────────────────── */
+/* ── Integrated Search Widgets ────────────────────────────────── */
 .inner-search-bcard {
   background: hsl(var(--b1));
   border-radius: 20px;
@@ -198,12 +219,15 @@ body {
 
 .inner-search-field {
   padding: 14px 20px;
-  border-right: 1px solid var(--clr-divider);
+  border-right: 1px solid hsl(var(--b3));
+  border-right: 1px solid hsl(var(--b3));
   display: flex;
   flex-direction: column;
   justify-content: center;
   cursor: pointer;
   transition: background 0.15s ease;
+  box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 .inner-search-field:hover {
@@ -214,7 +238,8 @@ body {
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
-  color: var(--clr-text-secondary);
+  color: hsl(var(--bc) / 0.6);
+  color: hsl(var(--bc) / 0.6);
   margin-bottom: 4px;
   letter-spacing: 0.5px;
 }
@@ -222,20 +247,23 @@ body {
 .inner-field-val {
   font-size: 18px;
   font-weight: 800;
-  color: var(--clr-text-primary);
+  color: hsl(var(--bc));
+  color: hsl(var(--bc));
   line-height: 1.2;
 }
 
 .inner-field-val span.unit-suffix {
   font-size: 13px;
   font-weight: 500;
-  color: var(--clr-text-secondary);
+  color: hsl(var(--bc) / 0.6);
+  color: hsl(var(--bc) / 0.6);
   margin-left: 2px;
 }
 
 .inner-field-sub {
   font-size: 11px;
-  color: var(--clr-text-hint);
+  color: hsl(var(--bc) / 0.4);
+  color: hsl(var(--bc) / 0.4);
   margin-top: 3px;
   white-space: nowrap;
   overflow: hidden;
@@ -244,23 +272,35 @@ body {
 
 /* Giant Search button inside grid */
 .inner-search-cta {
-  background: linear-gradient(135deg, var(--clr-primary) 0%, hsl(var(--p)) 100%);
-  color: var(--clr-text-inverse);
+  background: hsl(var(--p));
+  color: hsl(var(--pc));
   border: none;
-  font-size: 16px;
-  font-weight: 800;
-  padding: 0 40px;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 0 36px;
   cursor: pointer;
-  letter-spacing: 1px;
-  transition: all 0.2s ease;
+  letter-spacing: 0.04em;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
+  white-space: nowrap;
+  min-width: max-content;
+  box-sizing: border-box;
+  box-shadow: 0 4px 16px hsl(var(--p) / 0.35);
+  border-radius: 0 12px 12px 0;
 }
 
 .inner-search-cta:hover {
-  filter: brightness(1.1);
-  box-shadow: inset 0 -4px 12px rgba(0,0,0,0.15);
+  background: hsl(var(--p) / 0.85);
+  box-shadow: 0 6px 22px hsl(var(--p) / 0.5);
+  transform: translateY(-1px);
+}
+
+.inner-search-cta:active {
+  transform: scale(0.98);
+  box-shadow: 0 2px 10px hsl(var(--p) / 0.3);
 }
 
 /* Quick Filter Chips Row */
@@ -278,7 +318,8 @@ body {
   border-radius: var(--radius-full);
   font-size: 12px;
   font-weight: 600;
-  color: var(--clr-text-dark);
+  color: hsl(var(--bc));
+  color: hsl(var(--bc));
   cursor: pointer;
   transition: all 0.15s ease;
 }
@@ -289,13 +330,17 @@ body {
 }
 
 .inner-chip-btn.active {
-  background: var(--clr-primary-dark);
-  color: var(--clr-text-inverse);
-  border-color: var(--clr-primary-dark);
+  background: hsl(var(--p));
+  color: hsl(var(--pc));
+  border-color: hsl(var(--p));
+  background: hsl(var(--p));
+  color: hsl(var(--pc));
+  border-color: hsl(var(--p));
   box-shadow: 0 4px 10px rgba(0, 35, 80, 0.15);
 }
 
-/* â”€â”€ Sections Common Layout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Sections Common Layout ──────────────────────────────────── */
+/* ── Sections Common Layout ──────────────────────────────────── */
 .inner-page-section {
   max-width: var(--max-width);
   margin: 0 auto;
@@ -312,13 +357,15 @@ body {
 .inner-sec-title {
   font-size: 24px;
   font-weight: 800;
-  color: var(--clr-primary-dark);
+  color: hsl(var(--p));
+  color: hsl(var(--p));
   letter-spacing: -0.5px;
 }
 
 .inner-sec-subtitle {
   font-size: 13px;
-  color: var(--clr-text-secondary);
+  color: hsl(var(--bc) / 0.6);
+  color: hsl(var(--bc) / 0.6);
   margin-top: 4px;
   font-weight: 500;
 }
@@ -326,7 +373,8 @@ body {
 .inner-sec-all-link {
   font-size: 13px;
   font-weight: 700;
-  color: var(--clr-primary);
+  color: hsl(var(--p));
+  color: hsl(var(--p));
   display: flex;
   align-items: center;
   gap: 4px;
@@ -334,11 +382,13 @@ body {
 }
 
 .inner-sec-all-link:hover {
-  color: var(--clr-primary-dark);
+  color: hsl(var(--p));
+  color: hsl(var(--p));
   text-decoration: underline;
 }
 
-/* â”€â”€ Hotels Page Components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Hotels Page Components ──────────────────────────────────── */
+/* ── Hotels Page Components ──────────────────────────────────── */
 .hotels-deals-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -346,7 +396,8 @@ body {
 }
 
 .hotels-deal-card {
-  background: var(--clr-bg-white);
+  background: hsl(var(--b1));
+  background: hsl(var(--b1));
   border-radius: 16px;
   overflow: hidden;
   box-shadow: var(--shadow-sm);
@@ -379,13 +430,15 @@ body {
 .hotels-deal-body h4 {
   font-size: 15px;
   font-weight: 700;
-  color: var(--clr-text-primary);
+  color: hsl(var(--bc));
+  color: hsl(var(--bc));
   margin-bottom: 6px;
 }
 
 .hotels-deal-meta {
   font-size: 12px;
-  color: var(--clr-text-secondary);
+  color: hsl(var(--bc) / 0.6);
+  color: hsl(var(--bc) / 0.6);
   margin-bottom: 12px;
   display: flex;
   align-items: center;
@@ -402,12 +455,14 @@ body {
 .hotels-deal-price {
   font-size: 18px;
   font-weight: 800;
-  color: var(--clr-primary);
+  color: hsl(var(--p));
+  color: hsl(var(--p));
 }
 
 .hotels-deal-strike {
   font-size: 12px;
-  color: var(--clr-text-hint);
+  color: hsl(var(--bc) / 0.4);
+  color: hsl(var(--bc) / 0.4);
   text-decoration: line-through;
   font-weight: 500;
 }
@@ -454,14 +509,16 @@ body {
   left: 0;
   right: 0;
   padding: 14px;
-  color: var(--clr-text-inverse);
+  color: hsl(var(--pc));
+  color: hsl(var(--pc));
   z-index: 2;
 }
 
 .hotels-city-info h4 {
   font-size: 15px;
   font-weight: 700;
-  color: var(--clr-text-inverse);
+  color: hsl(var(--pc));
+  color: hsl(var(--pc));
   margin: 0;
 }
 
@@ -478,7 +535,8 @@ body {
 }
 
 .hotels-cat-card {
-  background: var(--clr-bg-white);
+  background: hsl(var(--b1));
+  background: hsl(var(--b1));
   border-radius: 16px;
   padding: 20px;
   box-shadow: var(--shadow-sm);
@@ -511,17 +569,20 @@ body {
 .hotels-cat-details h4 {
   font-size: 14px;
   font-weight: 700;
-  color: var(--clr-text-primary);
+  color: hsl(var(--bc));
+  color: hsl(var(--bc));
   margin: 0;
 }
 
 .hotels-cat-details p {
   font-size: 11px;
-  color: var(--clr-text-secondary);
+  color: hsl(var(--bc) / 0.6);
+  color: hsl(var(--bc) / 0.6);
   margin-top: 2px;
 }
 
-/* â”€â”€ Trains Page Components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Trains Page Components ──────────────────────────────────── */
+/* ── Trains Page Components ──────────────────────────────────── */
 .trains-quick-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -529,7 +590,8 @@ body {
 }
 
 .trains-quick-card {
-  background: var(--clr-bg-white);
+  background: hsl(var(--b1));
+  background: hsl(var(--b1));
   border-radius: 16px;
   padding: 18px 20px;
   box-shadow: var(--shadow-sm);
@@ -560,18 +622,21 @@ body {
 .trains-quick-card[data-c="pnr"] .trains-quick-ico-box { background: hsl(var(--wac)); color: hsl(var(--wa)); }
 .trains-quick-card[data-c="live"] .trains-quick-ico-box { background: hsl(var(--su) / 0.05); color: hsl(var(--su)); }
 .trains-quick-card[data-c="sched"] .trains-quick-ico-box { background: hsl(var(--a) / 0.1); color: hsl(var(--a)); }
-.trains-quick-card[data-c="book"] .trains-quick-ico-box { background: hsl(var(--er) / 0.05); color: var(--clr-error); }
+.trains-quick-card[data-c="book"] .trains-quick-ico-box { background: hsl(var(--er) / 0.05); color: hsl(var(--er)); }
+.trains-quick-card[data-c="book"] .trains-quick-ico-box { background: hsl(var(--er) / 0.05); color: hsl(var(--er)); }
 
 .trains-quick-details h4 {
   font-size: 14px;
   font-weight: 700;
-  color: var(--clr-text-primary);
+  color: hsl(var(--bc));
+  color: hsl(var(--bc));
   margin: 0;
 }
 
 .trains-quick-details p {
   font-size: 11px;
-  color: var(--clr-text-secondary);
+  color: hsl(var(--bc) / 0.6);
+  color: hsl(var(--bc) / 0.6);
   margin-top: 2px;
 }
 
@@ -583,7 +648,8 @@ body {
 }
 
 .train-result-row {
-  background: var(--clr-bg-white);
+  background: hsl(var(--b1));
+  background: hsl(var(--b1));
   border-radius: 16px;
   padding: 20px 24px;
   box-shadow: var(--shadow-sm);
@@ -609,18 +675,21 @@ body {
 .train-row-identity strong {
   font-size: 15px;
   font-weight: 800;
-  color: var(--clr-primary-dark);
+  color: hsl(var(--p));
+  color: hsl(var(--p));
 }
 
 .train-row-identity small {
   font-size: 12px;
-  color: var(--clr-text-secondary);
+  color: hsl(var(--bc) / 0.6);
+  color: hsl(var(--bc) / 0.6);
 }
 
 .train-row-days {
   font-size: 10px;
   background: rgba(31,109,184,0.08);
-  color: var(--clr-primary);
+  color: hsl(var(--p));
+  color: hsl(var(--p));
   padding: 3px 8px;
   border-radius: 4px;
   font-weight: 700;
@@ -640,13 +709,15 @@ body {
 .train-timeline-node strong {
   font-size: 18px;
   font-weight: 800;
-  color: var(--clr-text-primary);
+  color: hsl(var(--bc));
+  color: hsl(var(--bc));
   display: block;
 }
 
 .train-timeline-node small {
   font-size: 11px;
-  color: var(--clr-text-hint);
+  color: hsl(var(--bc) / 0.4);
+  color: hsl(var(--bc) / 0.4);
   margin-top: 2px;
   display: block;
 }
@@ -654,14 +725,16 @@ body {
 .train-timeline-midline em {
   font-style: normal;
   font-size: 11px;
-  color: var(--clr-text-secondary);
+  color: hsl(var(--bc) / 0.6);
+  color: hsl(var(--bc) / 0.6);
   font-weight: 600;
   display: block;
 }
 
 .train-timeline-bar {
   height: 2px;
-  background: var(--clr-border);
+  background: hsl(var(--b3));
+  background: hsl(var(--b3));
   position: relative;
   margin: 6px 0;
 }
@@ -673,8 +746,10 @@ body {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--clr-bg-white);
-  border: 1.5px solid var(--clr-border);
+  background: hsl(var(--b1));
+  border: 1.5px solid hsl(var(--b3));
+  background: hsl(var(--b1));
+  border: 1.5px solid hsl(var(--b3));
   top: -2px;
 }
 
@@ -692,7 +767,8 @@ body {
   justify-content: space-between;
   align-items: center;
   font-size: 11px;
-  background: var(--clr-bg-base);
+  background: hsl(var(--b2));
+  background: hsl(var(--b2));
   padding: 4px 10px;
   border-radius: 6px;
   font-weight: 600;
@@ -703,12 +779,15 @@ body {
 }
 
 .train-class-pill.avail {
-  background: var(--clr-success-bg);
-  color: var(--clr-success);
+  background: hsl(var(--su) / 0.12);
+  color: hsl(var(--su));
+  background: hsl(var(--su) / 0.12);
+  color: hsl(var(--su));
 }
 
 .train-class-pill.wl {
-  background: var(--clr-warning-bg);
+  background: hsl(var(--wa) / 0.12);
+  background: hsl(var(--wa) / 0.12);
   color: hsl(var(--wa));
 }
 
@@ -722,12 +801,14 @@ body {
 .train-row-action .price {
   font-size: 20px;
   font-weight: 800;
-  color: var(--clr-primary-dark);
+  color: hsl(var(--p));
+  color: hsl(var(--p));
 }
 
 .train-row-action button {
   margin-top: 8px;
-  background: var(--clr-primary);
+  background: hsl(var(--p));
+  background: hsl(var(--p));
   color: hsl(var(--b1));
   border: none;
   padding: 8px 24px;
@@ -740,7 +821,8 @@ body {
 }
 
 .train-row-action button:hover {
-  background: var(--clr-primary-hover);
+  background: hsl(var(--p) / 0.85);
+  background: hsl(var(--p) / 0.85);
   box-shadow: 0 4px 12px rgba(31,109,184,0.2);
 }
 
@@ -752,7 +834,8 @@ body {
 }
 
 .train-route-card {
-  background: var(--clr-bg-white);
+  background: hsl(var(--b1));
+  background: hsl(var(--b1));
   border-radius: 12px;
   padding: 14px 18px;
   box-shadow: var(--shadow-sm);
@@ -773,22 +856,26 @@ body {
 .train-route-card strong {
   font-size: 13px;
   font-weight: 700;
-  color: var(--clr-text-primary);
+  color: hsl(var(--bc));
+  color: hsl(var(--bc));
   display: block;
 }
 
 .train-route-card small {
   font-size: 11px;
-  color: var(--clr-text-secondary);
+  color: hsl(var(--bc) / 0.6);
+  color: hsl(var(--bc) / 0.6);
 }
 
 .train-route-card .arrow-icon {
-  color: var(--clr-primary);
+  color: hsl(var(--p));
+  color: hsl(var(--p));
   font-size: 18px;
   font-weight: 800;
 }
 
-/* â”€â”€ Holidays Page Components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Holidays Page Components ────────────────────────────────── */
+/* ── Holidays Page Components ────────────────────────────────── */
 .holidays-themes-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
@@ -796,7 +883,8 @@ body {
 }
 
 .holiday-theme-card {
-  background: var(--clr-bg-white);
+  background: hsl(var(--b1));
+  background: hsl(var(--b1));
   border-radius: 16px;
   padding: 20px 14px;
   text-align: center;
@@ -820,13 +908,15 @@ body {
 .holiday-theme-card h4 {
   font-size: 13px;
   font-weight: 700;
-  color: var(--clr-text-primary);
+  color: hsl(var(--bc));
+  color: hsl(var(--bc));
   margin: 0;
 }
 
 .holiday-theme-card p {
   font-size: 10px;
-  color: var(--clr-text-secondary);
+  color: hsl(var(--bc) / 0.6);
+  color: hsl(var(--bc) / 0.6);
   margin-top: 2px;
 }
 
@@ -838,7 +928,8 @@ body {
 }
 
 .holiday-pkg-card {
-  background: var(--clr-bg-white);
+  background: hsl(var(--b1));
+  background: hsl(var(--b1));
   border-radius: 20px;
   overflow: hidden;
   box-shadow: var(--shadow-sm);
@@ -887,13 +978,15 @@ body {
 .holiday-pkg-title-box {
   position: relative;
   z-index: 2;
-  color: var(--clr-text-inverse);
+  color: hsl(var(--pc));
+  color: hsl(var(--pc));
 }
 
 .holiday-pkg-title-box h4 {
   font-size: 18px;
   font-weight: 800;
-  color: var(--clr-text-inverse);
+  color: hsl(var(--pc));
+  color: hsl(var(--pc));
   margin: 0;
 }
 
@@ -912,7 +1005,8 @@ body {
   display: flex;
   gap: 14px;
   font-size: 12px;
-  color: var(--clr-text-secondary);
+  color: hsl(var(--bc) / 0.6);
+  color: hsl(var(--bc) / 0.6);
   margin-bottom: 16px;
 }
 
@@ -927,25 +1021,29 @@ body {
   justify-content: space-between;
   align-items: center;
   padding-top: 14px;
-  border-top: 1.5px dashed var(--clr-divider);
+  border-top: 1.5px dashed hsl(var(--b3));
+  border-top: 1.5px dashed hsl(var(--b3));
 }
 
 .holiday-pkg-price {
   font-size: 18px;
   font-weight: 800;
-  color: var(--clr-text-primary);
+  color: hsl(var(--bc));
+  color: hsl(var(--bc));
 }
 
 .holiday-pkg-price small {
   font-size: 11px;
-  color: var(--clr-text-secondary);
+  color: hsl(var(--bc) / 0.6);
+  color: hsl(var(--bc) / 0.6);
   font-weight: 500;
   display: block;
   margin-top: 2px;
 }
 
 .holiday-pkg-action-btn {
-  background: var(--clr-primary);
+  background: hsl(var(--p));
+  background: hsl(var(--p));
   color: hsl(var(--b1));
   border: none;
   padding: 8px 20px;
@@ -957,7 +1055,8 @@ body {
 }
 
 .holiday-pkg-action-btn:hover {
-  background: var(--clr-primary-hover);
+  background: hsl(var(--p) / 0.85);
+  background: hsl(var(--p) / 0.85);
 }
 
 /* International getaway card */
@@ -1002,14 +1101,16 @@ body {
   left: 0;
   right: 0;
   padding: 16px;
-  color: var(--clr-text-inverse);
+  color: hsl(var(--pc));
+  color: hsl(var(--pc));
   z-index: 2;
 }
 
 .holiday-intl-info h4 {
   font-size: 16px;
   font-weight: 700;
-  color: var(--clr-text-inverse);
+  color: hsl(var(--pc));
+  color: hsl(var(--pc));
   margin: 0;
 }
 
@@ -1027,14 +1128,16 @@ body {
   color: var(--clr-gold);
 }
 
-/* â”€â”€ Tablet & Mobile Responsiveness overrides â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Tablet & Mobile Responsiveness overrides ────────────────── */
+/* ── Tablet & Mobile Responsiveness overrides ────────────────── */
 @media (max-width: 1024px) {
   .hotels-grid, .trains-grid, .holidays-grid {
     grid-template-columns: 1fr;
   }
   .inner-search-field {
     border-right: none;
-    border-bottom: 1px solid var(--clr-divider);
+    border-bottom: 1px solid hsl(var(--b3));
+    border-bottom: 1px solid hsl(var(--b3));
   }
   .inner-search-cta {
     padding: 14px;
@@ -1070,7 +1173,8 @@ body {
   }
 }
 
-/* â”€â”€ Live weather forecast badge widget â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Live weather forecast badge widget ──────────────────────── */
+/* ── Live weather forecast badge widget ──────────────────────── */
 .live-weather-badge {
   display: inline-flex;
   align-items: center;
@@ -1080,7 +1184,8 @@ body {
   padding: 6px 14px;
   border-radius: var(--radius-full);
   font-size: 13px;
-  color: var(--clr-text-inverse);
+  color: hsl(var(--pc));
+  color: hsl(var(--pc));
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   margin-top: 12px;
@@ -1111,7 +1216,8 @@ body {
   100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
 }
 
-/* â”€â”€ Homestays Page Components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Homestays Page Components ───────────────────────────────── */
+/* ── Homestays Page Components ───────────────────────────────── */
 /* Overriding rules removed to enforce top image backgrounds */
 
 .homestays-grid {
@@ -1125,7 +1231,8 @@ body {
 }
 
 .hs-feat-card {
-  background: var(--clr-bg-white);
+  background: hsl(var(--b1));
+  background: hsl(var(--b1));
   border-radius: 16px;
   overflow: hidden;
   box-shadow: var(--shadow-sm);
@@ -1153,7 +1260,8 @@ body {
   top: 14px;
   left: 14px;
   background: rgba(255, 255, 255, 0.95);
-  color: var(--clr-primary);
+  color: hsl(var(--p));
+  color: hsl(var(--p));
   font-size: 10px;
   font-weight: 800;
   padding: 4px 10px;
@@ -1172,7 +1280,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--clr-primary);
+  color: hsl(var(--p));
+  color: hsl(var(--p));
   font-size: 16px;
   transition: transform 0.2s ease;
 }
@@ -1191,13 +1300,15 @@ body {
 .hs-feat-body h4 {
   font-size: 16px;
   font-weight: 700;
-  color: var(--clr-text-primary);
+  color: hsl(var(--bc));
+  color: hsl(var(--bc));
   margin: 0 0 6px;
 }
 
 .hs-feat-loc {
   font-size: 12px;
-  color: var(--clr-text-secondary);
+  color: hsl(var(--bc) / 0.6);
+  color: hsl(var(--bc) / 0.6);
   margin-bottom: 14px;
 }
 
@@ -1211,12 +1322,14 @@ body {
 .hs-feat-meta .price {
   font-size: 18px;
   font-weight: 800;
-  color: var(--clr-text-primary);
+  color: hsl(var(--bc));
+  color: hsl(var(--bc));
 }
 
 .hs-feat-meta .price small {
   font-size: 11px;
-  color: var(--clr-text-secondary);
+  color: hsl(var(--bc) / 0.6);
+  color: hsl(var(--bc) / 0.6);
   font-weight: 500;
 }
 
@@ -1236,7 +1349,8 @@ body {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 20px;
-  background: var(--clr-bg-white);
+  background: hsl(var(--b1));
+  background: hsl(var(--b1));
   border-radius: 16px;
   padding: 28px;
   box-shadow: var(--shadow-sm);
@@ -1256,18 +1370,21 @@ body {
   margin: 0 0 6px;
   font-size: 14px;
   font-weight: 700;
-  color: var(--clr-text-primary);
+  color: hsl(var(--bc));
+  color: hsl(var(--bc));
 }
 
 .hs-why-card p {
   margin: 0;
   font-size: 12px;
-  color: var(--clr-text-secondary);
+  color: hsl(var(--bc) / 0.6);
+  color: hsl(var(--bc) / 0.6);
   line-height: 1.5;
 }
 
 .homestays-host-banner {
-  background: linear-gradient(135deg, var(--clr-primary-dark) 0%, hsl(var(--bc) / 0.65) 100%);
+  background: linear-gradient(135deg, hsl(var(--p)) 0%, hsl(var(--bc) / 0.65) 100%);
+  background: linear-gradient(135deg, hsl(var(--p)) 0%, hsl(var(--bc) / 0.65) 100%);
   color: hsl(var(--b1));
   border-radius: 20px;
   padding: 40px;
@@ -1299,7 +1416,8 @@ body {
 
 .host-banner-left button {
   background: var(--clr-gold);
-  color: #111;
+  color: hsl(var(--bc));
+  color: hsl(var(--bc));
   border: none;
   padding: 12px 28px;
   border-radius: 8px;
@@ -1342,7 +1460,8 @@ body {
   }
 }
 
-/* â”€â”€ Cabs Page Components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Cabs Page Components ────────────────────────────────────── */
+/* ── Cabs Page Components ────────────────────────────────────── */
 /* Overriding rules removed to enforce top image backgrounds */
 
 .cabs-grid {
@@ -1356,7 +1475,8 @@ body {
 }
 
 .cab-result-card {
-  background: var(--clr-bg-white);
+  background: hsl(var(--b1));
+  background: hsl(var(--b1));
   border-radius: 16px;
   box-shadow: var(--shadow-sm);
   overflow: hidden;
@@ -1409,27 +1529,31 @@ body {
 .cab-card-body h3 {
   font-size: 18px;
   font-weight: 700;
-  color: var(--clr-text-primary);
+  color: hsl(var(--bc));
+  color: hsl(var(--bc));
   margin: 0 0 4px;
 }
 
 .cab-type {
   font-size: 13px;
   font-weight: 600;
-  color: var(--clr-primary);
+  color: hsl(var(--p));
+  color: hsl(var(--p));
   margin-bottom: 8px;
 }
 
 .cab-desc {
   font-size: 12px;
-  color: var(--clr-text-secondary);
+  color: hsl(var(--bc) / 0.6);
+  color: hsl(var(--bc) / 0.6);
   line-height: 1.5;
   margin: 0;
 }
 
 .cab-card-price-action {
   padding: 24px 32px;
-  border-left: 1px dashed var(--clr-divider);
+  border-left: 1px dashed hsl(var(--b3));
+  border-left: 1px dashed hsl(var(--b3));
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -1448,14 +1572,16 @@ body {
 .cab-card-price-action .old-price {
   font-size: 13px;
   text-decoration: line-through;
-  color: var(--clr-text-secondary);
+  color: hsl(var(--bc) / 0.6);
+  color: hsl(var(--bc) / 0.6);
   opacity: 0.8;
 }
 
 .cab-card-price-action .price {
   font-size: 24px;
   font-weight: 800;
-  color: var(--clr-text-primary);
+  color: hsl(var(--bc));
+  color: hsl(var(--bc));
 }
 
 .cab-card-price-action small {
@@ -1466,8 +1592,10 @@ body {
 }
 
 .cab-card-price-action button {
-  background: var(--clr-primary);
-  color: var(--clr-text-inverse);
+  background: hsl(var(--p));
+  color: hsl(var(--pc));
+  background: hsl(var(--p));
+  color: hsl(var(--pc));
   font-weight: 700;
   border: none;
   padding: 10px 24px;
@@ -1479,7 +1607,8 @@ body {
 }
 
 .cab-card-price-action button:hover {
-  background: var(--clr-primary-dark);
+  background: hsl(var(--p));
+  background: hsl(var(--p));
   box-shadow: 0 4px 12px rgba(var(--clr-primary-rgb), 0.25);
 }
 
@@ -1487,7 +1616,8 @@ body {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 20px;
-  background: var(--clr-bg-white);
+  background: hsl(var(--b1));
+  background: hsl(var(--b1));
   border-radius: 16px;
   padding: 28px;
   box-shadow: var(--shadow-sm);
@@ -1507,13 +1637,15 @@ body {
   margin: 0 0 6px;
   font-size: 14px;
   font-weight: 700;
-  color: var(--clr-text-primary);
+  color: hsl(var(--bc));
+  color: hsl(var(--bc));
 }
 
 .cab-why-card p {
   margin: 0;
   font-size: 12px;
-  color: var(--clr-text-secondary);
+  color: hsl(var(--bc) / 0.6);
+  color: hsl(var(--bc) / 0.6);
   line-height: 1.5;
 }
 
@@ -1529,7 +1661,8 @@ body {
   }
   .cab-card-price-action {
     border-left: none;
-    border-top: 1px dashed var(--clr-divider);
+    border-top: 1px dashed hsl(var(--b3));
+    border-top: 1px dashed hsl(var(--b3));
     align-items: flex-start;
     padding: 20px 24px;
     background: transparent;
@@ -1547,6 +1680,8 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+
 
 
 

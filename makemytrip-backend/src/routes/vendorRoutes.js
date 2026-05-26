@@ -12,6 +12,12 @@ import {
 import {
   getMyBuses, createBus, updateBus, deleteBus, submitBusForApproval
 } from '../controllers/vendorBusController.js'
+import {
+  getMyCabs, createCab, updateCab, deleteCab, submitCabForApproval
+} from '../controllers/vendorCabController.js'
+import {
+  getMyTraines, createTrain as createVendorTrain, updateTrain as updateVendorTrain, deleteTrain as deleteVendorTrain, submitTrainForApproval
+} from '../controllers/vendorTrainController.js'
 import { authenticateVendor, vendorOnly } from '../middleware/vendorAuth.js'
 
 const router = express.Router()
@@ -49,5 +55,17 @@ router.get('/buses', authenticateVendor, vendorOnly, getMyBuses)
 router.put('/buses/:id', authenticateVendor, vendorOnly, updateBus)
 router.delete('/buses/:id', authenticateVendor, vendorOnly, deleteBus)
 router.patch('/buses/:id/submit', authenticateVendor, vendorOnly, submitBusForApproval)
+
+router.post('/cabs', authenticateVendor, vendorOnly, createCab)
+router.get('/cabs', authenticateVendor, vendorOnly, getMyCabs)
+router.put('/cabs/:id', authenticateVendor, vendorOnly, updateCab)
+router.delete('/cabs/:id', authenticateVendor, vendorOnly, deleteCab)
+router.patch('/cabs/:id/submit', authenticateVendor, vendorOnly, submitCabForApproval)
+
+router.post('/trains', authenticateVendor, vendorOnly, createVendorTrain)
+router.get('/trains', authenticateVendor, vendorOnly, getMyTraines)
+router.put('/trains/:id', authenticateVendor, vendorOnly, updateVendorTrain)
+router.delete('/trains/:id', authenticateVendor, vendorOnly, deleteVendorTrain)
+router.patch('/trains/:id/submit', authenticateVendor, vendorOnly, submitTrainForApproval)
 
 export default router
