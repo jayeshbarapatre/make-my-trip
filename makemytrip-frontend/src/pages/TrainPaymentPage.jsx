@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { bookingService } from '../services/authService';
+import axios from 'axios';
 import '../styles/TrainBookingFlow.css';
 
 export default function TrainPaymentPage() {
@@ -17,39 +17,64 @@ export default function TrainPaymentPage() {
   };
 
   const [selectedMethod, setSelectedMethod] = useState('UPI / Google Pay');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleProcessPayment = (methodName) => {
+  const handleProcessPayment = async (methodName) => {
     const finalMethod = methodName || selectedMethod;
+    setIsProcessing(true);
+    setError('');
 
-    // Generate confirmed train booking payload
-    const newBooking = {
-      id: "bkg_train_" + Date.now(),
-      userId: 'usr_1111-2222-3333-4444',
-      type: "train",
-      fromCity: `${searchParams.fromCity}`,
-      toCity: `${searchParams.toCity}`,
-      departureDate: searchParams.travelDate,
-      returnDate: null,
-      travellers: { passengers, classCode: selectedClass.code, quota: searchParams.quota, method: finalMethod, contact },
-      totalAmount: totalAmount,
-      status: "confirmed",
-      bookingId: "MMT-TR-" + Math.floor(100000 + Math.random() * 900000),
-      pnr: "PNR-" + Math.floor(1000000000 + Math.random() * 9000000000), // IRCTC 10-digit PNR
-      createdAt: new Date().toISOString(),
-      trainDetails: train
-    };
+    try {
+      const userId = localStorage.getItem('userId') || 'usr_guest_' + Date.now();
 
-    // Call backend to create booking and trigger email
-    bookingService.createBooking(newBooking).then(() => {
-      // Also save to localStorage for offline fallback/sync
-      const existing = JSON.parse(localStorage.getItem('user_bookings_train') || '[]');
-      localStorage.setItem('user_bookings_train', JSON.stringify([newBooking, ...existing]));
+      // Call backend to create train booking (server generates PNR and bookingId)
+      const response = await axios.post(
+        'http://localhost:5000/api/v1/bookings/train',
+        {
+          userId,
+          trainId: train.id || 'train_' + Date.now(),
+          passengers: passengers.map(p => p.name),
+          class: selectedClass.code,
+          quota: searchParams.quota,
+          totalAmount,
+          travellers: {
+            passengers,
+            contact,
+            searchParams,
+            paymentMethod: finalMethod
+          }
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`
+          }
+        }
+      );
 
-      navigate('/trains/success', { state: { booking: newBooking, train, selectedClass } });
-    }).catch(err => {
-      console.error("Failed to create booking on backend:", err);
-      alert("There was an issue finalizing your booking. Please try again.");
-    });
+      if (response.data.success) {
+        // Server returns PNR and bookingId
+        const booking = {
+          bookingId: response.data.data.bookingId,
+          pnr: response.data.data.pnr,
+          status: response.data.data.status,
+          train,
+          selectedClass,
+          passengers,
+          contact,
+          totalAmount,
+          departureDate: searchParams.travelDate,
+          paymentMethod: finalMethod,
+          createdAt: new Date().toISOString()
+        };
+
+        navigate('/trains/success', { state: { booking, train, selectedClass } });
+      }
+    } catch (err) {
+      console.error('Payment error:', err);
+      setError(err.response?.data?.message || 'Failed to process booking. Please try again.');
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -115,10 +140,16 @@ export default function TrainPaymentPage() {
             <div className="train-form-card" style={{ padding: '24px 32px' }}>
               <h3 className="train-form-title" style={{ fontSize: '18px', marginBottom: '16px' }}>Select Payment Gateway</h3>
 
+              {error && (
+                <div style={{ background: 'hsl(var(--er) / 0.08)', color: 'hsl(var(--er))', padding: '12px', borderRadius: '6px', marginBottom: '16px', fontSize: '13px' }}>
+                  ⚠️ {error}
+                </div>
+              )}
+
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <div 
-                  onClick={() => handleProcessPayment('UPI / Google Pay')}
-                  style={{ padding: '20px', border: '1px solid hsl(var(--bc) / 0.1)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', background: 'hsl(var(--b2))', transition: 'border-color 0.2s' }}
+                <div
+                  onClick={() => !isProcessing && handleProcessPayment('UPI / Google Pay')}
+                  style={{ padding: '20px', border: '1px solid hsl(var(--bc) / 0.1)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: isProcessing ? 'not-allowed' : 'pointer', background: 'hsl(var(--b2))', transition: 'border-color 0.2s', opacity: isProcessing ? 0.5 : 1 }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                     <span style={{ fontSize: '24px' }}>📱</span>
@@ -130,9 +161,9 @@ export default function TrainPaymentPage() {
                   <span style={{ fontWeight: 800, color: 'hsl(var(--p))' }}>Pay ₹{totalAmount.toLocaleString()} ›</span>
                 </div>
 
-                <div 
-                  onClick={() => handleProcessPayment('Credit / Debit Card')}
-                  style={{ padding: '20px', border: '1px solid hsl(var(--bc) / 0.1)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', background: 'hsl(var(--b2))', transition: 'border-color 0.2s' }}
+                <div
+                  onClick={() => !isProcessing && handleProcessPayment('Credit / Debit Card')}
+                  style={{ padding: '20px', border: '1px solid hsl(var(--bc) / 0.1)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: isProcessing ? 'not-allowed' : 'pointer', background: 'hsl(var(--b2))', transition: 'border-color 0.2s', opacity: isProcessing ? 0.5 : 1 }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                     <span style={{ fontSize: '24px' }}>💳</span>
@@ -144,9 +175,9 @@ export default function TrainPaymentPage() {
                   <span style={{ fontWeight: 800, color: 'hsl(var(--p))' }}>Pay ₹{totalAmount.toLocaleString()} ›</span>
                 </div>
 
-                <div 
-                  onClick={() => handleProcessPayment('Net Banking')}
-                  style={{ padding: '20px', border: '1px solid hsl(var(--bc) / 0.1)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', background: 'hsl(var(--b2))', transition: 'border-color 0.2s' }}
+                <div
+                  onClick={() => !isProcessing && handleProcessPayment('Net Banking')}
+                  style={{ padding: '20px', border: '1px solid hsl(var(--bc) / 0.1)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: isProcessing ? 'not-allowed' : 'pointer', background: 'hsl(var(--b2))', transition: 'border-color 0.2s', opacity: isProcessing ? 0.5 : 1 }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                     <span style={{ fontSize: '24px' }}>🏦</span>
@@ -183,12 +214,13 @@ export default function TrainPaymentPage() {
                 <span style={{ color: 'hsl(var(--er))' }}>₹{totalAmount.toLocaleString("en-IN")}</span>
               </div>
 
-              <button 
+              <button
                 className="btn-primary"
-                onClick={() => handleProcessPayment('Instant Online Payment')}
-                style={{ width: '100%', padding: '16px', marginTop: '20px' }}
+                onClick={() => handleProcessPayment()}
+                disabled={isProcessing}
+                style={{ width: '100%', padding: '16px', marginTop: '20px', opacity: isProcessing ? 0.6 : 1, cursor: isProcessing ? 'not-allowed' : 'pointer' }}
               >
-                Pay ₹{totalAmount.toLocaleString("en-IN")} Now
+                {isProcessing ? 'Processing...' : `Pay ₹${totalAmount.toLocaleString("en-IN")} Now`}
               </button>
             </div>
           </div>
