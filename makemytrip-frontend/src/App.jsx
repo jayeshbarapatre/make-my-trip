@@ -24,6 +24,11 @@ import TrainResultsPage from './pages/TrainResultsPage'
 import TrainPassengersPage from './pages/TrainPassengersPage'
 import TrainPaymentPage from './pages/TrainPaymentPage'
 import TrainSuccessPage from './pages/TrainSuccessPage'
+import FlightsPage from './pages/FlightsPage'
+import FlightResultsPage from './pages/FlightResultsPage'
+import FlightPassengersPage from './pages/FlightPassengersPage'
+import FlightPaymentPage from './pages/FlightPaymentPage'
+import FlightSuccessPage from './pages/FlightSuccessPage'
 import HolidaysPage from './pages/HolidaysPage'
 import HomestaysPage from './pages/HomestaysPage'
 import CabsPage from './pages/CabsPage'
@@ -151,6 +156,11 @@ function AppContent() {
         <Route path="/trains/passengers" element={<ProtectedRoute><TrainPassengersPage /></ProtectedRoute>} />
         <Route path="/trains/payment" element={<ProtectedRoute><TrainPaymentPage /></ProtectedRoute>} />
         <Route path="/trains/success" element={<ProtectedRoute><TrainSuccessPage /></ProtectedRoute>} />
+        <Route path="/flights" element={<FlightsPage />} />
+        <Route path="/flights/results" element={<FlightResultsPage />} />
+        <Route path="/flights/passengers" element={<ProtectedRoute><FlightPassengersPage /></ProtectedRoute>} />
+        <Route path="/flights/payment" element={<ProtectedRoute><FlightPaymentPage /></ProtectedRoute>} />
+        <Route path="/flights/success" element={<ProtectedRoute><FlightSuccessPage /></ProtectedRoute>} />
         <Route path="/holidays" element={<HolidaysPage />} />
         <Route path="/homestays" element={<HomestaysPage />} />
         <Route path="/cabs" element={<CabsPage />} />
