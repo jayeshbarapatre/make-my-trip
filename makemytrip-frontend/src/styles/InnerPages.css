@@ -1,7 +1,11 @@
 /* ═══════════════════════════════════════════════════════════════
    MakeMyTrip — Inner Pages Modern Award-Level Stylesheet
    ═══════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════
+   MakeMyTrip — Inner Pages Modern Award-Level Stylesheet
+   ═══════════════════════════════════════════════════════════════ */
 
+/* ── Hero Backdrop Gradients ─────────────────────────────────── */
 /* ── Hero Backdrop Gradients ─────────────────────────────────── */
 body {
   overflow-x: clip;
@@ -9,6 +13,7 @@ body {
 
 .phero {
   padding: 40px 0 80px;
+  color: hsl(var(--pc));
   color: hsl(var(--pc));
   position: relative;
   overflow: visible;
@@ -34,6 +39,7 @@ body {
   font-size: 36px;
   font-weight: 800;
   color: hsl(var(--pc));
+  color: hsl(var(--pc));
   margin-bottom: 6px;
   letter-spacing: -0.5px;
   text-shadow: 0 2px 4px rgba(0,0,0,0.15);
@@ -49,55 +55,66 @@ body {
 /* Page backdrops */
 .phero.hotels {
   background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
+  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
               url('https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1920&q=80') center / cover no-repeat !important;
 }
 
 .phero.trains {
+  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
   background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
               url('https://images.unsplash.com/photo-1518609878373-06d740f60d8b?auto=format&fit=crop&w=1920&q=80') center / cover no-repeat !important;
 }
 
 .phero.holidays {
   background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
+  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
               url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1920&q=80') center / cover no-repeat !important;
 }
 
 .phero.homestays {
+  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
   background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
               url('https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1920&q=80') center / cover no-repeat !important;
 }
 
 .phero.cabs {
   background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
+  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
               url('https://images.unsplash.com/photo-1517524206127-48bbd363f3d7?auto=format&fit=crop&w=1920&q=80') center / cover no-repeat !important;
 }
 
 .phero.buses {
+  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
   background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
               url('https://images.unsplash.com/photo-1570125909232-eb263c188f7e?auto=format&fit=crop&w=1920&q=80') center / cover no-repeat !important;
 }
 
 .phero.cruise {
   background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
+  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
               url('https://images.unsplash.com/photo-1500835556837-99ac94a94552?auto=format&fit=crop&w=1920&q=80') center / cover no-repeat !important;
 }
 
 .phero.forex {
+  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
   background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
               url('https://images.unsplash.com/photo-1580584126903-c17d41830450?auto=format&fit=crop&w=1920&q=80') center / cover no-repeat !important;
 }
 
 .phero.insurance {
   background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
+  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
               url('https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1920&q=80') center / cover no-repeat !important;
 }
 
 .phero.tours {
   background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
+  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
               url('https://images.unsplash.com/photo-1513622470522-26c3c8a854bc?auto=format&fit=crop&w=1920&q=80') center / cover no-repeat !important;
 }
 
 .phero.visa {
+  background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
   background: linear-gradient(180deg, rgba(11, 17, 30, 0.65) 0%, rgba(11, 17, 30, 0.35) 60%, hsl(var(--b2)) 100%),
               url('https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=1920&q=80') center / cover no-repeat !important;
 }
@@ -109,12 +126,14 @@ body {
   padding: 0 var(--sp-m);
   font-size: 12px;
   color: hsl(var(--bc) / 0.6);
+  color: hsl(var(--bc) / 0.6);
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
 .crumb-link {
+  color: hsl(var(--p));
   color: hsl(var(--p));
   font-weight: 500;
 }
@@ -124,6 +143,7 @@ body {
 }
 
 .crumb-sep {
+  color: hsl(var(--bc) / 0.4);
   color: hsl(var(--bc) / 0.4);
 }
 
@@ -160,6 +180,7 @@ body {
   font-weight: 500;
 }
 
+/* ── Integrated Search Widgets ────────────────────────────────── */
 /* ── Integrated Search Widgets ────────────────────────────────── */
 .inner-search-bcard {
   background: hsl(var(--b1));
@@ -199,11 +220,13 @@ body {
 .inner-search-field {
   padding: 14px 20px;
   border-right: 1px solid hsl(var(--b3));
+  border-right: 1px solid hsl(var(--b3));
   display: flex;
   flex-direction: column;
   justify-content: center;
   cursor: pointer;
   transition: background 0.15s ease;
+  box-sizing: border-box;
   box-sizing: border-box;
 }
 
@@ -216,6 +239,7 @@ body {
   font-weight: 700;
   text-transform: uppercase;
   color: hsl(var(--bc) / 0.6);
+  color: hsl(var(--bc) / 0.6);
   margin-bottom: 4px;
   letter-spacing: 0.5px;
 }
@@ -224,6 +248,7 @@ body {
   font-size: 18px;
   font-weight: 800;
   color: hsl(var(--bc));
+  color: hsl(var(--bc));
   line-height: 1.2;
 }
 
@@ -231,11 +256,13 @@ body {
   font-size: 13px;
   font-weight: 500;
   color: hsl(var(--bc) / 0.6);
+  color: hsl(var(--bc) / 0.6);
   margin-left: 2px;
 }
 
 .inner-field-sub {
   font-size: 11px;
+  color: hsl(var(--bc) / 0.4);
   color: hsl(var(--bc) / 0.4);
   margin-top: 3px;
   white-space: nowrap;
@@ -292,6 +319,7 @@ body {
   font-size: 12px;
   font-weight: 600;
   color: hsl(var(--bc));
+  color: hsl(var(--bc));
   cursor: pointer;
   transition: all 0.15s ease;
 }
@@ -305,9 +333,13 @@ body {
   background: hsl(var(--p));
   color: hsl(var(--pc));
   border-color: hsl(var(--p));
+  background: hsl(var(--p));
+  color: hsl(var(--pc));
+  border-color: hsl(var(--p));
   box-shadow: 0 4px 10px rgba(0, 35, 80, 0.15);
 }
 
+/* ── Sections Common Layout ──────────────────────────────────── */
 /* ── Sections Common Layout ──────────────────────────────────── */
 .inner-page-section {
   max-width: var(--max-width);
@@ -326,11 +358,13 @@ body {
   font-size: 24px;
   font-weight: 800;
   color: hsl(var(--p));
+  color: hsl(var(--p));
   letter-spacing: -0.5px;
 }
 
 .inner-sec-subtitle {
   font-size: 13px;
+  color: hsl(var(--bc) / 0.6);
   color: hsl(var(--bc) / 0.6);
   margin-top: 4px;
   font-weight: 500;
@@ -340,6 +374,7 @@ body {
   font-size: 13px;
   font-weight: 700;
   color: hsl(var(--p));
+  color: hsl(var(--p));
   display: flex;
   align-items: center;
   gap: 4px;
@@ -348,9 +383,11 @@ body {
 
 .inner-sec-all-link:hover {
   color: hsl(var(--p));
+  color: hsl(var(--p));
   text-decoration: underline;
 }
 
+/* ── Hotels Page Components ──────────────────────────────────── */
 /* ── Hotels Page Components ──────────────────────────────────── */
 .hotels-deals-grid {
   display: grid;
@@ -359,6 +396,7 @@ body {
 }
 
 .hotels-deal-card {
+  background: hsl(var(--b1));
   background: hsl(var(--b1));
   border-radius: 16px;
   overflow: hidden;
@@ -393,11 +431,13 @@ body {
   font-size: 15px;
   font-weight: 700;
   color: hsl(var(--bc));
+  color: hsl(var(--bc));
   margin-bottom: 6px;
 }
 
 .hotels-deal-meta {
   font-size: 12px;
+  color: hsl(var(--bc) / 0.6);
   color: hsl(var(--bc) / 0.6);
   margin-bottom: 12px;
   display: flex;
@@ -416,10 +456,12 @@ body {
   font-size: 18px;
   font-weight: 800;
   color: hsl(var(--p));
+  color: hsl(var(--p));
 }
 
 .hotels-deal-strike {
   font-size: 12px;
+  color: hsl(var(--bc) / 0.4);
   color: hsl(var(--bc) / 0.4);
   text-decoration: line-through;
   font-weight: 500;
@@ -468,12 +510,14 @@ body {
   right: 0;
   padding: 14px;
   color: hsl(var(--pc));
+  color: hsl(var(--pc));
   z-index: 2;
 }
 
 .hotels-city-info h4 {
   font-size: 15px;
   font-weight: 700;
+  color: hsl(var(--pc));
   color: hsl(var(--pc));
   margin: 0;
 }
@@ -491,6 +535,7 @@ body {
 }
 
 .hotels-cat-card {
+  background: hsl(var(--b1));
   background: hsl(var(--b1));
   border-radius: 16px;
   padding: 20px;
@@ -525,15 +570,18 @@ body {
   font-size: 14px;
   font-weight: 700;
   color: hsl(var(--bc));
+  color: hsl(var(--bc));
   margin: 0;
 }
 
 .hotels-cat-details p {
   font-size: 11px;
   color: hsl(var(--bc) / 0.6);
+  color: hsl(var(--bc) / 0.6);
   margin-top: 2px;
 }
 
+/* ── Trains Page Components ──────────────────────────────────── */
 /* ── Trains Page Components ──────────────────────────────────── */
 .trains-quick-grid {
   display: grid;
@@ -542,6 +590,7 @@ body {
 }
 
 .trains-quick-card {
+  background: hsl(var(--b1));
   background: hsl(var(--b1));
   border-radius: 16px;
   padding: 18px 20px;
@@ -574,16 +623,19 @@ body {
 .trains-quick-card[data-c="live"] .trains-quick-ico-box { background: hsl(var(--su) / 0.05); color: hsl(var(--su)); }
 .trains-quick-card[data-c="sched"] .trains-quick-ico-box { background: hsl(var(--a) / 0.1); color: hsl(var(--a)); }
 .trains-quick-card[data-c="book"] .trains-quick-ico-box { background: hsl(var(--er) / 0.05); color: hsl(var(--er)); }
+.trains-quick-card[data-c="book"] .trains-quick-ico-box { background: hsl(var(--er) / 0.05); color: hsl(var(--er)); }
 
 .trains-quick-details h4 {
   font-size: 14px;
   font-weight: 700;
+  color: hsl(var(--bc));
   color: hsl(var(--bc));
   margin: 0;
 }
 
 .trains-quick-details p {
   font-size: 11px;
+  color: hsl(var(--bc) / 0.6);
   color: hsl(var(--bc) / 0.6);
   margin-top: 2px;
 }
@@ -596,6 +648,7 @@ body {
 }
 
 .train-result-row {
+  background: hsl(var(--b1));
   background: hsl(var(--b1));
   border-radius: 16px;
   padding: 20px 24px;
@@ -623,16 +676,19 @@ body {
   font-size: 15px;
   font-weight: 800;
   color: hsl(var(--p));
+  color: hsl(var(--p));
 }
 
 .train-row-identity small {
   font-size: 12px;
+  color: hsl(var(--bc) / 0.6);
   color: hsl(var(--bc) / 0.6);
 }
 
 .train-row-days {
   font-size: 10px;
   background: rgba(31,109,184,0.08);
+  color: hsl(var(--p));
   color: hsl(var(--p));
   padding: 3px 8px;
   border-radius: 4px;
@@ -654,11 +710,13 @@ body {
   font-size: 18px;
   font-weight: 800;
   color: hsl(var(--bc));
+  color: hsl(var(--bc));
   display: block;
 }
 
 .train-timeline-node small {
   font-size: 11px;
+  color: hsl(var(--bc) / 0.4);
   color: hsl(var(--bc) / 0.4);
   margin-top: 2px;
   display: block;
@@ -668,12 +726,14 @@ body {
   font-style: normal;
   font-size: 11px;
   color: hsl(var(--bc) / 0.6);
+  color: hsl(var(--bc) / 0.6);
   font-weight: 600;
   display: block;
 }
 
 .train-timeline-bar {
   height: 2px;
+  background: hsl(var(--b3));
   background: hsl(var(--b3));
   position: relative;
   margin: 6px 0;
@@ -686,6 +746,8 @@ body {
   width: 6px;
   height: 6px;
   border-radius: 50%;
+  background: hsl(var(--b1));
+  border: 1.5px solid hsl(var(--b3));
   background: hsl(var(--b1));
   border: 1.5px solid hsl(var(--b3));
   top: -2px;
@@ -706,6 +768,7 @@ body {
   align-items: center;
   font-size: 11px;
   background: hsl(var(--b2));
+  background: hsl(var(--b2));
   padding: 4px 10px;
   border-radius: 6px;
   font-weight: 600;
@@ -718,9 +781,12 @@ body {
 .train-class-pill.avail {
   background: hsl(var(--su) / 0.12);
   color: hsl(var(--su));
+  background: hsl(var(--su) / 0.12);
+  color: hsl(var(--su));
 }
 
 .train-class-pill.wl {
+  background: hsl(var(--wa) / 0.12);
   background: hsl(var(--wa) / 0.12);
   color: hsl(var(--wa));
 }
@@ -736,10 +802,12 @@ body {
   font-size: 20px;
   font-weight: 800;
   color: hsl(var(--p));
+  color: hsl(var(--p));
 }
 
 .train-row-action button {
   margin-top: 8px;
+  background: hsl(var(--p));
   background: hsl(var(--p));
   color: hsl(var(--b1));
   border: none;
@@ -754,6 +822,7 @@ body {
 
 .train-row-action button:hover {
   background: hsl(var(--p) / 0.85);
+  background: hsl(var(--p) / 0.85);
   box-shadow: 0 4px 12px rgba(31,109,184,0.2);
 }
 
@@ -765,6 +834,7 @@ body {
 }
 
 .train-route-card {
+  background: hsl(var(--b1));
   background: hsl(var(--b1));
   border-radius: 12px;
   padding: 14px 18px;
@@ -787,20 +857,24 @@ body {
   font-size: 13px;
   font-weight: 700;
   color: hsl(var(--bc));
+  color: hsl(var(--bc));
   display: block;
 }
 
 .train-route-card small {
   font-size: 11px;
   color: hsl(var(--bc) / 0.6);
+  color: hsl(var(--bc) / 0.6);
 }
 
 .train-route-card .arrow-icon {
+  color: hsl(var(--p));
   color: hsl(var(--p));
   font-size: 18px;
   font-weight: 800;
 }
 
+/* ── Holidays Page Components ────────────────────────────────── */
 /* ── Holidays Page Components ────────────────────────────────── */
 .holidays-themes-grid {
   display: grid;
@@ -809,6 +883,7 @@ body {
 }
 
 .holiday-theme-card {
+  background: hsl(var(--b1));
   background: hsl(var(--b1));
   border-radius: 16px;
   padding: 20px 14px;
@@ -834,11 +909,13 @@ body {
   font-size: 13px;
   font-weight: 700;
   color: hsl(var(--bc));
+  color: hsl(var(--bc));
   margin: 0;
 }
 
 .holiday-theme-card p {
   font-size: 10px;
+  color: hsl(var(--bc) / 0.6);
   color: hsl(var(--bc) / 0.6);
   margin-top: 2px;
 }
@@ -851,6 +928,7 @@ body {
 }
 
 .holiday-pkg-card {
+  background: hsl(var(--b1));
   background: hsl(var(--b1));
   border-radius: 20px;
   overflow: hidden;
@@ -901,11 +979,13 @@ body {
   position: relative;
   z-index: 2;
   color: hsl(var(--pc));
+  color: hsl(var(--pc));
 }
 
 .holiday-pkg-title-box h4 {
   font-size: 18px;
   font-weight: 800;
+  color: hsl(var(--pc));
   color: hsl(var(--pc));
   margin: 0;
 }
@@ -926,6 +1006,7 @@ body {
   gap: 14px;
   font-size: 12px;
   color: hsl(var(--bc) / 0.6);
+  color: hsl(var(--bc) / 0.6);
   margin-bottom: 16px;
 }
 
@@ -941,16 +1022,19 @@ body {
   align-items: center;
   padding-top: 14px;
   border-top: 1.5px dashed hsl(var(--b3));
+  border-top: 1.5px dashed hsl(var(--b3));
 }
 
 .holiday-pkg-price {
   font-size: 18px;
   font-weight: 800;
   color: hsl(var(--bc));
+  color: hsl(var(--bc));
 }
 
 .holiday-pkg-price small {
   font-size: 11px;
+  color: hsl(var(--bc) / 0.6);
   color: hsl(var(--bc) / 0.6);
   font-weight: 500;
   display: block;
@@ -958,6 +1042,7 @@ body {
 }
 
 .holiday-pkg-action-btn {
+  background: hsl(var(--p));
   background: hsl(var(--p));
   color: hsl(var(--b1));
   border: none;
@@ -970,6 +1055,7 @@ body {
 }
 
 .holiday-pkg-action-btn:hover {
+  background: hsl(var(--p) / 0.85);
   background: hsl(var(--p) / 0.85);
 }
 
@@ -1016,12 +1102,14 @@ body {
   right: 0;
   padding: 16px;
   color: hsl(var(--pc));
+  color: hsl(var(--pc));
   z-index: 2;
 }
 
 .holiday-intl-info h4 {
   font-size: 16px;
   font-weight: 700;
+  color: hsl(var(--pc));
   color: hsl(var(--pc));
   margin: 0;
 }
@@ -1041,12 +1129,14 @@ body {
 }
 
 /* ── Tablet & Mobile Responsiveness overrides ────────────────── */
+/* ── Tablet & Mobile Responsiveness overrides ────────────────── */
 @media (max-width: 1024px) {
   .hotels-grid, .trains-grid, .holidays-grid {
     grid-template-columns: 1fr;
   }
   .inner-search-field {
     border-right: none;
+    border-bottom: 1px solid hsl(var(--b3));
     border-bottom: 1px solid hsl(var(--b3));
   }
   .inner-search-cta {
@@ -1084,6 +1174,7 @@ body {
 }
 
 /* ── Live weather forecast badge widget ──────────────────────── */
+/* ── Live weather forecast badge widget ──────────────────────── */
 .live-weather-badge {
   display: inline-flex;
   align-items: center;
@@ -1093,6 +1184,7 @@ body {
   padding: 6px 14px;
   border-radius: var(--radius-full);
   font-size: 13px;
+  color: hsl(var(--pc));
   color: hsl(var(--pc));
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
@@ -1125,6 +1217,7 @@ body {
 }
 
 /* ── Homestays Page Components ───────────────────────────────── */
+/* ── Homestays Page Components ───────────────────────────────── */
 /* Overriding rules removed to enforce top image backgrounds */
 
 .homestays-grid {
@@ -1138,6 +1231,7 @@ body {
 }
 
 .hs-feat-card {
+  background: hsl(var(--b1));
   background: hsl(var(--b1));
   border-radius: 16px;
   overflow: hidden;
@@ -1167,6 +1261,7 @@ body {
   left: 14px;
   background: rgba(255, 255, 255, 0.95);
   color: hsl(var(--p));
+  color: hsl(var(--p));
   font-size: 10px;
   font-weight: 800;
   padding: 4px 10px;
@@ -1185,6 +1280,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  color: hsl(var(--p));
   color: hsl(var(--p));
   font-size: 16px;
   transition: transform 0.2s ease;
@@ -1205,11 +1301,13 @@ body {
   font-size: 16px;
   font-weight: 700;
   color: hsl(var(--bc));
+  color: hsl(var(--bc));
   margin: 0 0 6px;
 }
 
 .hs-feat-loc {
   font-size: 12px;
+  color: hsl(var(--bc) / 0.6);
   color: hsl(var(--bc) / 0.6);
   margin-bottom: 14px;
 }
@@ -1225,10 +1323,12 @@ body {
   font-size: 18px;
   font-weight: 800;
   color: hsl(var(--bc));
+  color: hsl(var(--bc));
 }
 
 .hs-feat-meta .price small {
   font-size: 11px;
+  color: hsl(var(--bc) / 0.6);
   color: hsl(var(--bc) / 0.6);
   font-weight: 500;
 }
@@ -1250,6 +1350,7 @@ body {
   grid-template-columns: repeat(4, 1fr);
   gap: 20px;
   background: hsl(var(--b1));
+  background: hsl(var(--b1));
   border-radius: 16px;
   padding: 28px;
   box-shadow: var(--shadow-sm);
@@ -1270,16 +1371,19 @@ body {
   font-size: 14px;
   font-weight: 700;
   color: hsl(var(--bc));
+  color: hsl(var(--bc));
 }
 
 .hs-why-card p {
   margin: 0;
   font-size: 12px;
   color: hsl(var(--bc) / 0.6);
+  color: hsl(var(--bc) / 0.6);
   line-height: 1.5;
 }
 
 .homestays-host-banner {
+  background: linear-gradient(135deg, hsl(var(--p)) 0%, hsl(var(--bc) / 0.65) 100%);
   background: linear-gradient(135deg, hsl(var(--p)) 0%, hsl(var(--bc) / 0.65) 100%);
   color: hsl(var(--b1));
   border-radius: 20px;
@@ -1312,6 +1416,7 @@ body {
 
 .host-banner-left button {
   background: var(--clr-gold);
+  color: hsl(var(--bc));
   color: hsl(var(--bc));
   border: none;
   padding: 12px 28px;
@@ -1356,6 +1461,7 @@ body {
 }
 
 /* ── Cabs Page Components ────────────────────────────────────── */
+/* ── Cabs Page Components ────────────────────────────────────── */
 /* Overriding rules removed to enforce top image backgrounds */
 
 .cabs-grid {
@@ -1369,6 +1475,7 @@ body {
 }
 
 .cab-result-card {
+  background: hsl(var(--b1));
   background: hsl(var(--b1));
   border-radius: 16px;
   box-shadow: var(--shadow-sm);
@@ -1423,6 +1530,7 @@ body {
   font-size: 18px;
   font-weight: 700;
   color: hsl(var(--bc));
+  color: hsl(var(--bc));
   margin: 0 0 4px;
 }
 
@@ -1430,11 +1538,13 @@ body {
   font-size: 13px;
   font-weight: 600;
   color: hsl(var(--p));
+  color: hsl(var(--p));
   margin-bottom: 8px;
 }
 
 .cab-desc {
   font-size: 12px;
+  color: hsl(var(--bc) / 0.6);
   color: hsl(var(--bc) / 0.6);
   line-height: 1.5;
   margin: 0;
@@ -1442,6 +1552,7 @@ body {
 
 .cab-card-price-action {
   padding: 24px 32px;
+  border-left: 1px dashed hsl(var(--b3));
   border-left: 1px dashed hsl(var(--b3));
   display: flex;
   flex-direction: column;
@@ -1462,12 +1573,14 @@ body {
   font-size: 13px;
   text-decoration: line-through;
   color: hsl(var(--bc) / 0.6);
+  color: hsl(var(--bc) / 0.6);
   opacity: 0.8;
 }
 
 .cab-card-price-action .price {
   font-size: 24px;
   font-weight: 800;
+  color: hsl(var(--bc));
   color: hsl(var(--bc));
 }
 
@@ -1479,6 +1592,8 @@ body {
 }
 
 .cab-card-price-action button {
+  background: hsl(var(--p));
+  color: hsl(var(--pc));
   background: hsl(var(--p));
   color: hsl(var(--pc));
   font-weight: 700;
@@ -1493,6 +1608,7 @@ body {
 
 .cab-card-price-action button:hover {
   background: hsl(var(--p));
+  background: hsl(var(--p));
   box-shadow: 0 4px 12px rgba(var(--clr-primary-rgb), 0.25);
 }
 
@@ -1500,6 +1616,7 @@ body {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 20px;
+  background: hsl(var(--b1));
   background: hsl(var(--b1));
   border-radius: 16px;
   padding: 28px;
@@ -1521,11 +1638,13 @@ body {
   font-size: 14px;
   font-weight: 700;
   color: hsl(var(--bc));
+  color: hsl(var(--bc));
 }
 
 .cab-why-card p {
   margin: 0;
   font-size: 12px;
+  color: hsl(var(--bc) / 0.6);
   color: hsl(var(--bc) / 0.6);
   line-height: 1.5;
 }
@@ -1542,6 +1661,7 @@ body {
   }
   .cab-card-price-action {
     border-left: none;
+    border-top: 1px dashed hsl(var(--b3));
     border-top: 1px dashed hsl(var(--b3));
     align-items: flex-start;
     padding: 20px 24px;
@@ -1560,6 +1680,7 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
 
 
 

@@ -16,11 +16,20 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [greetingTime, setGreetingTime] = useState('Morning')
+  const [greetingTime, setGreetingTime] = useState('Morning')
 
   useEffect(() => {
     fetchData()
     updateGreeting()
+    updateGreeting()
   }, [])
+
+  const updateGreeting = () => {
+    const hour = new Date().getHours()
+    if (hour < 12) setGreetingTime('Morning')
+    else if (hour < 18) setGreetingTime('Afternoon')
+    else setGreetingTime('Evening')
+  }
 
   const updateGreeting = () => {
     const hour = new Date().getHours()
@@ -104,6 +113,43 @@ const AdminDashboard = () => {
   return (
     <AdminLayout>
       <div className="dashboard">
+        {/* Greeting Banner with Atmospheric Design */}
+        <div className="greeting-banner" style={{
+          background: `linear-gradient(135deg, var(--accent) 0%, #2B4DBE 100%)`,
+          borderRadius: '12px',
+          padding: '32px 24px',
+          marginBottom: '28px',
+          position: 'relative',
+          overflow: 'hidden',
+          color: 'white',
+          boxShadow: 'var(--shadow-md)'
+        }}>
+          {/* Atmospheric background circles */}
+          <svg style={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            width: '200px',
+            height: '200px',
+            opacity: 0.1
+          }} viewBox="0 0 200 200">
+            <circle cx="100" cy="100" r="80" fill="white" />
+            <circle cx="100" cy="100" r="60" fill="none" stroke="white" strokeWidth="1" />
+          </svg>
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <h1 style={{
+              margin: '0 0 8px 0',
+              fontSize: '28px',
+              fontWeight: '700',
+              fontFamily: "'Space Grotesk', serif"
+            }}>
+              Good {greetingTime}, {stats?.adminName || 'Admin'}! 👋
+            </h1>
+            <p style={{
+              margin: 0,
+              fontSize: '14px',
+              opacity: 0.9
+            }}>
         {/* Greeting Banner with Atmospheric Design */}
         <div className="greeting-banner" style={{
           background: `linear-gradient(135deg, var(--accent) 0%, #2B4DBE 100%)`,
@@ -343,7 +389,38 @@ const KPICard = ({ icon, label, value, color, trend }) => (
       }}>
         <i className={icon}></i>
       </div>
+  <div style={{
+    background: 'var(--bg-surface)',
+    border: '1px solid var(--border)',
+    borderRadius: '8px',
+    padding: '20px',
+    transition: 'all 0.3s ease',
+    boxShadow: 'var(--shadow-sm)',
+    cursor: 'pointer'
+  }} onMouseEnter={e => e.currentTarget.style.boxShadow = 'var(--shadow-md)'}
+  onMouseLeave={e => e.currentTarget.style.boxShadow = 'var(--shadow-sm)'}>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+      <p style={{ margin: 0, fontSize: '12px', fontWeight: '600', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+        {label}
+      </p>
+      <div style={{
+        width: '40px',
+        height: '40px',
+        background: `${color}20`,
+        borderRadius: '8px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: color,
+        fontSize: '20px'
+      }}>
+        <i className={icon}></i>
+      </div>
     </div>
+    <div style={{ marginBottom: '12px' }}>
+      <p style={{ margin: 0, fontSize: '28px', fontWeight: '700', color: 'var(--text-primary)', fontFamily: "'Space Grotesk', serif" }}>
+        {typeof value === 'number' ? value.toLocaleString() : value}
+      </p>
     <div style={{ marginBottom: '12px' }}>
       <p style={{ margin: 0, fontSize: '28px', fontWeight: '700', color: 'var(--text-primary)', fontFamily: "'Space Grotesk', serif" }}>
         {typeof value === 'number' ? value.toLocaleString() : value}

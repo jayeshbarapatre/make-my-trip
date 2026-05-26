@@ -44,6 +44,9 @@
   font-size: var(--fs-sidebar);
   font-weight: var(--fw-sidebar);
   color: var(--text-primary);
+  font-size: var(--fs-sidebar);
+  font-weight: var(--fw-sidebar);
+  color: var(--text-primary);
   margin: 0;
   letter-spacing: -0.3px;
 }

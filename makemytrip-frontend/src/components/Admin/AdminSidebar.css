@@ -21,8 +21,13 @@
   width: 260px;
   background: var(--bg-surface);
   color: var(--text-secondary);
+  width: 260px;
+  background: var(--bg-surface);
+  color: var(--text-secondary);
   display: flex;
   flex-direction: column;
+  border-right: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
   border-right: 1px solid var(--border);
   box-shadow: var(--shadow-sm);
   transition: all 0.3s ease;
@@ -41,10 +46,12 @@
 
 .sidebar-header {
   padding: 16px 20px;
+  padding: 16px 20px;
   border-bottom: 1px solid var(--border);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  background: var(--bg-surface);
   background: var(--bg-surface);
 }
 
@@ -55,10 +62,13 @@
   margin: 0;
   font-size: var(--fs-card-title);
   font-weight: var(--fw-card-title);
+  font-size: var(--fs-card-title);
+  font-weight: var(--fw-card-title);
   color: var(--sidebar-text);
 }
 
 .admin-logo-badge {
+  background: hsl(var(--p));
   background: hsl(var(--p));
   width: 28px;
   height: 28px;
@@ -68,6 +78,7 @@
   justify-content: center;
   font-size: 14px;
   font-weight: 800;
+  color: white;
   color: white;
   position: relative;
   flex-shrink: 0;
@@ -155,6 +166,9 @@
   font-size: var(--fs-label);
   font-weight: var(--fw-label);
   letter-spacing: 0.1em;
+  font-size: var(--fs-label);
+  font-weight: var(--fw-label);
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--text-secondary);
   padding: 14px 14px 4px;
@@ -165,22 +179,32 @@
   display: flex;
   align-items: center;
   padding: 0.625rem 1rem;
+  padding: 0.625rem 1rem;
   color: var(--text-secondary);
   text-decoration: none;
   transition: all 0.2s ease;
   border-radius: 0.375rem;
   margin: 2px 12px;
   font-size: 0.875rem;
+  border-radius: 0.375rem;
+  margin: 2px 12px;
+  font-size: 0.875rem;
   font-weight: 500;
+  position: relative;
   position: relative;
 }
 
 .nav-item:hover {
   background: hsla(var(--p), 0.08);
   color: hsl(var(--p));
+  background: hsla(var(--p), 0.08);
+  color: hsl(var(--p));
 }
 
 .nav-item.active {
+  background: hsla(var(--p), 0.12);
+  color: hsl(var(--p));
+  font-weight: 600;
   background: hsla(var(--p), 0.12);
   color: hsl(var(--p));
   font-weight: 600;
@@ -235,6 +259,8 @@
 .admin-name-small {
   font-size: var(--fs-sidebar);
   font-weight: var(--fw-sidebar);
+  font-size: var(--fs-sidebar);
+  font-weight: var(--fw-sidebar);
   color: var(--sidebar-text);
   line-height: 1;
 }
@@ -252,10 +278,16 @@
   background: var(--accentSoft);
   color: var(--accent);
   border: 1px solid var(--border);
+  padding: 8px;
+  background: var(--accentSoft);
+  color: var(--accent);
+  border: 1px solid var(--border);
   border-radius: 4px;
+  font-weight: var(--fw-button);
   font-weight: var(--fw-button);
   cursor: pointer;
   transition: all 0.2s ease;
+  font-size: var(--fs-button);
   font-size: var(--fs-button);
   display: flex;
   align-items: center;
@@ -264,6 +296,8 @@
 }
 
 .logout-btn:hover {
+  background: var(--accent);
+  color: white;
   background: var(--accent);
   color: white;
 }
