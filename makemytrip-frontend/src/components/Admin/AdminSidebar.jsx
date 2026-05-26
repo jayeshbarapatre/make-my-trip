@@ -31,10 +31,8 @@ const AdminSidebar = ({ isOpen, toggleSidebar }) => {
         { path: '/admin/users', label: 'Users', icon: 'fas fa-users' },
         { path: '/admin/vendors', label: 'Vendors', icon: 'fas fa-store' },
         { path: '/admin/approvals', label: 'Hotel Approvals', icon: 'fas fa-check-circle' },
-        { path: '/admin/flight-approvals', label: 'Flight Approvals', icon: 'fas fa-plane' },
         { path: '/admin/bus-approvals', label: 'Bus Approvals', icon: 'fas fa-bus' },
-        { path: '/admin/cab-approvals', label: 'Cab Approvals', icon: 'fas fa-taxi' },
-        { path: '/admin/train-approvals', label: 'Train Approvals', icon: 'fas fa-train' }
+        { path: '/admin/cab-approvals', label: 'Cab Approvals', icon: 'fas fa-taxi' }
       ]
     }
   ]
