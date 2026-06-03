@@ -1237,7 +1237,7 @@ export default function BookingPage() {
           {step === 4 && bookingDetails && (
             <div style={s.confirmationWrapper}>
               {/* This ID is targeted by html2canvas for PDF generation */}
-              <div id="e-ticket-content" style={{ background: '#fff', borderRadius: '16px', overflow: 'hidden', border: '1px solid hsl(var(--b3))' }}>
+              <div id="e-ticket-content" style={{ background: 'hsl(var(--b1))', borderRadius: '16px', overflow: 'hidden', border: '1px solid hsl(var(--b3))' }}>
                 <div style={s.successBannerPremium}>
                   <div style={s.successBadgePremium}>
                     <span style={s.successIcon}>✓</span>
@@ -1467,7 +1467,7 @@ export default function BookingPage() {
           zIndex: 9999
         }}>
           <div style={{
-            background: '#fff',
+            background: 'hsl(var(--b1))',
             borderRadius: '16px',
             width: '90%',
             maxWidth: '420px',
@@ -1763,7 +1763,7 @@ const s = {
     color: 'hsl(var(--bc))'
   },
   cardPanel: {
-    background: '#fff',
+    background: 'hsl(var(--b1))',
     border: '1px solid hsl(var(--b3))',
     borderRadius: '12px',
     padding: '24px',
@@ -1896,7 +1896,7 @@ const s = {
     padding: '16px 20px'
   },
   fareSummaryCard: {
-    background: '#fff',
+    background: 'hsl(var(--b1))',
     border: '1px solid hsl(var(--b3))',
     borderRadius: '12px',
     padding: '24px',
@@ -1998,7 +1998,7 @@ const s = {
     borderRadius: '6px',
     fontSize: '13.5px',
     outline: 'none',
-    background: '#fff',
+    background: 'hsl(var(--b1))',
     transition: 'border-color 0.15s'
   },
   inputErrorBorder: {
@@ -2017,7 +2017,7 @@ const s = {
     borderRadius: '6px',
     fontSize: '13.5px',
     outline: 'none',
-    background: '#fff'
+    background: 'hsl(var(--b1))'
   },
   addonsBlock: {
     marginTop: '20px',
@@ -2055,7 +2055,7 @@ const s = {
   /* Payment view */
   paymentPanelLayout: {
     display: 'flex',
-    background: '#fff',
+    background: 'hsl(var(--b1))',
     border: '1px solid hsl(var(--b3))',
     borderRadius: '12px',
     overflow: 'hidden'
@@ -2082,7 +2082,7 @@ const s = {
     transition: 'background 0.15s'
   },
   paymentModeBtnActive: {
-    background: '#fff',
+    background: 'hsl(var(--b1))',
     color: 'hsl(var(--er))',
     borderLeft: '4px solid hsl(var(--er))'
   },
@@ -2135,7 +2135,7 @@ const s = {
   },
   paymentLoadingOverlay: {
     flex: 1,
-    background: '#fff',
+    background: 'hsl(var(--b1))',
     border: '1px solid hsl(var(--b3))',
     borderRadius: '12px',
     padding: '56px 24px',
