@@ -15,6 +15,7 @@ import vendorRoutes from './routes/vendorRoutes.js'
 import autocompleteRoutes from './routes/autocomplete.js'
 import hotelRoutes from './routes/hotels.js'
 import trainRoutes from './routes/trains.js'
+import publicCmsRoutes from './routes/publicCmsRoutes.js'
 
 const app = express()
 const PORT = process.env.PORT || 5000
@@ -24,6 +25,7 @@ connectDB()
 
 app.use(cors({ origin: process.env.CORS_ORIGIN || 'http://localhost:5173' }))
 app.use(express.json())
+app.use('/uploads', express.static('public/uploads'))
 
 app.get('/health', (_req, res) => res.json({ status: 'ok' }))
 app.use('/api/auth', authRoutes)
@@ -50,6 +52,8 @@ app.use('/api/hotels', hotelRoutes)
 app.use('/api/v1/hotels', hotelRoutes)
 app.use('/api/trains', trainRoutes)
 app.use('/api/v1/trains', trainRoutes)
+app.use('/api/cms', publicCmsRoutes)
+app.use('/api/v1/cms', publicCmsRoutes)
 
 app.use((_req, res) => res.status(404).json({ message: 'Route not found' }))
 

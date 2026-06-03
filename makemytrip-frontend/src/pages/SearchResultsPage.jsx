@@ -88,8 +88,16 @@ export default function SearchResultsPage() {
   const [sortBy, setSortBy]             = useState('cheapest')
   const [filterStops, setFilterStops]   = useState([])
   const [filterAirlines, setFilterAirlines] = useState([])
+  const [selectedOutbound, setSelectedOutbound] = useState(null)
+  const [selectedReturn, setSelectedReturn] = useState(null)
 
-  const [tripType,     setTripType]     = useState(params.get('type') || 'one-way')
+  const [tripType,     setTripType]     = useState(() => {
+    const t = params.get('type') || 'one-way'
+    if (t === 'roundtrip') return 'round-trip'
+    if (t === 'oneway') return 'one-way'
+    if (t === 'multicity') return 'multi-city'
+    return t
+  })
   const [showTripDrop, setShowTripDrop] = useState(false)
   const [fromVal,      setFromVal]      = useState(params.get('from') || 'New Delhi')
   const [toVal,        setToVal]        = useState(params.get('to')   || 'Bengaluru')
@@ -157,7 +165,26 @@ export default function SearchResultsPage() {
       setSelectedFlight(flight)
       return
     }
-    navigate(`/booking/${flight.id}`, { state: { flight, searchDate: criteria.date } })
+    navigate(`/booking/${flight.id}`, { state: { flight, searchDate: criteria.date, returnDate: returnDate, tripType: tripType } })
+  }
+
+  const handleBookRoundTrip = () => {
+    if (!selectedOutbound || !selectedReturn) return
+    if (!user) {
+      setAlertMsg("Please login to continue booking")
+      setShowCustomAlert(true)
+      setSelectedFlight(selectedOutbound)
+      return
+    }
+    navigate(`/booking/${selectedOutbound.id}`, { 
+      state: { 
+        flight: selectedOutbound, 
+        returnFlight: selectedReturn, 
+        searchDate: criteria.date, 
+        returnDate: returnDate, 
+        tripType: tripType 
+      } 
+    })
   }
 
   const handleSendOtp = async (e) => {
@@ -189,35 +216,55 @@ export default function SearchResultsPage() {
     try {
       await verifyOtpLogin(mobilePhone, otpCode)
       setShowLoginModal(false)
-      if (selectedFlight) {
-        navigate(`/booking/${selectedFlight.id}`, { state: { flight: selectedFlight } })
+      if (isRoundTrip) {
+        if (selectedOutbound && selectedReturn) {
+          navigate(`/booking/${selectedOutbound.id}`, { state: { flight: selectedOutbound, returnFlight: selectedReturn, searchDate: criteria.date, returnDate: returnDate, tripType: tripType } })
+        }
+      } else if (selectedFlight) {
+        navigate(`/booking/${selectedFlight.id}`, { state: { flight: selectedFlight, searchDate: criteria.date, returnDate: returnDate, tripType: tripType } })
       }
     } catch (err) {
       setLoginError(err.message || 'Verification failed. Try 123456.')
     }
   }
 
+  const isRoundTrip = tripType === 'round-trip' || tripType === 'roundtrip'
+
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ['flights', criteria.from, criteria.to, criteria.date],
-    queryFn:  () => {
+    queryKey: ['flights', criteria.from, criteria.to, criteria.date, returnDate, tripType],
+    queryFn:  async () => {
       console.log('🔍 Querying flights with criteria:', criteria)
-      return flightService.search({
+      const outboundRes = await flightService.search({
         from: criteria.from,
         to: criteria.to,
         date: criteria.date
       })
+      
+      let returnRes = null
+      if (isRoundTrip && returnDate) {
+        try {
+          returnRes = await flightService.search({
+            from: criteria.to,
+            to: criteria.from,
+            date: returnDate
+          })
+        } catch (e) {
+          console.error("Failed to fetch return flights", e)
+        }
+      }
+      
+      return {
+        outbound: outboundRes?.data || [],
+        returnFlights: returnRes?.data || []
+      }
     },
   })
 
   console.log('📊 Query state:', { isLoading, isError, data })
-  const apiFlights = data?.data || []
-  console.log('✈️ API flights:', apiFlights.length, apiFlights)
+  const apiFlights = data?.outbound || []
+  const apiReturnFlights = data?.returnFlights || []
 
-  if (isError) {
-    console.error('❌ Query error:', isError)
-    return <ErrorState message="Unable to fetch flights. Please try again." onRetry={refetch} />
-  }
-  const parsedFlights = apiFlights.map(f => {
+  const parseFlight = (f) => {
     try {
       return {
         ...f,
@@ -230,7 +277,10 @@ export default function SearchResultsPage() {
       console.error('Error parsing flight:', f, e)
       return f
     }
-  })
+  }
+
+  const parsedFlights = apiFlights.map(parseFlight)
+  const parsedReturnFlights = apiReturnFlights.map(parseFlight)
 
   const allFlights = parsedFlights.filter(f =>
     f?.departure?.city?.toLowerCase().includes(criteria.from.toLowerCase()) &&
@@ -242,20 +292,53 @@ export default function SearchResultsPage() {
     ) :
     parsedFlights
 
-  const allAirlines = useMemo(() => [...new Set(allFlights.map(f=>f.airline))], [allFlights])
+  const allReturnFlights = parsedReturnFlights.filter(f =>
+    f?.departure?.city?.toLowerCase().includes(criteria.to.toLowerCase()) &&
+    f?.arrival?.city?.toLowerCase().includes(criteria.from.toLowerCase())
+  ).length > 0 ?
+    parsedReturnFlights.filter(f =>
+      f?.departure?.city?.toLowerCase().includes(criteria.to.toLowerCase()) &&
+      f?.arrival?.city?.toLowerCase().includes(criteria.from.toLowerCase())
+    ) :
+    parsedReturnFlights
 
-  const filteredSorted = useMemo(() => {
-    let r = [...allFlights]
+  const allAirlines = useMemo(() => [...new Set([...allFlights.map(f=>f.airline), ...allReturnFlights.map(f=>f.airline)])], [allFlights, allReturnFlights])
+
+  const sortFlights = (list) => {
+    let r = [...list]
     if (filterStops.length)    r = r.filter(f => filterStops.some(s => s===2 ? f.stops>=2 : f.stops===s))
     if (filterAirlines.length) r = r.filter(f => filterAirlines.includes(f.airline))
     switch (sortBy) {
       case 'cheapest': r.sort((a,b)=>a.price-b.price); break
       case 'fastest':  r.sort((a,b)=>a.duration-b.duration); break
-      case 'earliest': r.sort((a,b)=>new Date(a.departure)-new Date(b.departure)); break
-      case 'latest':   r.sort((a,b)=>new Date(b.departure)-new Date(a.departure)); break
+      case 'earliest': r.sort((a,b)=> {
+        const timeA = a.departure?.time || a.departure;
+        const timeB = b.departure?.time || b.departure;
+        return timeA < timeB ? -1 : 1;
+      }); break
+      case 'latest':   r.sort((a,b)=> {
+        const timeA = a.departure?.time || a.departure;
+        const timeB = b.departure?.time || b.departure;
+        return timeA > timeB ? -1 : 1;
+      }); break
     }
     return r
-  }, [allFlights, filterStops, filterAirlines, sortBy])
+  }
+
+  const filteredSorted = useMemo(() => sortFlights(allFlights), [allFlights, filterStops, filterAirlines, sortBy])
+  const filteredSortedReturn = useMemo(() => sortFlights(allReturnFlights), [allReturnFlights, filterStops, filterAirlines, sortBy])
+
+  // Auto pre-select cheapest/first flights in round-trip mode
+  useEffect(() => {
+    if (isRoundTrip) {
+      if (filteredSorted.length > 0 && !selectedOutbound) {
+        setSelectedOutbound(filteredSorted[0])
+      }
+      if (filteredSortedReturn.length > 0 && !selectedReturn) {
+        setSelectedReturn(filteredSortedReturn[0])
+      }
+    }
+  }, [filteredSorted, filteredSortedReturn, isRoundTrip])
 
   const toggleStop    = (s) => setFilterStops(p    => p.includes(s)?p.filter(x=>x!==s):[...p,s])
   const toggleAirline = (a) => setFilterAirlines(p => p.includes(a)?p.filter(x=>x!==a):[...p,a])
@@ -607,130 +690,287 @@ export default function SearchResultsPage() {
         </aside>
 
         {/* ── Main ───────────────────────────────────── */}
-        <main className="fr-main">
-          <div className="fr-results-header">
-            <span className="fr-results-count">
-              Showing <strong>{filteredSorted.length}</strong> of {allFlights.length} flights
-            </span>
-          </div>
-
-          {/* Sort tabs */}
-          <div className="fr-sort-bar" role="tablist">
-            {[
-              {key:'cheapest',label:'Cheapest'},
-              {key:'fastest', label:'Fastest'},
-              {key:'earliest',label:'Earliest'},
-              {key:'latest',  label:'Latest'},
-            ].map(({key,label}) => (
-              <button
-                key={key}
-                role="tab"
-                aria-selected={sortBy===key}
-                className={`fr-sort-tab${sortBy===key?' active':''}`}
-                onClick={() => setSortBy(key)}
-              >
-                <span>{label}</span>
-                {sortMeta[key] && <span className="fr-sort-value">{sortMeta[key]}</span>}
-              </button>
-            ))}
-          </div>
-
-          {/* Flight cards */}
-          <div className="fr-flights-list">
-            {filteredSorted.length === 0 ? (
-              <div className="fr-no-flights">
-                No flights match your current filters.
-                <br />
-                <button onClick={clearFilters}>Clear All Filters</button>
-              </div>
-            ) : filteredSorted.map((flight, idx) => {
-              const color = AIRLINE_COLOR[flight.airline] || 'var(--clr-text-secondary)'
-              const code  = AIRLINE_CODE[flight.airline]  || flight.airline.slice(0,2).toUpperCase()
-              const promo = PROMOS.find(p => p.after === idx)
-              return (
-                <div key={flight.id}>
-                  {promo && <PromoBanner banner={promo} />}
-                  <div
-                    className="fc-card"
-                    onClick={() => handleSelectFlight(flight)}
-                    data-aos="fade-up"
-                    data-aos-delay={idx * 50}
-                  >
-                    <div className="fc-main-row">
-                      {/* Airline */}
-                      <div className="fc-airline-col">
-                        <div className="fc-logo-box" style={{background:color}}>{code}</div>
-                        <div>
-                          <div className="fc-airline-name">{flight.airline}</div>
-                          <div className="fc-flight-num">
-                            {flight.flightNumber}
-                            {flight.isLive && (
-                              <span className="fc-live-pulse-badge" title="Real-time flight data sourced from OpenSky Network">
-                                <span className="fc-pulse-dot" /> LIVE
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Route & times */}
-                      <div className="fc-times-col">
-                        <div className="fc-time-block">
-                          <span className="fc-time">{fmtTime(flight.departure.time || flight.departure)}</span>
-                          <span className="fc-city-code">{flight.departure.airport || getCode(flight.departure.city)}</span>
-                        </div>
-                        <div className="fc-route-info">
-                          <span className="fc-duration">{fmtDuration(flight.duration)}</span>
-                          <div className="fc-line-wrap">
-                            <div className="fc-dot" />
-                            <div className="fc-line" />
-                            <span className="fc-plane-icon" aria-hidden>✈</span>
-                            <div className="fc-line" />
-                            <div className="fc-dot" />
-                          </div>
-                          <span className={`fc-stops-badge ${flight.stops===0?'stops-nonstop':flight.stops===1?'stops-one':'stops-two'}`}>
-                            {flight.stops===0?'Non stop':`${flight.stops} Stop${flight.stops>1?'s':''}`}
-                          </span>
-                        </div>
-                        <div className="fc-time-block">
-                          <span className="fc-time">{fmtTime(flight.arrival.time || flight.arrival)}</span>
-                          <span className="fc-city-code">{flight.arrival.airport || getCode(flight.arrival.city)}</span>
-                        </div>
-                      </div>
-
-                      {flight.seats <= 9 && (
-                        <div className="fc-seats-col">
-                          <span className="fc-seats-text">{flight.seats} Seats<br />left!</span>
-                        </div>
-                      )}
-
-                      {/* Price */}
-                      <div className="fc-price-col">
-                        <span className="fc-per-adult">Per Adult</span>
-                        <span className="fc-price">{fmtPrice(flight.price)}</span>
-                        <button
-                          className="fc-view-btn"
-                          onClick={e => { e.stopPropagation(); handleSelectFlight(flight) }}
-                        >
-                          View Prices
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="fc-footer-row">
-                      <span className={`fc-tag ${flight.refundable?'fc-tag-refund':'fc-tag-nonrefund'}`}>
-                        {flight.refundable?'✓ Refundable':'✗ Non-Refundable'}
-                      </span>
-                      <span className="fc-tag fc-tag-baggage">{flight.baggage||'15 Kg'}</span>
-                      <span className="fc-tag fc-tag-class">{flight.class||'Economy'}</span>
-                    </div>
-                  </div>
+        <main className="fr-main" style={isRoundTrip ? { maxWidth: '100%', flex: 1 } : {}}>
+          {isRoundTrip ? (
+            <>
+              {/* Columns Header */}
+              <div className="fr-roundtrip-header">
+                <div className="fr-rt-col-header">
+                  <h3>Departure Flights</h3>
+                  <p>{criteria.from} to {criteria.to} · {criteria.date ? fmtDate(criteria.date) : ''}</p>
                 </div>
-              )
-            })}
-          </div>
+                <div className="fr-rt-col-header">
+                  <h3>Return Flights</h3>
+                  <p>{criteria.to} to {criteria.from} · {returnDate ? fmtDate(returnDate) : ''}</p>
+                </div>
+              </div>
+
+              {/* Side-by-side List */}
+              <div className="fr-roundtrip-container" style={{ paddingBottom: '100px' }}>
+                {/* Outbound column */}
+                <div className="fr-roundtrip-column">
+                  {filteredSorted.length === 0 ? (
+                    <div className="fr-no-flights">No outbound flights found.</div>
+                  ) : (
+                    filteredSorted.map((flight, idx) => {
+                      const color = AIRLINE_COLOR[flight.airline] || 'var(--clr-text-secondary)'
+                      const code  = AIRLINE_CODE[flight.airline]  || flight.airline.slice(0,2).toUpperCase()
+                      const isSelected = selectedOutbound?.id === flight.id
+                      return (
+                        <div
+                          key={flight.id}
+                          className={`fc-card${isSelected ? ' fc-card-selected' : ''}`}
+                          onClick={() => setSelectedOutbound(flight)}
+                        >
+                          <div className="fc-main-row" style={{ padding: '12px', gap: '8px' }}>
+                            <div className="fc-airline-col" style={{ width: '100px' }}>
+                              <div className="fc-logo-box" style={{ background: color, width: '32px', height: '32px', fontSize: '9px' }}>{code}</div>
+                              <div style={{ minWidth: 0, textAlign: 'left' }}>
+                                <div className="fc-airline-name" style={{ fontSize: '11px', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{flight.airline}</div>
+                                <div className="fc-flight-num" style={{ fontSize: '10px' }}>{flight.flightNumber}</div>
+                              </div>
+                            </div>
+                            <div className="fc-times-col" style={{ flex: 1, justifyContent: 'space-between', padding: '0 8px' }}>
+                              <div className="fc-time-block" style={{ textAlign: 'left' }}>
+                                <span className="fc-time" style={{ fontSize: '14px' }}>{fmtTime(flight.departure.time || flight.departure)}</span>
+                                <span className="fc-city-code" style={{ fontSize: '10px' }}>{flight.departure.airport || getCode(flight.departure.city)}</span>
+                              </div>
+                              <div className="fc-route-info" style={{ gap: '2px' }}>
+                                <span className="fc-duration" style={{ fontSize: '9px' }}>{fmtDuration(flight.duration)}</span>
+                                <div className="fc-line-wrap" style={{ width: '40px' }}>
+                                  <div className="fc-line" style={{ height: '1px' }} />
+                                </div>
+                                <span className="fc-stops-badge" style={{ fontSize: '9px', padding: '1px 4px' }}>
+                                  {flight.stops === 0 ? 'Non stop' : `${flight.stops} Stop`}
+                                </span>
+                              </div>
+                              <div className="fc-time-block" style={{ alignItems: 'flex-end', textAlign: 'right' }}>
+                                <span className="fc-time" style={{ fontSize: '14px' }}>{fmtTime(flight.arrival.time || flight.arrival)}</span>
+                                <span className="fc-city-code" style={{ fontSize: '10px' }}>{flight.arrival.airport || getCode(flight.arrival.city)}</span>
+                              </div>
+                            </div>
+                            <div className="fc-price-col" style={{ width: '80px', alignItems: 'flex-end', padding: 0 }}>
+                              <span className="fc-price" style={{ fontSize: '16px', fontWeight: 800 }}>{fmtPrice(flight.price)}</span>
+                              <span className="fc-per-adult" style={{ fontSize: '9px' }}>Per Adult</span>
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })
+                  )}
+                </div>
+
+                {/* Return column */}
+                <div className="fr-roundtrip-column">
+                  {filteredSortedReturn.length === 0 ? (
+                    <div className="fr-no-flights">No return flights found.</div>
+                  ) : (
+                    filteredSortedReturn.map((flight, idx) => {
+                      const color = AIRLINE_COLOR[flight.airline] || 'var(--clr-text-secondary)'
+                      const code  = AIRLINE_CODE[flight.airline]  || flight.airline.slice(0,2).toUpperCase()
+                      const isSelected = selectedReturn?.id === flight.id
+                      return (
+                        <div
+                          key={flight.id}
+                          className={`fc-card${isSelected ? ' fc-card-selected' : ''}`}
+                          onClick={() => setSelectedReturn(flight)}
+                        >
+                          <div className="fc-main-row" style={{ padding: '12px', gap: '8px' }}>
+                            <div className="fc-airline-col" style={{ width: '100px' }}>
+                              <div className="fc-logo-box" style={{ background: color, width: '32px', height: '32px', fontSize: '9px' }}>{code}</div>
+                              <div style={{ minWidth: 0, textAlign: 'left' }}>
+                                <div className="fc-airline-name" style={{ fontSize: '11px', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{flight.airline}</div>
+                                <div className="fc-flight-num" style={{ fontSize: '10px' }}>{flight.flightNumber}</div>
+                              </div>
+                            </div>
+                            <div className="fc-times-col" style={{ flex: 1, justifyContent: 'space-between', padding: '0 8px' }}>
+                              <div className="fc-time-block" style={{ textAlign: 'left' }}>
+                                <span className="fc-time" style={{ fontSize: '14px' }}>{fmtTime(flight.departure.time || flight.departure)}</span>
+                                <span className="fc-city-code" style={{ fontSize: '10px' }}>{flight.departure.airport || getCode(flight.departure.city)}</span>
+                              </div>
+                              <div className="fc-route-info" style={{ gap: '2px' }}>
+                                <span className="fc-duration" style={{ fontSize: '9px' }}>{fmtDuration(flight.duration)}</span>
+                                <div className="fc-line-wrap" style={{ width: '40px' }}>
+                                  <div className="fc-line" style={{ height: '1px' }} />
+                                </div>
+                                <span className="fc-stops-badge" style={{ fontSize: '9px', padding: '1px 4px' }}>
+                                  {flight.stops === 0 ? 'Non stop' : `${flight.stops} Stop`}
+                                </span>
+                              </div>
+                              <div className="fc-time-block" style={{ alignItems: 'flex-end', textAlign: 'right' }}>
+                                <span className="fc-time" style={{ fontSize: '14px' }}>{fmtTime(flight.arrival.time || flight.arrival)}</span>
+                                <span className="fc-city-code" style={{ fontSize: '10px' }}>{flight.arrival.airport || getCode(flight.arrival.city)}</span>
+                              </div>
+                            </div>
+                            <div className="fc-price-col" style={{ width: '80px', alignItems: 'flex-end', padding: 0 }}>
+                              <span className="fc-price" style={{ fontSize: '16px', fontWeight: 800 }}>{fmtPrice(flight.price)}</span>
+                              <span className="fc-per-adult" style={{ fontSize: '9px' }}>Per Adult</span>
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })
+                  )}
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="fr-results-header">
+                <span className="fr-results-count">
+                  Showing <strong>{filteredSorted.length}</strong> of {allFlights.length} flights
+                </span>
+              </div>
+
+              {/* Sort tabs */}
+              <div className="fr-sort-bar" role="tablist">
+                {[
+                  {key:'cheapest',label:'Cheapest'},
+                  {key:'fastest', label:'Fastest'},
+                  {key:'earliest',label:'Earliest'},
+                  {key:'latest',  label:'Latest'},
+                ].map(({key,label}) => (
+                  <button
+                    key={key}
+                    role="tab"
+                    aria-selected={sortBy===key}
+                    className={`fr-sort-tab${sortBy===key?' active':''}`}
+                    onClick={() => setSortBy(key)}
+                  >
+                    <span>{label}</span>
+                    {sortMeta[key] && <span className="fr-sort-value">{sortMeta[key]}</span>}
+                  </button>
+                ))}
+              </div>
+
+              {/* Flight cards */}
+              <div className="fr-flights-list">
+                {filteredSorted.length === 0 ? (
+                  <div className="fr-no-flights">
+                    No flights match your current filters.
+                    <br />
+                    <button onClick={clearFilters}>Clear All Filters</button>
+                  </div>
+                ) : filteredSorted.map((flight, idx) => {
+                  const color = AIRLINE_COLOR[flight.airline] || 'var(--clr-text-secondary)'
+                  const code  = AIRLINE_CODE[flight.airline]  || flight.airline.slice(0,2).toUpperCase()
+                  const promo = PROMOS.find(p => p.after === idx)
+                  return (
+                    <div key={flight.id}>
+                      {promo && <PromoBanner banner={promo} />}
+                      <div
+                        className="fc-card"
+                        onClick={() => handleSelectFlight(flight)}
+                        data-aos="fade-up"
+                        data-aos-delay={idx * 50}
+                      >
+                        <div className="fc-main-row">
+                          {/* Airline */}
+                          <div className="fc-airline-col">
+                            <div className="fc-logo-box" style={{background:color}}>{code}</div>
+                            <div>
+                              <div className="fc-airline-name">{flight.airline}</div>
+                              <div className="fc-flight-num">
+                                {flight.flightNumber}
+                                {flight.isLive && (
+                                  <span className="fc-live-pulse-badge" title="Real-time flight data sourced from OpenSky Network">
+                                    <span className="fc-pulse-dot" /> LIVE
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Route & times */}
+                          <div className="fc-times-col">
+                            <div className="fc-time-block">
+                              <span className="fc-time">{fmtTime(flight.departure.time || flight.departure)}</span>
+                              <span className="fc-city-code">{flight.departure.airport || getCode(flight.departure.city)}</span>
+                            </div>
+                            <div className="fc-route-info">
+                              <span className="fc-duration">{fmtDuration(flight.duration)}</span>
+                              <div className="fc-line-wrap">
+                                <div className="fc-dot" />
+                                <div className="fc-line" />
+                                <span className="fc-plane-icon" aria-hidden>✈</span>
+                                <div className="fc-line" />
+                                <div className="fc-dot" />
+                              </div>
+                              <span className={`fc-stops-badge ${flight.stops===0?'stops-nonstop':flight.stops===1?'stops-one':'stops-two'}`}>
+                                {flight.stops===0?'Non stop':`${flight.stops} Stop${flight.stops>1?'s':''}`}
+                              </span>
+                            </div>
+                            <div className="fc-time-block">
+                              <span className="fc-time">{fmtTime(flight.arrival.time || flight.arrival)}</span>
+                              <span className="fc-city-code">{flight.arrival.airport || getCode(flight.arrival.city)}</span>
+                            </div>
+                          </div>
+
+                          {flight.seats <= 9 && (
+                            <div className="fc-seats-col">
+                              <span className="fc-seats-text">{flight.seats} Seats<br />left!</span>
+                            </div>
+                          )}
+
+                          {/* Price */}
+                          <div className="fc-price-col">
+                            <span className="fc-per-adult">Per Adult</span>
+                            <span className="fc-price">{fmtPrice(flight.price)}</span>
+                            <button
+                              className="fc-view-btn"
+                              onClick={e => { e.stopPropagation(); handleSelectFlight(flight) }}
+                            >
+                              View Prices
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="fc-footer-row">
+                          <span className={`fc-tag ${flight.refundable?'fc-tag-refund':'fc-tag-nonrefund'}`}>
+                            {flight.refundable?'✓ Refundable':'✗ Non-Refundable'}
+                          </span>
+                          <span className="fc-tag fc-tag-baggage">{flight.baggage||'15 Kg'}</span>
+                          <span className="fc-tag fc-tag-class">{flight.class||'Economy'}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </>
+          )}
         </main>
       </div>
+
+      {isRoundTrip && selectedOutbound && selectedReturn && (
+        <div className="fr-rt-bottom-bar">
+          <div className="fr-rt-bottom-inner">
+            <div className="fr-rt-summary-col">
+              <div className="fr-rt-summary-item">
+                <span className="fr-rt-tag outbound">OUTBOUND</span>
+                <strong>{selectedOutbound.airline}</strong>
+                <span>{fmtTime(selectedOutbound.departure.time || selectedOutbound.departure)} → {fmtTime(selectedOutbound.arrival.time || selectedOutbound.arrival)}</span>
+              </div>
+              <div className="fr-rt-summary-divider" />
+              <div className="fr-rt-summary-item">
+                <span className="fr-rt-tag return">RETURN</span>
+                <strong>{selectedReturn.airline}</strong>
+                <span>{fmtTime(selectedReturn.departure.time || selectedReturn.departure)} → {fmtTime(selectedReturn.arrival.time || selectedReturn.arrival)}</span>
+              </div>
+            </div>
+            
+            <div className="fr-rt-action-col">
+              <div className="fr-rt-total-price">
+                <span className="total-label">Total Price:</span>
+                <span className="total-val">{fmtPrice(selectedOutbound.price + selectedReturn.price)}</span>
+              </div>
+              <button className="fr-rt-book-btn" onClick={handleBookRoundTrip}>
+                BOOK NOW
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showLoginModal && (
         <div className="custom-modal-overlay">

@@ -287,3 +287,76 @@ export const sendWelcomeEmail = async (user) => {
     console.error('❌ Error sending welcome email:', error.message)
   }
 }
+
+export const sendAdminContactNotification = async (inquiry) => {
+  try {
+    const adminEmail = process.env.ADMIN_EMAIL || 'admin@makemytrip.com'
+
+    if (!transporter) {
+      console.log(`📧 [TEST MODE] Contact inquiry notification would be sent to ${adminEmail}`)
+      console.log('Inquiry:', inquiry)
+      return { messageId: 'test-' + Date.now(), success: true }
+    }
+
+    const mailOptions = {
+      from: `"MakeMyTrip" <${process.env.SMTP_USER}>`,
+      to: adminEmail,
+      subject: `New Contact Inquiry from ${inquiry.name}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
+          <div style="background: #003580; color: white; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
+            <h1 style="margin: 0;">New Contact Inquiry</h1>
+          </div>
+
+          <div style="padding: 20px;">
+            <p>A new contact inquiry has been received from your website.</p>
+
+            <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+              <tr style="background: #f9f9f9;">
+                <td style="padding: 10px; border: 1px solid #eee;"><strong>Name:</strong></td>
+                <td style="padding: 10px; border: 1px solid #eee;">${inquiry.name}</td>
+              </tr>
+              <tr>
+                <td style="padding: 10px; border: 1px solid #eee;"><strong>Email:</strong></td>
+                <td style="padding: 10px; border: 1px solid #eee;"><a href="mailto:${inquiry.email}">${inquiry.email}</a></td>
+              </tr>
+              <tr style="background: #f9f9f9;">
+                <td style="padding: 10px; border: 1px solid #eee;"><strong>Phone:</strong></td>
+                <td style="padding: 10px; border: 1px solid #eee;">${inquiry.phone || 'Not provided'}</td>
+              </tr>
+              <tr>
+                <td style="padding: 10px; border: 1px solid #eee;"><strong>Subject:</strong></td>
+                <td style="padding: 10px; border: 1px solid #eee;">${inquiry.subject}</td>
+              </tr>
+              <tr style="background: #f9f9f9;">
+                <td colspan="2" style="padding: 10px; border: 1px solid #eee;"><strong>Message:</strong></td>
+              </tr>
+              <tr>
+                <td colspan="2" style="padding: 10px; border: 1px solid #eee; white-space: pre-wrap;">${inquiry.message}</td>
+              </tr>
+            </table>
+
+            <div style="background: #e3f2fd; border-left: 4px solid #2196F3; padding: 15px; margin: 20px 0;">
+              <p style="margin: 0;">
+                <strong>Action Required:</strong> Please review and respond to this inquiry at your earliest convenience.
+              </p>
+            </div>
+          </div>
+
+          <div style="background: #f9f9f9; padding: 15px; text-align: center; border-top: 1px solid #ddd; font-size: 12px; color: #666;">
+            <p style="margin: 0;">
+              © ${new Date().getFullYear()} MakeMyTrip. All rights reserved.
+            </p>
+          </div>
+        </div>
+      `
+    }
+
+    const info = await transporter.sendMail(mailOptions)
+    console.log('✅ Contact inquiry notification sent to admin:', info.messageId)
+    return { success: true, messageId: info.messageId }
+  } catch (error) {
+    console.error('❌ Error sending contact inquiry notification:', error.message)
+    return { success: false, message: error.message }
+  }
+}

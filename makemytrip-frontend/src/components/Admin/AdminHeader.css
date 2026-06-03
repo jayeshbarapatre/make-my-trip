@@ -5,7 +5,7 @@
   background: var(--bg-surface);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
-  padding: 12px 30px;
+  padding: 10px 30px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -20,7 +20,7 @@
 
 @media (max-width: 768px) {
   .admin-header {
-    padding: 12px 16px;
+    padding: 10px 16px;
     gap: 12px;
   }
 }
@@ -470,27 +470,40 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(15, 23, 42, 0.4);
+  background: rgba(15, 23, 42, 0.5);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2000;
+  z-index: 999999 !important;
+
+  /* Theme variables mapped strictly to dynamic Cosmos design tokens (no hardcoded colors) */
+  --modal-bg: hsl(var(--b1));
+  --modal-text-primary: hsl(var(--bc));
+  --modal-text-secondary: hsl(var(--bc) / 0.70);
+  --modal-border: hsl(var(--b3));
+  --modal-input-bg: hsl(var(--b2));
 }
 
 .password-modal {
-  background: var(--bg-surface);
-  padding: 24px;
-  border-radius: 12px;
+  background: var(--modal-bg);
+  padding: 28px;
+  border-radius: 16px;
   width: 400px;
   max-width: 90%;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  border: 1px solid var(--border);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--modal-border);
+  animation: modalScaleIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalScaleIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }
 
 .password-modal h3 {
   margin: 0 0 16px 0;
-  color: var(--text-primary);
+  color: var(--modal-text-primary);
   font-size: 16px;
   font-weight: 700;
 }
@@ -504,25 +517,25 @@
   font-size: 12px;
   font-weight: 600;
   margin-bottom: 6px;
-  color: var(--text-secondary);
+  color: var(--modal-text-secondary) !important;
 }
 
 .password-modal input {
   width: 100%;
   padding: 10px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--modal-border);
   border-radius: 8px;
   font-size: 13px;
-  background: var(--bg-body);
-  color: var(--text-primary);
+  background: var(--modal-input-bg);
+  color: var(--modal-text-primary);
   transition: all 0.2s ease;
 }
 
 .password-modal input:focus {
   outline: none;
-  border-color: #ed4a29;
-  background: var(--bg-surface);
-  box-shadow: 0 0 0 3px rgba(237, 74, 41, 0.1);
+  border-color: hsl(var(--p));
+  background: var(--modal-bg);
+  box-shadow: 0 0 0 3px hsl(var(--p) / 0.15);
 }
 
 .modal-actions {
@@ -543,13 +556,13 @@
 }
 
 .cancel-btn {
-  background: var(--bg-body);
-  color: var(--text-primary);
-  border: 1px solid var(--border) !important;
+  background: var(--modal-input-bg);
+  color: var(--modal-text-primary);
+  border: 1px solid var(--modal-border) !important;
 }
 
 .cancel-btn:hover {
-  background: var(--border);
+  background: var(--modal-border);
 }
 
 .save-btn {

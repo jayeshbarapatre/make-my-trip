@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { useLocation } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { useVendor } from '../../context/VendorContext'
 import { useTheme } from '../../context/ThemeContext'
 import './VendorHeader.css'
@@ -15,7 +15,9 @@ const VendorHeader = ({ toggleSidebar }) => {
     const pathMap = {
       '/vendor/dashboard': 'Dashboard',
       '/vendor/hotels': 'My Hotels',
-      '/vendor/bookings': 'Bookings'
+      '/vendor/bookings': 'Bookings',
+      '/vendor/settings': 'Settings',
+      '/vendor/help': 'Help & Support'
     }
     return pathMap[location.pathname] || 'Vendor Panel'
   }
@@ -62,15 +64,15 @@ const VendorHeader = ({ toggleSidebar }) => {
               <div className="dropdown-item">
                 <span className="vendor-email">{vendor?.email}</span>
               </div>
-              <hr className="dropdown-divider" />
-              <a href="/vendor/settings" className="dropdown-link">
+              <div className="dropdown-divider"></div>
+              <Link to="/vendor/settings" className="dropdown-link" onClick={() => setDropdownOpen(false)}>
                 <i className="fas fa-cog"></i>
                 <span>Settings</span>
-              </a>
-              <a href="/vendor/help" className="dropdown-link">
+              </Link>
+              <Link to="/vendor/help" className="dropdown-link" onClick={() => setDropdownOpen(false)}>
                 <i className="fas fa-question-circle"></i>
                 <span>Help & Support</span>
-              </a>
+              </Link>
             </div>
           )}
         </div>

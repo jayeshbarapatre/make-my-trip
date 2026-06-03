@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useAdmin } from '../../context/AdminContext'
 import { useTheme } from '../../context/ThemeContext'
@@ -12,7 +13,7 @@ const AdminHeader = ({ toggleSidebar }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [notificationOpen, setNotificationOpen] = useState(false)
   const [showPasswordModal, setShowPasswordModal] = useState(false)
-  const [passwordData, setPasswordData] = useState({ current: '', new: '' })
+  const [passwordData, setPasswordData] = useState({ current: '', new: '', confirm: '' })
   const [passwordStatus, setPasswordStatus] = useState({ loading: false, error: '', success: '' })
   const [pendingBusesCount, setPendingBusesCount] = useState(0)
   const [pendingCabsCount, setPendingCabsCount] = useState(0)
@@ -223,13 +224,22 @@ const AdminHeader = ({ toggleSidebar }) => {
                 <span>{admin?.email || 'admin@makemytrip.com'}</span>
               </div>
               <div className="dropdown-divider"></div>
-              <button className="dropdown-item">
+              <button className="dropdown-item" onClick={() => {
+                navigate('/admin/profile')
+                setDropdownOpen(false)
+              }}>
                 <i className="icon fas fa-user"></i> Profile
               </button>
-              <button className="dropdown-item">
+              <button className="dropdown-item" onClick={() => {
+                navigate('/admin/settings')
+                setDropdownOpen(false)
+              }}>
                 <i className="icon fas fa-cog"></i> Account Settings
               </button>
-              <button className="dropdown-item">
+              <button className="dropdown-item" onClick={() => {
+                navigate('/admin/security')
+                setDropdownOpen(false)
+              }}>
                 <i className="icon fas fa-shield-alt"></i> Security
               </button>
               <button className="dropdown-item" onClick={() => {
@@ -238,7 +248,10 @@ const AdminHeader = ({ toggleSidebar }) => {
               }}>
                 <i className="icon fas fa-key"></i> Change Password
               </button>
-              <button className="dropdown-item">
+              <button className="dropdown-item" onClick={() => {
+                navigate('/admin/help')
+                setDropdownOpen(false)
+              }}>
                 <i className="icon fas fa-question-circle"></i> Help Center
               </button>
               <div className="dropdown-divider"></div>
@@ -250,9 +263,9 @@ const AdminHeader = ({ toggleSidebar }) => {
         </div>
       </div>
 
-      {/* Password Modal */}
-      {showPasswordModal && (
-        <div className="password-modal-overlay">
+      {/* Password Modal - Rendered via React Portal */}
+      {showPasswordModal && createPortal(
+        <div className="password-modal-overlay" data-theme={theme}>
           <div className="password-modal">
             <h3>Change Password</h3>
             {passwordStatus.error && <p className="error-text">{passwordStatus.error}</p>}
@@ -273,6 +286,50 @@ const AdminHeader = ({ toggleSidebar }) => {
                 value={passwordData.new}
                 onChange={e => setPasswordData({...passwordData, new: e.target.value})}
               />
+              {/* Strength Indicator */}
+              {passwordData.new && (() => {
+                const getPasswordStrength = (pwd) => {
+                  if (!pwd) return { score: 0, text: '', color: 'transparent' }
+                  let score = 0
+                  if (pwd.length >= 8) score++
+                  if (/[A-Z]/.test(pwd)) score++
+                  if (/[a-z]/.test(pwd)) score++
+                  if (/[0-9]/.test(pwd)) score++
+                  if (/[^A-Za-z0-9]/.test(pwd)) score++
+
+                  if (pwd.length < 6) return { score: 1, text: 'Very Weak', color: 'hsl(var(--er))' }
+                  if (score <= 2) return { score: 2, text: 'Weak', color: 'hsl(var(--wa))' }
+                  if (score <= 4) return { score: 3, text: 'Medium', color: 'hsl(var(--p))' }
+                  return { score: 4, text: 'Strong', color: 'hsl(var(--su))' }
+                }
+                const strength = getPasswordStrength(passwordData.new)
+                return (
+                  <div style={{ marginTop: '10px' }}>
+                    <div style={{ display: 'flex', gap: '4px', marginBottom: '6px' }}>
+                      {[1, 2, 3, 4].map(i => (
+                        <div key={i} style={{
+                          flex: 1,
+                          height: '4px',
+                          borderRadius: '2px',
+                          background: i <= strength.score ? strength.color : 'var(--modal-border)',
+                          transition: 'all 0.2s ease'
+                        }} />
+                      ))}
+                    </div>
+                    <span style={{ fontSize: '11px', fontWeight: '700', color: strength.color }}>
+                      {strength.text} Password
+                    </span>
+                  </div>
+                )
+              })()}
+            </div>
+            <div className="form-group">
+              <label>Confirm Password</label>
+              <input
+                type="password"
+                value={passwordData.confirm}
+                onChange={e => setPasswordData({...passwordData, confirm: e.target.value})}
+              />
             </div>
             <div className="modal-actions">
               <button
@@ -280,15 +337,18 @@ const AdminHeader = ({ toggleSidebar }) => {
                 onClick={() => {
                   setShowPasswordModal(false)
                   setPasswordStatus({ loading: false, error: '', success: '' })
-                  setPasswordData({ current: '', new: '' })
+                  setPasswordData({ current: '', new: '', confirm: '' })
                 }}
               >Cancel</button>
               <button
                 className="save-btn"
                 disabled={passwordStatus.loading}
                 onClick={async () => {
-                  if (!passwordData.current || !passwordData.new) {
+                  if (!passwordData.current || !passwordData.new || !passwordData.confirm) {
                     return setPasswordStatus({ ...passwordStatus, error: 'All fields required' })
+                  }
+                  if (passwordData.new !== passwordData.confirm) {
+                    return setPasswordStatus({ ...passwordStatus, error: 'New password and confirm password do not match' })
                   }
                   try {
                     setPasswordStatus({ loading: true, error: '', success: '' })
@@ -297,7 +357,7 @@ const AdminHeader = ({ toggleSidebar }) => {
                     setTimeout(() => {
                       setShowPasswordModal(false)
                       setPasswordStatus({ loading: false, error: '', success: '' })
-                      setPasswordData({ current: '', new: '' })
+                      setPasswordData({ current: '', new: '', confirm: '' })
                     }, 1500)
                   } catch (err) {
                     setPasswordStatus({ loading: false, error: err.response?.data?.message || 'Failed to change password', success: '' })
@@ -308,7 +368,8 @@ const AdminHeader = ({ toggleSidebar }) => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </header>
   )

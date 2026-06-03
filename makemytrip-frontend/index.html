@@ -14,6 +14,28 @@
     </script>
   </head>
   <body>
+    <div id="google_translate_element" style="display: none; visibility: hidden; opacity: 0; position: absolute; pointer-events: none;"></div>
+    <script type="text/javascript">
+      // Pre-set the google translation cookie before the script loads to prevent flash of English
+      (function() {
+        const savedLang = localStorage.getItem('mmt-lang') || 'EN';
+        if (savedLang !== 'EN') {
+          const cookieVal = '/en/' + savedLang.toLowerCase();
+          document.cookie = 'googtrans=' + cookieVal + '; path=/';
+          document.cookie = 'googtrans=' + cookieVal + '; path=/; domain=' + window.location.hostname;
+        }
+      })();
+
+      function googleTranslateElementInit() {
+        new google.translate.TranslateElement({
+          pageLanguage: 'en',
+          includedLanguages: 'en,hi,es,de',
+          layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+          autoDisplay: false
+        }, 'google_translate_element');
+      }
+    </script>
+    <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
     <div id="root"></div>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script type="module" src="/src/main.jsx"></script>

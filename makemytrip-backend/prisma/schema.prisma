@@ -184,3 +184,127 @@ model Train {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }
+
+model CmsPage {
+  id               String   @id @default(uuid())
+  title            String
+  slug             String   @unique
+  metaTitle        String?
+  metaDescription  String?
+  metaKeywords     String?
+  ogImage          String?
+  canonicalUrl     String?
+  schemaJson       String?
+  bannerImage      String?
+  shortDescription String?
+  content          String   @db.Text
+  status           String   @default("active")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model FooterSection {
+  id        String        @id @default(uuid())
+  title     String
+  sortOrder Int           @default(0)
+  status    String        @default("active")
+  links     FooterLink[]
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
+
+model FooterLink {
+  id          String        @id @default(uuid())
+  sectionId   String
+  section     FooterSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  title       String
+  url         String?
+  cmsPageId   String?
+  target      String        @default("_self")
+  sortOrder   Int           @default(0)
+  status      String        @default("active")
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model ContactInquiry {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  phone     String?
+  subject   String
+  message   String   @db.Text
+  status    String   @default("new")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Notification {
+  id          String   @id @default(uuid())
+  title       String
+  message     String   @db.Text
+  type        String
+  referenceId String?
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+model JobPosition {
+  id           String           @id @default(uuid())
+  title        String
+  department   String
+  location     String
+  experience   String
+  description  String           @db.Text
+  status       String           @default("active")
+  applications JobApplication[]
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+}
+
+model JobApplication {
+  id        String      @id @default(uuid())
+  jobId     String
+  job       JobPosition @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  name      String
+  email     String
+  phone     String?
+  resume    String?
+  message   String?     @db.Text
+  status    String      @default("pending")
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+model Faq {
+  id        String   @id @default(uuid())
+  question  String
+  answer    String   @db.Text
+  sortOrder Int      @default(0)
+  status    String   @default("active")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Setting {
+  id                  String   @id @default(uuid())
+  primaryColor        String   @default("#003580")
+  secondaryColor      String   @default("#0F172A")
+  accentColor         String   @default("#1a73e8")
+  footerBg            String   @default("#003580")
+  headerBg            String   @default("#ffffff")
+  logo                String?
+  favicon             String?
+  announcementBar     String?
+  announcementActive  Boolean  @default(false)
+  updatedAt           DateTime @updatedAt
+}
+
+model MediaLibrary {
+  id        String   @id @default(uuid())
+  fileName  String
+  fileUrl   String
+  fileType  String
+  size      Int
+  createdAt DateTime @default(now())
+}

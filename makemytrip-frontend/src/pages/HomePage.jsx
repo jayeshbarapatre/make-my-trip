@@ -16,6 +16,8 @@ import { flightService } from '../services/flightService'
 import CustomCalendarPicker from '../components/CustomCalendarPicker'
 import TabIcon from '../components/TabIcon'
 
+import { useTranslation } from '../hooks/useTranslation'
+
 import '../styles/HomePage.css'
 import '../styles/Hero.css'
 
@@ -73,6 +75,7 @@ const PICKS = [
 ]
 
 export default function HomePage() {
+  const { t } = useTranslation()
   const [activeTab,  setActiveTab]  = useState('flights')
   const [tripType,   setTripType]   = useState('oneway')
   const [activeFare, setActiveFare] = useState('Regular')
@@ -388,36 +391,36 @@ export default function HomePage() {
             <span className="hp-dot-gold"></span>
             Summer sale · Up to 25% off domestic flights
           </div>
-          <h1>Plan your next <span>unforgettable</span> trip.</h1>
+          <h1>{t('plan_title')}<span>{t('unforgettable')}</span>{t('trip')}</h1>
           <p className="hp-hero-sub">
-            Compare flights, stays, and experiences across 200+ destinations — all in one place.
+            {t('hero_sub')}
           </p>
 
           <div className="hp-booker">
             {/* Premium service navigation tab strip matching image2 */}
             <div className="service-tabs" style={{ marginBottom: 20 }}>
-              {SERVICE_TABS.map((t) => (
+              {SERVICE_TABS.map((tab) => (
                 <button
-                  key={t.id}
+                  key={tab.id}
                   type="button"
-                  className={`service-tab${activeTab === t.id ? ' active' : ''}`}
+                  className={`service-tab${activeTab === tab.id ? ' active' : ''}`}
                   onClick={() => {
-                    setActiveTab(t.id)
-                    if (t.id === 'hotels') navigate('/hotels')
-                    if (t.id === 'villas') navigate('/homestays')
-                    if (t.id === 'trains') navigate('/trains')
-                    if (t.id === 'holidays') navigate('/holidays')
-                    if (t.id === 'cabs') navigate('/cabs')
-                    if (t.id === 'buses') navigate('/buses')
-                    if (t.id === 'cruise') navigate('/cruise')
-                    if (t.id === 'forex') navigate('/forex')
-                    if (t.id === 'insurance') navigate('/insurance')
+                    setActiveTab(tab.id)
+                    if (tab.id === 'hotels') navigate('/hotels')
+                    if (tab.id === 'villas') navigate('/homestays')
+                    if (tab.id === 'trains') navigate('/trains')
+                    if (tab.id === 'holidays') navigate('/holidays')
+                    if (tab.id === 'cabs') navigate('/cabs')
+                    if (tab.id === 'buses') navigate('/buses')
+                    if (tab.id === 'cruise') navigate('/cruise')
+                    if (tab.id === 'forex') navigate('/forex')
+                    if (tab.id === 'insurance') navigate('/insurance')
                   }}
                 >
-                  {t.isNew && <span className="tab-new">new</span>}
-                  <span className="tab-icon"><TabIcon id={t.id} size={26} /></span>
-                  <span className="tab-lbl" style={{ whiteSpace: 'pre-line' }}>{t.label}</span>
-                  {activeTab === t.id && <div className="tab-bar" />}
+                  {tab.isNew && <span className="tab-new">new</span>}
+                  <span className="tab-icon"><TabIcon id={tab.id} size={26} /></span>
+                  <span className="tab-lbl" style={{ whiteSpace: 'pre-line' }}>{t(tab.id) || tab.label}</span>
+                  {activeTab === tab.id && <div className="tab-bar" />}
                 </button>
               ))}
             </div>
@@ -443,7 +446,7 @@ export default function HomePage() {
                 <div className="hp-grid">
                   {/* From Field */}
                   <div className="hp-field hp-field-wrap" ref={fromRef} style={{ position: 'relative' }}>
-                    <small>From</small>
+                    <small>{t('from')}</small>
                     <div style={{ position: 'relative', width: '100%', minWidth: 0 }}>
                       <input
                         value={fromQuery}
@@ -510,7 +513,7 @@ export default function HomePage() {
 
                   {/* To Field */}
                   <div className="hp-field hp-field-wrap" ref={toRef} style={{ position: 'relative' }}>
-                    <small>To</small>
+                    <small>{t('to')}</small>
                     <div style={{ position: 'relative', width: '100%', minWidth: 0 }}>
                       <input
                         value={toQuery}
@@ -577,7 +580,7 @@ export default function HomePage() {
 
                   {/* Departure Field */}
                   <div className="hp-field clickable" onClick={(e) => { e.stopPropagation(); setShowDepartCal(true); }} style={{ position: 'relative', cursor: 'pointer' }}>
-                    <small>Departure</small>
+                    <small>{t('departure')}</small>
                     <div className="hp-field-big" style={{ fontSize: '24px', fontWeight: 800, margin: '4px 0' }}>
                       {formatDateDisplay(departDate).day} <span className="hp-unit" style={{ fontSize: '14px', fontWeight: 600 }}>{formatDateDisplay(departDate).monthYear}</span>
                     </div>
@@ -602,7 +605,7 @@ export default function HomePage() {
                   {/* Return Field - only for flights roundtrip */}
                   {activeTab === 'flights' && (
                     <div className="hp-field clickable" style={{ position: 'relative', cursor: 'pointer' }}>
-                      <small>Return</small>
+                      <small>{t('return')}</small>
                       {tripType === 'roundtrip' ? (
                         <div onClick={(e) => { e.stopPropagation(); setShowReturnCal(true); }}>
                           <div className="hp-field-big" style={{ fontSize: '24px', fontWeight: 800, margin: '4px 0' }}>
@@ -633,7 +636,7 @@ export default function HomePage() {
 
                   {/* Travellers Field */}
                   <div className="hp-field clickable" ref={travellerRef} onClick={() => setShowTravellerDropdown(true)} style={{ position: 'relative', cursor: 'pointer' }}>
-                    <small>{activeTab === 'buses' ? 'Passengers' : 'Travellers & Class'}</small>
+                    <small>{activeTab === 'buses' ? t('passengers') : t('travellers')}</small>
                     <div className="hp-field-big">
                       {travellers.adults + travellers.children + travellers.infants} <span className="hp-unit">Passengers</span>
                     </div>
@@ -707,14 +710,14 @@ export default function HomePage() {
                       <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2.2"/>
                       <path d="M20 20l-3.5-3.5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/>
                     </svg>
-                    Search
+                    {t('search')}
                   </button>
                 </div>
 
                 {/* Recent Searches Row */}
                 {recentSearches.length > 0 && (
                   <div className="hp-recent-row">
-                    <span className="hp-recent-label">Recent Searches:</span>
+                    <span className="hp-recent-label">{t('recent_searches')}</span>
                     {recentSearches.map((item, idx) => (
                       <button
                         key={`${item.from}-${item.to}-${idx}`}
@@ -734,7 +737,7 @@ export default function HomePage() {
                 )}
 
                 <div className="hp-fare-row">
-                  <span className="hp-fare-lbl">Special fares (Extra savings):</span>
+                  <span className="hp-fare-lbl">{t('special_fares')}</span>
                   {FARES.map(f => (
                     <button
                       key={f}

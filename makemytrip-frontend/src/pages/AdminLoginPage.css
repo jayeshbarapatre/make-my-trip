@@ -211,9 +211,11 @@ padding: 10px 12px 10px 42px;
   flex-direction: column;
 }
 
+/* Fix dark theme label color by avoiding slash-notation on hsl() */
 .form-group label {
   font-weight: 700;
-  color: hsl(var(--bc) / 0.8);
+  color: hsl(var(--bc));
+  opacity: 0.85;
   margin-bottom: 8px;
   font-size: 14px;
   text-align: left;
