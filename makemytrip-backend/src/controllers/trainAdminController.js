@@ -26,7 +26,7 @@ export const createTrain = async (req, res) => {
         seatsAvailable: parseInt(seats) || 45,
         amenities: amenities || [],
         image: image || null,
-        listingStatus: 'APPROVED' // Admins can create approved directly
+        isActive: true
       }
     })
 
@@ -41,8 +41,8 @@ export const getAllTraines = async (req, res) => {
     const { page = 1, limit = 10, search, type, status } = req.query
     const skip = (parseInt(page) - 1) * parseInt(limit)
 
-    const query = { listingStatus: 'APPROVED' }
-    
+    const query = {}
+
     if (search) {
       query.OR = [
         { operatorName: { contains: search, mode: 'insensitive' } },

@@ -2,15 +2,20 @@
   display: flex;
   min-height: 100vh;
 
+  /* Overwrite primary theme color to #ed4a29 in HSL format: 10 85% 55% */
+  --p: 10 85% 55%;
+  --pc: 0 0% 100%;
+
   /* Light mode tokens */
-  --bg-body: hsl(var(--b3));
+  --bg-body: hsl(var(--b2));
   --bg-surface: hsl(var(--b1));
   --bg-sidebar: hsl(var(--b2));
   --text-primary: hsl(var(--bc));
   --text-secondary: hsl(var(--bc) / 0.7);
   --sidebar-text: hsl(var(--bc) / 0.8);
-  --border: hsl(var(--bc) / 0.2);
-  --accent: hsl(var(--p));
+  --border: hsl(var(--b3));
+  --accent: #ed4a29;
+  --accentSoft: rgba(237, 74, 41, 0.08);
   --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   --hover-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 

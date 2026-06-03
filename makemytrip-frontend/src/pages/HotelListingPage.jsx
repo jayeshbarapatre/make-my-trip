@@ -350,6 +350,7 @@ function PhotoCarousel({ seeds, photos, hotelId }) {
   const [idx, setIdx] = useState(0);
   const total = seeds.length;
   const go = (d, e) => { 
+    e.preventDefault();
     e.stopPropagation(); 
     setIdx(i => (i + d + total) % total); 
   };
@@ -357,10 +358,10 @@ function PhotoCarousel({ seeds, photos, hotelId }) {
     <div className="carousel">
       <div className="carousel-track" style={{transform: `translateX(${-idx * 100}%)`, display: 'flex', width: '100%', height: '100%'}}>
         {seeds.map((s) => (
-          <div key={s} className="carousel-slide" style={{ minWidth: '100%', height: '100%' }}>
+          <div key={s} className="carousel-slide" style={{ minWidth: '100%', height: '100%', flexShrink: 0 }}>
             {/* Beautiful hotel imagery placeholders styled with rich Unsplash images */}
             <img 
-              src={s.includes('unsplash.com') ? s : `https://images.unsplash.com/photo-${s}?auto=format&fit=crop&w=600&h=420&q=80`} 
+              src={typeof s === 'string' && (s.startsWith('http') || s.startsWith('/')) ? s : `https://images.unsplash.com/photo-${s}?auto=format&fit=crop&w=600&h=420&q=80`} 
               alt="Udaipur Luxury Stay" 
               loading="lazy"
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
@@ -368,8 +369,8 @@ function PhotoCarousel({ seeds, photos, hotelId }) {
           </div>
         ))}
       </div>
-      <button className="car-arr car-l" onClick={(e) => go(-1, e)}>{I.chevronL}</button>
-      <button className="car-arr car-r" onClick={(e) => go(1, e)}>{I.chevronR}</button>
+      <button type="button" className="car-arr car-l" onClick={(e) => go(-1, e)}>{I.chevronL}</button>
+      <button type="button" className="car-arr car-r" onClick={(e) => go(1, e)}>{I.chevronR}</button>
       <div className="car-dots">
         {seeds.map((_, i) => <span key={i} className={i === idx ? "on" : ""}/>)}
       </div>

@@ -72,10 +72,7 @@ export default function Signup({ onSwitchTab }) {
         phone: form.phone,
         password: form.password
       })
-      toast.success(`Welcome, ${form.name}! 🚀 Your account has been created successfully.`)
-      setTimeout(() => {
-        navigate('/')
-      }, 500)
+      navigate('/')
     } catch (err) {
       console.error('Registration error:', err)
       const errorMessage = err?.response?.data?.message ||

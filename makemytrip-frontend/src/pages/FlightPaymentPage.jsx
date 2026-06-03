@@ -1,19 +1,19 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import '../styles/TrainBookingFlow.css';
+import '../styles/FlightBookingFlow.css';
 
-export default function TrainPaymentPage() {
+export default function FlightPaymentPage() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { train, selectedClass, searchParams, passengers, contact, totalAmount } = location.state || {
-    train: { name: "Rajdhani Express", number: "12952", depTime: "16:55", arrTime: "08:30" },
-    selectedClass: { code: "3A", name: "AC 3 Tier", price: 2125 },
-    searchParams: { fromCity: "New Delhi", toCity: "Mumbai", travelDate: new Date().toISOString().split('T')[0], quota: "General" },
-    passengers: [{ name: "Jayesh Sharma", age: 29, gender: "Male", berth: "Lower Berth" }],
+  const { flight, searchParams, passengers, contact, totalAmount, baseFare } = location.state || {
+    flight: { id: '1', airline: "IndiGo", flightNumber: "6E-205", departure: { city: "Delhi", time: "06:00" }, arrival: { city: "Mumbai", time: "08:15" }, price: 4500, seatsAvailable: 120 },
+    searchParams: { from: "Delhi", to: "Mumbai", date: new Date().toISOString().split('T')[0], passengers: 1, cabinClass: "Economy" },
+    passengers: [{ firstName: "Jayesh", lastName: "Sharma", dob: "1995-05-15", gender: "Male", nationality: "Indian" }],
     contact: { mobile: "9876543210", email: "jayesh@gmail.com" },
-    totalAmount: 2160
+    totalAmount: 4699,
+    baseFare: 4500
   };
 
   const [selectedMethod, setSelectedMethod] = useState('UPI / Google Pay');
@@ -28,15 +28,14 @@ export default function TrainPaymentPage() {
     try {
       const userId = localStorage.getItem('userId') || 'usr_guest_' + Date.now();
 
-      // Call backend to create train booking (server generates PNR and bookingId)
+      // Call backend to create flight booking
       const response = await axios.post(
-        'http://localhost:5000/api/v1/bookings/train',
+        'http://localhost:5000/api/v1/bookings/flight',
         {
           userId,
-          trainId: train.id || 'train_' + Date.now(),
-          passengers: passengers.map(p => p.name),
-          class: selectedClass.code,
-          quota: searchParams.quota,
+          flightId: flight.id,
+          passengers: passengers.map(p => `${p.firstName} ${p.lastName}`),
+          fareClass: searchParams.cabinClass,
           totalAmount,
           travellers: {
             passengers,
@@ -53,22 +52,21 @@ export default function TrainPaymentPage() {
       );
 
       if (response.data.success) {
-        // Server returns PNR and bookingId
         const booking = {
           bookingId: response.data.data.bookingId,
           pnr: response.data.data.pnr,
           status: response.data.data.status,
-          train,
-          selectedClass,
+          flight,
           passengers,
           contact,
           totalAmount,
-          departureDate: searchParams.travelDate,
+          baseFare,
+          departureDate: searchParams.date,
           paymentMethod: finalMethod,
           createdAt: new Date().toISOString()
         };
 
-        navigate('/trains/success', { state: { booking, train, selectedClass } });
+        navigate('/flights/success', { state: { booking, flight } });
       }
     } catch (err) {
       console.error('Payment error:', err);
@@ -78,67 +76,67 @@ export default function TrainPaymentPage() {
   };
 
   return (
-    <div className="train-flow-wrapper">
-      <div className="train-flow-container">
+    <div className="flight-flow-wrapper">
+      <div className="flight-flow-container">
 
         {/* Step Progress Bar */}
-        <div className="train-steps-bar">
-          <div className="train-step completed">
-            <div className="train-step-num">✓</div>
-            <span>1. Train Search</span>
+        <div className="flight-steps-bar">
+          <div className="flight-step completed">
+            <div className="flight-step-num">✓</div>
+            <span>1. Flight Search</span>
           </div>
-          <div className="train-step-sep">――――</div>
-          <div className="train-step completed">
-            <div className="train-step-num">✓</div>
-            <span>2. Select Train &amp; Class</span>
+          <div className="flight-step-sep">――――</div>
+          <div className="flight-step completed">
+            <div className="flight-step-num">✓</div>
+            <span>2. Select Flight</span>
           </div>
-          <div className="train-step-sep">――――</div>
-          <div className="train-step completed">
-            <div className="train-step-num">✓</div>
+          <div className="flight-step-sep">――――</div>
+          <div className="flight-step completed">
+            <div className="flight-step-num">✓</div>
             <span>3. Passenger Details</span>
           </div>
-          <div className="train-step-sep">――――</div>
-          <div className="train-step active">
-            <div className="train-step-num">4</div>
-            <span>4. Review &amp; Payment</span>
+          <div className="flight-step-sep">――――</div>
+          <div className="flight-step active">
+            <div className="flight-step-num">4</div>
+            <span>4. Review & Payment</span>
           </div>
         </div>
 
-        <div className="train-pass-grid">
-          
+        <div className="flight-pass-grid">
+
           {/* Left Column: Review Summary & Payment Options */}
-          <div className="train-left-col">
-            
+          <div className="flight-left-col">
+
             {/* Booking Summary Box */}
-            <div className="train-form-card" style={{ padding: '24px 32px' }}>
-              <h3 className="train-form-title" style={{ fontSize: '18px', marginBottom: '16px' }}>Booking Review</h3>
-              
+            <div className="flight-form-card" style={{ padding: '24px 32px' }}>
+              <h3 className="flight-form-title" style={{ fontSize: '18px', marginBottom: '16px' }}>Booking Review</h3>
+
               <div style={{ background: 'hsl(var(--b2))', padding: '20px', borderRadius: '8px', border: '1px solid hsl(var(--b3))', marginBottom: '20px' }}>
                 <div style={{ fontSize: '16px', fontWeight: 800, color: 'hsl(var(--bc))', marginBottom: '4px' }}>
-                  {train.name} ({train.number})
+                  {flight.airline} {flight.flightNumber}
                 </div>
                 <div style={{ fontSize: '13px', color: 'hsl(var(--bc) / 0.55)' }}>
-                  {searchParams.fromCity} ({train.depTime}) → {searchParams.toCity} ({train.arrTime}) · Class: {selectedClass.name}
+                  {flight.departure.city} ({flight.departure.time}) → {flight.arrival.city} ({flight.arrival.time}) · Class: {searchParams.cabinClass}
                 </div>
               </div>
 
               <div style={{ fontSize: '14px', fontWeight: 800, color: 'hsl(var(--bc))', marginBottom: '12px' }}>
-                Travellers ({passengers.length})
+                Passengers ({passengers.length})
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {passengers.map((p, i) => (
                   <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: 'hsl(var(--bc) / 0.65)', background: 'hsl(var(--b2))', padding: '10px 16px', borderRadius: '6px' }}>
-                    <span>👤 {p.name} ({p.age} yrs, {p.gender})</span>
-                    <strong>Berth: {p.berth}</strong>
+                    <span>👤 {p.firstName} {p.lastName}</span>
+                    <strong>{p.nationality}</strong>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Payment Options Accordion List */}
-            <div className="train-form-card" style={{ padding: '24px 32px' }}>
-              <h3 className="train-form-title" style={{ fontSize: '18px', marginBottom: '16px' }}>Select Payment Gateway</h3>
+            {/* Payment Options */}
+            <div className="flight-form-card" style={{ padding: '24px 32px' }}>
+              <h3 className="flight-form-title" style={{ fontSize: '18px', marginBottom: '16px' }}>Select Payment Method</h3>
 
               {error && (
                 <div style={{ background: 'hsl(var(--er) / 0.08)', color: 'hsl(var(--er))', padding: '12px', borderRadius: '6px', marginBottom: '16px', fontSize: '13px' }}>
@@ -155,7 +153,7 @@ export default function TrainPaymentPage() {
                     <span style={{ fontSize: '24px' }}>📱</span>
                     <div>
                       <div style={{ fontSize: '15px', fontWeight: 800, color: 'hsl(var(--bc))' }}>UPI / Google Pay / PhonePe</div>
-                      <div style={{ fontSize: '12px', color: 'hsl(var(--bc) / 0.55)' }}>Instant IRCTC Tatkal &amp; General ticket generation</div>
+                      <div style={{ fontSize: '12px', color: 'hsl(var(--bc) / 0.55)' }}>Instant booking confirmation & e-ticket</div>
                     </div>
                   </div>
                   <span style={{ fontWeight: 800, color: 'hsl(var(--p))' }}>Pay ₹{totalAmount.toLocaleString()} ›</span>
@@ -168,7 +166,7 @@ export default function TrainPaymentPage() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                     <span style={{ fontSize: '24px' }}>💳</span>
                     <div>
-                      <div style={{ fontSize: '15px', fontWeight: 800, color: 'hsl(var(--bc))' }}>Credit &amp; Debit Cards</div>
+                      <div style={{ fontSize: '15px', fontWeight: 800, color: 'hsl(var(--bc))' }}>Credit & Debit Cards</div>
                       <div style={{ fontSize: '12px', color: 'hsl(var(--bc) / 0.55)' }}>Visa, Mastercard, Amex, RuPay</div>
                     </div>
                   </div>
@@ -183,7 +181,7 @@ export default function TrainPaymentPage() {
                     <span style={{ fontSize: '24px' }}>🏦</span>
                     <div>
                       <div style={{ fontSize: '15px', fontWeight: 800, color: 'hsl(var(--bc))' }}>Net Banking</div>
-                      <div style={{ fontSize: '12px', color: 'hsl(var(--bc) / 0.55)' }}>SBI, HDFC, ICICI, Axis &amp; all major banks</div>
+                      <div style={{ fontSize: '12px', color: 'hsl(var(--bc) / 0.55)' }}>SBI, HDFC, ICICI, Axis & all major banks</div>
                     </div>
                   </div>
                   <span style={{ fontWeight: 800, color: 'hsl(var(--p))' }}>Pay ₹{totalAmount.toLocaleString()} ›</span>
@@ -195,21 +193,21 @@ export default function TrainPaymentPage() {
           </div>
 
           {/* Right Column: Total Due Sidebar */}
-          <div className="train-right-col">
-            <div className="train-fare-side">
-              <h3 className="train-form-title" style={{ fontSize: '18px' }}>Total Due</h3>
+          <div className="flight-right-col">
+            <div className="flight-fare-side">
+              <h3 className="flight-form-title" style={{ fontSize: '18px' }}>Total Due</h3>
 
-              <div className="train-fare-row">
+              <div className="flight-fare-row">
                 <span>Base Fare</span>
-                <span>₹{(selectedClass.price * passengers.length).toLocaleString("en-IN")}</span>
+                <span>₹{baseFare.toLocaleString("en-IN")}</span>
               </div>
 
-              <div className="train-fare-row">
-                <span>IRCTC Convenience Fee</span>
-                <span>₹35</span>
+              <div className="flight-fare-row">
+                <span>Convenience Fee</span>
+                <span>₹199</span>
               </div>
 
-              <div className="train-fare-total">
+              <div className="flight-fare-total">
                 <span>Total Payable</span>
                 <span style={{ color: 'hsl(var(--er))' }}>₹{totalAmount.toLocaleString("en-IN")}</span>
               </div>

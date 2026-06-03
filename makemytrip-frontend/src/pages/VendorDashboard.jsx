@@ -3,6 +3,7 @@ import VendorLayout from '../components/Vendor/VendorLayout'
 import { vendorHotelsService } from '../services/vendorService'
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { useTheme } from '../context/ThemeContext'
+import { useVendor } from '../context/VendorContext'
 import {
   RiHotelLine, RiCheckLine, RiFileTextLine, RiTimeLine, RiCloseLine,
   RiStarLine, RiAddLine
@@ -11,6 +12,7 @@ import './VendorDashboard.css'
 
 const VendorDashboard = () => {
   const { theme } = useTheme()
+  const { vendor } = useVendor()
   const [hotels, setHotels] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -115,15 +117,51 @@ const VendorDashboard = () => {
   return (
     <VendorLayout>
       <div className="vendor-dashboard-wrapper">
-        {/* Header */}
-        <div className="vendor-dashboard-header">
-          <div>
-            <h2 className="vendor-title">Good {greetingTime}! 👋</h2>
-            <p className="vendor-subtitle">Here's your hotel inventory overview</p>
+        {/* Greeting Banner with Atmospheric Design */}
+        <div className="greeting-banner" style={{
+          background: `linear-gradient(135deg, var(--accent) 0%, #ff6b4a 100%)`,
+          borderRadius: '12px',
+          padding: '32px 24px',
+          marginBottom: '4px',
+          position: 'relative',
+          overflow: 'hidden',
+          color: 'white',
+          boxShadow: '0 10px 15px -3px rgba(237, 74, 41, 0.15)'
+        }}>
+          {/* Atmospheric background circles */}
+          <svg style={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            width: '200px',
+            height: '200px',
+            opacity: 0.1
+          }} viewBox="0 0 200 200">
+            <circle cx="100" cy="100" r="80" fill="white" />
+            <circle cx="100" cy="100" r="60" fill="none" stroke="white" strokeWidth="1" />
+          </svg>
+          <div style={{ position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+            <div>
+              <h1 style={{
+                margin: '0 0 8px 0',
+                fontSize: '28px',
+                fontWeight: '700',
+                fontFamily: "'Space Grotesk', serif"
+              }}>
+                Good {greetingTime}, {vendor?.name || 'Vendor'}! 👋
+              </h1>
+              <p style={{
+                margin: 0,
+                fontSize: '14px',
+                opacity: 0.9
+              }}>
+                Here's your hotel inventory overview for today, {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+              </p>
+            </div>
+            <button className="btn btn-sm gap-2" style={{ width: 'fit-content', flex: 'none', background: 'white', color: '#ed4a29', border: 'none', borderRadius: '99px', fontWeight: '700', padding: '10px 20px', height: 'auto', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+              <RiAddLine className="icon-sm" /> Add Hotel
+            </button>
           </div>
-          <button className="btn btn-primary btn-sm gap-2" style={{ width: 'fit-content', flex: 'none' }}>
-            <RiAddLine className="icon-sm" /> Add Hotel
-          </button>
         </div>
 
         {error && <div className="vendor-error">{error}</div>}
@@ -133,7 +171,24 @@ const VendorDashboard = () => {
           {kpiCards.map((kpi, idx) => {
             const Icon = kpi.icon
             return (
-              <div key={idx} className="vendor-kpi-card">
+              <div
+                key={idx}
+                className="vendor-kpi-card"
+                onMouseEnter={e => {
+                  e.currentTarget.style.boxShadow = '0 10px 20px -5px rgba(0, 0, 0, 0.08)'
+                  e.currentTarget.style.transform = 'translateY(-3px)'
+                  e.currentTarget.style.borderColor = 'rgba(237, 74, 41, 0.25)'
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.05)'
+                  e.currentTarget.style.transform = 'none'
+                  e.currentTarget.style.borderColor = 'var(--border)'
+                }}
+                style={{
+                  transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                  border: '1px solid var(--border)'
+                }}
+              >
                 <div className="vendor-kpi-content">
                   <p className="vendor-kpi-label">{kpi.label}</p>
                   <p className="vendor-kpi-value">{kpi.value}</p>
@@ -150,7 +205,22 @@ const VendorDashboard = () => {
             {metricCards.map((metric, idx) => {
               const Icon = metric.icon
               return (
-                <div key={idx} className="vendor-metric-card">
+                <div
+                  key={idx}
+                  className="vendor-metric-card"
+                  onMouseEnter={e => {
+                    e.currentTarget.style.boxShadow = '0 8px 16px -4px rgba(0, 0, 0, 0.06)'
+                    e.currentTarget.style.borderColor = 'rgba(237, 74, 41, 0.15)'
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.05)'
+                    e.currentTarget.style.borderColor = 'var(--border)'
+                  }}
+                  style={{
+                    transition: 'all 0.2s ease',
+                    border: '1px solid var(--border)'
+                  }}
+                >
                   <div>
                     <p className="vendor-metric-label">{metric.label}</p>
                     <p className="vendor-metric-value">{metric.value} {metric.suffix}</p>

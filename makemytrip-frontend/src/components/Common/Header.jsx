@@ -44,10 +44,7 @@ export default function Header() {
     try {
       if (contextLogout) await contextLogout()
       dispatch(reduxLogout())
-      toast.success('See you soon! Logged out successfully 👋')
-      setTimeout(() => {
-        navigate('/')
-      }, 500)
+      navigate('/')
     } catch (e) {
       console.error(e)
       toast.error('Failed to logout. Please try again.')

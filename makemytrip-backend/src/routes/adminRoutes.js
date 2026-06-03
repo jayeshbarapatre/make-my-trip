@@ -20,13 +20,12 @@ import {
 } from '../controllers/dashboardController.js'
 import { authenticateAdmin, adminOnly } from '../middleware/adminAuth.js'
 import { getPendingHotels, approveHotel, rejectHotel } from '../controllers/adminHotelApprovalController.js'
-import { getPendingFlights, approveFlight, rejectFlight } from '../controllers/adminFlightApprovalController.js'
 import { getPendingBuses, approveBus, rejectBus } from '../controllers/adminBusApprovalController.js'
 import { getPendingCabs, approveCab, rejectCab } from '../controllers/adminCabApprovalController.js'
-import { getPendingTraines, approveTrain, rejectTrain } from '../controllers/adminTrainApprovalController.js'
 import { getAllVendors, createVendor, deleteVendor, toggleVendorStatus, getVendorHotels } from '../controllers/adminVendorController.js'
 import { getAllBookings } from '../controllers/bookingController.js'
 import { getAllUsers, deleteUser, getUserDetails } from '../controllers/adminUserController.js'
+import { getApiHealth, flushCache } from '../controllers/apiHealthController.js'
 
 const router = express.Router()
 
@@ -82,10 +81,6 @@ router.get('/approvals/hotels', authenticateAdmin, adminOnly, getPendingHotels)
 router.patch('/approvals/hotels/:id/approve', authenticateAdmin, adminOnly, approveHotel)
 router.patch('/approvals/hotels/:id/reject', authenticateAdmin, adminOnly, rejectHotel)
 
-router.get('/approvals/flights', authenticateAdmin, adminOnly, getPendingFlights)
-router.patch('/approvals/flights/:id/approve', authenticateAdmin, adminOnly, approveFlight)
-router.patch('/approvals/flights/:id/reject', authenticateAdmin, adminOnly, rejectFlight)
-
 router.get('/approvals/buses', authenticateAdmin, adminOnly, getPendingBuses)
 router.patch('/approvals/buses/:id/approve', authenticateAdmin, adminOnly, approveBus)
 router.patch('/approvals/buses/:id/reject', authenticateAdmin, adminOnly, rejectBus)
@@ -93,10 +88,6 @@ router.patch('/approvals/buses/:id/reject', authenticateAdmin, adminOnly, reject
 router.get('/approvals/cabs', authenticateAdmin, adminOnly, getPendingCabs)
 router.patch('/approvals/cabs/:id/approve', authenticateAdmin, adminOnly, approveCab)
 router.patch('/approvals/cabs/:id/reject', authenticateAdmin, adminOnly, rejectCab)
-
-router.get('/approvals/trains', authenticateAdmin, adminOnly, getPendingTraines)
-router.patch('/approvals/trains/:id/approve', authenticateAdmin, adminOnly, approveTrain)
-router.patch('/approvals/trains/:id/reject', authenticateAdmin, adminOnly, rejectTrain)
 
 router.get('/vendors', authenticateAdmin, adminOnly, getAllVendors)
 router.post('/vendors', authenticateAdmin, adminOnly, createVendor)
@@ -109,5 +100,8 @@ router.get('/bookings', authenticateAdmin, adminOnly, getAllBookings)
 router.get('/users', authenticateAdmin, adminOnly, getAllUsers)
 router.get('/users/:id', authenticateAdmin, adminOnly, getUserDetails)
 router.delete('/users/:id', authenticateAdmin, adminOnly, deleteUser)
+
+router.get('/api-health', authenticateAdmin, adminOnly, getApiHealth)
+router.post('/cache/flush', authenticateAdmin, adminOnly, flushCache)
 
 export default router

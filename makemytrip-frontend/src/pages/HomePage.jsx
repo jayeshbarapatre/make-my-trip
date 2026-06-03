@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import AOS from 'aos'
 import 'aos/dist/aos.css'
 import { Swiper, SwiperSlide } from 'swiper/react'
-import { Navigation } from 'swiper/modules'
+import { Navigation, Autoplay } from 'swiper/modules'
 import 'swiper/css'
 import 'swiper/css/navigation'
 import { setCriteria } from '../store/reducers/searchReducer'
@@ -781,13 +781,32 @@ export default function HomePage() {
             </div>
           </div>
           <Swiper
-            modules={[Navigation]}
+            modules={[Navigation, Autoplay]}
             navigation={{
               nextEl: '.hp-offer-next',
               prevEl: '.hp-offer-prev',
             }}
+            autoplay={{
+              delay: 3000,
+              disableOnInteraction: false,
+              pauseOnMouseEnter: true,
+            }}
+            loop={true}
             spaceBetween={24}
-            slidesPerView="auto"
+            breakpoints={{
+              320: {
+                slidesPerView: 1,
+                spaceBetween: 16
+              },
+              768: {
+                slidesPerView: 2.2,
+                spaceBetween: 20
+              },
+              1024: {
+                slidesPerView: 4,
+                spaceBetween: 24
+              }
+            }}
             className="hp-offers-swiper"
           >
             {OFFERS.map((o, idx) => (

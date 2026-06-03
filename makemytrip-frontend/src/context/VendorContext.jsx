@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import { vendorAuthService } from '../services/vendorService'
+import { useToastContext } from './ToastContext'
 
 const VendorContext = createContext()
 
@@ -8,6 +9,7 @@ export const VendorProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem('vendorToken'))
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const toast = useToastContext()
 
   useEffect(() => {
     if (token && !vendor) {
@@ -38,6 +40,7 @@ export const VendorProvider = ({ children }) => {
       setVendor(vendor)
       setToken(token)
       localStorage.setItem('vendorToken', token)
+      toast.success("Vendor logged in successfully", "Congratulations")
       return { success: true }
     } catch (err) {
       const message = err.response?.data?.message || 'Login failed'
@@ -57,8 +60,10 @@ export const VendorProvider = ({ children }) => {
       setVendor(null)
       setToken(null)
       localStorage.removeItem('vendorToken')
+      toast.success("Vendor logged out successfully", "See you soon!")
     }
   }
+
 
   const value = {
     vendor,
