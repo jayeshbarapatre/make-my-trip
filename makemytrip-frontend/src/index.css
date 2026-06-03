@@ -56,7 +56,7 @@
   }
 
   html {
-    scroll-behavior: smooth;
+    /* scroll-behavior: smooth; -- removed: prevents page-top scroll on navigation */
     margin: 0;
     padding: 0;
   }

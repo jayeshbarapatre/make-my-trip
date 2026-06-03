@@ -182,7 +182,25 @@ function NotFound() {
 function ScrollToTop() {
   const { pathname } = useLocation()
   useEffect(() => {
-    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+    // Temporarily disable smooth scrolling so scroll is instant
+    document.documentElement.style.scrollBehavior = 'auto'
+    document.body.style.scrollBehavior = 'auto'
+
+    // Scroll all possible scroll containers to top
+    window.scrollTo(0, 0)
+    document.documentElement.scrollTop = 0
+    document.body.scrollTop = 0
+
+    // Also scroll the #root element if it has overflow
+    const root = document.getElementById('root')
+    if (root) root.scrollTop = 0
+
+    // Restore smooth scrolling after a brief delay
+    const timer = setTimeout(() => {
+      document.documentElement.style.scrollBehavior = ''
+      document.body.style.scrollBehavior = ''
+    }, 100)
+    return () => clearTimeout(timer)
   }, [pathname])
   return null
 }
