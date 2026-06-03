@@ -198,8 +198,35 @@ const VendorBuses = () => {
 
                   {/* Actions */}
                   <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: 'auto' }}>
-                    <button className="btn btn-sm" onClick={() => { setEditingBusId(bus.id || bus._id); setShowFormModal(true); }} style={{ flex: 1, display: 'flex', gap: '6px', justifyContent: 'center', alignItems: 'center' }}>
-                      <i className="fas fa-edit" style={{ opacity: 0.7 }}></i> Edit
+                    <button
+                      className="btn btn-sm btn-outline btn-primary"
+                      onClick={() => { setEditingBusId(bus.id || bus._id); setShowFormModal(true); }}
+                      style={{
+                        flex: 1,
+                        display: 'flex',
+                        gap: '8px',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        background: 'transparent',
+                        color: '#ed4a29',
+                        border: '1px solid rgba(237, 74, 41, 0.25)',
+                        borderRadius: '8px',
+                        padding: '6px 12px',
+                        fontSize: '13px',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={e => {
+                        e.currentTarget.style.background = 'rgba(237, 74, 41, 0.06)';
+                        e.currentTarget.style.borderColor = '#ed4a29';
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.background = 'transparent';
+                        e.currentTarget.style.borderColor = 'rgba(237, 74, 41, 0.25)';
+                      }}
+                    >
+                      <i className="fas fa-edit" style={{ fontSize: '12px' }}></i> Edit
                     </button>
                   </div>
                   {['DRAFT', 'REJECTED'].includes(bus.listingStatus) && (

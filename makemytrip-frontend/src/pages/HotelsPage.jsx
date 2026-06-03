@@ -404,12 +404,11 @@ export default function HotelsPage() {
             {/* Recent Searches chips row */}
             {recentSearches.length > 0 && (
               <div className="hp-recent-row" style={{ padding: '0 24px', marginBottom: '8px' }}>
-                <span className="hp-recent-label" style={{ color: 'rgba(0,0,0,0.6)' }}>Recent Searches:</span>
+                <span className="hp-recent-label">Recent Searches:</span>
                 {recentSearches.map((item, idx) => (
                   <button
                     key={`${item.city}-${idx}`}
                     className="hp-recent-chip"
-                    style={{ background: 'rgba(0,0,0,0.06)', border: '1px solid rgba(0,0,0,0.1)', color: 'hsl(var(--bc))' }}
                     onClick={() => {
                       setCity(item.city)
                       triggerHotelSearch(item.city)

@@ -1,15 +1,17 @@
+/* Modern Admin Header */
 .admin-header {
   position: sticky;
   top: 0;
   background: var(--bg-surface);
+  backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
-  padding: 9px 30px;
+  padding: 12px 30px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  z-index: 100;
-  box-shadow: none; /* NexLink doesn't use strong box-shadow on header, just border */
+  z-index: 99;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
   width: 100%;
   box-sizing: border-box;
@@ -30,9 +32,9 @@
   font-size: 18px;
   cursor: pointer;
   color: var(--text-primary);
-  padding: 6px;
+  padding: 8px;
   transition: all 0.2s ease;
-  border-radius: 4px;
+  border-radius: 8px;
 }
 
 .menu-toggle:hover {
@@ -66,26 +68,38 @@
   top: 50%;
   transform: translateY(-50%);
   color: var(--text-muted);
-  font-size: 14px;
+  font-size: 13px;
   pointer-events: none;
 }
 
 .search-input {
-  padding-left: 38px !important;
-  background: hsl(var(--b2)) !important;
-  border-color: transparent !important;
-  border-radius: 9999px !important; /* Nexlink style pill search */
+  padding: 10px 16px 10px 38px !important;
+  background: var(--bg-body) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 9999px !important;
+  font-size: 13px !important;
+  width: 100%;
+  color: var(--text-primary);
+  transition: all 0.2s ease;
 }
 
 .search-input:focus {
+  outline: none;
   background: var(--bg-surface) !important;
-  border-color: hsl(var(--p)) !important;
+  border-color: #ed4a29 !important;
+  box-shadow: 0 0 0 3px rgba(237, 74, 41, 0.1) !important;
 }
 
 @media (max-width: 768px) {
   .header-search {
     display: none;
   }
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 
 /* Notifications */
@@ -99,9 +113,9 @@
   border: none;
   font-size: 16px;
   cursor: pointer;
-  color: var(--text-primary);
-  padding: 6px 10px;
-  border-radius: 4px;
+  color: var(--text-secondary);
+  padding: 8px;
+  border-radius: 8px;
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
@@ -110,44 +124,48 @@
 
 .notification-btn:hover {
   background: var(--bg-body);
+  color: var(--text-primary);
 }
 
 .notification-badge {
   position: absolute;
-  top: -4px;
-  right: -4px;
-  background: #ef4444;
+  top: 2px;
+  right: 2px;
+  background: #ed4a29;
   color: white;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
-  padding: 2px 5px;
+  padding: 1px 4px;
   border-radius: 10px;
-  min-width: 18px;
-  text-align: center;
+  min-width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--bg-surface);
 }
 
 .notification-panel {
   position: absolute;
-  top: 100%;
+  top: calc(100% + 12px);
   right: 0;
-  margin-top: 8px;
   width: 320px;
   background: var(--bg-surface);
-  border-radius: 8px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.15);
   border: 1px solid var(--border);
   overflow: hidden;
   z-index: 1000;
-  animation: slideDown 0.2s ease;
+  animation: slideDown 0.2s ease-out;
 }
 
 @keyframes slideDown {
-  from { opacity: 0; transform: translateY(-10px); }
+  from { opacity: 0; transform: translateY(-8px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 .notification-header {
-  padding: 14px 16px;
+  padding: 16px;
   border-bottom: 1px solid var(--border);
   display: flex;
   justify-content: space-between;
@@ -156,8 +174,8 @@
 
 .notification-header h3 {
   margin: 0;
-  font-size: var(--fs-sidebar);
-  font-weight: var(--fw-sidebar);
+  font-size: 13.5px;
+  font-weight: 700;
   color: var(--text-primary);
 }
 
@@ -165,9 +183,9 @@
   background: none;
   border: none;
   font-size: 14px;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   cursor: pointer;
-  padding: 0;
+  padding: 4px;
   opacity: 0.7;
   transition: opacity 0.2s ease;
 }
@@ -178,8 +196,6 @@
 
 .notification-tabs {
   display: flex;
-  gap: 0;
-  padding: 0;
   border-bottom: 1px solid var(--border);
 }
 
@@ -201,12 +217,12 @@
 }
 
 .tab-btn.active {
-  color: var(--accent);
-  border-bottom-color: var(--accent);
+  color: #ed4a29;
+  border-bottom-color: #ed4a29;
 }
 
 .notification-list {
-  max-height: 320px;
+  max-height: 280px;
   overflow-y: auto;
 }
 
@@ -216,7 +232,6 @@
   padding: 12px 16px;
   border-bottom: 1px solid var(--border);
   transition: all 0.2s ease;
-  cursor: pointer;
 }
 
 .notification-item:hover {
@@ -228,15 +243,15 @@
 }
 
 .notification-icon {
-  width: 36px;
-  height: 36px;
-  background: var(--accent);
-  color: white;
-  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  background: rgba(237, 74, 41, 0.1);
+  color: #ed4a29;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
+  font-size: 14px;
   flex-shrink: 0;
 }
 
@@ -256,14 +271,16 @@
   margin: 4px 0 0 0;
   font-size: 11px;
   color: var(--text-secondary);
+  line-height: 1.4;
 }
 
 .view-all-btn {
   width: 100%;
-  padding: 10px;
+  padding: 12px;
   background: none;
+  border: none;
   border-top: 1px solid var(--border);
-  color: var(--accent);
+  color: #ed4a29;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -278,11 +295,11 @@
 .theme-toggle-btn {
   background: none;
   border: none;
-  font-size: 14px;
+  font-size: 15px;
   cursor: pointer;
-  color: var(--text-primary);
-  padding: 6px 10px;
-  border-radius: 4px;
+  color: var(--text-secondary);
+  padding: 8px;
+  border-radius: 8px;
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
@@ -291,7 +308,8 @@
 
 .theme-toggle-btn:hover {
   background: var(--bg-body);
-  transform: scale(1.1);
+  color: var(--text-primary);
+  transform: rotate(15deg);
 }
 
 /* Admin Dropdown */
@@ -302,53 +320,53 @@
 .admin-info-trigger {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 0;
+  gap: 10px;
+  padding: 6px 12px;
   background: transparent;
-  border-radius: 6px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
   cursor: pointer;
-  border: 0px solid var(--border);
   transition: all 0.2s ease;
 }
 
 .admin-info-trigger:hover {
-  background: var(--border);
-  border-color: hsl(var(--p));
+  background: var(--bg-body);
+  border-color: #ed4a29;
 }
 
 .admin-avatar {
   width: 28px;
   height: 28px;
-  background: hsl(var(--p));
-  color: hsl(var(--pc));
+  background: linear-gradient(135deg, #ed4a29 0%, #ff6b4a 100%);
+  color: white;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 600;
-  font-size: 11px;
+  font-weight: 700;
+  font-size: 12px;
   flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(237, 74, 41, 0.2);
 }
 
 .admin-text {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  min-width: 100px;
+  gap: 1px;
+  min-width: 80px;
 }
 
 .admin-name {
-  font-size: var(--fs-sidebar);
-  font-weight: var(--fw-sidebar);
+  font-size: 12px;
+  font-weight: 700;
   color: var(--text-primary);
-  line-height: 1;
+  line-height: 1.2;
 }
 
 .admin-role {
-  font-size: var(--fs-label);
-  font-weight: var(--fw-label);
-  color: var(--text-secondary);
-  line-height: 1;
+  font-size: 10px;
+  color: var(--text-muted);
+  line-height: 1.2;
 }
 
 .dropdown-arrow {
@@ -367,7 +385,7 @@
   background: var(--bg-surface);
   border: 1px solid var(--border);
   border-radius: 12px;
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.1);
   width: 220px;
   padding: 8px;
   display: flex;
@@ -376,77 +394,59 @@
   z-index: 100;
   animation: slideDown 0.2s ease-out;
   transform-origin: top right;
-  font-family: inherit;
 }
 
 .dropdown-header {
-  padding: 14px 16px;
+  padding: 12px 16px;
   display: flex;
   flex-direction: column;
-  background: var(--bg-body);
   border-bottom: 1px solid var(--border);
-  overflow: hidden;
+  margin-bottom: 6px;
 }
 
 .dropdown-header strong {
   color: var(--text-primary);
-  font-size: 14px;
+  font-size: 13.5px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .dropdown-header span {
-  color: var(--text-secondary);
-  font-size: 12px;
+  color: var(--text-muted);
+  font-size: 11px;
   margin-top: 2px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.header-greeting {
-  font-size: var(--fs-card-title);
-  font-weight: var(--fw-card-title);
-  color: var(--text-primary);
-  margin: 0 0 2px 0;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  line-height: var(--lh-card-title);
-}
-
-.header-date {
-  font-size: var(--fs-label);
-  font-weight: var(--fw-label);
-  color: var(--text-secondary);
-  margin: 0;
-}
-
 .dropdown-divider {
   height: 1px;
   background: var(--border);
+  margin: 4px 0;
 }
 
 .dropdown-item {
   width: 100%;
   text-align: left;
-  padding: 10px 16px;
+  padding: 8px 12px;
   background: none;
   border: none;
   font-size: 12px;
-  color: var(--text-primary);
+  color: var(--text-secondary);
   font-weight: 500;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 10px;
   transition: all 0.2s ease;
+  border-radius: 6px;
 }
 
 .dropdown-item:hover {
   background: var(--bg-body);
-  color: var(--accent);
+  color: #ed4a29;
 }
 
 .dropdown-item.logout {
@@ -454,12 +454,12 @@
 }
 
 .dropdown-item.logout:hover {
-  background: rgba(239, 68, 68, 0.1);
+  background: rgba(239, 68, 68, 0.08);
   color: #ef4444;
 }
 
 .dropdown-item .icon {
-  font-size: 14px;
+  font-size: 13px;
   min-width: 16px;
 }
 
@@ -470,7 +470,8 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -480,16 +481,18 @@
 .password-modal {
   background: var(--bg-surface);
   padding: 24px;
-  border-radius: 8px;
+  border-radius: 12px;
   width: 400px;
   max-width: 90%;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--border);
 }
 
 .password-modal h3 {
   margin: 0 0 16px 0;
   color: var(--text-primary);
   font-size: 16px;
+  font-weight: 700;
 }
 
 .password-modal .form-group {
@@ -508,7 +511,7 @@
   width: 100%;
   padding: 10px;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 13px;
   background: var(--bg-body);
   color: var(--text-primary);
@@ -517,9 +520,9 @@
 
 .password-modal input:focus {
   outline: none;
-  border-color: var(--accent);
+  border-color: #ed4a29;
   background: var(--bg-surface);
-  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 0 0 3px rgba(237, 74, 41, 0.1);
 }
 
 .modal-actions {
@@ -531,7 +534,7 @@
 
 .modal-actions button {
   padding: 8px 16px;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -540,22 +543,23 @@
 }
 
 .cancel-btn {
-  background: var(--border);
+  background: var(--bg-body);
   color: var(--text-primary);
+  border: 1px solid var(--border) !important;
 }
 
 .cancel-btn:hover {
-  background: var(--bg-body);
+  background: var(--border);
 }
 
 .save-btn {
-  background: var(--accent);
+  background: #ed4a29;
   color: white;
 }
 
 .save-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+  background: #d83e20;
+  box-shadow: 0 4px 12px rgba(237, 74, 41, 0.25);
 }
 
 .save-btn:disabled {
@@ -566,20 +570,20 @@
 .error-text {
   color: #dc2626;
   font-size: 12px;
-  background: rgba(220, 38, 38, 0.1);
-  padding: 8px;
-  border-radius: 4px;
-  border: 1px solid rgba(220, 38, 38, 0.2);
+  background: rgba(220, 38, 38, 0.08);
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(220, 38, 38, 0.15);
   margin-bottom: 12px;
 }
 
 .success-text {
   color: #059669;
   font-size: 12px;
-  background: rgba(5, 150, 105, 0.1);
-  padding: 8px;
-  border-radius: 4px;
-  border: 1px solid rgba(5, 150, 105, 0.2);
+  background: rgba(5, 150, 105, 0.08);
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(5, 150, 105, 0.15);
   margin-bottom: 12px;
 }
 

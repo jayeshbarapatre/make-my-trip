@@ -106,14 +106,14 @@ const AdminDashboard = () => {
       <div className="dashboard">
         {/* Greeting Banner with Atmospheric Design */}
         <div className="greeting-banner" style={{
-          background: `linear-gradient(135deg, var(--accent) 0%, #2B4DBE 100%)`,
+          background: `linear-gradient(135deg, var(--accent) 0%, #ff6b4a 100%)`,
           borderRadius: '12px',
           padding: '32px 24px',
           marginBottom: '28px',
           position: 'relative',
           overflow: 'hidden',
           color: 'white',
-          boxShadow: 'var(--shadow-md)'
+          boxShadow: '0 10px 15px -3px rgba(237, 74, 41, 0.15)'
         }}>
           {/* Atmospheric background circles */}
           <svg style={{
@@ -319,57 +319,74 @@ const KPICard = ({ icon, label, value, color, trend }) => (
   <div style={{
     background: 'var(--bg-surface)',
     border: '1px solid var(--border)',
-    borderRadius: '8px',
+    borderRadius: '12px',
     padding: '20px',
-    transition: 'all 0.3s ease',
-    boxShadow: 'var(--shadow-sm)',
-    cursor: 'pointer'
-  }} onMouseEnter={e => e.currentTarget.style.boxShadow = 'var(--shadow-md)'}
-  onMouseLeave={e => e.currentTarget.style.boxShadow = 'var(--shadow-sm)'}>
+    transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
+    cursor: 'pointer',
+    position: 'relative'
+  }} className="kpi-card-interactive" 
+  onMouseEnter={e => {
+    e.currentTarget.style.boxShadow = '0 10px 20px -5px rgba(0, 0, 0, 0.08)'
+    e.currentTarget.style.transform = 'translateY(-3px)'
+    e.currentTarget.style.borderColor = 'rgba(237, 74, 41, 0.2)'
+  }}
+  onMouseLeave={e => {
+    e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.05)'
+    e.currentTarget.style.transform = 'none'
+    e.currentTarget.style.borderColor = 'var(--border)'
+  }}>
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-      <p style={{ margin: 0, fontSize: '12px', fontWeight: '600', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+      <p style={{ margin: 0, fontSize: '11px', fontWeight: '600', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
         {label}
       </p>
       <div style={{
         width: '40px',
         height: '40px',
-        background: `${color}20`,
-        borderRadius: '8px',
+        background: 'rgba(237, 74, 41, 0.1)',
+        borderRadius: '10px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        color: color,
-        fontSize: '20px'
+        color: '#ed4a29',
+        fontSize: '16px'
       }}>
         <i className={icon}></i>
       </div>
     </div>
     <div style={{ marginBottom: '12px' }}>
-      <p style={{ margin: 0, fontSize: '28px', fontWeight: '700', color: 'var(--text-primary)', fontFamily: "'Space Grotesk', serif" }}>
+      <p style={{ margin: 0, fontSize: '26px', fontWeight: '700', color: 'var(--text-primary)', fontFamily: "'Space Grotesk', sans-serif" }}>
         {typeof value === 'number' ? value.toLocaleString() : value}
       </p>
     </div>
     {trend && (
-      <p style={{
-        margin: 0,
-        fontSize: '12px',
-        color: trend.includes('+') ? 'hsl(var(--su))' : 'hsl(var(--er))',
-        fontWeight: '600'
-      }}>
-        {trend}
-      </p>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+        <span style={{
+          fontSize: '12px',
+          color: trend.includes('+') ? '#10b981' : '#ef4444',
+          fontWeight: '600',
+          background: trend.includes('+') ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+          padding: '2px 6px',
+          borderRadius: '4px'
+        }}>
+          {trend.split(' ')[0]}
+        </span>
+        <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+          {trend.split(' ').slice(1).join(' ')}
+        </span>
+      </div>
     )}
   </div>
 )
 
 const BookingCard = ({ icon, label, value, color }) => (
   <div className="booking-card">
-    <div className="booking-icon-container" style={{ backgroundColor: `${color}15`, color }}>
+    <div className="booking-icon-container" style={{ backgroundColor: 'rgba(237, 74, 41, 0.1)', color: '#ed4a29' }}>
       <i className={icon}></i>
     </div>
     <div className="booking-content">
       <p className="booking-label">{label}</p>
-      <p className="booking-value" style={{ color }}>{typeof value === 'number' ? value.toLocaleString() : value}</p>
+      <p className="booking-value" style={{ color: 'var(--text-primary)' }}>{typeof value === 'number' ? value.toLocaleString() : value}</p>
     </div>
   </div>
 )

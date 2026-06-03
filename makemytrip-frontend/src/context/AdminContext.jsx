@@ -1,5 +1,6 @@
-﻿import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useContext, useState, useEffect } from 'react'
 import { adminAuthService } from '../services/adminService'
+import { useToastContext } from './ToastContext'
 
 const AdminContext = createContext()
 
@@ -8,6 +9,7 @@ export const AdminProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem('adminToken'))
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const toast = useToastContext()
 
   useEffect(() => {
     if (token && !admin) {
@@ -38,6 +40,7 @@ export const AdminProvider = ({ children }) => {
       setAdmin(admin)
       setToken(token)
       localStorage.setItem('adminToken', token)
+      toast.success("Admin logged in successfully", "Congratulations")
       return { success: true }
     } catch (err) {
       const message = err.response?.data?.message || 'Login failed'
@@ -57,8 +60,10 @@ export const AdminProvider = ({ children }) => {
       setAdmin(null)
       setToken(null)
       localStorage.removeItem('adminToken')
+      toast.success("Admin logged out successfully", "See you soon!")
     }
   }
+
 
   const value = {
     admin,

@@ -1,5 +1,6 @@
-﻿import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useContext, useState, useEffect } from 'react'
 import { authService } from '../services/authService'
+import { useToastContext } from './ToastContext'
 
 // Reads locally-saved profile for a mobile OTP user
 function getMobileProfile(phone) {
@@ -14,6 +15,7 @@ const AuthContext = createContext(null)
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
+  const toast = useToastContext()
 
   // Auto-authenticate user on load if token is found
   useEffect(() => {
@@ -51,6 +53,7 @@ export function AuthProvider({ children }) {
         const { user: userData, token } = res.data
         localStorage.setItem('token', token)
         setUser(userData)
+        toast.success("You have successfully logged in", "Congratulations")
         return userData
       }
       throw new Error('Invalid login payload returned from server.')
@@ -70,6 +73,7 @@ export function AuthProvider({ children }) {
         const { user: newUser, token } = res.data
         localStorage.setItem('token', token)
         setUser(newUser)
+        toast.success("You have successfully registered", "Congratulations")
         return newUser
       }
       throw new Error('Registration succeeded but did not return credential tokens.')
@@ -92,6 +96,7 @@ export function AuthProvider({ children }) {
         const saved = getMobileProfile(phone)
         const mergedUser = saved?.name ? { ...userData, ...saved } : userData
         setUser(mergedUser)
+        toast.success("You have successfully logged in", "Congratulations")
         return mergedUser
       }
       throw new Error('Invalid OTP login payload.')
@@ -108,11 +113,13 @@ export function AuthProvider({ children }) {
     } finally {
       localStorage.removeItem('token')
       setUser(null)
+      toast.success("You have successfully logged out", "See you soon!")
     }
   }
 
   return (
     <AuthContext.Provider value={{ user, loading, login, register, logout, verifyOtpLogin, setUser }}>
+
       {children}
     </AuthContext.Provider>
   )

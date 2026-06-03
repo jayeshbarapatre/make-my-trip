@@ -46,14 +46,11 @@ export default function Login({ onSwitchTab, onForgotPassword }) {
     setError('')
     try {
       const userData = await login(form.email, form.password)
-      toast.success(`Welcome back, ${userData?.name || 'Traveler'}! 🎉`)
-      setTimeout(() => {
-        if (userData?.is_admin) {
-          navigate('/admin/dashboard')
-        } else {
-          navigate('/')
-        }
-      }, 500)
+      if (userData?.is_admin) {
+        navigate('/admin/dashboard')
+      } else {
+        navigate('/')
+      }
     } catch (err) {
       console.error('Login error:', err)
       const errorMessage = err?.response?.data?.message ||
