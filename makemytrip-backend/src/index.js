@@ -1,5 +1,5 @@
 import 'dotenv/config'
-import './config/firebase.js' // initialise Firebase Admin
+// import './config/firebase.js' // initialise Firebase Admin - using PostgreSQL/Prisma instead
 import express from 'express'
 import cors from 'cors'
 import { connectDB } from './config/db.js'
