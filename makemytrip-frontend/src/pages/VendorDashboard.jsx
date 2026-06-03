@@ -122,7 +122,7 @@ const VendorDashboard = () => {
           background: `linear-gradient(135deg, var(--accent) 0%, #ff6b4a 100%)`,
           borderRadius: '12px',
           padding: '32px 24px',
-          marginBottom: '4px',
+          marginBottom: '0',
           position: 'relative',
           overflow: 'hidden',
           color: 'white',

@@ -552,36 +552,43 @@
 
 .udaipur-page-wrapper .carousel {
   width: 100%;
-  height: 100%;
-  min-height: 180px;
+  height: 200px !important;
   position: relative;
   overflow: hidden;
   background: #eee;
 }
 
 .udaipur-page-wrapper .hotel-card.d-compact .carousel {
-  min-height: 150px;
+  height: 160px !important;
 }
 
 .udaipur-page-wrapper .hotel-card.d-spacious .carousel {
-  min-height: 210px;
+  height: 240px !important;
 }
 
 .udaipur-page-wrapper .carousel-track {
-  display: flex;
-  height: 100%;
+  display: flex !important;
+  height: 100% !important;
+  gap: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
   transition: transform 0.32s cubic-bezier(.4, 0, .2, 1);
 }
 
 .udaipur-page-wrapper .carousel-slide {
-  min-width: 100%;
-  height: 100%;
+  min-width: 100% !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  flex-shrink: 0 !important;
 }
 
 .udaipur-page-wrapper .carousel-slide img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
   display: block;
 }
 
@@ -602,7 +609,8 @@
   opacity: 0;
   transition: opacity 0.2s;
   box-shadow: 0 2px 6px rgba(0, 0, 0, .2);
-  z-index: 2;
+  z-index: 10 !important;
+  pointer-events: auto !important;
 }
 
 .udaipur-page-wrapper .hotel-card:hover .car-arr {

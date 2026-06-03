@@ -55,6 +55,10 @@ import AdminUsers from './pages/AdminUsers'
 import AdminApprovals from './pages/AdminApprovals'
 import AdminVendors from './pages/AdminVendors'
 import AdminApiHealth from './pages/AdminApiHealth'
+import AdminProfile from './pages/AdminProfile'
+import AdminSettings from './pages/AdminSettings'
+import AdminSecurity from './pages/AdminSecurity'
+import AdminHelp from './pages/AdminHelp'
 import ProtectedAdminRoute from './components/Admin/ProtectedAdminRoute'
 import VendorLoginPage from './pages/VendorLoginPage'
 import VendorDashboard from './pages/VendorDashboard'
@@ -64,10 +68,19 @@ import VendorHotelRooms from './pages/VendorHotelRooms'
 import VendorBuses from './pages/VendorBuses'
 import VendorBusForm from './components/Vendor/VendorBusForm'
 import VendorCabs from './pages/VendorCabs'
+import VendorSettings from './pages/VendorSettings'
+import VendorHelp from './pages/VendorHelp'
 import AdminBusApprovals from './pages/AdminBusApprovals'
 import AdminCabApprovals from './pages/AdminCabApprovals'
 import AdminTrains from './pages/AdminTrains'
 import ProtectedVendorRoute from './components/Vendor/ProtectedVendorRoute'
+import CmsPageRenderer from './pages/CmsPageRenderer'
+import FaqPage from './pages/FaqPage'
+import SupportPage from './pages/SupportPage'
+import CareersPage from './pages/CareersPage'
+import ContactPage from './pages/ContactPage'
+import CompanyPage from './pages/CompanyPage'
+import { cmsService } from './services/cmsService'
 
 function NotFound() {
   return (
@@ -205,6 +218,25 @@ function AppContent() {
   useEffect(() => {
     const savedTheme = localStorage.getItem('daisyui-theme') || 'business'
     document.documentElement.setAttribute('data-theme', savedTheme)
+
+    // Load theme settings from CMS
+    const loadThemeSettings = async () => {
+      try {
+        const response = await cmsService.getSettings()
+        const settings = response.data.data
+        if (settings) {
+          document.documentElement.style.setProperty('--primary-color', settings.primaryColor || '#003580')
+          document.documentElement.style.setProperty('--secondary-color', settings.secondaryColor || '#0F172A')
+          document.documentElement.style.setProperty('--accent-color', settings.accentColor || '#1a73e8')
+          document.documentElement.style.setProperty('--footer-bg', settings.footerBg || '#003580')
+          document.documentElement.style.setProperty('--header-bg', settings.headerBg || '#ffffff')
+        }
+      } catch (err) {
+        console.warn('Could not load theme settings:', err)
+      }
+    }
+
+    loadThemeSettings()
   }, [])
 
   return (
@@ -263,6 +295,10 @@ function AppContent() {
         <Route path="/admin/cab-approvals" element={<ProtectedAdminRoute><AdminCabApprovals /></ProtectedAdminRoute>} />
         <Route path="/admin/trains" element={<ProtectedAdminRoute><AdminTrains /></ProtectedAdminRoute>} />
         <Route path="/admin/api-health" element={<ProtectedAdminRoute><AdminApiHealth /></ProtectedAdminRoute>} />
+        <Route path="/admin/profile" element={<ProtectedAdminRoute><AdminProfile /></ProtectedAdminRoute>} />
+        <Route path="/admin/settings" element={<ProtectedAdminRoute><AdminSettings /></ProtectedAdminRoute>} />
+        <Route path="/admin/security" element={<ProtectedAdminRoute><AdminSecurity /></ProtectedAdminRoute>} />
+        <Route path="/admin/help" element={<ProtectedAdminRoute><AdminHelp /></ProtectedAdminRoute>} />
 
         <Route path="/vendor/login" element={<VendorLoginPage />} />
         <Route path="/vendor/dashboard" element={<ProtectedVendorRoute><VendorDashboard /></ProtectedVendorRoute>} />
@@ -274,6 +310,16 @@ function AppContent() {
         <Route path="/vendor/buses/create" element={<ProtectedVendorRoute><VendorBusForm /></ProtectedVendorRoute>} />
         <Route path="/vendor/buses/:id/edit" element={<ProtectedVendorRoute><VendorBusForm /></ProtectedVendorRoute>} />
         <Route path="/vendor/cabs" element={<ProtectedVendorRoute><VendorCabs /></ProtectedVendorRoute>} />
+        <Route path="/vendor/settings" element={<ProtectedVendorRoute><VendorSettings /></ProtectedVendorRoute>} />
+        <Route path="/vendor/help" element={<ProtectedVendorRoute><VendorHelp /></ProtectedVendorRoute>} />
+
+        {/* CMS Pages */}
+        <Route path="/company" element={<CompanyPage />} />
+        <Route path="/faqs" element={<FaqPage />} />
+        <Route path="/support" element={<SupportPage />} />
+        <Route path="/careers" element={<CareersPage />} />
+        <Route path="/contact-us" element={<ContactPage />} />
+        <Route path="/:slug" element={<CmsPageRenderer />} />
 
         <Route path="*" element={<NotFound />} />
       </Routes>

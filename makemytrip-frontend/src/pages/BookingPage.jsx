@@ -65,7 +65,10 @@ export default function BookingPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const [params] = useSearchParams()
-  const searchDate = location.state?.searchDate
+  const searchDate = location.state?.searchDate || params.get('date')
+  const returnDate = location.state?.returnDate || params.get('returnDate')
+  const rawTripType = location.state?.tripType || params.get('type')
+  const isRoundTrip = rawTripType === 'roundtrip' || rawTripType === 'round-trip'
 
   const { user, verifyOtpLogin } = useAuth()
   const [showLoginModal, setShowLoginModal] = useState(false)
@@ -167,6 +170,35 @@ export default function BookingPage() {
     }
   })() : null
 
+  const rawReturnFlight = location.state?.returnFlight || null
+  const returnFlight = rawReturnFlight ? (() => {
+    const departure = typeof rawReturnFlight.departure === 'string' ? JSON.parse(rawReturnFlight.departure) : rawReturnFlight.departure
+    const arrival = typeof rawReturnFlight.arrival === 'string' ? JSON.parse(rawReturnFlight.arrival) : rawReturnFlight.arrival
+    const dateToUse = returnDate || departure?.date
+
+    let arrivalDate = dateToUse
+    if (arrival?.time && departure?.time) {
+      const [depH, depM] = (departure.time || '00:00').split(':').map(Number)
+      const [arrH, arrM] = (arrival.time || '00:00').split(':').map(Number)
+      const depMinutes = depH * 60 + depM
+      const arrMinutes = arrH * 60 + arrM
+
+      if (arrMinutes < depMinutes) {
+        const date = new Date(dateToUse)
+        date.setDate(date.getDate() + 1)
+        arrivalDate = date.toISOString().split('T')[0]
+      }
+    }
+
+    return {
+      ...rawReturnFlight,
+      departure: { ...departure, date: dateToUse },
+      arrival: { ...arrival, date: arrivalDate },
+      source: departure?.city || rawReturnFlight.source,
+      destination: arrival?.city || rawReturnFlight.destination,
+    }
+  })() : null
+
   // Reset scroll on step navigation
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -198,7 +230,9 @@ export default function BookingPage() {
   }, 0)
 
   const totalPassengers = adultsCount + childrenCount + infantsCount
-  const basePrice = flight.price * (adultsCount + childrenCount) + Math.round(flight.price * 0.4 * infantsCount)
+  const multiplier = isRoundTrip ? 2 : 1
+  const returnPrice = returnFlight ? returnFlight.price : (isRoundTrip ? flight.price : 0)
+  const basePrice = (flight.price + returnPrice) * (adultsCount + childrenCount) + Math.round((flight.price + returnPrice) * 0.4 * infantsCount)
   const taxes = Math.round(basePrice * 0.18)
   const totalAmount = basePrice + taxes + seatFees
 
@@ -623,6 +657,76 @@ export default function BookingPage() {
                     <div style={s.baggageItem}>🧳 <strong>Check-in Baggage:</strong> {flight.baggage || '15 kg'} included</div>
                   </div>
                 </div>
+
+                {isRoundTrip && returnDate && (
+                  <div style={{ ...s.cardPanel, marginTop: '20px' }}>
+                    <div style={{ ...s.sectionHeader, fontSize: '16px', marginBottom: '16px', borderBottom: '1px solid hsl(var(--b3))', paddingBottom: '8px', color: 'hsl(var(--p))' }}>
+                      🔄 Return Journey: {returnFlight ? returnFlight.source : flight.destination} to {returnFlight ? returnFlight.destination : flight.source}
+                    </div>
+                    <div style={s.flightHeader}>
+                      <div style={{ 
+                        ...s.logoBox, 
+                        background: returnFlight ? (AIRLINE_COLOR[returnFlight.airline] || 'var(--clr-primary)') : airlineColor 
+                      }}>
+                        {returnFlight ? (AIRLINE_CODE[returnFlight.airline] || returnFlight.airline.slice(0, 2).toUpperCase()) : airlineCode}
+                      </div>
+                      <div>
+                        <h3 style={s.airlineLabel}>{returnFlight ? returnFlight.airline : flight.airline} (Return)</h3>
+                        <p style={s.flightSub}>
+                          {returnFlight ? returnFlight.flightNumber : flight.flightNumber.replace(/\d+$/, (m) => String(Number(m) + 1))} · {travellers.class}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div style={s.itineraryRow}>
+                      <div style={s.itineraryNode}>
+                        <span style={s.itineraryTime}>
+                          {returnFlight ? fmtTime(returnFlight.departure) : '18:30'}
+                        </span>
+                        <span style={s.itineraryCity}>
+                          {returnFlight ? returnFlight.source : flight.destination}
+                        </span>
+                        <span style={s.itinerarySub}>
+                          {returnFlight ? fmtDateTime(returnFlight.departure) : fmtDateTime({ date: returnDate, time: '18:30' })}
+                        </span>
+                      </div>
+
+                      <div style={s.itineraryMiddle}>
+                        <span style={s.itineraryDuration}>
+                          {returnFlight ? fmtDuration(returnFlight.duration) : fmtDuration(flight.duration)}
+                        </span>
+                        <div style={s.itineraryLineBlock}>
+                          <span style={s.lineDot} />
+                          <span style={s.lineBar} />
+                          <span style={{ ...s.linePlaneIcon, transform: 'rotate(180deg)', display: 'inline-block' }}>✈</span>
+                          <span style={s.lineBar} />
+                          <span style={s.lineDot} />
+                        </div>
+                        <span style={s.itineraryStops}>
+                          {returnFlight ? (returnFlight.stops === 0 ? 'Non-stop' : `${returnFlight.stops} Stop`) : (flight.stops === 0 ? 'Non-stop' : `${flight.stops} Stop`)}
+                        </span>
+                      </div>
+
+                      <div style={{ ...s.itineraryNode, alignItems: 'flex-end' }}>
+                        <span style={s.itineraryTime}>
+                          {returnFlight ? fmtTime(returnFlight.arrival) : '19:55'}
+                        </span>
+                        <span style={s.itineraryCity}>
+                          {returnFlight ? returnFlight.destination : flight.source}
+                        </span>
+                        <span style={s.itinerarySub}>
+                          {returnFlight ? fmtDateTime(returnFlight.arrival) : fmtDateTime({ date: returnDate, time: '19:55' })}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div style={s.baggageSummary}>
+                      <div style={s.baggageItem}>💼 <strong>Cabin Baggage:</strong> 7 kg per traveller</div>
+                      <div style={s.baggageItem}>🧳 <strong>Check-in Baggage:</strong> {returnFlight ? (returnFlight.baggage || '15 kg') : (flight.baggage || '15 kg')} included</div>
+                    </div>
+                  </div>
+                )}
+
 
                 <div style={s.refundableTerms}>
                   <p style={{ margin: 0, fontWeight: 700, color: flight.refundable ? 'hsl(var(--su))' : 'hsl(var(--er) / 0.8)' }}>
@@ -1203,6 +1307,67 @@ export default function BookingPage() {
                             }</div>
                           </div>
                         </div>
+
+                        {isRoundTrip && returnDate && (
+                          <div style={{ ...s.ticketFlightCard, marginTop: '16px', borderTop: '1px dashed hsl(var(--b3))', paddingTop: '16px' }}>
+                            <div style={s.tfHeader}>
+                              <div style={{ 
+                                ...s.logoBox, 
+                                background: returnFlight ? (AIRLINE_COLOR[returnFlight.airline] || 'var(--clr-primary)') : airlineColor, 
+                                width: '40px', 
+                                height: '40px' 
+                              }}>
+                                {returnFlight ? (AIRLINE_CODE[returnFlight.airline] || returnFlight.airline.slice(0, 2).toUpperCase()) : airlineCode}
+                              </div>
+                              <div>
+                                <div style={{ fontWeight: 800, fontSize: '16px' }}>
+                                  {returnFlight ? returnFlight.airline : flight.airline} (Return)
+                                </div>
+                                <div style={{ fontSize: '12px', color: 'hsl(var(--bc) / 0.6)' }}>
+                                  {returnFlight ? returnFlight.flightNumber : flight.flightNumber.replace(/\d+$/, (m) => String(Number(m) + 1))} · Economy
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <div style={s.tfRoute}>
+                              <div style={s.tfNode}>
+                                <div style={s.tfTime}>
+                                  {returnFlight ? fmtTime(returnFlight.departure) : '18:30'}
+                                </div>
+                                <div style={s.tfCity}>
+                                  {returnFlight ? returnFlight.source : flight.destination}
+                                </div>
+                                <div style={s.tfDate}>{fmtDate(returnDate)}</div>
+                              </div>
+                              
+                              <div style={s.tfMid}>
+                                <div style={s.tfDuration}>
+                                  {returnFlight ? fmtDuration(returnFlight.duration) : fmtDuration(flight.duration)}
+                                </div>
+                                <div style={s.tfLine}>
+                                  <div style={s.tfDot} />
+                                  <div style={s.tfLineBar} />
+                                  <span style={{ fontSize: '14px', transform: 'rotate(180deg)', display: 'inline-block' }}>✈</span>
+                                  <div style={s.tfLineBar} />
+                                  <div style={s.tfDot} />
+                                </div>
+                                <div style={s.tfStops}>
+                                  {returnFlight ? (returnFlight.stops === 0 ? 'Non-stop' : `${returnFlight.stops} Stop${returnFlight.stops > 1 ? 's' : ''}`) : (flight.stops === 0 ? 'Non-stop' : `${flight.stops} Stop${flight.stops > 1 ? 's' : ''}`)}
+                                </div>
+                              </div>
+                              
+                              <div style={{ ...s.tfNode, alignItems: 'flex-end', textAlign: 'right' }}>
+                                <div style={s.tfTime}>
+                                  {returnFlight ? fmtTime(returnFlight.arrival) : '19:55'}
+                                </div>
+                                <div style={s.tfCity}>
+                                  {returnFlight ? returnFlight.destination : flight.source}
+                                </div>
+                                <div style={s.tfDate}>{fmtDate(returnDate)}</div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
 
                       <div style={s.ticketInfoRow}>

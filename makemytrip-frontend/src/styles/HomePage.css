@@ -429,7 +429,7 @@
   border: 1px solid var(--hp-line);
   border-radius: 14px;
   background: hsl(var(--b1));
-  overflow: hidden;
+  overflow: visible;
   box-shadow: 0 2px 12px hsla(var(--b2) / 0.06);
   transition: all 0.3s ease;
 }

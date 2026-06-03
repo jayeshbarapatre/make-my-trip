@@ -16,7 +16,19 @@
   border: 1px solid hsl(var(--b3));
   font-family: "Space Grotesk", sans-serif;
   overflow: hidden;
-  animation: mmtCalFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: mmtCalOverlayFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes mmtCalOverlayFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
 }
 
 @keyframes mmtCalFadeIn {
@@ -237,7 +249,11 @@
 
 /* Backdrop Blur overlay for screen focus on mobile view */
 .mmt-cal-backdrop {
-  display: none;
+  display: block;
+  position: fixed;
+  inset: 0;
+  background: transparent;
+  z-index: 9990;
 }
 
 @keyframes mmtCalModalIn {

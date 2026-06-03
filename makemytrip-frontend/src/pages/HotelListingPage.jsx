@@ -345,6 +345,75 @@ function FilterSidebar({ filters, setFilter, pins, onOpenMap }) {
   );
 }
 
+const mapUdaipurSeed = (s) => {
+  if (typeof s !== 'string') return s;
+  
+  // If the image URL is from the down magnific.com service, map it to a valid Unsplash photo ID
+  if (s.includes('magnific.com')) {
+    const fallbacks = [
+      '1542314831-c53cd4b85d05',
+      '1566073771259-6a8506099945',
+      '1582719478250-c89cae4dc85b',
+      '1512918728675-ed5a9ecdebfd',
+      '1520250497591-112f2f40a3f4',
+      '1540541338287-41700207dee6',
+      '1611892440504-42a792e24d32',
+      '1590050752117-238cb061271f',
+      '1578683010236-d716f9a3f461'
+    ];
+    let hash = 0;
+    for (let i = 0; i < s.length; i++) {
+      hash = s.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const idx = Math.abs(hash) % fallbacks.length;
+    return fallbacks[idx];
+  }
+  
+  if (s.startsWith('http') || s.startsWith('/')) return s;
+  
+  const mappings = {
+    'udaipur-1a': '1542314831-c53cd4b85d05',
+    'udaipur-1b': '1566073771259-6a8506099945',
+    'udaipur-1c': '1582719478250-c89cae4dc85b',
+    'udaipur-1d': '1512918728675-ed5a9ecdebfd',
+    'udaipur-2a': '1520250497591-112f2f40a3f4',
+    'udaipur-2b': '1540541338287-41700207dee6',
+    'udaipur-2c': '1611892440504-42a792e24d32',
+    'udaipur-3a': '1590050752117-238cb061271f',
+    'udaipur-3b': '1578683010236-d716f9a3f461',
+    'udaipur-3c': '1551882547-ff40c0d589rx',
+    'udaipur-3d': '1535827841776-24afc1e255ac',
+    'udaipur-4a': '1445019980597-93fa8acb246c',
+    'udaipur-4b': '1542314831-c53cd4b85d05',
+    'udaipur-5a': '1566073771259-6a8506099945',
+    'udaipur-5b': '1582719478250-c89cae4dc85b',
+    'udaipur-5c': '1512918728675-ed5a9ecdebfd',
+    'udaipur-6a': '1520250497591-112f2f40a3f4',
+    'udaipur-6b': '1540541338287-41700207dee6',
+    'udaipur-6c': '1611892440504-42a792e24d32',
+    'udaipur-7a': '1590050752117-238cb061271f',
+    'udaipur-7b': '1578683010236-d716f9a3f461',
+    'udaipur-8a': '1551882547-ff40c0d589rx',
+    'udaipur-8b': '1535827841776-24afc1e255ac',
+    'udaipur-8c': '1445019980597-93fa8acb246c',
+    'udaipur-8d': '1542314831-c53cd4b85d05',
+    'udaipur-9a': '1566073771259-6a8506099945',
+    'udaipur-9b': '1582719478250-c89cae4dc85b',
+    'udaipur-9c': '1512918728675-ed5a9ecdebfd',
+    'udaipur-10a': '1520250497591-112f2f40a3f4',
+    'udaipur-10b': '1540541338287-41700207dee6',
+    'udaipur-10c': '1611892440504-42a792e24d32',
+    'udaipur-11a': '1590050752117-238cb061271f',
+    'udaipur-11b': '1578683010236-d716f9a3f461',
+    'udaipur-11c': '1551882547-ff40c0d589rx',
+    'udaipur-12a': '1535827841776-24afc1e255ac',
+    'udaipur-12b': '1445019980597-93fa8acb246c',
+    'udaipur-12c': '1542314831-c53cd4b85d05'
+  };
+
+  return mappings[s] || (s.startsWith('udaipur-') ? '1566073771259-6a8506099945' : s);
+};
+
 /* ─────────── PhotoCarousel Component ─────────── */
 function PhotoCarousel({ seeds, photos, hotelId }) {
   const [idx, setIdx] = useState(0);
@@ -357,17 +426,20 @@ function PhotoCarousel({ seeds, photos, hotelId }) {
   return (
     <div className="carousel">
       <div className="carousel-track" style={{transform: `translateX(${-idx * 100}%)`, display: 'flex', width: '100%', height: '100%'}}>
-        {seeds.map((s) => (
-          <div key={s} className="carousel-slide" style={{ minWidth: '100%', height: '100%', flexShrink: 0 }}>
-            {/* Beautiful hotel imagery placeholders styled with rich Unsplash images */}
-            <img 
-              src={typeof s === 'string' && (s.startsWith('http') || s.startsWith('/')) ? s : `https://images.unsplash.com/photo-${s}?auto=format&fit=crop&w=600&h=420&q=80`} 
-              alt="Udaipur Luxury Stay" 
-              loading="lazy"
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            />
-          </div>
-        ))}
+        {seeds.map((s) => {
+          const cleanSeed = mapUdaipurSeed(s);
+          return (
+            <div key={s} className="carousel-slide" style={{ minWidth: '100%', height: '100%', flexShrink: 0 }}>
+              {/* Beautiful hotel imagery placeholders styled with rich Unsplash images */}
+              <img 
+                src={typeof cleanSeed === 'string' && (cleanSeed.startsWith('http') || cleanSeed.startsWith('/')) ? cleanSeed : `https://images.unsplash.com/photo-${cleanSeed}?auto=format&fit=crop&w=600&h=420&q=80`} 
+                alt="Udaipur Luxury Stay" 
+                loading="lazy"
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+            </div>
+          );
+        })}
       </div>
       <button type="button" className="car-arr car-l" onClick={(e) => go(-1, e)}>{I.chevronL}</button>
       <button type="button" className="car-arr car-r" onClick={(e) => go(1, e)}>{I.chevronR}</button>
@@ -737,9 +809,14 @@ export default function HotelListingPage() {
           amenities: h.amenities || ['Free WiFi'],
           review: h.description || "A wonderful stay.",
           longStay: [],
-          seed: h.images?.length > 0 ? h.images : [
-            "1542314831-c53cd4b85d05", "1566073771259-6a8506099945", "1582719478250-c89cae4dc85b", "1512918728675-ed5a9ecdebfd", "1520250497591-112f2f40a3f4", "1540541338287-41700207dee6", "1611892440504-42a792e24d32", "1590050752117-238cb061271f", "1578683010236-d716f9a3f461", "1551882547-ff40c0d589rx", "1535827841776-24afc1e255ac", "1445019980597-93fa8acb246c"
-          ].sort(() => Math.random() - 0.5).slice(0, 5),
+          seed: (h.images && h.images.length >= 3) ? h.images : [
+            ...(h.images || []),
+            "1542314831-c53cd4b85d05",
+            "1566073771259-6a8506099945",
+            "1582719478250-c89cae4dc85b",
+            "1512918728675-ed5a9ecdebfd",
+            "1520250497591-112f2f40a3f4"
+          ].slice(0, 5),
           photos: 10,
           starHost: h.rating >= 4.5,
           coupleFriendly: true,

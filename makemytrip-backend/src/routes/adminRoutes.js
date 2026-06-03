@@ -1,4 +1,5 @@
 import express from 'express'
+import { upload } from '../middleware/uploadMiddleware.js'
 import { adminRegister, adminLogin, getAdminProfile, adminLogout, changePassword } from '../controllers/adminAuthController.js'
 import {
   createFlight, getAllFlights, getFlightById, updateFlight, deleteFlight, toggleFlightStatus
@@ -26,6 +27,32 @@ import { getAllVendors, createVendor, deleteVendor, toggleVendorStatus, getVendo
 import { getAllBookings } from '../controllers/bookingController.js'
 import { getAllUsers, deleteUser, getUserDetails } from '../controllers/adminUserController.js'
 import { getApiHealth, flushCache } from '../controllers/apiHealthController.js'
+import {
+  listCmsPages, createCmsPage, updateCmsPage, deleteCmsPage, getPageBySlug
+} from '../controllers/cmsController.js'
+import {
+  getFooter, listSections, createSection, updateSection, deleteSection,
+  createLink, updateLink, deleteLink
+} from '../controllers/footerController.js'
+import {
+  submitInquiry, listInquiries, getInquiry, updateInquiryStatus, deleteInquiry
+} from '../controllers/contactController.js'
+import {
+  getNotifications, getUnreadCount, markAsRead, markAllAsRead, deleteNotification
+} from '../controllers/notificationController.js'
+import {
+  listJobs, getJob, applyJob, listAllJobs, createJob, updateJob, deleteJob,
+  listApplications, updateApplicationStatus
+} from '../controllers/careersController.js'
+import {
+  listFaqs, listAllFaqs, createFaq, updateFaq, deleteFaq
+} from '../controllers/faqController.js'
+import {
+  getSettings, updateSettings
+} from '../controllers/settingsController.js'
+import {
+  uploadMedia, listMedia, getMediaById, deleteMedia
+} from '../controllers/mediaController.js'
 
 const router = express.Router()
 
@@ -103,5 +130,57 @@ router.delete('/users/:id', authenticateAdmin, adminOnly, deleteUser)
 
 router.get('/api-health', authenticateAdmin, adminOnly, getApiHealth)
 router.post('/cache/flush', authenticateAdmin, adminOnly, flushCache)
+
+// CMS Routes
+router.get('/cms', authenticateAdmin, adminOnly, listCmsPages)
+router.post('/cms', authenticateAdmin, adminOnly, createCmsPage)
+router.put('/cms/:id', authenticateAdmin, adminOnly, updateCmsPage)
+router.delete('/cms/:id', authenticateAdmin, adminOnly, deleteCmsPage)
+
+// Footer Routes
+router.get('/footer/sections', authenticateAdmin, adminOnly, listSections)
+router.post('/footer/sections', authenticateAdmin, adminOnly, createSection)
+router.put('/footer/sections/:id', authenticateAdmin, adminOnly, updateSection)
+router.delete('/footer/sections/:id', authenticateAdmin, adminOnly, deleteSection)
+router.post('/footer/links', authenticateAdmin, adminOnly, createLink)
+router.put('/footer/links/:id', authenticateAdmin, adminOnly, updateLink)
+router.delete('/footer/links/:id', authenticateAdmin, adminOnly, deleteLink)
+
+// Contact Inquiry Routes
+router.get('/inquiries', authenticateAdmin, adminOnly, listInquiries)
+router.get('/inquiries/:id', authenticateAdmin, adminOnly, getInquiry)
+router.patch('/inquiries/:id/status', authenticateAdmin, adminOnly, updateInquiryStatus)
+router.delete('/inquiries/:id', authenticateAdmin, adminOnly, deleteInquiry)
+
+// Notification Routes
+router.get('/notifications', authenticateAdmin, adminOnly, getNotifications)
+router.get('/notifications/unread-count', authenticateAdmin, adminOnly, getUnreadCount)
+router.patch('/notifications/:id/read', authenticateAdmin, adminOnly, markAsRead)
+router.patch('/notifications/mark-all-read', authenticateAdmin, adminOnly, markAllAsRead)
+router.delete('/notifications/:id', authenticateAdmin, adminOnly, deleteNotification)
+
+// Career Routes
+router.get('/jobs', authenticateAdmin, adminOnly, listAllJobs)
+router.post('/jobs', authenticateAdmin, adminOnly, createJob)
+router.put('/jobs/:id', authenticateAdmin, adminOnly, updateJob)
+router.delete('/jobs/:id', authenticateAdmin, adminOnly, deleteJob)
+router.get('/jobs/:jobId/applications', authenticateAdmin, adminOnly, listApplications)
+router.patch('/applications/:id/status', authenticateAdmin, adminOnly, updateApplicationStatus)
+
+// FAQ Routes
+router.get('/faqs', authenticateAdmin, adminOnly, listAllFaqs)
+router.post('/faqs', authenticateAdmin, adminOnly, createFaq)
+router.put('/faqs/:id', authenticateAdmin, adminOnly, updateFaq)
+router.delete('/faqs/:id', authenticateAdmin, adminOnly, deleteFaq)
+
+// Settings Routes
+router.get('/settings', authenticateAdmin, adminOnly, getSettings)
+router.put('/settings', authenticateAdmin, adminOnly, updateSettings)
+
+// Media Routes
+router.post('/media/upload', authenticateAdmin, adminOnly, upload.single('file'), uploadMedia)
+router.get('/media', authenticateAdmin, adminOnly, listMedia)
+router.get('/media/:id', authenticateAdmin, adminOnly, getMediaById)
+router.delete('/media/:id', authenticateAdmin, adminOnly, deleteMedia)
 
 export default router

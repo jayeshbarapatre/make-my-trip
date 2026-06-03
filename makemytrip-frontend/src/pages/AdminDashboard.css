@@ -158,7 +158,7 @@
 .dashboard-row {
   display: grid;
   gap: 24px;
-  margin-bottom: 24px;
+  margin-bottom: 0;
 }
 
 .two-col-65-35 {

@@ -115,7 +115,7 @@
 }
 
 .back-to-home-link:hover {
-  color: #059669;
+  color: hsl(var(--su));
   transform: translateX(-3px);
 }
 
@@ -132,7 +132,7 @@
 .portal-icon-wrapper {
   width: 64px;
   height: 64px;
-  background: rgba(16, 185, 129, 0.1);
+  background: hsl(var(--su) / 0.1);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -142,14 +142,14 @@
 
 .portal-icon {
   font-size: 28px;
-  color: #059669;
+  color: hsl(var(--su));
 }
 
 .login-title {
   margin: 0;
   font-size: 26px;
   font-weight: 800;
-  background: linear-gradient(135deg, hsl(var(--bc)) 30%, #059669 100%);
+  background: linear-gradient(135deg, hsl(var(--bc)) 30%, hsl(var(--su)) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -211,9 +211,11 @@ padding: 10px 12px 10px 42px;
   flex-direction: column;
 }
 
-.form-group label {
+/* Specific selector override to prevent global stylesheet color overrides */
+.vendor-login-container .form-group label {
   font-weight: 700;
-  color: hsl(var(--bc) / 0.8);
+  color: hsl(var(--bc)) !important;
+  opacity: 0.85;
   margin-bottom: 8px;
   font-size: 14px;
   text-align: left;
@@ -266,13 +268,13 @@ padding: 10px 12px 10px 42px;
 }
 
 .form-group input:focus {
-  border-color: #10b981;
+  border-color: hsl(var(--su));
   background-color: hsl(var(--b1)) !important;
-  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15) !important;
+  box-shadow: 0 0 0 4px hsl(var(--su) / 0.15) !important;
 }
 
 .form-group input:focus + .input-field-icon {
-  color: #10b981;
+  color: hsl(var(--su));
 }
 
 .form-group input::placeholder {
@@ -289,8 +291,8 @@ padding: 10px 12px 10px 42px;
 /* CTA Button */
 .login-btn {
   padding: 14px 24px;
-  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
-  color: #ffffff !important;
+  background: linear-gradient(135deg, hsl(var(--su) / 0.85) 0%, hsl(var(--su)) 100%);
+  color: hsl(var(--pc)) !important;
   border: none;
   border-radius: 10px;
   font-weight: 700;
@@ -298,7 +300,7 @@ padding: 10px 12px 10px 42px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   margin-top: 10px;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+  box-shadow: 0 4px 12px hsl(var(--su) / 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -306,13 +308,13 @@ padding: 10px 12px 10px 42px;
 
 .login-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.45);
-  background: linear-gradient(135deg, #047857 0%, #059669 100%);
+  box-shadow: 0 8px 20px hsl(var(--su) / 0.45);
+  background: linear-gradient(135deg, hsl(var(--su) / 0.95) 0%, hsl(var(--su)) 100%);
 }
 
 .login-btn:active:not(:disabled) {
   transform: translateY(0);
-  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
+  box-shadow: 0 4px 10px hsl(var(--su) / 0.2);
 }
 
 .login-btn:disabled {

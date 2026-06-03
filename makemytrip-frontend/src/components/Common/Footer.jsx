@@ -1,16 +1,69 @@
-import React from 'react'
-import { useLocation } from 'react-router-dom'
+import React, { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { cmsService } from '../../services/cmsService'
 import '../../styles/HomePage.css'
 
-const FOOTER_COLS = [
-  { title: 'About',    links: ['Company', 'Investor relations', 'Careers', 'Foundation (CSR)', 'Newsroom'] },
-  { title: 'Booking',  links: ['Flight tickets', 'Hotel bookings', 'Holiday packages', 'Train tickets', 'Bus tickets', 'Cabs'] },
-  { title: 'Support',  links: ['Contact us', 'Customer support', 'FAQs', 'Cancellation refunds', 'Travel insurance', 'Web check-in'] },
-  { title: 'Policies', links: ['Privacy policy', 'User agreement', 'Terms of service', 'Cookie policy', 'Trust & safety'] },
+const FOOTER_COLS_FALLBACK = [
+  { title: 'About',    links: [
+    { title: 'Company', url: '/company' },
+    { title: 'Careers', url: '/careers' },
+    { title: 'Investor relations', url: '/investor-relations' },
+    { title: 'Foundation (CSR)', url: '/foundation' },
+    { title: 'Newsroom', url: '/newsroom' }
+  ]},
+  { title: 'Booking',  links: [
+    { title: 'Flights', url: '/flights' },
+    { title: 'Hotels', url: '/hotels' },
+    { title: 'Trains', url: '/trains' },
+    { title: 'Buses', url: '/buses' },
+    { title: 'Cabs', url: '/cabs' }
+  ]},
+  { title: 'Support',  links: [
+    { title: 'Contact us', url: '/contact-us' },
+    { title: 'FAQs', url: '/faqs' },
+    { title: 'Cancellation refunds', url: '/cancellation-refunds' },
+    { title: 'Travel insurance', url: '/insurance' }
+  ]},
+  { title: 'Policies', links: [
+    { title: 'Privacy policy', url: '/privacy-policy' },
+    { title: 'Terms of service', url: '/terms-of-service' },
+    { title: 'Cookie policy', url: '/cookie-policy' },
+    { title: 'Trust & safety', url: '/trust-safety' }
+  ]},
 ]
 
 export default function Footer() {
-  const location = useLocation()
+  const [sections, setSections] = useState(FOOTER_COLS_FALLBACK)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchFooter()
+  }, [])
+
+  const fetchFooter = async () => {
+    try {
+      const response = await cmsService.getFooter()
+      const data = response.data.data
+      if (Array.isArray(data) && data.length > 0) {
+        setSections(data)
+      }
+    } catch (err) {
+      console.error('Error fetching footer:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const renderLink = (link) => {
+    const title = typeof link === 'string' ? link : link.title
+    const url = typeof link === 'string' ? '#' : (link.url || '#')
+    const target = typeof link === 'string' ? '_self' : (link.target || '_self')
+
+    if (url.startsWith('/')) {
+      return <Link to={url}>{title}</Link>
+    }
+    return <a href={url} target={target} rel="noreferrer">{title}</a>
+  }
 
   return (
     <footer className="hp-footer">
@@ -23,21 +76,21 @@ export default function Footer() {
             </h3>
             <p>India's leading online travel company since 2000 — bringing flights, stays, and experiences to over 50 million travellers.</p>
             <div className="hp-ft-social">
-              <a href="#fb"  aria-label="Facebook">f</a>
-              <a href="#tw"  aria-label="Twitter">𝕏</a>
-              <a href="#ig"  aria-label="Instagram">◎</a>
-              <a href="#yt"  aria-label="YouTube">▶</a>
-              <a href="#li"  aria-label="LinkedIn">in</a>
+              <a href="https://facebook.com" aria-label="Facebook" target="_blank" rel="noreferrer">f</a>
+              <a href="https://twitter.com" aria-label="Twitter" target="_blank" rel="noreferrer">𝕏</a>
+              <a href="https://instagram.com" aria-label="Instagram" target="_blank" rel="noreferrer">◎</a>
+              <a href="https://youtube.com" aria-label="YouTube" target="_blank" rel="noreferrer">▶</a>
+              <a href="https://linkedin.com" aria-label="LinkedIn" target="_blank" rel="noreferrer">in</a>
             </div>
           </div>
 
-          {FOOTER_COLS.map(col => (
-            <div key={col.title} className="hp-ft-col">
+          {sections.map(col => (
+            <div key={col.id || col.title} className="hp-ft-col">
               <h4>{col.title}</h4>
               <ul>
-                {col.links.map(link => (
-                  <li key={link}>
-                    <a href={`#${link.toLowerCase().replace(/\s+/g, '-')}`}>{link}</a>
+                {col.links?.map(link => (
+                  <li key={link.id || link.title}>
+                    {renderLink(link)}
                   </li>
                 ))}
               </ul>
