@@ -178,6 +178,15 @@ function NotFound() {
   )
 }
 
+// ── Scroll to top on every page navigation ──────────────────────────────
+function ScrollToTop() {
+  const { pathname } = useLocation()
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+  }, [pathname])
+  return null
+}
+
 function RouteLoader() {
   const location = useLocation()
   const [isLoading, setIsLoading] = useState(false)
@@ -243,6 +252,7 @@ function AppContent() {
     <ThemeProvider>
       <AdminProvider>
       <VendorProvider>
+      <ScrollToTop />
       <RouteLoader />
       {!isAdminRoute && !isVendorRoute && <Header />}
       <Routes>
