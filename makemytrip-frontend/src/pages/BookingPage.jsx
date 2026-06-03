@@ -1659,7 +1659,7 @@ const s = {
     paddingBottom: '56px',
   },
   wizardBar: {
-    background: 'hsl(var(--bc))',
+    background: '#1a1a2e',
     borderBottom: '1px solid rgba(255,255,255,0.1)',
     padding: '16px 0',
     color: '#fff'
@@ -1694,18 +1694,18 @@ const s = {
     color: 'rgba(255,255,255,0.6)'
   },
   wizardNumActive: {
-    background: 'hsl(var(--er))',
+    background: '#e02026',
     color: '#fff',
     boxShadow: '0 0 12px rgba(235,32,38,0.5)'
   },
   wizardNumDone: {
-    background: 'hsl(var(--su))',
+    background: '#22c55e',
     color: '#fff'
   },
   wizardLabel: {
     fontSize: '13px',
     fontWeight: 600,
-    color: 'rgba(255,255,255,0.5)'
+    color: 'rgba(255,255,255,0.55)'
   },
   wizardLabelActive: {
     color: '#fff',
@@ -1714,7 +1714,7 @@ const s = {
   wizardLine: {
     flex: 1,
     height: '1px',
-    background: 'rgba(255,255,255,0.1)',
+    background: 'rgba(255,255,255,0.15)',
     margin: '0 16px'
   },
   container: {
