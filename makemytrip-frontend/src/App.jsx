@@ -44,6 +44,7 @@ import Profile from './pages/Profile'
 import { AdminProvider } from './context/AdminContext'
 import { VendorProvider } from './context/VendorContext'
 import { ThemeProvider } from './context/ThemeContext'
+import { useAuth } from './context/AuthContext'
 import AdminLoginPage from './pages/AdminLoginPage'
 import AdminDashboard from './pages/AdminDashboard'
 import AdminFlights from './pages/AdminFlights'
@@ -81,6 +82,7 @@ import CareersPage from './pages/CareersPage'
 import ContactPage from './pages/ContactPage'
 import CompanyPage from './pages/CompanyPage'
 import { cmsService } from './services/cmsService'
+import ErrorBoundary from './components/ErrorBoundary'
 
 function NotFound() {
   return (
@@ -238,6 +240,7 @@ function RouteLoader() {
 
 function AppContent() {
   const location = useLocation()
+  const { user } = useAuth()
   const isAdminRoute = location.pathname.startsWith('/admin')
   const isVendorRoute = location.pathname.startsWith('/vendor')
 
@@ -246,25 +249,26 @@ function AppContent() {
     const savedTheme = localStorage.getItem('daisyui-theme') || 'business'
     document.documentElement.setAttribute('data-theme', savedTheme)
 
-    // Load theme settings from CMS
-    const loadThemeSettings = async () => {
-      try {
-        const response = await cmsService.getSettings()
-        const settings = response.data.data
-        if (settings) {
-          document.documentElement.style.setProperty('--primary-color', settings.primaryColor || '#003580')
-          document.documentElement.style.setProperty('--secondary-color', settings.secondaryColor || '#0F172A')
-          document.documentElement.style.setProperty('--accent-color', settings.accentColor || '#1a73e8')
-          document.documentElement.style.setProperty('--footer-bg', settings.footerBg || '#003580')
-          document.documentElement.style.setProperty('--header-bg', settings.headerBg || '#ffffff')
+    // Load theme settings from CMS only if user is authenticated
+    if (user) {
+      const loadThemeSettings = async () => {
+        try {
+          const response = await cmsService.getSettings()
+          const settings = response.data.data
+          if (settings) {
+            document.documentElement.style.setProperty('--primary-color', settings.primaryColor || '#003580')
+            document.documentElement.style.setProperty('--secondary-color', settings.secondaryColor || '#0F172A')
+            document.documentElement.style.setProperty('--accent-color', settings.accentColor || '#1a73e8')
+            document.documentElement.style.setProperty('--footer-bg', settings.footerBg || '#003580')
+            document.documentElement.style.setProperty('--header-bg', settings.headerBg || '#ffffff')
+          }
+        } catch (err) {
+          console.warn('Could not load theme settings:', err)
         }
-      } catch (err) {
-        console.warn('Could not load theme settings:', err)
       }
+      loadThemeSettings()
     }
-
-    loadThemeSettings()
-  }, [])
+  }, [user])
 
   return (
     <ThemeProvider>
@@ -369,42 +373,44 @@ function App() {
   }, [])
 
   return (
-    <BrowserRouter>
-      <Toaster
-        position="top-center"
-        reverseOrder={false}
-        gutter={8}
-        containerClassName=""
-        containerStyle={{ zIndex: 100000 }}
-        toastOptions={{
-          duration: 4000,
-          style: {
-            background: 'hsl(var(--b1))',
-            color: 'hsl(var(--bc))',
-            borderRadius: '8px',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-            fontSize: '14px',
-            fontWeight: '500',
-            padding: '12px 16px'
-          },
-          success: {
-            duration: 3000,
-            style: {
-              background: 'hsl(var(--su))',
-              color: 'hsl(var(--pc))'
-            }
-          },
-          error: {
+    <ErrorBoundary>
+      <BrowserRouter>
+        <Toaster
+          position="top-center"
+          reverseOrder={false}
+          gutter={8}
+          containerClassName=""
+          containerStyle={{ zIndex: 100000 }}
+          toastOptions={{
             duration: 4000,
             style: {
-              background: 'hsl(var(--er))',
-              color: 'hsl(var(--pc))'
+              background: 'hsl(var(--b1))',
+              color: 'hsl(var(--bc))',
+              borderRadius: '8px',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+              fontSize: '14px',
+              fontWeight: '500',
+              padding: '12px 16px'
+            },
+            success: {
+              duration: 3000,
+              style: {
+                background: 'hsl(var(--su))',
+                color: 'hsl(var(--pc))'
+              }
+            },
+            error: {
+              duration: 4000,
+              style: {
+                background: 'hsl(var(--er))',
+                color: 'hsl(var(--pc))'
+              }
             }
-          }
-        }}
-      />
-      <AppContent />
-    </BrowserRouter>
+          }}
+        />
+        <AppContent />
+      </BrowserRouter>
+    </ErrorBoundary>
   )
 }
 

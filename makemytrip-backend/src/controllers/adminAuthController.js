@@ -12,10 +12,20 @@ const signToken = (id) => jwt.sign({ id }, JWT_SECRET, { expiresIn: '8h' })
 
 export const adminRegister = async (req, res) => {
   try {
-    const { name, email, password } = req.body
+    const { name, email, password, phone } = req.body
 
     if (!name || !email || !password) {
       return res.status(400).json({ message: 'Name, email, and password are required' })
+    }
+
+    // Check if any admin exists
+    const adminCount = await prisma.user.count({ where: { is_admin: true } })
+
+    // Only allow registration if:
+    // 1. No admins exist (first admin bootstrap), OR
+    // 2. Request is authenticated as an admin (new admin creation by existing admin)
+    if (adminCount > 0 && !req.adminId) {
+      return res.status(403).json({ message: 'Unauthorized: Only existing admins can create new admins' })
     }
 
     const existing = await prisma.user.findUnique({ where: { email } })
@@ -29,7 +39,7 @@ export const adminRegister = async (req, res) => {
         name,
         email,
         password: hashed,
-        phone: '0000000000',
+        phone: phone || '0000000000',
         is_admin: true
       },
       select: { id: true, name: true, email: true, is_admin: true }
@@ -37,20 +47,19 @@ export const adminRegister = async (req, res) => {
 
     const token = signToken(admin.id)
     res.status(201).json({
+      success: true,
       message: 'Admin created successfully',
       data: { admin, token }
     })
   } catch (err) {
     console.error('Admin register error:', err)
-    res.status(500).json({ message: err.message })
+    res.status(500).json({ success: false, message: 'Failed to create admin account' })
   }
 }
 
 export const adminLogin = async (req, res) => {
   try {
     const { email, password } = req.body
-
-    console.log(req.body);
 
     if (!email || !password) {
       return res.status(400).json({ message: 'Email and password are required' })

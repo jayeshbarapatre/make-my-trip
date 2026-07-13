@@ -100,14 +100,54 @@ export default function CabSearchResultsPage() {
     }
   ]
 
-  const handleSelectCab = (car) => {
+  const handleSelectCab = async (car) => {
     if (!user) {
       setAlertMsg("Please login to continue booking")
       setShowCustomAlert(true)
       return
     }
-    // Simulate booking since we don't have a backend for cabs yet
-    alert(`Cab booking initiated for ${car.name}!`)
+    
+    try {
+      const bookingPayload = {
+        type: 'cab',
+        busId: car.id, // Reusing ID field
+        fromCity: fromVal,
+        toCity: toVal,
+        departureDate: dateVal,
+        travellers: {
+          guests: 1,
+          name: user?.name,
+          cabType: car.type
+        },
+        totalAmount: parseInt(car.price.replace(',', '')),
+        contactEmail: user?.email,
+        contactPhone: user?.phone || '9999999999',
+        userEmail: user?.email,
+        userName: user?.name,
+        paymentId: 'pay_mock_' + Date.now(),
+        orderId: 'order_mock_' + Date.now(),
+      }
+
+      // using the generic createBooking that we know exists
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/bookings/create`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(bookingPayload)
+      })
+      
+      if (response.ok) {
+        alert(`Cab booking confirmed for ${car.name}! It will now appear in your My Trips.`)
+        navigate('/my-trips')
+      } else {
+        alert(`Failed to book cab: ${response.statusText}`)
+      }
+    } catch (err) {
+      console.error(err)
+      alert('Error creating simulated cab booking')
+    }
   }
 
   const fmtDateDisplay = (dateStr) => {

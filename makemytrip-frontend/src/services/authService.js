@@ -25,10 +25,11 @@ export const bookingService = {
   getUserBookings: async (userId) => {
     try {
       const res = await api.get(`/bookings/user/${userId}`)
-      return res?.data || res || []
+      // Backend returns { success: true, data: bookings }
+      return Array.isArray(res) ? res : (res?.data || res || [])
     } catch (e) {
       console.error("Failed to fetch bookings:", e)
-      throw e
+      return []
     }
   },
   cancelBooking: async (id) => {

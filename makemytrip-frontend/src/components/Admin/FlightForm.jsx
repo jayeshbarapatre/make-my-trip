@@ -115,9 +115,7 @@ const FlightForm = ({ flight, onSubmit, onClose }) => {
                 required
               />
             </div>
-          </div>
 
-          <div className="form-row">
             <div className="form-group">
               <AutocompleteInput
                 type="aircraft"
@@ -165,9 +163,7 @@ const FlightForm = ({ flight, onSubmit, onClose }) => {
                 label="Airport"
               />
             </div>
-          </div>
 
-          <div className="form-row">
             <div className="form-group">
               <label>Date</label>
               <input
@@ -212,9 +208,7 @@ const FlightForm = ({ flight, onSubmit, onClose }) => {
                 label="Airport"
               />
             </div>
-          </div>
 
-          <div className="form-row">
             <div className="form-group">
               <label>Date</label>
               <input
@@ -260,9 +254,7 @@ const FlightForm = ({ flight, onSubmit, onClose }) => {
                 min="0"
               />
             </div>
-          </div>
 
-          <div className="form-row">
             <div className="form-group">
               <label>Total Seats *</label>
               <input

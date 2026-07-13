@@ -350,6 +350,14 @@
   margin-bottom: 1.5rem;
 }
 
+.form-group label {
+  color: hsl(var(--bc));
+  font-weight: 600;
+  font-size: 14px;
+  display: block;
+  margin-bottom: 8px;
+}
+
 .form-label {
   display: block;
   margin-bottom: 0.5rem;

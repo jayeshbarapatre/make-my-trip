@@ -26,23 +26,36 @@ model User {
   hotels        Hotel[]   @relation("HotelVendor")
   buses         Bus[]     @relation("BusVendor")
   cabs          Cab[]     @relation("CabVendor")
+
+  @@index([email])
+  @@index([phone])
+  @@index([is_admin])
 }
 
 model Booking {
   id            String   @id @default(uuid())
   userId        String
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  type          String   // "flight" | "hotel"
+  type          String   // "flight" | "hotel" | "train" | "bus" | "cab"
+  flightId      String?  // Store flight ID for refund on cancellation
+  hotelId       String?  // Store hotel ID for refund on cancellation
   fromCity      String
   toCity        String
   departureDate String
   returnDate    String?
-  travellers    Json
+  travellers    Json     // Contains passenger/room details and counts
   totalAmount   Float
   status        String   @default("confirmed") // "confirmed" | "cancelled"
   bookingId     String   @unique
   pnr           String
   createdAt     DateTime @default(now())
+
+  @@index([userId])
+  @@index([type])
+  @@index([status])
+  @@index([flightId])
+  @@index([hotelId])
+  @@index([createdAt])
 }
 
 model Flight {
@@ -59,7 +72,7 @@ model Flight {
   duration        String?
   price           Float
   seats           Int      @default(180)
-  seatsAvailable  Int      @default(180)
+  seatsAvailable  Int      @default(180) // Constraint: must be >= 0 and <= seats
   baggage         Int?
   stops           Int      @default(0)
   aircraft        String?
@@ -67,6 +80,9 @@ model Flight {
   isActive        Boolean  @default(true)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+
+  @@index([airline])
+  @@index([isActive])
 }
 
 model Hotel {
@@ -82,7 +98,7 @@ model Hotel {
   price           Float
   pricePerNight   Float
   rooms           Int      @default(50)
-  roomsAvailable  Int      @default(50)
+  roomsAvailable  Int      @default(50) // Constraint: must be >= 0 and <= rooms
   roomTypes       Json?
   amenities       Json?
   checkin         String?
@@ -98,6 +114,10 @@ model Hotel {
   roomCategories  RoomCategory[]
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+
+  @@index([city])
+  @@index([isActive])
+  @@index([vendorId])
 }
 
 model RoomCategory {

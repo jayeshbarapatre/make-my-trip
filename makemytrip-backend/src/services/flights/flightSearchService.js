@@ -60,10 +60,10 @@ export const flightSearchService = {
       return cachedResults.map(f => normalizeFlightResult(f, 'cache'))
     }
 
-    // 2. Try Live API (Aviationstack)
+    // 2. Try Live API (Aviationstack) - only if API key is configured
     const depIata = getIataCode(from)
     const arrIata = getIataCode(to)
-    const accessKey = process.env.AVIATIONSTACK_API_KEY || 'd68117a72d03f3defbed916d51a5cdef'
+    const accessKey = process.env.AVIATIONSTACK_API_KEY
 
     if (depIata && arrIata) {
       try {

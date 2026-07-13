@@ -6,35 +6,37 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 12px;
+  padding: 0 0 15px 0;
+  border-bottom: 1px solid hsl(var(--b3) / 0.4);
 }
 
 .form-header h2 {
   margin: 0;
-  font-size: 20px;
-  color: #1a1f36;
+  padding: 0;
+  font-size: 16px;
+  color: hsl(var(--bc));
+  box-shadow: none;
 }
 
 .btn-close {
   background: none;
   border: none;
-  font-size: 24px;
+  font-size: 20px;
   cursor: pointer;
-  color: #6b7280;
+  color: hsl(var(--bc) / 0.6);
   padding: 0;
   transition: color 0.2s ease;
 }
 
 .btn-close:hover {
-  color: #1a1f36;
+  color: hsl(var(--bc));
 }
 
 .form {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
 }
 
 .form-section {
@@ -45,16 +47,16 @@
 
 .form-section h3 {
   margin: 0;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 700;
-  color: #1a1f36;
-  padding-bottom: 12px;
-  border-bottom: 2px solid #e5e7eb;
+  color: hsl(var(--bc));
+  padding-bottom: 8px;
+  border-bottom: 2px solid hsl(var(--b3) / 0.4);
 }
 
 .form-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
 }
 
@@ -81,18 +83,20 @@
 .form-group label {
   font-weight: 600;
   font-size: 14px;
-  color: #374151;
+  color: hsl(var(--bc));
 }
 
 .form-group input,
 .form-group textarea,
 .form-group select {
   padding: 10px 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid hsl(var(--b3) / 0.4);
   border-radius: 6px;
   font-size: 14px;
   font-family: inherit;
   transition: all 0.2s ease;
+  background: hsl(var(--b2));
+  color: hsl(var(--bc));
 }
 
 .form-group input:focus,
@@ -106,9 +110,9 @@
 .form-group input:disabled,
 .form-group textarea:disabled,
 .form-group select:disabled {
-  background: #f3f4f6;
+  background: hsl(var(--b3));
   cursor: not-allowed;
-  color: #9ca3af;
+  color: hsl(var(--bc) / 0.5);
 }
 
 .form-group textarea {
@@ -121,7 +125,7 @@
   gap: 12px;
   justify-content: flex-end;
   padding-top: 24px;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid hsl(var(--b3) / 0.4);
   margin-top: 24px;
 }
 
@@ -152,9 +156,9 @@
 }
 
 .btn-secondary {
-  background: #f3f4f6;
-  color: #374151;
-  border: 1px solid #d1d5db;
+  background: hsl(var(--b2));
+  color: hsl(var(--bc));
+  border: 1px solid hsl(var(--b3) / 0.4);
 }
 
 .btn-secondary:hover {

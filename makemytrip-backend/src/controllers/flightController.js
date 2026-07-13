@@ -1,4 +1,5 @@
 import prisma from '../config/prismaClient.js'
+import logger from '../utils/logger.js'
 import flightSearchService from '../services/flights/flightSearchService.js'
 import { validateCity, validatePageNumber, validatePageSize, validateGuestCount, validateDateFormat, validatePrice } from '../utils/validation.js'
 
@@ -58,8 +59,8 @@ export const searchFlights = async (req, res) => {
       pagination: { page: pageNum, limit: pageSize, total, pages: Math.ceil(total / pageSize) }
     })
   } catch (err) {
-    console.error('Search flights error:', err)
-    res.status(500).json({ message: 'Failed to search flights', error: err.message })
+    logger.error('Flight search error:', err)
+    res.status(500).json({ success: false, message: 'Failed to search flights' })
   }
 }
 
@@ -71,7 +72,8 @@ export const getFlightById = async (req, res) => {
     }
     res.json({ data: flight })
   } catch (err) {
-    res.status(500).json({ message: err.message })
+    logger.error('Flight operation error:', err)
+    res.status(500).json({ success: false, message: 'Operation failed' })
   }
 }
 
@@ -80,7 +82,8 @@ export const getAllFlights = async (req, res) => {
     const flights = await prisma.flight.findMany({ orderBy: { price: 'asc' } })
     res.json({ data: flights })
   } catch (err) {
-    res.status(500).json({ message: err.message })
+    logger.error('Flight operation error:', err)
+    res.status(500).json({ success: false, message: 'Operation failed' })
   }
 }
 
@@ -114,7 +117,8 @@ export const createFlight = async (req, res) => {
 
     res.status(201).json({ data: flight, message: 'Flight created successfully' })
   } catch (err) {
-    res.status(500).json({ message: err.message })
+    logger.error('Flight operation error:', err)
+    res.status(500).json({ success: false, message: 'Operation failed' })
   }
 }
 
@@ -157,7 +161,8 @@ export const updateFlight = async (req, res) => {
 
     res.json({ data: updated, message: 'Flight updated successfully' })
   } catch (err) {
-    res.status(500).json({ message: err.message })
+    logger.error('Flight operation error:', err)
+    res.status(500).json({ success: false, message: 'Operation failed' })
   }
 }
 
@@ -172,6 +177,7 @@ export const deleteFlight = async (req, res) => {
     await prisma.flight.delete({ where: { id } })
     res.json({ message: 'Flight deleted successfully' })
   } catch (err) {
-    res.status(500).json({ message: err.message })
+    logger.error('Flight operation error:', err)
+    res.status(500).json({ success: false, message: 'Operation failed' })
   }
 }

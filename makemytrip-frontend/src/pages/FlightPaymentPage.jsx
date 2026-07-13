@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 import '../styles/FlightBookingFlow.css';
 
 export default function FlightPaymentPage() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const { flight, searchParams, passengers, contact, totalAmount, baseFare } = location.state || {
     flight: { id: '1', airline: "IndiGo", flightNumber: "6E-205", departure: { city: "Delhi", time: "06:00" }, arrival: { city: "Mumbai", time: "08:15" }, price: 4500, seatsAvailable: 120 },
@@ -26,27 +28,31 @@ export default function FlightPaymentPage() {
     setError('');
 
     try {
-      const userId = localStorage.getItem('userId') || 'usr_guest_' + Date.now();
+      const token = localStorage.getItem('token');
+
+      if (!user || !token) {
+        setError('Please log in to book a flight');
+        setIsProcessing(false);
+        return;
+      }
 
       // Call backend to create flight booking
       const response = await axios.post(
-        'http://localhost:5000/api/v1/bookings/flight',
+        'http://localhost:5000/api/v1/bookings',
         {
-          userId,
+          type: 'flight',
           flightId: flight.id,
-          passengers: passengers.map(p => `${p.firstName} ${p.lastName}`),
-          fareClass: searchParams.cabinClass,
+          fromCity: searchParams.from,
+          toCity: searchParams.to,
+          departureDate: searchParams.date,
+          travellers: passengers,
           totalAmount,
-          travellers: {
-            passengers,
-            contact,
-            searchParams,
-            paymentMethod: finalMethod
-          }
+          userEmail: user.email,
+          userName: user.name
         },
         {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`
+            'Authorization': `Bearer ${token}`
           }
         }
       );

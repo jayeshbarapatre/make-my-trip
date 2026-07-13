@@ -55,6 +55,77 @@ export default function HotelPaymentPage() {
   const serviceFees    = Math.round(finalDue * 0.005) || 297;
   const hotelFare      = finalDue - serviceFees;
 
+  const handleBypassPayment = async () => {
+    if (!user) {
+      setToastMessage('Please login to continue booking');
+      setTimeout(() => setToastMessage(''), 3500);
+      return;
+    }
+
+    setIsProcessing(true);
+    setToastMessage('Simulating successful payment...');
+    console.log('📝 Creating hotel booking (Dev Bypass)...');
+
+    const bookingPayload = {
+      userId: user?.id || 'usr_1111-2222-3333-4444',
+      type: 'hotel',
+      ...(hotel.id && hotel.id !== 'hotel-fallback' && { hotelId: hotel.id }),
+      fromCity: hotel.name,
+      toCity: hotel.locality || hotel.location || '',
+      departureDate: checkIn,
+      returnDate: checkOut,
+      checkIn,
+      checkOut,
+      travellers: {
+        guests,
+        rooms,
+        adults: guestsObj.adults,
+        method: selectedMethod,
+        roomName,
+        bookEntireHotel
+      },
+      totalAmount: finalDue,
+      paymentId: 'pay_mock_' + Date.now(),
+      orderId: 'order_mock_' + Date.now(),
+      nights,
+      rooms,
+      userEmail: user?.email,
+      userName: user?.name
+    };
+
+    try {
+      const bookingResponse = await api.post('/bookings', bookingPayload);
+      console.log('✓ Hotel booking created!', bookingResponse);
+
+      const bookingData = {
+        ...bookingResponse.data,
+        pnr: bookingResponse.data?.pnr || 'HTL-' + Math.floor(100000 + Math.random() * 900000),
+        bookingId: bookingResponse.data?.bookingId || 'MMT-HT-' + Math.floor(100000 + Math.random() * 900000),
+        paymentId: bookingPayload.paymentId
+      };
+
+      navigate('/hotels/success', {
+        state: {
+          booking: bookingData,
+          hotel,
+          roomName,
+          checkIn,
+          checkOut,
+          guests,
+          guestsObj,
+          nights,
+          rooms,
+          totalAmount: finalDue,
+          bookEntireHotel
+        }
+      });
+    } catch (err) {
+      console.error(err);
+      setIsProcessing(false);
+      setToastMessage('Error creating simulated booking');
+    }
+  };
+
   const handleProcessPayment = async (methodName) => {
     if (!user) {
       setToastMessage('Please login to continue booking');
@@ -148,10 +219,13 @@ export default function HotelPaymentPage() {
             const bookingPayload = {
               userId: user?.id || 'usr_1111-2222-3333-4444',
               type: 'hotel',
+              ...(hotel.id && hotel.id !== 'hotel-fallback' && { hotelId: hotel.id }),
               fromCity: hotel.name,
               toCity: hotel.locality || hotel.location || '',
               departureDate: checkIn,
               returnDate: checkOut,
+              checkIn,
+              checkOut,
               travellers: {
                 guests,
                 rooms,
@@ -163,11 +237,6 @@ export default function HotelPaymentPage() {
               totalAmount: finalDue,
               paymentId: response.razorpay_payment_id,
               orderId: response.razorpay_order_id,
-              hotelName: hotel.name,
-              hotelLocality: hotel.locality || hotel.location || '',
-              roomName,
-              checkIn,
-              checkOut,
               nights,
               rooms,
               userEmail: user?.email,
@@ -178,9 +247,9 @@ export default function HotelPaymentPage() {
             console.log('✓ Hotel booking created!', bookingResponse);
 
             const bookingData = {
-              ...bookingResponse,
-              pnr: bookingResponse.pnr || 'HTL-' + Math.floor(100000 + Math.random() * 900000),
-              bookingId: bookingResponse.bookingId || 'MMT-HT-' + Math.floor(100000 + Math.random() * 900000),
+              ...bookingResponse.data,
+              pnr: bookingResponse.data?.pnr || 'HTL-' + Math.floor(100000 + Math.random() * 900000),
+              bookingId: bookingResponse.data?.bookingId || 'MMT-HT-' + Math.floor(100000 + Math.random() * 900000),
               paymentId: response.razorpay_payment_id
             };
 
@@ -325,6 +394,17 @@ export default function HotelPaymentPage() {
             {/* Payment Options Accordion List */}
             <div className="pmt-card">
               <h3 className="pmt-options-title">Payment Options</h3>
+
+              <div className="pmt-option-item" onClick={handleBypassPayment} style={{ background: 'hsl(var(--p) / 0.1)', border: '1px dashed hsl(var(--p))' }}>
+                <div className="pmt-opt-left">
+                  <div className="pmt-opt-icon">🧪</div>
+                  <div>
+                    <h4 className="pmt-opt-name" style={{ color: 'hsl(var(--p))' }}>Bypass Payment (Dev Mode)</h4>
+                    <p className="pmt-opt-sub">Skip Razorpay and simulate a successful booking</p>
+                  </div>
+                </div>
+                <span style={{ color: 'hsl(var(--p))' }}>➔</span>
+              </div>
 
               <div className="pmt-option-item" onClick={() => handleProcessPayment('UPI / Google Pay')}>
                 <div className="pmt-opt-left">

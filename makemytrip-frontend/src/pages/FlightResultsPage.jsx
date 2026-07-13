@@ -24,6 +24,9 @@ export default function FlightResultsPage() {
   const [filterAirline, setFilterAirline] = useState('');
   const [filterMaxPrice, setFilterMaxPrice] = useState(10000);
   const [filterNonstop, setFilterNonstop] = useState(false);
+  const [selectedAdults, setSelectedAdults] = useState(parseInt(searchParams.passengers) || 1);
+  const [selectedChildren, setSelectedChildren] = useState(0);
+  const [selectedInfants, setSelectedInfants] = useState(0);
 
   // Fetch flights from API if not passed via location.state
   useEffect(() => {
@@ -90,11 +93,28 @@ export default function FlightResultsPage() {
       });
   }, [flights, filterAirline, filterMaxPrice, filterNonstop, sortBy]);
 
+  // Calculate total price based on selected travelers
+  const calculateTotalPrice = (basPrice) => {
+    const adults = selectedAdults || 1;
+    const children = selectedChildren || 0;
+    const infants = selectedInfants || 0;
+    // Price for adults and children (full price), infants at 40% of base price
+    const baseTotal = (basPrice * (adults + children)) + (basPrice * 0.4 * infants);
+    const taxes = Math.round(baseTotal * 0.18); // 18% GST
+    const fees = 350; // Convenience fee
+    return baseTotal + taxes + fees;
+  };
+
   const handleSelectFlight = (flight) => {
     navigate('/flights/passengers', {
       state: {
         flight,
-        searchParams
+        searchParams,
+        totalAmount: calculateTotalPrice(flight.price),
+        baseFare: flight.price * (selectedAdults + selectedChildren) + (flight.price * 0.4 * selectedInfants),
+        selectedAdults,
+        selectedChildren,
+        selectedInfants
       }
     });
   };
@@ -204,6 +224,40 @@ export default function FlightResultsPage() {
 
           {/* Left: Filters Sidebar */}
           <div>
+            <div className="flight-form-card" style={{ marginBottom: '16px' }}>
+              <h3 className="flight-form-title" style={{ fontSize: '16px' }}>Travellers & Class</h3>
+
+              {/* Adults */}
+              <div className="flight-input-grp" style={{ marginBottom: '16px', background: 'hsl(var(--b2))', padding: '12px', borderRadius: '8px' }}>
+                <label style={{ fontSize: '12px', fontWeight: 700, marginBottom: '8px', display: 'block' }}>👤 Adults</label>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <button onClick={() => setSelectedAdults(Math.max(1, selectedAdults - 1))} style={{ padding: '6px 12px', cursor: 'pointer', fontWeight: 700, background: 'hsl(var(--p))', color: 'white', border: 'none', borderRadius: '4px', fontSize: '14px', transition: 'all 0.2s', opacity: selectedAdults === 1 ? 0.5 : 1 }} onMouseEnter={(e) => e.target.style.background = 'hsl(var(--p) / 0.8)'} onMouseLeave={(e) => e.target.style.background = 'hsl(var(--p))'}>−</button>
+                  <span style={{ minWidth: '40px', textAlign: 'center', fontWeight: 900, fontSize: '18px', color: 'hsl(var(--p))' }}>{selectedAdults}</span>
+                  <button onClick={() => setSelectedAdults(selectedAdults + 1)} style={{ padding: '6px 12px', cursor: 'pointer', fontWeight: 700, background: 'hsl(var(--p))', color: 'white', border: 'none', borderRadius: '4px', fontSize: '14px', transition: 'all 0.2s' }} onMouseEnter={(e) => e.target.style.background = 'hsl(var(--p) / 0.8)'} onMouseLeave={(e) => e.target.style.background = 'hsl(var(--p))'}>+</button>
+                </div>
+              </div>
+
+              {/* Children */}
+              <div className="flight-input-grp" style={{ marginBottom: '16px', background: 'hsl(var(--b2))', padding: '12px', borderRadius: '8px' }}>
+                <label style={{ fontSize: '12px', fontWeight: 700, marginBottom: '8px', display: 'block' }}>👧 Children (2-11 yrs)</label>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <button onClick={() => setSelectedChildren(Math.max(0, selectedChildren - 1))} style={{ padding: '6px 12px', cursor: 'pointer', fontWeight: 700, background: 'hsl(var(--s))', color: 'white', border: 'none', borderRadius: '4px', fontSize: '14px', transition: 'all 0.2s', opacity: selectedChildren === 0 ? 0.5 : 1 }} onMouseEnter={(e) => e.target.style.background = 'hsl(var(--s) / 0.8)'} onMouseLeave={(e) => e.target.style.background = 'hsl(var(--s))'}>−</button>
+                  <span style={{ minWidth: '40px', textAlign: 'center', fontWeight: 900, fontSize: '18px', color: 'hsl(var(--s))' }}>{selectedChildren}</span>
+                  <button onClick={() => setSelectedChildren(selectedChildren + 1)} style={{ padding: '6px 12px', cursor: 'pointer', fontWeight: 700, background: 'hsl(var(--s))', color: 'white', border: 'none', borderRadius: '4px', fontSize: '14px', transition: 'all 0.2s' }} onMouseEnter={(e) => e.target.style.background = 'hsl(var(--s) / 0.8)'} onMouseLeave={(e) => e.target.style.background = 'hsl(var(--s))'}>+</button>
+                </div>
+              </div>
+
+              {/* Infants */}
+              <div className="flight-input-grp" style={{ marginBottom: '16px', background: 'hsl(var(--b2))', padding: '12px', borderRadius: '8px' }}>
+                <label style={{ fontSize: '12px', fontWeight: 700, marginBottom: '8px', display: 'block' }}>👶 Infants (0-2 yrs)</label>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <button onClick={() => setSelectedInfants(Math.max(0, selectedInfants - 1))} style={{ padding: '6px 12px', cursor: 'pointer', fontWeight: 700, background: 'hsl(var(--a))', color: 'white', border: 'none', borderRadius: '4px', fontSize: '14px', transition: 'all 0.2s', opacity: selectedInfants === 0 ? 0.5 : 1 }} onMouseEnter={(e) => e.target.style.background = 'hsl(var(--a) / 0.8)'} onMouseLeave={(e) => e.target.style.background = 'hsl(var(--a))'}>−</button>
+                  <span style={{ minWidth: '40px', textAlign: 'center', fontWeight: 900, fontSize: '18px', color: 'hsl(var(--a))' }}>{selectedInfants}</span>
+                  <button onClick={() => setSelectedInfants(selectedInfants + 1)} style={{ padding: '6px 12px', cursor: 'pointer', fontWeight: 700, background: 'hsl(var(--a))', color: 'white', border: 'none', borderRadius: '4px', fontSize: '14px', transition: 'all 0.2s' }} onMouseEnter={(e) => e.target.style.background = 'hsl(var(--a) / 0.8)'} onMouseLeave={(e) => e.target.style.background = 'hsl(var(--a))'}>+</button>
+                </div>
+              </div>
+            </div>
+
             <div className="flight-form-card" style={{ marginBottom: '16px' }}>
               <h3 className="flight-form-title" style={{ fontSize: '16px' }}>Filters</h3>
 
@@ -326,9 +380,10 @@ export default function FlightResultsPage() {
 
                     {/* Price and CTA */}
                     <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: '12px', color: 'hsl(var(--bc) / 0.6)', marginBottom: '8px' }}>From</div>
+                      <div style={{ fontSize: '12px', color: 'hsl(var(--bc) / 0.6)', marginBottom: '4px' }}>Total for {selectedAdults + selectedChildren + selectedInfants} Traveller(s)</div>
+                      <div style={{ fontSize: '14px', color: 'hsl(var(--bc) / 0.6)', marginBottom: '8px' }}>₹{flight.price.toLocaleString()} per person</div>
                       <div style={{ fontSize: '28px', fontWeight: 900, color: 'hsl(var(--er))', marginBottom: '12px' }}>
-                        ₹{flight.price.toLocaleString()}
+                        ₹{calculateTotalPrice(flight.price).toLocaleString()}
                       </div>
                       <button
                         onClick={(e) => {

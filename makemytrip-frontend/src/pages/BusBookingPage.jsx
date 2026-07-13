@@ -199,6 +199,58 @@ export default function BusBookingPage() {
     }
   }
 
+  const handleBypassPayment = async (e) => {
+    e.preventDefault()
+    if (!user) {
+      setPendingStep(3)
+      setShowLoginModal(true)
+      return
+    }
+
+    setPaymentLoading(true)
+    try {
+      const departureObj = typeof bus.departure === 'object' ? bus.departure : { city: bus.departure || 'Unknown' }
+      const arrivalObj = typeof bus.arrival === 'object' ? bus.arrival : { city: bus.arrival || 'Unknown' }
+
+      const bookingPayload = {
+        type: 'bus',
+        busId: bus.id,
+        fromCity: departureObj.city,
+        toCity: arrivalObj.city,
+        departureDate: new Date().toISOString().split('T')[0],
+        travellers: passengerDetails,
+        totalAmount: totalAmount,
+        contactEmail: contact.email,
+        contactPhone: contact.phone,
+        userEmail: user?.email,
+        userName: user?.name,
+        paymentId: 'pay_mock_' + Date.now(),
+        orderId: 'order_mock_' + Date.now(),
+      }
+
+      const response = await bookingService.createBooking(bookingPayload)
+      const booking = {
+        ...response.data,
+        bookingId: response.data?.bookingId || 'MMT-BUS-' + Math.floor(100000 + Math.random() * 900000),
+        pnr: response.data?.pnr || 'BUS-' + Math.floor(100000 + Math.random() * 900000),
+        status: 'confirmed',
+        fromCity: departureObj.city,
+        toCity: arrivalObj.city,
+        totalAmount,
+        departureDate: bookingPayload.departureDate,
+        travellers: passengerDetails
+      }
+
+      setBookingDetails(booking)
+      setStep(4)
+    } catch (error) {
+      console.error('Booking failed:', error)
+      alert(error.response?.data?.message || 'Booking failed. Please try again.')
+    } finally {
+      setPaymentLoading(false)
+    }
+  }
+
   const handlePaymentSubmit = async (e) => {
     e.preventDefault()
     if (!user) {
@@ -209,15 +261,24 @@ export default function BusBookingPage() {
 
     setPaymentLoading(true)
     try {
+      const departureObj = typeof bus.departure === 'object' ? bus.departure : { city: bus.departure || 'Unknown' }
+      const arrivalObj = typeof bus.arrival === 'object' ? bus.arrival : { city: bus.arrival || 'Unknown' }
+
       const bookingPayload = {
+        type: 'bus',
         busId: bus.id,
-        passengers: passengerDetails,
-        totalPrice: totalAmount,
+        fromCity: departureObj.city,
+        toCity: arrivalObj.city,
+        departureDate: new Date().toISOString().split('T')[0],
+        travellers: passengerDetails,
+        totalAmount: totalAmount,
         contactEmail: contact.email,
         contactPhone: contact.phone,
+        userEmail: user?.email,
+        userName: user?.name
       }
 
-      const response = await bookingService.createBusBooking(bookingPayload)
+      const response = await bookingService.createBooking(bookingPayload)
       const booking = response.data
 
       setBookingDetails(booking)
@@ -495,10 +556,30 @@ export default function BusBookingPage() {
                 </div>
               </div>
 
-              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
-                <button type="button" className="btn btn-outline" onClick={() => setStep(2)}>Back</button>
-                <button type="submit" className="btn btn-primary" disabled={paymentLoading}>
-                  {paymentLoading ? 'Processing...' : `Confirm & Pay ${fmtPrice(totalAmount)}`}
+              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', flexDirection: 'column' }}>
+                <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+                  <button type="button" className="btn btn-outline" onClick={() => setStep(2)}>Back</button>
+                  <button type="submit" className="btn btn-primary" disabled={paymentLoading}>
+                    {paymentLoading ? 'Processing...' : `Confirm & Pay ${fmtPrice(totalAmount)}`}
+                  </button>
+                </div>
+                
+                <button 
+                  type="button" 
+                  onClick={handleBypassPayment}
+                  style={{ 
+                    width: '100%', 
+                    padding: '12px',
+                    background: 'transparent',
+                    border: '1px dashed hsl(var(--bc) / 0.3)',
+                    borderRadius: '8px',
+                    color: 'hsl(var(--bc))',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    marginTop: '0.5rem'
+                  }}
+                >
+                  🧪 Bypass Payment (Dev Mode)
                 </button>
               </div>
             </form>

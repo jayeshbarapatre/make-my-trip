@@ -10,7 +10,7 @@ function getMobileProfile(phone) {
   } catch { return null }
 }
 
-const AuthContext = createContext(null)
+export const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)

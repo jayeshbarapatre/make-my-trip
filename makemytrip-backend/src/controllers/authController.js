@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
 import nodemailer from 'nodemailer'
 import prisma from '../config/prismaClient.js'
+import logger from '../utils/logger.js'
 
 if (!process.env.JWT_SECRET) {
   throw new Error('FATAL: JWT_SECRET environment variable is not set. This is required for security. Set JWT_SECRET in your .env file.')
@@ -22,11 +23,7 @@ const validatePassword = (password) => {
 
 // Simulated SMTP / mailer logging helper
 const sendOTPEmail = async (email, otp) => {
-  console.log('\n=============================================')
-  console.log(`✉️  SIMULATED EMAIL SENT`)
-  console.log(`👉 To: ${email}`)
-  console.log(`👉 Verification OTP Code: [ ${otp} ] (Expires in 5 minutes)`)
-  console.log('=============================================\n')
+  logger.log(`OTP sent to ${email}: [${otp}]`)
 
   try {
     const transporter = nodemailer.createTransport({
@@ -51,7 +48,7 @@ const sendOTPEmail = async (email, otp) => {
              </div>`
     })
   } catch (err) {
-    // Suppress SMTP transport errors to keep backend stable
+    logger.error('Email sending failed', err.message)
   }
 }
 
@@ -84,8 +81,8 @@ export const register = async (req, res) => {
       data: { user: { id: newUser.id, name: newUser.name, email: newUser.email, phone: newUser.phone, is_admin: false }, token }
     })
   } catch (err) {
-    console.error('Register error:', err)
-    res.status(500).json({ message: err.message })
+    logger.error('Register error:', err)
+    res.status(500).json({ success: false, message: 'Failed to register' })
   }
 }
 
@@ -108,8 +105,8 @@ export const login = async (req, res) => {
       data: { user: { id: user.id, name: user.name, email: user.email, phone: user.phone, is_admin: user.is_admin }, token }
     })
   } catch (err) {
-    console.error('Login error:', err)
-    res.status(500).json({ message: err.message })
+    logger.error('Login error:', err)
+    res.status(500).json({ success: false, message: 'Failed to login' })
   }
 }
 
@@ -129,8 +126,8 @@ export const forgotPassword = async (req, res) => {
     await sendOTPEmail(email, otp)
     res.json({ message: 'Verification OTP sent to your registered email address successfully!' })
   } catch (err) {
-    console.error('Forgot password error:', err)
-    res.status(500).json({ message: err.message })
+    logger.error('Forgot password error:', err)
+    res.status(500).json({ success: false, message: 'Failed to process request' })
   }
 }
 
@@ -155,11 +152,11 @@ export const verifyOtp = async (req, res) => {
       return res.status(400).json({ message: 'Invalid OTP code. Please double-check and try again.' })
     }
 
-    console.log(`✅ OTP verified for ${email}${isStaticOtpValid ? ' (using static OTP for testing)' : ''}`)
+    logger.log(`OTP verified for ${email}`)
     res.json({ message: 'OTP verified successfully! You may proceed to reset your password.' })
   } catch (err) {
-    console.error('Verify OTP error:', err)
-    res.status(500).json({ message: err.message })
+    logger.error('Verify OTP error:', err)
+    res.status(500).json({ success: false, message: 'OTP verification failed' })
   }
 }
 
@@ -190,8 +187,8 @@ export const resetPassword = async (req, res) => {
 
     res.json({ message: 'Password reset successfully! You can now log in with your new password.' })
   } catch (err) {
-    console.error('Reset password error:', err)
-    res.status(500).json({ message: err.message })
+    logger.error('Reset password error:', err)
+    res.status(500).json({ success: false, message: 'Failed to reset password' })
   }
 }
 
@@ -208,8 +205,8 @@ export const getProfile = async (req, res) => {
 
     res.json({ data: { user } })
   } catch (err) {
-    console.error('Profile fetch error:', err)
-    res.status(500).json({ message: err.message })
+    logger.error('Profile fetch error:', err)
+    res.status(500).json({ success: false, message: 'Failed to fetch profile' })
   }
 }
 
@@ -234,18 +231,14 @@ export const sendMobileOtp = async (req, res) => {
       data: { otp, otpExpiry: expiry }
     })
 
-    console.log('\n=============================================')
-    console.log(`📱 SIMULATED SMS SENT (Razorpay Style Login)`)
-    console.log(`👉 To Mobile: ${phone}`)
-    console.log(`👉 MakeMyTrip Login OTP: [ ${otp} ]`)
-    console.log('=============================================\n')
+    logger.log(`📱 OTP sent via SMS to ${phone}`)
 
     res.json({
       message: 'OTP sent successfully via simulated SMS.'
     })
   } catch (err) {
-    console.error('Send OTP error:', err.message)
-    res.status(500).json({ message: 'Failed to send OTP: ' + err.message })
+    logger.error('Send OTP error:', err)
+    res.status(500).json({ success: false, message: 'Failed to send OTP' })
   }
 }
 

@@ -9,7 +9,11 @@
     "dev": "node --watch src/index.js",
     "seed": "node scripts/seed.js",
     "seed:flights": "node scripts/seedFlights.js",
-    "seed:trains": "node scripts/seedTrains.js"
+    "seed:trains": "node scripts/seedTrains.js",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:coverage": "vitest --coverage",
+    "test:ui": "vitest --ui"
   },
   "keywords": [],
   "author": "",
@@ -31,6 +35,10 @@
     "razorpay": "^2.9.6"
   },
   "devDependencies": {
-    "prisma": "^5.11.0"
+    "prisma": "^5.11.0",
+    "vitest": "^1.0.4",
+    "supertest": "^6.3.3",
+    "@vitest/coverage-v8": "^1.0.4",
+    "@vitest/ui": "^1.0.4"
   }
 }

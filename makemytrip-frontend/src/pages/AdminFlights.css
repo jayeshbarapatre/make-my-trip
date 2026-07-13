@@ -19,7 +19,7 @@
   background: var(--primary);
   padding: 0.625rem 1rem;
   background: var(--primary);
-  color: white;
+  color: hsl(var(--pc));
   border: none;
   border-radius: 0.5rem;
   border-radius: 0.5rem;
@@ -103,9 +103,7 @@
 .modal-content {
   background: var(--bg-surface);
   border-radius: 0.75rem;
-  background: var(--bg-surface);
-  border-radius: 0.75rem;
-  max-width: 600px;
+  max-width: 991px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;

@@ -56,6 +56,7 @@ import {
 
 const router = express.Router()
 
+// Admin registration: First admin can register without auth, subsequent admins require existing admin auth
 router.post('/register', adminRegister)
 router.post('/login', adminLogin)
 router.get('/profile', authenticateAdmin, getAdminProfile)

@@ -1,4 +1,5 @@
 import prisma from '../config/prismaClient.js'
+import logger from '../utils/logger.js'
 import {
   validateCity,
   validateDateRange,
@@ -66,7 +67,8 @@ export const searchHotels = async (req, res) => {
       }
     })
   } catch (err) {
-    res.status(500).json({ message: err.message })
+    logger.error('Hotel search error:', err)
+    res.status(500).json({ success: false, message: 'Failed to search hotels' })
   }
 }
 
@@ -75,13 +77,14 @@ export const getHotelDetails = async (req, res) => {
     const hotel = await prisma.hotel.findUnique({
       where: { id: req.params.id }
     })
-    
+
     if (!hotel) {
-      return res.status(404).json({ message: 'Hotel not found' })
+      return res.status(404).json({ success: false, message: 'Hotel not found' })
     }
-    
-    res.json({ data: hotel })
+
+    res.json({ success: true, data: hotel })
   } catch (err) {
-    res.status(500).json({ message: err.message })
+    logger.error('Get hotel details error:', err)
+    res.status(500).json({ success: false, message: 'Failed to fetch hotel details' })
   }
 }

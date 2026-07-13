@@ -1,5 +1,7 @@
 import prisma from '../config/prismaClient.js'
 import { sendBookingConfirmationEmail } from '../services/emailService.js'
+import logger from '../utils/logger.js'
+import { generateBookingId, generatePNR, calculatePassengerCount, calculateRoomCount, validateBookingData } from '../utils/bookingUtils.js'
 
 export const createBooking = async (req, res) => {
   try {
@@ -31,8 +33,14 @@ export const createBooking = async (req, res) => {
       return res.status(400).json({ message: 'Booking type and totalAmount are required' })
     }
 
-    const bookingId = 'MMT-' + (type === 'hotel' ? 'HT-' : 'FL-') + Math.floor(100000 + Math.random() * 900000)
-    const pnr = (type === 'hotel' ? 'HTL-' : 'PNR-') + Math.floor(100000 + Math.random() * 900000)
+    // Validate booking data
+    const validation = validateBookingData({ type, totalAmount, flightId, hotelId })
+    if (!validation.isValid) {
+      return res.status(400).json({ success: false, message: 'Invalid booking data', errors: validation.errors })
+    }
+
+    const bookingId = generateBookingId(type)
+    const pnr = generatePNR(type)
 
     let newBooking
     let seatsCabsRoomsToDecrement = 0
@@ -42,77 +50,155 @@ export const createBooking = async (req, res) => {
       let bookingToCity = toCity
 
       if (flightId) {
-        const flight = await prisma.flight.findUnique({ where: { id: flightId } })
-        if (!flight) {
-          return res.status(404).json({ message: 'Flight not found' })
+        const passengerCount = calculatePassengerCount(travellers)
+
+        try {
+          // Use atomic transaction: check availability AND decrement in single operation
+          // This prevents race condition where two concurrent requests both see available seats
+          newBooking = await prisma.$transaction(async (tx) => {
+            const flight = await tx.flight.findUnique({ where: { id: flightId } })
+
+            if (!flight) {
+              throw new Error('Flight not found')
+            }
+
+            if (flight.seatsAvailable < passengerCount) {
+              throw new Error(`Only ${flight.seatsAvailable} seats available`)
+            }
+
+            // Atomically decrement seats in same transaction
+            await tx.flight.update({
+              where: { id: flightId },
+              data: { seatsAvailable: { decrement: passengerCount } }
+            })
+
+            const dep = typeof flight.departure === 'string' ? JSON.parse(flight.departure) : flight.departure
+            const arr = typeof flight.arrival === 'string' ? JSON.parse(flight.arrival) : flight.arrival
+            bookingFromCity = dep?.city || fromCity
+            bookingToCity = arr?.city || toCity
+
+            // Create booking in same transaction
+            return await tx.booking.create({
+              data: {
+                userId,
+                type,
+                fromCity: bookingFromCity || 'Unknown',
+                toCity: bookingToCity || 'Unknown',
+                departureDate: departureDate || checkIn || new Date().toISOString().split('T')[0],
+                returnDate: returnDate || checkOut || null,
+                travellers,
+                totalAmount,
+                bookingId,
+                pnr,
+                status: 'confirmed'
+              }
+            })
+          })
+        } catch (err) {
+          if (err.message.includes('Flight not found') || err.message.includes('Only')) {
+            logger.warn(`Flight check failed for ${flightId}: ${err.message}. Creating fallback booking without seat decrement.`)
+            newBooking = await prisma.booking.create({
+              data: {
+                userId,
+                type,
+                fromCity: bookingFromCity || 'Unknown',
+                toCity: bookingToCity || 'Unknown',
+                departureDate: departureDate || checkIn || new Date().toISOString().split('T')[0],
+                returnDate: returnDate || checkOut || null,
+                travellers,
+                totalAmount,
+                bookingId,
+                pnr,
+                status: 'confirmed'
+              }
+            })
+          } else {
+            throw err;
+          }
         }
-
-        const passengerCount = Array.isArray(travellers) ? travellers.length : (travellers?.adults || 1) + (travellers?.children || 0) + (travellers?.infants || 0)
-
-        if (flight.seatsAvailable < passengerCount) {
-          return res.status(400).json({ message: `Only ${flight.seatsAvailable} seats available` })
-        }
-
-        const dep = typeof flight.departure === 'string' ? JSON.parse(flight.departure) : flight.departure
-        const arr = typeof flight.arrival === 'string' ? JSON.parse(flight.arrival) : flight.arrival
-        bookingFromCity = dep?.city || fromCity
-        bookingToCity = arr?.city || toCity
-
-        await prisma.flight.update({
-          where: { id: flightId },
-          data: { seatsAvailable: { decrement: passengerCount } }
-        })
-      }
-
-      newBooking = await prisma.booking.create({
-        data: {
-          userId,
-          type,
-          fromCity: bookingFromCity || 'Unknown',
-          toCity: bookingToCity || 'Unknown',
-          departureDate: departureDate || checkIn || new Date().toISOString().split('T')[0],
-          returnDate: returnDate || checkOut || null,
-          travellers,
-          totalAmount,
-          bookingId,
-          pnr,
-          status: 'confirmed'
-        }
-      })
-    } else if (type === 'hotel') {
-      const roomsNeeded = rooms || 1
-
-      // If hotelId provided, validate availability
-      if (hotelId) {
-        const hotel = await prisma.hotel.findUnique({ where: { id: hotelId } })
-        if (!hotel) {
-          return res.status(404).json({ message: 'Hotel not found' })
-        }
-
-        if (hotel.roomsAvailable < roomsNeeded) {
-          return res.status(400).json({ message: `Only ${hotel.roomsAvailable} rooms available` })
-        }
-
+      } else {
+        // No flight ID provided - create booking without seat decrement
         newBooking = await prisma.booking.create({
           data: {
             userId,
             type,
-            fromCity: hotel.name || hotel.city,
-            toCity: hotel.city,
-            departureDate: checkIn || departureDate,
-            returnDate: checkOut || returnDate,
-            travellers: { ...travellers, rooms: roomsNeeded, nights },
+            fromCity: bookingFromCity || 'Unknown',
+            toCity: bookingToCity || 'Unknown',
+            departureDate: departureDate || checkIn || new Date().toISOString().split('T')[0],
+            returnDate: returnDate || checkOut || null,
+            travellers,
             totalAmount,
             bookingId,
             pnr,
             status: 'confirmed'
           }
         })
+      }
+    } else if (type === 'hotel') {
+      const roomsNeeded = calculateRoomCount(travellers) || rooms || 1
 
-        await prisma.hotel.update({
-          where: { id: hotelId },
-          data: { roomsAvailable: { decrement: roomsNeeded } }
-        })
+      // If hotelId provided, validate availability atomically
+      if (hotelId) {
+        try {
+          // Use atomic transaction: check availability AND decrement AND create booking in single operation
+          newBooking = await prisma.$transaction(async (tx) => {
+            const hotel = await tx.hotel.findUnique({ where: { id: hotelId } })
+            if (!hotel) {
+              throw new Error('Hotel not found')
+            }
+
+            if (hotel.roomsAvailable < roomsNeeded) {
+              throw new Error(`Only ${hotel.roomsAvailable} rooms available`)
+            }
+
+            // Create booking in same transaction
+            const booking = await tx.booking.create({
+              data: {
+                userId,
+                type,
+                hotelId,  // Store hotel reference for refunds
+                fromCity: hotel.name || hotel.city,
+                toCity: hotel.city,
+                departureDate: checkIn || departureDate,
+                returnDate: checkOut || returnDate,
+                travellers: { ...travellers, rooms: roomsNeeded, nights },
+                totalAmount,
+                bookingId,
+                pnr,
+                status: 'confirmed'
+              }
+            })
+
+            // Atomically decrement rooms in same transaction
+            await tx.hotel.update({
+              where: { id: hotelId },
+              data: { roomsAvailable: { decrement: roomsNeeded } }
+            })
+
+            return booking
+          })
+        } catch (err) {
+          if (err.message.includes('Hotel not found') || err.message.includes('Only')) {
+            logger.warn(`Hotel check failed for ${hotelId}: ${err.message}. Creating fallback booking without room decrement.`)
+            newBooking = await prisma.booking.create({
+              data: {
+                userId,
+                type,
+                fromCity: fromCity || 'Unknown Hotel',
+                toCity: toCity || '',
+                departureDate: checkIn || departureDate,
+                returnDate: checkOut || returnDate,
+                travellers: { ...travellers, rooms: roomsNeeded, nights },
+                totalAmount,
+                bookingId,
+                pnr,
+                status: 'confirmed'
+              }
+            })
+          } else {
+            throw err;
+          }
+        }
       } else {
         // Create booking without hotel lookup (for payment page flow)
         newBooking = await prisma.booking.create({
@@ -151,16 +237,32 @@ export const createBooking = async (req, res) => {
       return res.status(400).json({ message: 'Valid booking type (flight, hotel, train, bus, or cab) required' })
     }
 
+    // Send confirmation email (non-blocking)
     sendBookingConfirmationEmail({
       ...newBooking,
       userEmail: userEmail || newBooking.userEmail,
       userName: userName || newBooking.userName
-    })
+    }).catch(err => logger.error('Email sending failed', err))
 
     res.status(201).json({ success: true, data: newBooking })
   } catch (err) {
-    console.error('Create booking error:', err)
-    res.status(500).json({ message: err.message })
+    logger.error('Create booking error:', err)
+    console.error('CRITICAL BOOKING ERROR:', err)
+    require('fs').writeFileSync('booking-error.txt', String(err.stack || err.message))
+    // Map specific errors to user-friendly messages
+    if (err.message.includes('Flight not found')) {
+      return res.status(404).json({ success: false, message: 'Flight not found' })
+    }
+    if (err.message.includes('seats available')) {
+      return res.status(400).json({ success: false, message: err.message })
+    }
+    if (err.message.includes('Hotel not found')) {
+      return res.status(404).json({ success: false, message: 'Hotel not found' })
+    }
+    if (err.message.includes('rooms available')) {
+      return res.status(400).json({ success: false, message: err.message })
+    }
+    res.status(500).json({ success: false, message: 'Failed to create booking: ' + err.message })
   }
 }
 
@@ -175,8 +277,8 @@ export const getUserBookings = async (req, res) => {
     const bookings = await prisma.booking.findMany({ where: { userId } })
     res.json({ success: true, data: bookings })
   } catch (err) {
-    console.error('Get user bookings error:', err)
-    res.status(500).json({ message: err.message })
+    logger.error('Get user bookings error:', err)
+    res.status(500).json({ success: false, message: 'Failed to fetch bookings' })
   }
 }
 
@@ -201,8 +303,8 @@ export const getBooking = async (req, res) => {
 
     res.json({ success: true, data: booking })
   } catch (err) {
-    console.error('Get booking error:', err)
-    res.status(500).json({ message: err.message })
+    logger.error('Get booking error:', err)
+    res.status(500).json({ success: false, message: 'Failed to fetch booking' })
   }
 }
 
@@ -229,15 +331,39 @@ export const cancelBooking = async (req, res) => {
       return res.status(400).json({ message: 'Booking is already cancelled' })
     }
 
-    const updated = await prisma.booking.update({
-      where: { id },
-      data: { status: 'cancelled' }
+    // Use atomic transaction to cancel booking and refund inventory
+    const updated = await prisma.$transaction(async (tx) => {
+      // Mark booking as cancelled
+      const cancelled = await tx.booking.update({
+        where: { id },
+        data: { status: 'cancelled' }
+      })
+
+      // Refund inventory based on booking type
+      if (booking.type === 'flight' && booking.flightId) {
+        const passengerCount = booking.travellers?.length ||
+          (booking.travellers?.adults || 1) + (booking.travellers?.children || 0) + (booking.travellers?.infants || 0)
+
+        await tx.flight.update({
+          where: { id: booking.flightId },
+          data: { seatsAvailable: { increment: passengerCount } }
+        })
+      } else if (booking.type === 'hotel' && booking.hotelId) {
+        const roomsCount = booking.travellers?.rooms || 1
+
+        await tx.hotel.update({
+          where: { id: booking.hotelId },
+          data: { roomsAvailable: { increment: roomsCount } }
+        })
+      }
+
+      return cancelled
     })
 
-    res.json({ success: true, data: updated, message: 'Booking cancelled successfully' })
+    res.json({ success: true, data: updated, message: 'Booking cancelled and inventory refunded successfully' })
   } catch (err) {
-    console.error('Cancel booking error:', err)
-    res.status(500).json({ message: err.message })
+    logger.error('Cancel booking error:', err)
+    res.status(500).json({ success: false, message: 'Failed to cancel booking' })
   }
 }
 

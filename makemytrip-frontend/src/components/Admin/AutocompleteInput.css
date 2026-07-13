@@ -7,11 +7,11 @@
 .autocomplete-label {
   font-size: 14px;
   font-weight: 600;
-  color: #1a1f36;
+  color: hsl(var(--bc));
 }
 
 .autocomplete-label span {
-  color: #e63946;
+  color: hsl(var(--er));
 }
 
 .autocomplete-input-wrapper {
@@ -22,22 +22,22 @@
 .autocomplete-input {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid hsl(var(--b3) / 0.4);
   border-radius: 6px;
   font-size: 14px;
-  color: #1a1f36;
-  background: #ffffff;
+  color: hsl(var(--bc));
+  background: hsl(var(--b2));
   transition: all 0.2s ease;
 }
 
 .autocomplete-input:focus {
   outline: none;
-  border-color: #1a73e8;
-  box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
+  border-color: hsl(var(--p));
+  box-shadow: 0 0 0 3px hsl(var(--p) / 0.1);
 }
 
 .autocomplete-input::placeholder {
-  color: #9ca3af;
+  color: hsl(var(--bc) / 0.5);
 }
 
 .autocomplete-dropdown {
@@ -46,10 +46,10 @@
   left: 0;
   right: 0;
   margin-top: 4px;
-  background: white;
-  border: 1px solid #d1d5db;
+  background: hsl(var(--b2));
+  border: 1px solid hsl(var(--b3) / 0.4);
   border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px hsl(0 0% 0% / 0.1);
   max-height: 300px;
   overflow-y: auto;
   z-index: 1000;
@@ -60,26 +60,26 @@
 }
 
 .autocomplete-dropdown::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: hsl(var(--b3) / 0.3);
   border-radius: 3px;
 }
 
 .autocomplete-dropdown::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: hsl(var(--b3) / 0.6);
   border-radius: 3px;
 }
 
 .autocomplete-dropdown::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: hsl(var(--b3) / 0.8);
 }
 
 .autocomplete-item {
   padding: 12px;
   cursor: pointer;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid hsl(var(--b3) / 0.2);
   transition: background-color 0.15s ease;
   font-size: 14px;
-  color: #374151;
+  color: hsl(var(--bc));
 }
 
 .autocomplete-item:last-child {
@@ -88,15 +88,15 @@
 
 .autocomplete-item:hover,
 .autocomplete-item.highlighted {
-  background-color: #f3f4f6;
-  color: #1a73e8;
+  background-color: hsl(var(--b3));
+  color: hsl(var(--p));
   font-weight: 500;
 }
 
 .autocomplete-no-results {
   padding: 16px;
   text-align: center;
-  color: #9ca3af;
+  color: hsl(var(--bc) / 0.6);
   font-size: 14px;
   font-weight: 500;
 }

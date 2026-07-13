@@ -70,7 +70,7 @@
 .form-group label {
   margin-bottom: 8px;
   font-weight: 500;
-  color: #333;
+  color: hsl(var(--bc));
   font-size: 14px;
 }
 

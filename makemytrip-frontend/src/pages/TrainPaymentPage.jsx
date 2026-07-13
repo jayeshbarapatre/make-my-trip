@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 import '../styles/TrainBookingFlow.css';
 
 export default function TrainPaymentPage() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const { train, selectedClass, searchParams, passengers, contact, totalAmount } = location.state || {
     train: { name: "Rajdhani Express", number: "12952", depTime: "16:55", arrTime: "08:30" },
@@ -28,26 +30,30 @@ export default function TrainPaymentPage() {
     try {
       const userId = localStorage.getItem('userId') || 'usr_guest_' + Date.now();
 
+      const token = localStorage.getItem('token');
+
+      if (!user || !token) {
+        setError('Please log in to book a train');
+        setIsProcessing(false);
+        return;
+      }
+
       // Call backend to create train booking (server generates PNR and bookingId)
       const response = await axios.post(
-        'http://localhost:5000/api/v1/bookings/train',
+        'http://localhost:5000/api/v1/bookings',
         {
-          userId,
-          trainId: train.id || 'train_' + Date.now(),
-          passengers: passengers.map(p => p.name),
-          class: selectedClass.code,
-          quota: searchParams.quota,
+          type: 'train',
+          fromCity: searchParams.from,
+          toCity: searchParams.to,
+          departureDate: searchParams.date,
+          travellers: passengers,
           totalAmount,
-          travellers: {
-            passengers,
-            contact,
-            searchParams,
-            paymentMethod: finalMethod
-          }
+          userEmail: user.email,
+          userName: user.name
         },
         {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`
+            'Authorization': `Bearer ${token}`
           }
         }
       );

@@ -749,9 +749,9 @@ export default function SearchResultsPage() {
                                 <span className="fc-city-code" style={{ fontSize: '10px' }}>{flight.arrival.airport || getCode(flight.arrival.city)}</span>
                               </div>
                             </div>
-                            <div className="fc-price-col" style={{ width: '80px', alignItems: 'flex-end', padding: 0 }}>
-                              <span className="fc-price" style={{ fontSize: '16px', fontWeight: 800 }}>{fmtPrice(flight.price)}</span>
-                              <span className="fc-per-adult" style={{ fontSize: '9px' }}>Per Adult</span>
+                            <div className="fc-price-col" style={{ width: '120px', alignItems: 'flex-end', padding: 0 }}>
+                              <span className="fc-price" style={{ fontSize: '16px', fontWeight: 800, color: 'hsl(var(--er))' }}>{fmtPrice(flight.price * passengers)}</span>
+                              <span className="fc-per-adult" style={{ fontSize: '9px' }}>for {passengers} {passengers === 1 ? 'Adult' : 'Adults'}</span>
                             </div>
                           </div>
                         </div>
@@ -802,9 +802,9 @@ export default function SearchResultsPage() {
                                 <span className="fc-city-code" style={{ fontSize: '10px' }}>{flight.arrival.airport || getCode(flight.arrival.city)}</span>
                               </div>
                             </div>
-                            <div className="fc-price-col" style={{ width: '80px', alignItems: 'flex-end', padding: 0 }}>
-                              <span className="fc-price" style={{ fontSize: '16px', fontWeight: 800 }}>{fmtPrice(flight.price)}</span>
-                              <span className="fc-per-adult" style={{ fontSize: '9px' }}>Per Adult</span>
+                            <div className="fc-price-col" style={{ width: '120px', alignItems: 'flex-end', padding: 0 }}>
+                              <span className="fc-price" style={{ fontSize: '16px', fontWeight: 800, color: 'hsl(var(--er))' }}>{fmtPrice(flight.price * passengers)}</span>
+                              <span className="fc-per-adult" style={{ fontSize: '9px' }}>for {passengers} {passengers === 1 ? 'Adult' : 'Adults'}</span>
                             </div>
                           </div>
                         </div>
@@ -914,8 +914,8 @@ export default function SearchResultsPage() {
 
                           {/* Price */}
                           <div className="fc-price-col">
-                            <span className="fc-per-adult">Per Adult</span>
-                            <span className="fc-price">{fmtPrice(flight.price)}</span>
+                            <span className="fc-per-adult">for {passengers} {passengers === 1 ? 'Adult' : 'Adults'}</span>
+                            <span className="fc-price" style={{ color: 'hsl(var(--er))' }}>{fmtPrice(flight.price * passengers)}</span>
                             <button
                               className="fc-view-btn"
                               onClick={e => { e.stopPropagation(); handleSelectFlight(flight) }}
@@ -961,8 +961,8 @@ export default function SearchResultsPage() {
             
             <div className="fr-rt-action-col">
               <div className="fr-rt-total-price">
-                <span className="total-label">Total Price:</span>
-                <span className="total-val">{fmtPrice(selectedOutbound.price + selectedReturn.price)}</span>
+                <span className="total-label">Total Price ({passengers} {passengers === 1 ? 'Traveller' : 'Travellers'}):</span>
+                <span className="total-val">{fmtPrice((selectedOutbound.price + selectedReturn.price) * passengers)}</span>
               </div>
               <button className="fr-rt-book-btn" onClick={handleBookRoundTrip}>
                 BOOK NOW
