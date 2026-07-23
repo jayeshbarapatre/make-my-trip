@@ -112,7 +112,7 @@ const AdminBusApprovals = () => {
                   <tr key={bus.id}>
                     <td className="font-bold">
                       {bus.operatorName}
-                      <div className="text-sm text-gray-500">{bus.busNumber}</div>
+                      <div className="text-sm text-base-content/60">{bus.busNumber}</div>
                     </td>
                     <td>{bus.departure?.city} → {bus.arrival?.city}</td>
                     <td>

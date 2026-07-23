@@ -177,7 +177,7 @@ export default function CmsPageRenderer({ slug: propsSlug }) {
             <h1 className="cms-hero-title mt-10">{page.title}</h1>
           )}
           {page.shortDescription && (
-            <p className="cms-hero-sub text-zinc-500 mb-6">{page.shortDescription}</p>
+            <p className="cms-hero-sub text-base-content/70 mb-6">{page.shortDescription}</p>
           )}
           <div className="prose max-w-none mt-10" dangerouslySetInnerHTML={{ __html: page.content }} />
         </div>
@@ -274,7 +274,7 @@ export default function CmsPageRenderer({ slug: propsSlug }) {
                 {template.sections.map(sec => (
                   <div key={sec.id} id={sec.id} className="mb-10">
                     <h2 className="text-xl font-bold mb-4">{sec.label}</h2>
-                    <p className="text-zinc-500 leading-relaxed">{sec.content}</p>
+                    <p className="text-base-content/70 leading-relaxed">{sec.content}</p>
                   </div>
                 ))}
               </div>
@@ -289,7 +289,7 @@ export default function CmsPageRenderer({ slug: propsSlug }) {
   // Not found fallback
   return (
     <div className="cms-page py-20 text-center">
-      <h1 className="text-3xl font-bold text-red-500">Page not found</h1>
+      <h1 className="text-3xl font-bold text-error">Page not found</h1>
       <p className="mt-4">The page you are looking for does not exist.</p>
     </div>
   );

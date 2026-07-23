@@ -112,11 +112,11 @@ const AdminCabApprovals = () => {
                   <tr key={cab.id}>
                     <td className="font-bold">
                       {cab.operatorName}
-                      <div className="text-sm text-gray-500">{cab.cabNumber}</div>
+                      <div className="text-sm text-base-content/60">{cab.cabNumber}</div>
                     </td>
                     <td>
                       <div>{cab.type}</div>
-                      <div className="text-sm text-gray-500">{cab.currentCity || 'N/A'}</div>
+                      <div className="text-sm text-base-content/60">{cab.currentCity || 'N/A'}</div>
                     </td>
                     <td>
                       <div>{cab.vendor?.vendorName || cab.vendor?.name}</div>
