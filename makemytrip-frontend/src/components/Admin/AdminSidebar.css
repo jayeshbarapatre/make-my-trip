@@ -59,7 +59,7 @@
 }
 
 .admin-logo-badge {
-  background: linear-gradient(135deg, #ed4a29 0%, #ff6b4a 100%);
+  background: linear-gradient(135deg, hsl(var(--p)) 0%, #ff6b4a 100%);
   width: 32px;
   height: 32px;
   border-radius: 8px;
@@ -71,7 +71,7 @@
   color: white;
   position: relative;
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(237, 74, 41, 0.3);
+  box-shadow: 0 2px 8px hsla(var(--p), 0.3);
 }
 
 .admin-logo-badge::after {
@@ -81,7 +81,7 @@
   right: -2px;
   width: 8px;
   height: 8px;
-  background: #10b981;
+  background: hsl(var(--su));
   border: 1.5px solid var(--bg-surface);
   border-radius: 50%;
 }
@@ -102,7 +102,7 @@
 
 .admin-logo-sub {
   font-size: 9px;
-  color: #ed4a29;
+  color: hsl(var(--p));
   font-weight: 600;
   letter-spacing: 0.5px;
   text-transform: uppercase;
@@ -183,14 +183,14 @@
 }
 
 .nav-item:hover {
-  background: rgba(237, 74, 41, 0.05);
-  color: #ed4a29;
+  background: hsla(var(--p), 0.05);
+  color: hsl(var(--p));
   transform: translateX(4px);
 }
 
 .nav-item.active {
-  background: linear-gradient(90deg, rgba(237, 74, 41, 0.08) 0%, rgba(237, 74, 41, 0.01) 100%);
-  color: #ed4a29;
+  background: linear-gradient(90deg, hsla(var(--p), 0.08) 0%, rgba(237, 74, 41, 0.01) 100%);
+  color: hsl(var(--p));
   font-weight: 600;
 }
 
@@ -201,7 +201,7 @@
   top: 8px;
   bottom: 8px;
   width: 3.5px;
-  background-color: #ed4a29;
+  background-color: hsl(var(--p));
   border-radius: 0 4px 4px 0;
 }
 
@@ -216,7 +216,7 @@
 }
 
 .nav-item.active .nav-icon {
-  color: #ed4a29;
+  color: hsl(var(--p));
   opacity: 1;
 }
 
@@ -246,7 +246,7 @@
 .admin-avatar-small {
   width: 32px;
   height: 32px;
-  background: linear-gradient(135deg, #ed4a29 0%, #ff6b4a 100%);
+  background: linear-gradient(135deg, hsl(var(--p)) 0%, #ff6b4a 100%);
   color: white;
   border-radius: 50%;
   display: flex;
@@ -255,7 +255,7 @@
   font-weight: 700;
   font-size: 13px;
   flex-shrink: 0;
-  box-shadow: 0 2px 6px rgba(237, 74, 41, 0.2);
+  box-shadow: 0 2px 6px hsla(var(--p), 0.2);
 }
 
 .admin-name-small {
@@ -275,7 +275,7 @@
   width: 100%;
   padding: 10px;
   background: var(--accentSoft);
-  color: #ed4a29;
+  color: hsl(var(--p));
   border: 1px solid rgba(237, 74, 41, 0.15);
   border-radius: 8px;
   font-weight: 600;
@@ -289,10 +289,10 @@
 }
 
 .logout-btn:hover {
-  background: #ed4a29;
+  background: hsl(var(--p));
   color: white;
-  border-color: #ed4a29;
-  box-shadow: 0 4px 12px rgba(237, 74, 41, 0.2);
+  border-color: hsl(var(--p));
+  box-shadow: 0 4px 12px hsla(var(--p), 0.2);
 }
 
 .logout-btn i {

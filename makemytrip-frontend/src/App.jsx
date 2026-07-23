@@ -84,10 +84,10 @@ import { cmsService } from './services/cmsService'
 
 function NotFound() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-[#0f172a] via-[#090d16] to-[#020408] text-white p-6 relative overflow-hidden select-none">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-base-300 via-base-200 to-base-100 text-base-content p-6 relative overflow-hidden select-none dark:from-base-300 dark:via-base-200 dark:to-base-100">
       {/* Background glowing gradients */}
-      <div className="absolute top-1/4 left-1/4 w-[350px] h-[350px] bg-[#ed4a29]/8 rounded-full blur-[100px] animate-pulse pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 w-[350px] h-[350px] bg-blue-500/5 rounded-full blur-[100px] animate-pulse pointer-events-none" style={{ animationDelay: '2s' }} />
+      <div className="absolute top-1/4 left-1/4 w-[350px] h-[350px] bg-primary/5 rounded-full blur-[100px] animate-pulse pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 w-[350px] h-[350px] bg-accent/5 rounded-full blur-[100px] animate-pulse pointer-events-none" style={{ animationDelay: '2s' }} />
 
       <style>{`
         @keyframes float {
@@ -132,8 +132,8 @@ function NotFound() {
           <line x1="100" y1="145" x2="100" y2="160" stroke="rgba(255,255,255,0.2)" strokeWidth="1.2" />
 
           {/* Basket */}
-          <rect x="91" y="160" width="18" height="12" rx="2" fill="#d97706" />
-          <line x1="91" y1="166" x2="109" y2="166" stroke="#b45309" strokeWidth="1" />
+          <rect x="91" y="160" width="18" height="12" rx="2" fill="hsl(var(--w))" />
+          <line x1="91" y1="166" x2="109" y2="166" stroke="hsl(var(--w) / 0.7)" strokeWidth="1" />
 
           {/* Gradients */}
           <defs>
@@ -148,13 +148,13 @@ function NotFound() {
 
       {/* Text Info */}
       <div className="z-10 text-center max-w-md px-4">
-        <h1 className="text-7xl md:text-8xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-zinc-500 mb-2">
+        <h1 className="text-7xl md:text-8xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-base-content to-base-content/60 mb-2">
           404
         </h1>
-        <h2 className="text-xl md:text-2xl font-bold text-zinc-100 tracking-tight mb-2">
+        <h2 className="text-xl md:text-2xl font-bold text-base-content tracking-tight mb-2">
           Lost in the Clouds
         </h2>
-        <p className="text-zinc-400 text-sm md:text-base leading-relaxed mb-8">
+        <p className="text-base-content/70 text-sm md:text-base leading-relaxed mb-8">
           The page you are looking for has flown off the radar. Let's get you back on track for your next adventure.
         </p>
 
@@ -162,13 +162,13 @@ function NotFound() {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <a
             href="/"
-            className="w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-[#ed4a29] to-[#ff6b4a] text-white font-semibold rounded-full shadow-lg shadow-[#ed4a29]/20 hover:shadow-[#ed4a29]/35 hover:scale-105 active:scale-95 transition-all duration-200 text-center text-sm tracking-wide"
+            className="w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-primary to-primary/80 text-primary-content font-semibold rounded-full shadow-lg shadow-primary/20 hover:shadow-primary/35 hover:scale-105 active:scale-95 transition-all duration-200 text-center text-sm tracking-wide"
           >
             Take Me Home
           </a>
           <button
             onClick={() => window.history.back()}
-            className="w-full sm:w-auto px-8 py-3 bg-zinc-800/80 hover:bg-zinc-700/80 text-zinc-300 font-semibold rounded-full border border-zinc-700/40 hover:scale-105 active:scale-95 transition-all duration-200 text-center text-sm tracking-wide"
+            className="w-full sm:w-auto px-8 py-3 bg-base-300/80 hover:bg-base-300 text-base-content font-semibold rounded-full border border-base-300 hover:scale-105 active:scale-95 transition-all duration-200 text-center text-sm tracking-wide"
           >
             Go Back
           </button>

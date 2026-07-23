@@ -9,38 +9,6 @@
 /* Tailwind CSS directives */
 @import "tailwindcss";
 
-@plugin "daisyui" {
-  themes: all;
-}
-
-@plugin "daisyui/theme" {
-  name: "light";
-  --color-primary: #0099D9;
-  --color-primary-content: #ffffff;
-  --color-secondary-content: #ffffff;
-  --color-accent-content: #ffffff;
-  --color-neutral: #3d4451;
-  --color-neutral-content: #ffffff;
-  --color-info-content: #ffffff;
-  --color-success-content: #ffffff;
-  --color-warning-content: #ffffff;
-  --color-error-content: #ffffff;
-}
-
-@plugin "daisyui/theme" {
-  name: "black";
-  --color-primary: #0099D9;
-  --color-primary-content: #ffffff;
-  --color-secondary: #9CA3AF;
-  --color-secondary-content: #ffffff;
-}
-
-@plugin "daisyui/theme" {
-  name: "business";
-  --color-primary: #0099D9;
-  --color-primary-content: #ffffff;
-}
-
 @theme {
   --font-sans: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
 }
