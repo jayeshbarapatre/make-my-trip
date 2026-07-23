@@ -54,7 +54,7 @@
 
 .login-right input {
   padding: 12px 15px;
-  border: 1px solid #ddd;
+  border: 1px solid hsl(var(--b3));
   border-radius: 6px;
   font-size: 14px;
   font-family: inherit;
@@ -64,7 +64,7 @@
 .login-right input:focus {
   outline: none;
   border-color: hsl(var(--p));
-  box-shadow: 0 0 0 3px rgba(0, 53, 128, 0.1);
+  box-shadow: 0 0 0 3px hsla(var(--p), 0.1);
 }
 
 .login-right button[type="submit"] {

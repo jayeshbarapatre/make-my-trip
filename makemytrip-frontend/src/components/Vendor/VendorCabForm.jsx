@@ -160,17 +160,17 @@ const VendorCabForm = ({ cabId, onClose, onSuccess }) => {
                 </h3>
                 <div style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
                   <div style={{ flex: 1 }}>
-                    <label style={labelStyle}>Operator Name <span style={{ color: '#ff4d4f' }}>*</span></label>
+                    <label style={labelStyle}>Operator Name <span style={{ color: 'hsl(var(--er))' }}>*</span></label>
                     <input name="operatorName" type="text" value={formData.operatorName} onChange={handleChange} placeholder="e.g., FastCabs" required style={inputStyle} />
                   </div>
                   <div style={{ flex: 1 }}>
-                    <label style={labelStyle}>Registration Number <span style={{ color: '#ff4d4f' }}>*</span></label>
+                    <label style={labelStyle}>Registration Number <span style={{ color: 'hsl(var(--er))' }}>*</span></label>
                     <input name="cabNumber" type="text" value={formData.cabNumber} onChange={handleChange} placeholder="e.g., MH-12-AB-1234" required style={inputStyle} />
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: '16px' }}>
                   <div style={{ flex: 1 }}>
-                    <label style={labelStyle}>Cab Type <span style={{ color: '#ff4d4f' }}>*</span></label>
+                    <label style={labelStyle}>Cab Type <span style={{ color: 'hsl(var(--er))' }}>*</span></label>
                     <select name="type" value={formData.type} onChange={handleChange} required style={inputStyle}>
                       <option value="Economy">Economy</option>
                       <option value="Premium">Premium</option>
@@ -179,7 +179,7 @@ const VendorCabForm = ({ cabId, onClose, onSuccess }) => {
                     </select>
                   </div>
                   <div style={{ flex: 1 }}>
-                    <label style={labelStyle}>Total Cabs of this model <span style={{ color: '#ff4d4f' }}>*</span></label>
+                    <label style={labelStyle}>Total Cabs of this model <span style={{ color: 'hsl(var(--er))' }}>*</span></label>
                     <input name="cabs" type="number" value={formData.cabs} onChange={handleChange} min="1" required style={inputStyle} />
                   </div>
                 </div>
@@ -193,21 +193,21 @@ const VendorCabForm = ({ cabId, onClose, onSuccess }) => {
                 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '16px' }}>
                   <div>
-                    <label style={labelStyle}>Base Fare (₹) <span style={{ color: '#ff4d4f' }}>*</span></label>
+                    <label style={labelStyle}>Base Fare (₹) <span style={{ color: 'hsl(var(--er))' }}>*</span></label>
                     <input name="baseFare" type="number" value={formData.baseFare} onChange={handleChange} min="0" required style={inputStyle} />
                   </div>
                   <div>
-                    <label style={labelStyle}>Per Km Rate (₹) <span style={{ color: '#ff4d4f' }}>*</span></label>
+                    <label style={labelStyle}>Per Km Rate (₹) <span style={{ color: 'hsl(var(--er))' }}>*</span></label>
                     <input name="perKmRate" type="number" value={formData.perKmRate} onChange={handleChange} min="0" required style={inputStyle} />
                   </div>
                   <div>
-                    <label style={labelStyle}>Per Minute Rate (₹) <span style={{ color: '#ff4d4f' }}>*</span></label>
+                    <label style={labelStyle}>Per Minute Rate (₹) <span style={{ color: 'hsl(var(--er))' }}>*</span></label>
                     <input name="perMinuteRate" type="number" value={formData.perMinuteRate} onChange={handleChange} min="0" required style={inputStyle} />
                   </div>
                 </div>
 
                 <div style={{ width: '100%' }}>
-                  <label style={labelStyle}>Base City <span style={{ color: '#ff4d4f' }}>*</span></label>
+                  <label style={labelStyle}>Base City <span style={{ color: 'hsl(var(--er))' }}>*</span></label>
                   <input name="currentCity" type="text" value={formData.currentCity} onChange={handleChange} placeholder="e.g. Mumbai" required style={inputStyle} />
                 </div>
               </div>

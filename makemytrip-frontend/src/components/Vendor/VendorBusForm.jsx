@@ -155,7 +155,7 @@ const VendorBusForm = ({ busId, onClose, onSuccess }) => {
       >
         <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--surface)' }}>
           <h2 style={{ fontSize: '20px', fontWeight: 600, margin: 0, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(234, 179, 8, 0.15)', color: '#eab308', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }}>
+            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'hsla(var(--w), 0.15)', color: 'hsl(var(--w))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }}>
               <i className={isEditing ? 'fas fa-pen' : 'fas fa-bus'}></i>
             </div>
             {isEditing ? 'Edit Bus Details' : 'Add New Bus'}
@@ -188,17 +188,17 @@ const VendorBusForm = ({ busId, onClose, onSuccess }) => {
                 </h3>
                 <div style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
                   <div style={{ flex: 1 }}>
-                    <label style={labelStyle}>Operator Name <span style={{ color: '#ff4d4f' }}>*</span></label>
+                    <label style={labelStyle}>Operator Name <span style={{ color: 'hsl(var(--er))' }}>*</span></label>
                     <input name="operatorName" type="text" value={formData.operatorName} onChange={handleChange} placeholder="e.g., RedBus Travels" required style={inputStyle} />
                   </div>
                   <div style={{ flex: 1 }}>
-                    <label style={labelStyle}>Bus Number <span style={{ color: '#ff4d4f' }}>*</span></label>
+                    <label style={labelStyle}>Bus Number <span style={{ color: 'hsl(var(--er))' }}>*</span></label>
                     <input name="busNumber" type="text" value={formData.busNumber} onChange={handleChange} placeholder="e.g., RB-001" required style={inputStyle} />
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: '16px' }}>
                   <div style={{ flex: 1 }}>
-                    <label style={labelStyle}>Bus Type <span style={{ color: '#ff4d4f' }}>*</span></label>
+                    <label style={labelStyle}>Bus Type <span style={{ color: 'hsl(var(--er))' }}>*</span></label>
                     <select name="type" value={formData.type} onChange={handleChange} required style={inputStyle}>
                       <option value="AC">AC Sleeper</option>
                       <option value="Non-AC">Non-AC Seater</option>
@@ -207,7 +207,7 @@ const VendorBusForm = ({ busId, onClose, onSuccess }) => {
                     </select>
                   </div>
                   <div style={{ flex: 1 }}>
-                    <label style={labelStyle}>Price (₹) <span style={{ color: '#ff4d4f' }}>*</span></label>
+                    <label style={labelStyle}>Price (₹) <span style={{ color: 'hsl(var(--er))' }}>*</span></label>
                     <input name="price" type="number" value={formData.price} onChange={handleChange} min="1" required style={inputStyle} />
                   </div>
                 </div>
@@ -219,14 +219,14 @@ const VendorBusForm = ({ busId, onClose, onSuccess }) => {
                 </h3>
                 <div style={{ display: 'flex', gap: '16px' }}>
                   <div style={{ flex: 1 }}>
-                    <label style={labelStyle}>Departure City <span style={{ color: '#ff4d4f' }}>*</span></label>
+                    <label style={labelStyle}>Departure City <span style={{ color: 'hsl(var(--er))' }}>*</span></label>
                     <select value={formData.departure.city} onChange={(e) => handleNestedChange('departure', 'city', e.target.value)} required style={inputStyle}>
                       <option value="">Select departure city</option>
                       {cities.map(city => <option key={city} value={city}>{city}</option>)}
                     </select>
                   </div>
                   <div style={{ flex: 1 }}>
-                    <label style={labelStyle}>Arrival City <span style={{ color: '#ff4d4f' }}>*</span></label>
+                    <label style={labelStyle}>Arrival City <span style={{ color: 'hsl(var(--er))' }}>*</span></label>
                     <select value={formData.arrival.city} onChange={(e) => handleNestedChange('arrival', 'city', e.target.value)} required style={inputStyle}>
                       <option value="">Select arrival city</option>
                       {cities.map(city => <option key={city} value={city}>{city}</option>)}
@@ -241,11 +241,11 @@ const VendorBusForm = ({ busId, onClose, onSuccess }) => {
                 </h3>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
                   <div>
-                    <label style={labelStyle}>Departure Time <span style={{ color: '#ff4d4f' }}>*</span></label>
+                    <label style={labelStyle}>Departure Time <span style={{ color: 'hsl(var(--er))' }}>*</span></label>
                     <input name="departureTime" type="time" value={formData.departureTime} onChange={handleChange} required style={inputStyle} />
                   </div>
                   <div>
-                    <label style={labelStyle}>Arrival Time <span style={{ color: '#ff4d4f' }}>*</span></label>
+                    <label style={labelStyle}>Arrival Time <span style={{ color: 'hsl(var(--er))' }}>*</span></label>
                     <input name="arrivalTime" type="time" value={formData.arrivalTime} onChange={handleChange} required style={inputStyle} />
                   </div>
                   <div>
@@ -261,7 +261,7 @@ const VendorBusForm = ({ busId, onClose, onSuccess }) => {
                 </h3>
                 <div style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
                   <div style={{ flex: 1 }}>
-                    <label style={labelStyle}>Available Seats <span style={{ color: '#ff4d4f' }}>*</span></label>
+                    <label style={labelStyle}>Available Seats <span style={{ color: 'hsl(var(--er))' }}>*</span></label>
                     <input name="seatsAvailable" type="number" value={formData.seatsAvailable} onChange={handleChange} min="1" required style={inputStyle} />
                   </div>
                   <div style={{ flex: 1 }}>

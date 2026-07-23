@@ -194,7 +194,7 @@
   height: 13px;
   border-radius: 2px;
   display: inline-block;
-  background: linear-gradient(180deg, #f93 33%, hsl(var(--b1)) 33% 66%, #093 66%);
+  background: linear-gradient(180deg, hsl(var(--w)) 33%, hsl(var(--b1)) 33% 66%, hsl(var(--su)) 66%);
 }
 
 /* ── Hero ───────────────────────────────────────────────────── */
@@ -532,8 +532,8 @@
 }
 
 .hp-search-btn {
-  background: #2B72F8;
-  color: #ffffff;
+  background: hsl(var(--p));
+  color: hsl(var(--pc));
   border: 0;
   padding: 0 28px;
   font-size: 15px;
@@ -545,15 +545,15 @@
   align-items: center;
   gap: 8px;
   justify-content: center;
-  box-shadow: 0 4px 16px rgba(43, 114, 248, 0.35);
+  box-shadow: 0 4px 16px hsla(var(--p), 0.35);
   white-space: nowrap;
   min-width: max-content;
   border-radius: 0 14px 14px 0;
 }
 
 .hp-search-btn:hover {
-  background: #1a5de0;
-  box-shadow: 0 6px 20px rgba(43, 114, 248, 0.45);
+  background: hsl(var(--p) / 0.9);
+  box-shadow: 0 6px 20px hsla(var(--p), 0.45);
   transform: translateY(-1px);
 }
 
@@ -1039,8 +1039,8 @@
   font-size: 24px;
   font-weight: 800;
   letter-spacing: -.02em;
-  color: #ffffff;
-  text-shadow: 0 4px 12px rgba(0,0,0,0.35);
+  color: hsl(var(--b1));
+  text-shadow: 0 4px 12px hsla(0 0% 0% / 0.35);
 }
 
 .hp-dest-info p {
@@ -1055,7 +1055,7 @@
   margin-top: 8px;
   font-size: 14px;
   font-weight: 800;
-  color: #ffb703;
+  color: hsl(var(--w));
 }
 
 /* ── Top picks ──────────────────────────────────────────────── */
@@ -1123,8 +1123,8 @@
 
 .hp-pick-eyebrow {
   display: inline-block;
-  background: #ffb703;
-  color: #0f172a;
+  background: hsl(var(--w));
+  color: hsl(var(--b3));
   font-size: 10px;
   font-weight: 800;
   padding: 3px 8px;
@@ -1161,7 +1161,7 @@
 }
 
 .hp-pick-from b {
-  color: #ffb703;
+  color: hsl(var(--w));
 }
 
 /* ── App banner ─────────────────────────────────────────────── */

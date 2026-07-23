@@ -152,7 +152,7 @@ const VendorHotelForm = ({ hotelId, onClose, onSuccess }) => {
       >
         <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--surface)' }}>
           <h2 style={{ fontSize: '20px', fontWeight: 600, margin: 0, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(46, 193, 88, 0.15)', color: '#2ec158', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }}>
+            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'hsla(var(--su), 0.15)', color: 'hsl(var(--su))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }}>
               <i className={isEditing ? 'fas fa-pen' : 'fas fa-plus'}></i>
             </div>
             {isEditing ? 'Edit Hotel Listing' : 'Create New Hotel'}
@@ -184,12 +184,12 @@ const VendorHotelForm = ({ hotelId, onClose, onSuccess }) => {
                   Basic Information
                 </h3>
                 <div style={{ marginBottom: '16px' }}>
-                  <label htmlFor="name" style={labelStyle}>Hotel Name <span style={{ color: '#ff4d4f' }}>*</span></label>
+                  <label htmlFor="name" style={labelStyle}>Hotel Name <span style={{ color: 'hsl(var(--er))' }}>*</span></label>
                   <input id="name" name="name" type="text" value={formData.name} onChange={handleInputChange} placeholder="Enter hotel name" required style={inputStyle} />
                 </div>
                 <div style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
                   <div style={{ flex: 1 }}>
-                    <label htmlFor="city" style={labelStyle}>City <span style={{ color: '#ff4d4f' }}>*</span></label>
+                    <label htmlFor="city" style={labelStyle}>City <span style={{ color: 'hsl(var(--er))' }}>*</span></label>
                     <input id="city" name="city" type="text" value={formData.city} onChange={handleInputChange} placeholder="e.g., Mumbai, Delhi" required style={inputStyle} />
                   </div>
                   <div style={{ flex: 1 }}>
@@ -208,7 +208,7 @@ const VendorHotelForm = ({ hotelId, onClose, onSuccess }) => {
                   Hotel Images
                 </h3>
                 <div style={{ marginBottom: '16px' }}>
-                  <label htmlFor="image" style={labelStyle}>Primary Image URL <span style={{ color: '#ff4d4f' }}>*</span></label>
+                  <label htmlFor="image" style={labelStyle}>Primary Image URL <span style={{ color: 'hsl(var(--er))' }}>*</span></label>
                   <input id="image" name="image" type="url" value={formData.image} onChange={handleInputChange} placeholder="Main thumbnail image URL" required style={inputStyle} />
                 </div>
                 <div>
@@ -224,11 +224,11 @@ const VendorHotelForm = ({ hotelId, onClose, onSuccess }) => {
                 </h3>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
                   <div>
-                    <label htmlFor="pricePerNight" style={labelStyle}>Price / Night (₹) <span style={{ color: '#ff4d4f' }}>*</span></label>
+                    <label htmlFor="pricePerNight" style={labelStyle}>Price / Night (₹) <span style={{ color: 'hsl(var(--er))' }}>*</span></label>
                     <input id="pricePerNight" name="pricePerNight" type="number" value={formData.pricePerNight} onChange={handleInputChange} placeholder="2000" required style={inputStyle} />
                   </div>
                   <div>
-                    <label htmlFor="price" style={labelStyle}>Base Price (₹) <span style={{ color: '#ff4d4f' }}>*</span></label>
+                    <label htmlFor="price" style={labelStyle}>Base Price (₹) <span style={{ color: 'hsl(var(--er))' }}>*</span></label>
                     <input id="price" name="price" type="number" value={formData.price} onChange={handleInputChange} placeholder="2000" required style={inputStyle} />
                   </div>
                   <div>
