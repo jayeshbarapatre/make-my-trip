@@ -60,7 +60,7 @@ export default function TrainPaymentPage() {
         },
         {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`
+            'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
           }
         }
       );

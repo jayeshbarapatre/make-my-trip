@@ -51,7 +51,7 @@ export default function FlightPaymentPage() {
       // Try backend first, but fall back to localStorage
       try {
         const response = await axios.post(
-          'http://localhost:5000/api/v1/bookings/flight',
+          'http://localhost:5000/api/v1/bookings/flights',
           {
             userId,
             flightId: flight.id,
@@ -67,7 +67,7 @@ export default function FlightPaymentPage() {
           },
           {
             headers: {
-              'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`
+              'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
             },
             timeout: 5000
           }
