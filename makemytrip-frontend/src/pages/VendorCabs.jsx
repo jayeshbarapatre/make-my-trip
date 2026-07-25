@@ -128,7 +128,7 @@ const VendorCabs = () => {
         </div>
 
         {error && (
-          <div style={{ padding: '16px', background: 'rgba(255, 77, 79, 0.1)', border: '1px solid rgba(255, 77, 79, 0.3)', borderRadius: '12px', color: 'hsl(var(--er))', marginBottom: '24px' }}>
+          <div style={{ padding: '16px', background: 'rgba(255, 77, 79, 0.1)', border: '1px solid rgba(255, 77, 79, 0.3)', borderRadius: '12px', color: '#ff4d4f', marginBottom: '24px' }}>
             {error}
           </div>
         )}
@@ -174,7 +174,7 @@ const VendorCabs = () => {
 
                   {/* Rejection Alert */}
                   {cab.listingStatus === 'REJECTED' && cab.rejectionReason && (
-                    <div style={{ padding: '12px', background: 'rgba(255, 77, 79, 0.05)', borderRadius: '10px', border: '1px dashed rgba(255, 77, 79, 0.3)', color: 'hsl(var(--er))', fontSize: '12.5px', display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+                    <div style={{ padding: '12px', background: 'rgba(255, 77, 79, 0.05)', borderRadius: '10px', border: '1px dashed rgba(255, 77, 79, 0.3)', color: '#ff4d4f', fontSize: '12.5px', display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
                       <i className="fas fa-exclamation-triangle" style={{ marginTop: '2px' }}></i>
                       <div>
                         <strong style={{ fontWeight: 600 }}>Rejection Reason:</strong> {cab.rejectionReason}
@@ -281,7 +281,7 @@ const VendorCabs = () => {
               <div style={{ 
                 width: '48px', height: '48px', borderRadius: '12px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px',
                 background: confirmDialog.type === 'delete' ? 'rgba(255, 77, 79, 0.1)' : 'rgba(46, 193, 88, 0.1)',
-                color: confirmDialog.type === 'delete' ? 'hsl(var(--er))' : '#2ec158'
+                color: confirmDialog.type === 'delete' ? '#ff4d4f' : '#2ec158'
               }}>
                 <i className={confirmDialog.type === 'delete' ? 'fas fa-exclamation-triangle' : 'fas fa-paper-plane'}></i>
               </div>

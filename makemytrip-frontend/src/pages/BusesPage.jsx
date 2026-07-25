@@ -234,7 +234,7 @@ export default function BusesPage() {
                             <div style={{ fontSize: '14px', fontWeight: 700, color: 'hsl(var(--p))' }}>🚌 Origin: "{searchQuery.trim()}"</div>
                             <div style={{ fontSize: '11px', color: 'hsl(var(--bc) / 0.55)' }}>Click to select this custom city</div>
                           </div>
-                          <span style={{ background: 'hsl(var(--p))', color: 'hsl(var(--b1))', padding: '2px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: 800 }}>CUSTOM</span>
+                          <span style={{ background: 'hsl(var(--p))', color: '#fff', padding: '2px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: 800 }}>CUSTOM</span>
                         </div>
                       )}
                     </div>
@@ -292,7 +292,7 @@ export default function BusesPage() {
                             <div style={{ fontSize: '14px', fontWeight: 700, color: 'hsl(var(--p))' }}>🚌 Destination: "{searchQuery.trim()}"</div>
                             <div style={{ fontSize: '11px', color: 'hsl(var(--bc) / 0.55)' }}>Click to select this custom city</div>
                           </div>
-                          <span style={{ background: 'hsl(var(--p))', color: 'hsl(var(--b1))', padding: '2px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: 800 }}>CUSTOM</span>
+                          <span style={{ background: 'hsl(var(--p))', color: '#fff', padding: '2px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: 800 }}>CUSTOM</span>
                         </div>
                       )}
                     </div>

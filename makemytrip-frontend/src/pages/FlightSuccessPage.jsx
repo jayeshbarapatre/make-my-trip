@@ -30,7 +30,7 @@ export default function FlightSuccessPage() {
         scale: 2,
         useCORS: true,
         logging: false,
-        backgroundColor: 'hsl(var(--b1))'
+        backgroundColor: '#ffffff'
       });
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF({
@@ -57,7 +57,7 @@ export default function FlightSuccessPage() {
         <div id="flight-ticket-content" style={{ background: 'hsl(var(--b1))', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.08)', border: '1px solid hsl(var(--bc) / 0.1)', marginBottom: '24px' }}>
 
           <div className="flight-success-hero">
-            <div style={{ width: '64px', height: '64px', background: 'hsl(var(--su))', color: 'hsl(var(--b1))', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', margin: '0 auto 20px', boxShadow: '0 0 20px rgba(5,150,105,0.4)' }}>
+            <div style={{ width: '64px', height: '64px', background: 'hsl(var(--su))', color: '#fff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', margin: '0 auto 20px', boxShadow: '0 0 20px rgba(5,150,105,0.4)' }}>
               ✓
             </div>
             <h1 style={{ fontSize: '32px', fontWeight: 900, margin: 0, letterSpacing: '-0.5px' }}>Flight Ticket Confirmed!</h1>

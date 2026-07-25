@@ -566,7 +566,7 @@ export default function BusSearchResultsPage() {
             <span className="tr-search-sub">Passenger{passengers > 1 ? 's' : ''}</span>
             {showTravDrop && (
               <div className="tr-trip-dropdown" onMouseDown={e => e.stopPropagation()}>
-                <div style={{ padding: '10px 16px 6px', fontSize: 12, fontWeight: 700, color: 'hsl(var(--nc))', textTransform: 'uppercase' }}>Passengers</div>
+                <div style={{ padding: '10px 16px 6px', fontSize: 12, fontWeight: 700, color: '#666', textTransform: 'uppercase' }}>Passengers</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '6px 16px 12px' }}>
                   <button className="tr-swap-btn" style={{border: '1px solid #ccc', borderRadius: '4px'}} onClick={e => { e.stopPropagation(); setPassengers(p => Math.max(1, p - 1)) }}>−</button>
                   <span style={{ fontWeight: 700, fontSize: 16, minWidth: 20, textAlign: 'center' }}>{passengers}</span>

@@ -240,7 +240,7 @@ export default function HotelPaymentPage() {
         },
 
         theme: {
-          color: 'hsl(var(--p))'
+          color: '#003580'
         },
 
         modal: {
@@ -422,7 +422,7 @@ export default function HotelPaymentPage() {
               <div className="pmt-qr-box">
                 {/* SVG Mock QR Code Graphic */}
                 <svg viewBox="0 0 100 100" className="pmt-qr-img">
-                  <rect width="100" height="100" fill="hsl(var(--b1))"/>
+                  <rect width="100" height="100" fill="#fff"/>
                   <path d="M10 10h25v25H10zM15 15h15v15H15zM65 10h25v25H65zM70 15h15v15H70zM10 65h25v25H10zM15 70h15v15H15z" fill="hsl(var(--bc))"/>
                   <rect x="40" y="20" width="10" height="10" fill="hsl(var(--bc))"/>
                   <rect x="50" y="40" width="10" height="10" fill="hsl(var(--bc))"/>

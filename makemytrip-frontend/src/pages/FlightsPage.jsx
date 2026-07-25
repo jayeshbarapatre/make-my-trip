@@ -226,7 +226,7 @@ export default function FlightsPage() {
               width: '100%',
               padding: '16px',
               background: loading ? 'hsl(var(--b3))' : 'var(--color-primary)',
-              color: 'hsl(var(--b1))',
+              color: '#ffffff',
               border: 'none',
               borderRadius: '8px',
               fontSize: '16px',

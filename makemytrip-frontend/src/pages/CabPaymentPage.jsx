@@ -203,7 +203,7 @@ export default function CabPaymentPage() {
           distance
         },
 
-        theme: { color: 'hsl(var(--p))' },
+        theme: { color: '#003580' },
         modal: {
           ondismiss: () => {
             console.log('❌ Payment cancelled');

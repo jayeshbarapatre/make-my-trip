@@ -7,7 +7,7 @@ const ProtectedVendorRoute = ({ children }) => {
   if (loading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-        <div style={{ fontSize: '18px', color: 'hsl(var(--nc))' }}>Loading...</div>
+        <div style={{ fontSize: '18px', color: '#666' }}>Loading...</div>
       </div>
     )
   }

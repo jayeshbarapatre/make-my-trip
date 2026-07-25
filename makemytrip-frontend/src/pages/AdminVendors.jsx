@@ -418,7 +418,7 @@ const AdminVendors = () => {
                     letterSpacing: '0.04em',
                     textTransform: 'uppercase',
                     background: selectedVendor.vendorStatus === 'ACTIVE' ? 'var(--accentSoft)' : 'rgba(255, 77, 79, 0.1)',
-                    color: selectedVendor.vendorStatus === 'ACTIVE' ? 'var(--accent)' : 'hsl(var(--er))',
+                    color: selectedVendor.vendorStatus === 'ACTIVE' ? 'var(--accent)' : '#ff4d4f',
                   }}>
                     {selectedVendor.vendorStatus} PARTNER
                   </span>
@@ -498,7 +498,7 @@ const AdminVendors = () => {
                     const isRejected = hotel.listingStatus === 'REJECTED'
 
                     const badgeBg = isApproved ? 'rgba(46, 193, 88, 0.12)' : isPending ? 'rgba(255, 193, 7, 0.12)' : isRejected ? 'rgba(255, 77, 79, 0.12)' : 'var(--surface2)'
-                    const badgeText = isApproved ? '#2ec158' : isPending ? '#d39e00' : isRejected ? 'hsl(var(--er))' : 'var(--text-secondary)'
+                    const badgeText = isApproved ? '#2ec158' : isPending ? '#d39e00' : isRejected ? '#ff4d4f' : 'var(--text-secondary)'
 
                     return (
                       <div key={hotel.id} className="listing-card-premium" style={{
@@ -600,7 +600,7 @@ const AdminVendors = () => {
                             border: '1px dashed rgba(255, 77, 79, 0.3)',
                             borderRadius: '12px',
                             fontSize: '12.5px',
-                            color: 'hsl(var(--er))',
+                            color: '#ff4d4f',
                             lineHeight: 1.5,
                             display: 'flex',
                             gap: '8px',
@@ -627,7 +627,7 @@ const AdminVendors = () => {
           <div style={{ padding: '32px 24px', width: '100%', display: 'flex', flexDirection: 'column' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
               <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
-                <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(255, 77, 79, 0.1)', color: 'hsl(var(--er))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>
+                <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(255, 77, 79, 0.1)', color: '#ff4d4f', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>
                   <RiDeleteBinLine />
                 </div>
                 <div>
@@ -671,7 +671,7 @@ const AdminVendors = () => {
               </button>
               <button
                 className="btn btn-error"
-                style={{ background: 'hsl(var(--er))', color: 'hsl(var(--b1))', border: 'none' }}
+                style={{ background: '#ff4d4f', color: '#fff', border: 'none' }}
                 onClick={executeDelete}
                 disabled={isDeleting}
               >

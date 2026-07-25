@@ -279,7 +279,7 @@ export function AtmosphereModal({ onClose, formData, onFormChange, onSubmit, sub
                   height: '16px',
                   borderRadius: '9999px',
                   background: accent,
-                  color: 'hsl(var(--b1))',
+                  color: '#fff',
                 }}>
                   <Icon name="plus" size={10} />
                 </span>
@@ -350,7 +350,7 @@ export function AtmosphereModal({ onClose, formData, onFormChange, onSubmit, sub
                       borderRadius: '12px',
                       background: on ? accent : 'var(--bg-surface)',
                       border: `1px solid ${on ? accent : 'var(--border)'}`,
-                      color: on ? 'hsl(var(--b1))' : ink,
+                      color: on ? '#fff' : ink,
                       display: 'flex',
                       flexDirection: 'column',
                       alignItems: 'center',
@@ -624,7 +624,7 @@ export function AtmosphereModal({ onClose, formData, onFormChange, onSubmit, sub
                 borderRadius: '12px',
                 background: accent,
                 border: 0,
-                color: 'hsl(var(--b1))',
+                color: '#fff',
                 fontSize: '13.5px',
                 fontWeight: 600,
                 cursor: 'pointer',

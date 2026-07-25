@@ -126,7 +126,7 @@ const VendorCabForm = ({ cabId, onClose, onSuccess }) => {
         {/* Header */}
         <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--surface)' }}>
           <h2 style={{ fontSize: '20px', fontWeight: 600, margin: 0, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(234, 179, 8, 0.15)', color: 'hsl(var(--wa))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }}>
+            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(234, 179, 8, 0.15)', color: '#eab308', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }}>
               <i className={isEditing ? 'fas fa-pen' : 'fas fa-taxi'}></i>
             </div>
             {isEditing ? 'Edit Cab Listing' : 'Add New Cab'}
@@ -227,7 +227,7 @@ const VendorCabForm = ({ cabId, onClose, onSuccess }) => {
               <button 
                 type="submit" 
                 disabled={submitting}
-                style={{ padding: '10px 24px', borderRadius: '8px', border: 'none', background: 'var(--accent)', color: 'hsl(var(--b1))', fontSize: '14px', fontWeight: 600, cursor: submitting ? 'not-allowed' : 'pointer', opacity: submitting ? 0.7 : 1, minWidth: '140px' }}
+                style={{ padding: '10px 24px', borderRadius: '8px', border: 'none', background: 'var(--accent)', color: '#fff', fontSize: '14px', fontWeight: 600, cursor: submitting ? 'not-allowed' : 'pointer', opacity: submitting ? 0.7 : 1, minWidth: '140px' }}
               >
                 {submitting ? (
                   <span className="loading loading-spinner" style={{ width: '16px', height: '16px' }}></span>

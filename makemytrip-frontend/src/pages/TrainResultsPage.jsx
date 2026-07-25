@@ -322,13 +322,13 @@ export default function TrainResultsPage() {
             <span className="tr-search-sub">{passengers} Passenger(s)</span>
             {showTravDrop && (
               <div className="tr-trip-dropdown" style={{ minWidth: 200 }} onMouseDown={e => e.stopPropagation()}>
-                <div style={{ padding: '8px 16px', fontSize: 12, fontWeight: 700, color: 'hsl(var(--nc))', textTransform: 'uppercase' }}>Passengers</div>
+                <div style={{ padding: '8px 16px', fontSize: 12, fontWeight: 700, color: '#666', textTransform: 'uppercase' }}>Passengers</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0 16px 12px' }}>
                   <button className="tr-swap-btn" style={{border: '1px solid #ccc', borderRadius: '4px'}} onClick={e => { e.stopPropagation(); setPassengers(p => Math.max(1, p - 1)) }}>−</button>
                   <span style={{ fontWeight: 700 }}>{passengers}</span>
                   <button className="tr-swap-btn" style={{border: '1px solid #ccc', borderRadius: '4px'}} onClick={e => { e.stopPropagation(); setPassengers(p => Math.min(6, p + 1)) }}>+</button>
                 </div>
-                <div style={{ borderTop: '1px solid hsl(var(--b2))', padding: '8px 16px', fontSize: 12, fontWeight: 700, color: 'hsl(var(--nc))', textTransform: 'uppercase' }}>Quota</div>
+                <div style={{ borderTop: '1px solid hsl(var(--b2))', padding: '8px 16px', fontSize: 12, fontWeight: 700, color: '#666', textTransform: 'uppercase' }}>Quota</div>
                 {['General', 'Tatkal', 'Ladies'].map(q => (
                   <div key={q} className={`tr-trip-option ${quota === q ? 'tr-trip-option-active' : ''}`} onMouseDown={() => { setQuota(q); setShowTravDrop(false); }}>{q}</div>
                 ))}

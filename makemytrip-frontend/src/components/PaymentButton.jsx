@@ -72,7 +72,7 @@ const PaymentButton = ({
           }
         },
         theme: {
-          color: 'hsl(var(--p))'
+          color: '#003580'
         }
       }
 
