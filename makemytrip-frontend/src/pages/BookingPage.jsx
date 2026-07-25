@@ -131,6 +131,51 @@ export default function BookingPage() {
   // Confirmation data state
   const [bookingDetails, setBookingDetails] = useState(null)
 
+  // 💾 Save flight booking to localStorage when success page is shown
+  useEffect(() => {
+    if (step === 4 && bookingDetails) {
+      try {
+        const flightBooking = {
+          id: bookingDetails.bookingId || 'FLIGHT-' + Date.now(),
+          bookingId: bookingDetails.bookingId,
+          pnr: bookingDetails.pnr,
+          status: 'confirmed',
+          type: 'flight',
+          flight: {
+            airline: bookingDetails.flight?.airline,
+            flightNumber: bookingDetails.flight?.flightNumber,
+            source: bookingDetails.flight?.source,
+            destination: bookingDetails.flight?.destination,
+            departure: bookingDetails.flight?.departure,
+            arrival: bookingDetails.flight?.arrival,
+            duration: bookingDetails.flight?.duration,
+            price: bookingDetails.flight?.price,
+          },
+          travellers: bookingDetails.travellers,
+          contact: bookingDetails.contact,
+          amount: bookingDetails.amount,
+          totalAmount: bookingDetails.amount,
+          paymentId: bookingDetails.paymentId,
+          departureDate: bookingDetails.flight?.departure?.date || new Date().toISOString().split('T')[0],
+          createdAt: new Date().toISOString(),
+          userId: user?.id
+        }
+
+        // Save to localStorage
+        const existingBookings = JSON.parse(localStorage.getItem('mmt_bookings') || '[]')
+        const bookingExists = existingBookings.some(b => b.bookingId === flightBooking.bookingId)
+
+        if (!bookingExists) {
+          existingBookings.push(flightBooking)
+          localStorage.setItem('mmt_bookings', JSON.stringify(existingBookings))
+          console.log('💾 Flight booking saved to localStorage:', existingBookings.length)
+        }
+      } catch (err) {
+        console.error('Error saving flight booking to localStorage:', err)
+      }
+    }
+  }, [step, bookingDetails, user?.id])
+
   const { data, isLoading } = useQuery({
     queryKey: ['flight', flightId],
     queryFn: () => flightService.getById(flightId),
@@ -431,6 +476,14 @@ export default function BookingPage() {
 
             const departureObj = typeof flight.departure === 'object' ? flight.departure : { date: '2026-05-20' }
             const arrivalObj = typeof flight.arrival === 'object' ? flight.arrival : {}
+
+            // Extract enriched flight data
+            const baseFare = totalAmount * 0.8
+            const taxes = totalAmount * 0.15
+            const convenience = totalAmount * 0.05
+            const discount = 0
+            const gst = totalAmount * 0.05
+
             const bookingPayload = {
               type: 'flight',
               flightId: flight.id,
@@ -439,24 +492,104 @@ export default function BookingPage() {
               departureDate: departureObj.date || '2026-05-20',
               returnDate: arrivalObj.date,
               travellers: travellerDetails,
+              passengers: travellerDetails,
               totalAmount: totalAmount,
               paymentId: response.razorpay_payment_id,
               orderId: response.razorpay_order_id,
               contact: passenger,
               userEmail: passenger?.email,
-              userName: user?.name
+              userName: user?.name,
+              // Enriched flight details
+              airlineName: flight.airline || 'Unknown Airline',
+              airlineCode: flight.airlineCode || flight.code,
+              flightNumber: flight.flightNumber || flight.number || 'N/A',
+              departureTime: departureObj.time || '00:00',
+              arrivalTime: arrivalObj.time || '00:00',
+              departureAirport: departureObj.airport || flight.source,
+              arrivalAirport: arrivalObj.airport || flight.destination,
+              boardingTime: departureObj.time || '00:00',
+              stops: flight.stops || 0,
+              cabinClass: 'Economy',
+              numBags: 1,
+              travelInsurance: false,
+              // Fare breakdown
+              baseFare: baseFare,
+              taxes: taxes,
+              convenience: convenience,
+              discount: discount,
+              gst: gst,
+              // Payment details
+              paymentMethod: 'credit_card',
+              paymentStatus: 'completed',
+              transactionId: response.razorpay_payment_id
             }
 
             console.log('📝 Creating booking with payment details...')
+            console.log('🔍 FLIGHT OBJECT PROPERTIES:')
+            console.log('  airline:', flight.airline)
+            console.log('  flightNumber:', flight.flightNumber)
+            console.log('  source:', flight.source)
+            console.log('  destination:', flight.destination)
+            console.log('  Full flight object:', flight)
 
             bookingService.createBooking(bookingPayload)
               .then((res) => {
                 console.log('✓ Booking created!', res)
                 setPaymentLoading(false)
                 const confirmedData = res?.data || {}
-                setBookingDetails({
+
+                // Extract enriched flight data for localStorage
+                const departureObj = typeof flight.departure === 'object' ? flight.departure : { date: '2026-05-20' }
+                const arrivalObj = typeof flight.arrival === 'object' ? flight.arrival : {}
+
+                const successBooking = {
+                  id: confirmedData.bookingId || 'FLIGHT-' + Date.now(),
                   bookingId: confirmedData.bookingId || 'MMT' + Math.floor(10000000 + Math.random() * 90000000),
                   pnr: confirmedData.pnr || 'PNR' + Math.random().toString(36).substring(2, 8).toUpperCase(),
+                  status: 'confirmed',
+                  type: 'flight',
+                  flight,
+                  travellers: travellerDetails,
+                  contact: passenger,
+                  amount: totalAmount,
+                  totalAmount: totalAmount,
+                  paymentId: response.razorpay_payment_id,
+                  departureDate: flight.departure?.date || new Date().toISOString().split('T')[0],
+                  createdAt: new Date().toISOString(),
+                  userId: user?.id,
+                  // ✅ ADD ENRICHED FIELDS
+                  fromCity: flight.source || departureObj.city || 'Unknown',
+                  toCity: flight.destination || arrivalObj.city || 'Unknown',
+                  airlineName: flight.airline || 'Unknown Airline',
+                  airlineCode: flight.airlineCode || flight.code,
+                  flightNumber: flight.flightNumber || flight.number || 'N/A',
+                  departureTime: departureObj.time || '00:00',
+                  arrivalTime: arrivalObj.time || '00:00',
+                  departureAirport: departureObj.airport || flight.source,
+                  arrivalAirport: arrivalObj.airport || flight.destination,
+                  stops: flight.stops || 0,
+                  cabinClass: 'Economy',
+                  // Fare breakdown
+                  baseFare: totalAmount * 0.8,
+                  taxes: totalAmount * 0.15,
+                  convenience: totalAmount * 0.05,
+                  discount: 0,
+                  gst: totalAmount * 0.05,
+                  // Payment
+                  paymentMethod: 'credit_card',
+                  paymentStatus: 'completed',
+                  transactionId: response.razorpay_payment_id
+                }
+
+                // 💾 Save to localStorage (backup)
+                const existingBookings = JSON.parse(localStorage.getItem('mmt_bookings') || '[]')
+                existingBookings.push(successBooking)
+                localStorage.setItem('mmt_bookings', JSON.stringify(existingBookings))
+                console.log('💾 Booking saved to localStorage (backup):', existingBookings.length)
+
+                setBookingDetails({
+                  bookingId: successBooking.bookingId,
+                  pnr: successBooking.pnr,
                   flight,
                   travellers: travellerDetails,
                   contact: passenger,
@@ -471,9 +604,55 @@ export default function BookingPage() {
                 console.error('Booking creation error:', err)
                 // Even if booking creation fails, payment was successful
                 setPaymentLoading(false)
-                setBookingDetails({
+                const fallbackBooking = {
+                  id: 'FLIGHT-' + Date.now(),
                   bookingId: 'MMT' + Math.floor(10000000 + Math.random() * 90000000),
                   pnr: 'PNR' + Math.random().toString(36).substring(2, 8).toUpperCase(),
+                  status: 'confirmed',
+                  type: 'flight',
+                  flight,
+                  travellers: travellerDetails,
+                  contact: passenger,
+                  amount: totalAmount,
+                  totalAmount: totalAmount,
+                  paymentId: response.razorpay_payment_id,
+                  departureDate: flight.departure?.date || new Date().toISOString().split('T')[0],
+                  createdAt: new Date().toISOString(),
+                  userId: user?.id,
+                  // ✅ ADD ENRICHED FIELDS
+                  fromCity: flight.source || departureObj.city || 'Unknown',
+                  toCity: flight.destination || arrivalObj.city || 'Unknown',
+                  airlineName: flight.airline || 'Unknown Airline',
+                  airlineCode: flight.airlineCode || flight.code,
+                  flightNumber: flight.flightNumber || flight.number || 'N/A',
+                  departureTime: departureObj.time || '00:00',
+                  arrivalTime: arrivalObj.time || '00:00',
+                  departureAirport: departureObj.airport || flight.source,
+                  arrivalAirport: arrivalObj.airport || flight.destination,
+                  stops: flight.stops || 0,
+                  cabinClass: 'Economy',
+                  // Fare breakdown
+                  baseFare: totalAmount * 0.8,
+                  taxes: totalAmount * 0.15,
+                  convenience: totalAmount * 0.05,
+                  discount: 0,
+                  gst: totalAmount * 0.05,
+                  // Payment
+                  paymentMethod: 'credit_card',
+                  paymentStatus: 'completed',
+                  transactionId: response.razorpay_payment_id
+                }
+
+                // 💾 Save to localStorage as fallback
+                console.log('💾 Saving booking to localStorage:', fallbackBooking)
+                const existingBookings = JSON.parse(localStorage.getItem('mmt_bookings') || '[]')
+                existingBookings.push(fallbackBooking)
+                localStorage.setItem('mmt_bookings', JSON.stringify(existingBookings))
+                console.log('✅ Booking saved to localStorage! Total:', existingBookings.length)
+
+                setBookingDetails({
+                  bookingId: fallbackBooking.bookingId,
+                  pnr: fallbackBooking.pnr,
                   flight,
                   travellers: travellerDetails,
                   contact: passenger,
@@ -1265,6 +1444,15 @@ export default function BookingPage() {
                     {/* Left: Flight Details */}
                     <div style={s.ticketSection}>
                       <h3 style={s.ticketSecTitle}>Flight Information</h3>
+
+                      {/* Outbound Flight Label */}
+                      {isRoundTrip && (
+                        <div style={{ fontSize: '13px', fontWeight: 800, color: 'hsl(var(--p))', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontSize: '16px' }}>✈️</span>
+                          OUTBOUND FLIGHT
+                        </div>
+                      )}
+
                       <div style={s.ticketFlightCard}>
                         <div style={s.tfHeader}>
                           <div style={{ ...s.logoBox, background: airlineColor, width: '40px', height: '40px' }}>{airlineCode}</div>
@@ -1307,9 +1495,22 @@ export default function BookingPage() {
                             }</div>
                           </div>
                         </div>
+                      </div>
 
-                        {isRoundTrip && returnDate && (
-                          <div style={{ ...s.ticketFlightCard, marginTop: '16px', borderTop: '1px dashed hsl(var(--b3))', paddingTop: '16px' }}>
+                      {/* RETURN FLIGHT - SEPARATE CARD */}
+                      {isRoundTrip && returnDate && (
+                        <>
+                          {/* Divider */}
+                          <div style={{ height: '1px', background: 'hsl(var(--b3))', margin: '32px 0 0 0', borderTop: '1px dashed hsl(var(--b3))' }} />
+
+                          {/* Return Flight Label */}
+                          <div style={{ fontSize: '13px', fontWeight: 800, color: 'hsl(var(--p))', marginBottom: '16px', marginTop: '32px', textTransform: 'uppercase', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ fontSize: '16px' }}>🔄</span>
+                            RETURN FLIGHT
+                          </div>
+
+                          {/* Return Flight Card - SEPARATE */}
+                          <div style={s.ticketFlightCard}>
                             <div style={s.tfHeader}>
                               <div style={{ 
                                 ...s.logoBox, 
@@ -1321,7 +1522,7 @@ export default function BookingPage() {
                               </div>
                               <div>
                                 <div style={{ fontWeight: 800, fontSize: '16px' }}>
-                                  {returnFlight ? returnFlight.airline : flight.airline} (Return)
+                                  {returnFlight ? returnFlight.airline : flight.airline}
                                 </div>
                                 <div style={{ fontSize: '12px', color: 'hsl(var(--bc) / 0.6)' }}>
                                   {returnFlight ? returnFlight.flightNumber : flight.flightNumber.replace(/\d+$/, (m) => String(Number(m) + 1))} · Economy
@@ -1367,8 +1568,8 @@ export default function BookingPage() {
                               </div>
                             </div>
                           </div>
-                        )}
-                      </div>
+                        </>
+                      )}
 
                       <div style={s.ticketInfoRow}>
                         <div style={s.tiBlock}>

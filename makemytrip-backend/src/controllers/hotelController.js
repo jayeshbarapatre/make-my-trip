@@ -41,8 +41,9 @@ export const searchHotels = async (req, res) => {
       nightsCount = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24))
     }
 
-    const total = await prisma.hotel.count({ where })
-    const hotels = await prisma.hotel.findMany({
+    const db = req.mockPrisma || prisma
+    const total = await db.hotel.count({ where })
+    const hotels = await db.hotel.findMany({
       where,
       orderBy: { rating: 'desc' },
       skip,
@@ -72,14 +73,15 @@ export const searchHotels = async (req, res) => {
 
 export const getHotelDetails = async (req, res) => {
   try {
-    const hotel = await prisma.hotel.findUnique({
+    const db = req.mockPrisma || prisma
+    const hotel = await db.hotel.findUnique({
       where: { id: req.params.id }
     })
-    
+
     if (!hotel) {
       return res.status(404).json({ message: 'Hotel not found' })
     }
-    
+
     res.json({ data: hotel })
   } catch (err) {
     res.status(500).json({ message: err.message })

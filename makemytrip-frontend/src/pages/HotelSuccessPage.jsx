@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -6,6 +7,67 @@ import '../styles/HotelSuccessPage.css';
 export default function HotelSuccessPage() {
   const location = useLocation();
   const navigate  = useNavigate();
+
+  // Save booking to localStorage on success page load
+  useEffect(() => {
+    const booking = location.state?.booking || {};
+    const hotel = location.state?.hotel || {};
+
+    if (booking?.bookingId || booking?.id) {
+      const totalAmount = location.state?.totalAmount || booking.totalAmount || 0;
+
+      const hotelBooking = {
+        id: booking.bookingId || booking.id || 'HTL-' + Date.now(),
+        bookingId: booking.bookingId || 'MMT-HT-' + Math.floor(100000 + Math.random() * 900000),
+        pnr: booking.pnr || 'HTL-' + Math.floor(100000 + Math.random() * 900000),
+        status: 'confirmed',
+        type: 'hotel',
+        // Hotel Info
+        hotelName: hotel.name || location.state?.hotelName || 'Hotel',
+        hotelLocality: hotel.locality || hotel.location || location.state?.hotelLocality || '',
+        roomName: location.state?.roomName || booking.travellers?.roomName || '',
+        checkIn: location.state?.checkIn || booking.departureDate || '',
+        checkOut: location.state?.checkOut || booking.returnDate || '',
+        guests: location.state?.guests || booking.travellers?.guests || '',
+        nights: location.state?.nights || booking.nights || 1,
+        rooms: location.state?.rooms || booking.travellers?.rooms || 1,
+        totalAmount: totalAmount,
+        paymentId: booking.paymentId || '',
+        createdAt: new Date().toISOString(),
+        // ✅ ENRICHED HOTEL FIELDS
+        fromCity: hotel.name || location.state?.hotelName || 'Hotel',
+        toCity: hotel.locality || hotel.location || location.state?.hotelLocality || '',
+        departureDate: location.state?.checkIn || booking.departureDate || '',
+        returnDate: location.state?.checkOut || booking.returnDate || '',
+        travellers: {
+          rooms: location.state?.rooms || booking.travellers?.rooms || 1,
+          adults: booking.travellers?.adults || 1,
+          guests: location.state?.guests || booking.travellers?.guests || '',
+          nights: location.state?.nights || booking.nights || 1
+        },
+        // Fare breakdown
+        baseFare: totalAmount * 0.8,
+        taxes: totalAmount * 0.15,
+        convenience: totalAmount * 0.05,
+        discount: 0,
+        gst: totalAmount * 0.05,
+        // Payment
+        paymentMethod: 'credit_card',
+        paymentStatus: 'completed',
+        transactionId: booking.paymentId || ''
+      };
+
+      // Save to localStorage
+      const existingBookings = JSON.parse(localStorage.getItem('mmt_bookings') || '[]');
+      const bookingExists = existingBookings.some(b => b.bookingId === hotelBooking.bookingId);
+
+      if (!bookingExists) {
+        existingBookings.push(hotelBooking);
+        localStorage.setItem('mmt_bookings', JSON.stringify(existingBookings));
+        console.log('💾 Hotel booking saved to localStorage:', existingBookings.length);
+      }
+    }
+  }, [location.state]);
 
   // ── Primary: API booking response ────────────────────────────────────────
   const booking = location.state?.booking || {};

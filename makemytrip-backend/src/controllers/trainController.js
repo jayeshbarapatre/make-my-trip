@@ -36,7 +36,8 @@ export const searchTraines = async (req, res) => {
 
 export const getTrainById = async (req, res) => {
   try {
-    const train = await prisma.train.findUnique({ where: { id: req.params.id } })
+    const db = req.mockPrisma || prisma
+    const train = await db.train.findUnique({ where: { id: req.params.id } })
 
     if (!train) {
       return res.status(404).json({ success: false, message: 'Train not found' })

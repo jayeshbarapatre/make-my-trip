@@ -152,26 +152,41 @@ export default function HotelPaymentPage() {
               toCity: hotel.locality || hotel.location || '',
               departureDate: checkIn,
               returnDate: checkOut,
+              checkIn,
+              checkOut,
               travellers: {
                 guests,
                 rooms,
                 adults: guestsObj.adults,
                 method: methodName || selectedMethod,
                 roomName,
-                bookEntireHotel
+                bookEntireHotel,
+                nights
               },
+              passengers: [{
+                name: user?.name || 'Guest',
+                email: user?.email || ''
+              }],
               totalAmount: finalDue,
               paymentId: response.razorpay_payment_id,
               orderId: response.razorpay_order_id,
               hotelName: hotel.name,
               hotelLocality: hotel.locality || hotel.location || '',
               roomName,
-              checkIn,
-              checkOut,
               nights,
               rooms,
               userEmail: user?.email,
-              userName: user?.name
+              userName: user?.name,
+              // ✅ ENRICHED HOTEL FIELDS
+              baseFare: finalDue * 0.8,
+              taxes: finalDue * 0.15,
+              convenience: finalDue * 0.05,
+              discount: 0,
+              gst: finalDue * 0.05,
+              // Payment
+              paymentMethod: 'credit_card',
+              paymentStatus: 'completed',
+              transactionId: response.razorpay_payment_id
             };
 
             const bookingResponse = await api.post('/bookings', bookingPayload);

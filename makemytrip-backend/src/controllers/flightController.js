@@ -65,7 +65,8 @@ export const searchFlights = async (req, res) => {
 
 export const getFlightById = async (req, res) => {
   try {
-    const flight = await prisma.flight.findUnique({ where: { id: req.params.id } })
+    const db = req.mockPrisma || prisma
+    const flight = await db.flight.findUnique({ where: { id: req.params.id } })
     if (!flight) {
       return res.status(404).json({ message: 'Flight not found' })
     }
@@ -77,7 +78,8 @@ export const getFlightById = async (req, res) => {
 
 export const getAllFlights = async (req, res) => {
   try {
-    const flights = await prisma.flight.findMany({ orderBy: { price: 'asc' } })
+    const db = req.mockPrisma || prisma
+    const flights = await db.flight.findMany({ orderBy: { price: 'asc' } })
     res.json({ data: flights })
   } catch (err) {
     res.status(500).json({ message: err.message })
@@ -95,7 +97,8 @@ export const createFlight = async (req, res) => {
     const depObj = typeof departure === 'string' ? JSON.parse(departure) : departure
     const arrObj = typeof arrival === 'string' ? JSON.parse(arrival) : arrival
 
-    const flight = await prisma.flight.create({
+    const db = req.mockPrisma || prisma
+    const flight = await db.flight.create({
       data: {
         airline,
         flightNumber,
@@ -123,7 +126,8 @@ export const updateFlight = async (req, res) => {
     const { id } = req.params
     const { airline, departure, arrival, duration, price, seats, stops, aircraft, baggage, isActive } = req.body
 
-    const flight = await prisma.flight.findUnique({ where: { id } })
+    const db = req.mockPrisma || prisma
+    const flight = await db.flight.findUnique({ where: { id } })
     if (!flight) {
       return res.status(404).json({ message: 'Flight not found' })
     }
@@ -138,7 +142,7 @@ export const updateFlight = async (req, res) => {
       arrObj = typeof arrival === 'string' ? JSON.parse(arrival) : arrival
     }
 
-    const updated = await prisma.flight.update({
+    const updated = await db.flight.update({
       where: { id },
       data: {
         airline: airline || flight.airline,
@@ -164,12 +168,13 @@ export const updateFlight = async (req, res) => {
 export const deleteFlight = async (req, res) => {
   try {
     const { id } = req.params
-    const flight = await prisma.flight.findUnique({ where: { id } })
+    const db = req.mockPrisma || prisma
+    const flight = await db.flight.findUnique({ where: { id } })
     if (!flight) {
       return res.status(404).json({ message: 'Flight not found' })
     }
 
-    await prisma.flight.delete({ where: { id } })
+    await db.flight.delete({ where: { id } })
     res.json({ message: 'Flight deleted successfully' })
   } catch (err) {
     res.status(500).json({ message: err.message })

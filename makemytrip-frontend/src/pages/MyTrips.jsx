@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { bookingService, paymentService, authService } from '../services/authService'
 import BookingCard from '../components/BookingCard'
+import EnhancedBookingDetailsModal from '../components/EnhancedBookingDetailsModal'
 import { useAuth } from '../context/AuthContext'
 
 export default function MyTrips() {
@@ -16,10 +17,18 @@ export default function MyTrips() {
   }, [user, navigate])
 
   const [activeTab, setActiveTab] = useState('upcoming')
-  const [typeFilter, setTypeFilter] = useState('all') // 'all', 'flight', 'hotel'
+  const [typeFilter, setTypeFilter] = useState('all') // 'all', 'flight', 'hotel', 'bus', 'cab', 'train'
   const [bookings, setBookings] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedBooking, setSelectedBooking] = useState(null)
+
+  // Search & Filter
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchField, setSearchField] = useState('all') // 'all', 'bookingId', 'city', 'airline', 'passenger'
+  const [dateRangeStart, setDateRangeStart] = useState('')
+  const [dateRangeEnd, setDateRangeEnd] = useState('')
+  const [showFilters, setShowFilters] = useState(false)
+  const [sortOrder, setSortOrder] = useState('latest') // 'latest', 'oldest', 'priceHigh', 'priceLow'
 
   // Notification state
   const [notification, setNotification] = useState({ show: false, message: '', type: 'success' })
@@ -45,15 +54,58 @@ export default function MyTrips() {
   const fetchBookings = async () => {
     setLoading(true)
     try {
-      if (!user?.id) {
-        setLoading(false)
-        return
+      let backendBookings = []
+      let localBookings = []
+
+      // Try backend first
+      if (user?.id) {
+        try {
+          const response = await bookingService.getUserBookings(user.id)
+          // Make sure we got an array
+          if (Array.isArray(response)) {
+            backendBookings = response
+          } else if (Array.isArray(response?.data)) {
+            backendBookings = response.data
+          }
+          console.log('✅ Backend bookings:', backendBookings.length, backendBookings)
+        } catch (backendErr) {
+          console.warn("⚠️ Backend fetch failed:", backendErr.message)
+        }
       }
-      const data = await bookingService.getUserBookings(user.id)
-      setBookings(data || [])
+
+      // Always load localStorage as secondary source
+      try {
+        localBookings = JSON.parse(localStorage.getItem('mmt_bookings') || '[]')
+        if (localBookings.length > 0) {
+          console.log('💾 localStorage bookings:', localBookings.length, localBookings)
+        }
+      } catch (err) {
+        console.warn('Error reading localStorage:', err)
+      }
+
+      // 🔄 MERGE: Combine backend + localStorage (avoid duplicates)
+      const allBookings = [...backendBookings]
+      const backendIds = new Set(backendBookings.map(b => b.bookingId || b.id))
+
+      // Add localStorage bookings that aren't already in backend
+      for (const localBooking of localBookings) {
+        if (!backendIds.has(localBooking.bookingId) && !backendIds.has(localBooking.id)) {
+          allBookings.push(localBooking)
+        }
+      }
+
+      console.log('📊 Final merged bookings:', allBookings.length)
+      setBookings(allBookings || [])
     } catch (err) {
       console.error("Failed to load trips:", err)
-      showNotification('Failed to load your trips', 'error')
+      // Last resort: just use localStorage
+      try {
+        const localBookings = JSON.parse(localStorage.getItem('mmt_bookings') || '[]')
+        console.log('📦 Fallback to localStorage only:', localBookings.length)
+        setBookings(localBookings)
+      } catch (e) {
+        setBookings([])
+      }
     } finally {
       setLoading(false)
     }
@@ -136,12 +188,74 @@ export default function MyTrips() {
     }
   }
 
+  // Search & Filter Logic
+  const searchBookings = (bookingsToSearch) => {
+    if (!searchQuery) return bookingsToSearch
+
+    const query = searchQuery.toLowerCase()
+    return bookingsToSearch.filter(b => {
+      if (searchField === 'all') {
+        return (
+          (b.bookingId && b.bookingId.toLowerCase().includes(query)) ||
+          (b.fromCity && b.fromCity.toLowerCase().includes(query)) ||
+          (b.toCity && b.toCity.toLowerCase().includes(query)) ||
+          (b.airlineName && b.airlineName.toLowerCase().includes(query)) ||
+          (b.pnr && b.pnr.toLowerCase().includes(query)) ||
+          (Array.isArray(b.travellers) && b.travellers.some(t =>
+            (t.firstName && t.firstName.toLowerCase().includes(query)) ||
+            (t.lastName && t.lastName.toLowerCase().includes(query))
+          ))
+        )
+      } else if (searchField === 'bookingId') {
+        return b.bookingId && b.bookingId.toLowerCase().includes(query)
+      } else if (searchField === 'city') {
+        return (b.fromCity && b.fromCity.toLowerCase().includes(query)) ||
+               (b.toCity && b.toCity.toLowerCase().includes(query))
+      } else if (searchField === 'airline') {
+        return b.airlineName && b.airlineName.toLowerCase().includes(query)
+      } else if (searchField === 'passenger') {
+        return Array.isArray(b.travellers) && b.travellers.some(t =>
+          (t.firstName && t.firstName.toLowerCase().includes(query)) ||
+          (t.lastName && t.lastName.toLowerCase().includes(query))
+        )
+      }
+      return true
+    })
+  }
+
+  const filterByDateRange = (bookingsToFilter) => {
+    if (!dateRangeStart && !dateRangeEnd) return bookingsToFilter
+
+    return bookingsToFilter.filter(b => {
+      const bookingDate = new Date(b.createdAt || b.departureDate)
+      if (dateRangeStart && new Date(dateRangeStart) > bookingDate) return false
+      if (dateRangeEnd && new Date(dateRangeEnd) < bookingDate) return false
+      return true
+    })
+  }
+
   // Filtering logic
   const filteredBookings = bookings.filter(b => {
     const statusToMatch = activeTab === 'upcoming' ? 'confirmed' : activeTab
     const statusMatch = b.status === statusToMatch
     const typeMatch = typeFilter === 'all' || b.type === typeFilter
     return statusMatch && typeMatch
+  })
+
+  const searchFiltered = searchBookings(filteredBookings)
+  const dateFiltered = filterByDateRange(searchFiltered)
+
+  const sortedBookings = dateFiltered.sort((a, b) => {
+    if (sortOrder === 'latest') {
+      return new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
+    } else if (sortOrder === 'oldest') {
+      return new Date(a.createdAt || 0) - new Date(b.createdAt || 0)
+    } else if (sortOrder === 'priceHigh') {
+      return b.totalAmount - a.totalAmount
+    } else if (sortOrder === 'priceLow') {
+      return a.totalAmount - b.totalAmount
+    }
+    return 0
   })
 
   return (
@@ -182,7 +296,7 @@ export default function MyTrips() {
         </div>
 
         {/* Category Filter (Flight / Hotel) */}
-        <div style={{ display: 'flex', gap: '16px', marginBottom: '24px' }}>
+        <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', flexWrap: 'wrap' }}>
           {[
             { id: 'all', label: 'All Services', icon: '📋' },
             { id: 'flight', label: 'Flights', icon: '✈️' },
@@ -214,6 +328,158 @@ export default function MyTrips() {
               {type.label}
             </button>
           ))}
+        </div>
+
+        {/* Search & Filter Bar */}
+        <div style={{ background: 'hsl(var(--b1))', border: '1px solid hsl(var(--b3))', borderRadius: '12px', padding: '20px', marginBottom: '24px' }}>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap' }}>
+            <div style={{ flex: 1, minWidth: '250px', display: 'flex', gap: '8px' }}>
+              <input
+                type="text"
+                placeholder="Search by Booking ID, City, Airline..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={{
+                  flex: 1,
+                  padding: '10px 14px',
+                  border: '1px solid hsl(var(--b3))',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  outline: 'none',
+                  background: 'hsl(var(--b2))',
+                  color: 'hsl(var(--bc))',
+                }}
+              />
+              <select
+                value={searchField}
+                onChange={(e) => setSearchField(e.target.value)}
+                style={{
+                  padding: '10px 12px',
+                  border: '1px solid hsl(var(--b3))',
+                  borderRadius: '8px',
+                  fontSize: '13px',
+                  outline: 'none',
+                  background: 'hsl(var(--b2))',
+                  color: 'hsl(var(--bc))',
+                  cursor: 'pointer'
+                }}
+              >
+                <option value="all">All Fields</option>
+                <option value="bookingId">Booking ID</option>
+                <option value="city">City</option>
+                <option value="airline">Airline</option>
+                <option value="passenger">Passenger Name</option>
+              </select>
+            </div>
+            <select
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value)}
+              style={{
+                padding: '10px 12px',
+                border: '1px solid hsl(var(--b3))',
+                borderRadius: '8px',
+                fontSize: '13px',
+                outline: 'none',
+                background: 'hsl(var(--b2))',
+                color: 'hsl(var(--bc))',
+                cursor: 'pointer'
+              }}
+            >
+              <option value="latest">Latest First</option>
+              <option value="oldest">Oldest First</option>
+              <option value="priceHigh">Price: High to Low</option>
+              <option value="priceLow">Price: Low to High</option>
+            </select>
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              style={{
+                padding: '10px 16px',
+                border: '1px solid hsl(var(--b3))',
+                borderRadius: '8px',
+                background: showFilters ? 'hsl(var(--bc) / 0.1)' : 'hsl(var(--b2))',
+                color: 'hsl(var(--bc))',
+                fontSize: '13px',
+                fontWeight: 700,
+                cursor: 'pointer'
+              }}
+            >
+              🔽 {showFilters ? 'Hide' : 'Show'} Filters
+            </button>
+          </div>
+
+          {/* Advanced Filters */}
+          {showFilters && (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', paddingTop: '12px', borderTop: '1px solid hsl(var(--b3))' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'hsl(var(--bc) / 0.6))', marginBottom: '6px' }}>From Date</label>
+                <input
+                  type="date"
+                  value={dateRangeStart}
+                  onChange={(e) => setDateRangeStart(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '8px',
+                    border: '1px solid hsl(var(--b3))',
+                    borderRadius: '6px',
+                    fontSize: '13px',
+                    outline: 'none',
+                    background: 'hsl(var(--b2))',
+                    color: 'hsl(var(--bc))',
+                    cursor: 'pointer'
+                  }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'hsl(var(--bc) / 0.6))', marginBottom: '6px' }}>To Date</label>
+                <input
+                  type="date"
+                  value={dateRangeEnd}
+                  onChange={(e) => setDateRangeEnd(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '8px',
+                    border: '1px solid hsl(var(--b3))',
+                    borderRadius: '6px',
+                    fontSize: '13px',
+                    outline: 'none',
+                    background: 'hsl(var(--b2))',
+                    color: 'hsl(var(--bc))',
+                    cursor: 'pointer'
+                  }}
+                />
+              </div>
+              {(searchQuery || dateRangeStart || dateRangeEnd) && (
+                <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+                  <button
+                    onClick={() => {
+                      setSearchQuery('')
+                      setSearchField('all')
+                      setDateRangeStart('')
+                      setDateRangeEnd('')
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '8px',
+                      border: '1px solid hsl(var(--er))',
+                      borderRadius: '6px',
+                      background: 'hsl(var(--er) / 0.08)',
+                      color: 'hsl(var(--er))',
+                      fontSize: '13px',
+                      fontWeight: 700,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Clear Filters
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Results Count */}
+          <div style={{ fontSize: '12px', color: 'hsl(var(--bc) / 0.55))', marginTop: '12px' }}>
+            {sortedBookings.length} booking{sortedBookings.length !== 1 ? 's' : ''} found
+          </div>
         </div>
 
         {/* Tab Selection Navigation */}
@@ -249,14 +515,14 @@ export default function MyTrips() {
           <div style={{ padding: '60px 20px', textAlign: 'center', fontSize: '18px', color: 'hsl(var(--bc) / 0.55)', fontWeight: 600 }}>
             ⏳ Loading your trips...
           </div>
-        ) : filteredBookings.length === 0 ? (
+        ) : sortedBookings.length === 0 ? (
           <div style={{ background: 'hsl(var(--b1))', borderRadius: '16px', padding: '80px 20px', textAlign: 'center', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', border: '1px solid hsl(var(--b3))' }}>
             <div style={{ fontSize: '48px', marginBottom: '16px' }}>🧳</div>
-            <h3 style={{ margin: '0 0 8px', fontSize: '22px', fontWeight: 800, color: 'hsl(var(--bc))' }}>No {activeTab} bookings found</h3>
-            <p style={{ margin: 0, color: 'hsl(var(--bc) / 0.55)', fontSize: '15px' }}>Plan your next vacation or flight search from the MakeMyTrip homepage.</p>
+            <h3 style={{ margin: '0 0 8px', fontSize: '22px', fontWeight: 800, color: 'hsl(var(--bc))' }}>No bookings found</h3>
+            <p style={{ margin: 0, color: 'hsl(var(--bc) / 0.55)', fontSize: '15px' }}>{searchQuery || dateRangeStart ? 'Try adjusting your search filters or plan your next vacation from the MakeMyTrip homepage.' : 'Plan your next vacation or flight search from the MakeMyTrip homepage.'}</p>
           </div>
         ) : (
-          filteredBookings.map(b => (
+          sortedBookings.map(b => (
             <BookingCard
               key={b.id}
               booking={b}
@@ -272,45 +538,12 @@ export default function MyTrips() {
 
       </div>
 
-      {/* ── Modal 1: Booking Details view ── */}
+      {/* ── Enhanced Booking Details Modal ── */}
       {selectedBooking && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px' }}>
-          <div style={{ background: 'hsl(var(--b1))', width: '100%', maxWidth: '650px', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}>
-            <div style={{ background: 'hsl(var(--b2))', borderBottom: '1px solid hsl(var(--b3))', padding: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 800, color: 'hsl(var(--bc))' }}>Trip Reference Sheet</h3>
-                <div style={{ fontSize: '13px', color: 'hsl(var(--bc) / 0.55)', marginTop: '4px' }}>PNR: {selectedBooking.pnr}</div>
-              </div>
-              <button onClick={() => setSelectedBooking(null)} style={{ background: 'transparent', border: 'none', color: 'hsl(var(--bc))', fontSize: '24px', cursor: 'pointer' }}>✕</button>
-            </div>
-
-            <div style={{ padding: '28px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', background: 'hsl(var(--b2))', padding: '16px', borderRadius: '8px' }}>
-                <div>
-                  <div style={{ fontSize: '12px', color: 'hsl(var(--bc) / 0.55)' }}>From City / Origin</div>
-                  <div style={{ fontSize: '16px', fontWeight: 700, color: 'hsl(var(--bc))' }}>{selectedBooking.fromCity}</div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '12px', color: 'hsl(var(--bc) / 0.55)' }}>Destination / Property</div>
-                  <div style={{ fontSize: '16px', fontWeight: 700, color: 'hsl(var(--bc))' }}>{selectedBooking.toCity}</div>
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid hsl(var(--b3))', paddingTop: '20px' }}>
-                <div>
-                  <div style={{ fontSize: '12px', color: 'hsl(var(--bc) / 0.55)' }}>Total Billed Amount</div>
-                  <div style={{ fontSize: '24px', fontWeight: 900, color: 'hsl(var(--bc))' }}>₹{selectedBooking.totalAmount?.toLocaleString()}</div>
-                </div>
-                <button
-                  onClick={() => { alert("E-ticket receipt downloaded."); setSelectedBooking(null); }}
-                  style={{ background: 'hsl(var(--p))', color: 'hsl(var(--pc))', border: 'none', padding: '12px 24px', borderRadius: '8px', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }}
-                >
-                  Confirm & Download
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <EnhancedBookingDetailsModal
+          booking={selectedBooking}
+          onClose={() => setSelectedBooking(null)}
+        />
       )}
 
       {/* ── Modal 2: Razorpay Payment Simulation Checkout ── */}

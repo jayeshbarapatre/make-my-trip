@@ -52,7 +52,8 @@ export const searchBuses = async (req, res) => {
       ]
     }
 
-    let allBuses = await prisma.bus.findMany({
+    const db = req.mockPrisma || prisma
+    let allBuses = await db.bus.findMany({
       where: baseWhere,
       orderBy: { price: 'asc' }
     })
@@ -90,7 +91,8 @@ export const searchBuses = async (req, res) => {
 
 export const getBusById = async (req, res) => {
   try {
-    const bus = await prisma.bus.findUnique({ where: { id: req.params.id } })
+    const db = req.mockPrisma || prisma
+    const bus = await db.bus.findUnique({ where: { id: req.params.id } })
 
     if (!bus) {
       return res.status(404).json({ success: false, message: 'Bus not found' })

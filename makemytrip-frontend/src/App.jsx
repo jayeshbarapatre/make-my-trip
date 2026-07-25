@@ -40,6 +40,7 @@ import InsurancePage from './pages/InsurancePage'
 import ToursPage from './pages/ToursPage'
 import VisaPage from './pages/VisaPage'
 import MyTrips from './pages/MyTrips'
+import BookingDetailsPage from './pages/BookingDetailsPage'
 import Profile from './pages/Profile'
 import { AdminProvider } from './context/AdminContext'
 import { VendorProvider } from './context/VendorContext'
@@ -307,6 +308,7 @@ function AppContent() {
         <Route path="/tours" element={<ToursPage />} />
         <Route path="/visa" element={<VisaPage />} />
         <Route path="/my-trips" element={<ProtectedRoute><MyTrips /></ProtectedRoute>} />
+        <Route path="/booking/:bookingId" element={<ProtectedRoute><BookingDetailsPage /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
 
         <Route path="/admin/login" element={<AdminLoginPage />} />

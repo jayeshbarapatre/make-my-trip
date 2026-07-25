@@ -1,6 +1,6 @@
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "mongodb"
+  url      = env("MONGODB_URI")
 }
 
 generator client {
@@ -8,7 +8,7 @@ generator client {
 }
 
 model User {
-  id            String    @id @default(uuid())
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
   name          String
   email         String    @unique
   phone         String
@@ -29,24 +29,64 @@ model User {
 }
 
 model Booking {
-  id            String   @id @default(uuid())
-  userId        String
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  type          String   // "flight" | "hotel"
-  fromCity      String
-  toCity        String
-  departureDate String
-  returnDate    String?
-  travellers    Json
-  totalAmount   Float
-  status        String   @default("confirmed") // "confirmed" | "cancelled"
-  bookingId     String   @unique
-  pnr           String
-  createdAt     DateTime @default(now())
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String   @db.ObjectId
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type            String   // "flight" | "hotel" | "train" | "bus" | "cab"
+  fromCity        String
+  toCity          String
+  departureDate   String
+  returnDate      String?
+
+  // Traveller & Passenger Info
+  travellers      Json     // { adults, children, infants, passengers: [...] }
+  passengers      Json?    // Array of passenger objects with name, age, gender, seat, meal pref
+
+  // Flight/Service Details
+  airlineName     String?
+  airlineCode     String?
+  flightNumber    String?
+  trainNumber     String?
+  busNumber       String?
+  cabType         String?
+  pnr             String
+  bookingId       String   @unique
+
+  // Route & Journey Details
+  departureTime   String?
+  arrivalTime     String?
+  departureAirport String?
+  arrivalAirport  String?
+  departureTerminal String?
+  arrivalTerminal String?
+  boardingTime    String?
+  stops           Int      @default(0)
+  cabinClass      String?  // Economy, Business, First, etc.
+  numBags         Int      @default(1)
+  travelInsurance Boolean  @default(false)
+
+  // Fare Breakdown
+  baseFare        Float    @default(0)
+  taxes           Float    @default(0)
+  convenience     Float    @default(0)
+  discount        Float    @default(0)
+  couponCode      String?
+  gst             Float    @default(0)
+  totalAmount     Float
+
+  // Payment Details
+  paymentMethod   String?  // "credit_card" | "debit_card" | "upi" | "wallet" | "cash"
+  paymentStatus   String   @default("completed") // "pending" | "completed" | "failed"
+  transactionId   String?
+
+  // Booking Status
+  status          String   @default("confirmed") // "confirmed" | "cancelled" | "completed"
+
+  createdAt       DateTime @default(now())
 }
 
 model Flight {
-  id              String   @id @default(uuid())
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
   airline         String
   flightNumber    String   @unique
   from            String?
@@ -70,7 +110,7 @@ model Flight {
 }
 
 model Hotel {
-  id              String   @id @default(uuid())
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
   name            String
   city            String
   location        String?
@@ -88,7 +128,7 @@ model Hotel {
   checkin         String?
   checkout        String?
   isActive        Boolean  @default(true)
-  vendorId        String?
+  vendorId        String?  @db.ObjectId
   vendor          User?    @relation("HotelVendor", fields: [vendorId], references: [id], onDelete: SetNull)
   listingStatus   String   @default("DRAFT") // "DRAFT" | "PENDING_APPROVAL" | "APPROVED" | "REJECTED"
   rejectionReason String?
@@ -101,8 +141,8 @@ model Hotel {
 }
 
 model RoomCategory {
-  id              String   @id @default(uuid())
-  hotelId         String
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  hotelId         String   @db.ObjectId
   hotel           Hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade)
   categoryName    String
   description     String?
@@ -118,8 +158,8 @@ model RoomCategory {
 }
 
 model Bus {
-  id              String   @id @default(uuid())
-  vendorId        String?
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  vendorId        String?  @db.ObjectId
   vendor          User?    @relation("BusVendor", fields: [vendorId], references: [id], onDelete: SetNull)
   operatorName    String
   busNumber       String   @unique
@@ -143,8 +183,8 @@ model Bus {
 }
 
 model Cab {
-  id              String   @id @default(uuid())
-  vendorId        String?
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  vendorId        String?  @db.ObjectId
   vendor          User?    @relation("CabVendor", fields: [vendorId], references: [id], onDelete: SetNull)
   operatorName    String
   cabNumber       String   @unique
@@ -168,7 +208,7 @@ model Cab {
 }
 
 model Train {
-  id              String   @id @default(uuid())
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
   operatorName    String
   trainNumber     String   @unique
   type            String
@@ -186,7 +226,7 @@ model Train {
 }
 
 model CmsPage {
-  id               String   @id @default(uuid())
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
   title            String
   slug             String   @unique
   metaTitle        String?
@@ -197,14 +237,14 @@ model CmsPage {
   schemaJson       String?
   bannerImage      String?
   shortDescription String?
-  content          String   @db.Text
+  content          String
   status           String   @default("active")
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 }
 
 model FooterSection {
-  id        String        @id @default(uuid())
+  id        String        @id @default(auto()) @map("_id") @db.ObjectId
   title     String
   sortOrder Int           @default(0)
   status    String        @default("active")
@@ -214,8 +254,8 @@ model FooterSection {
 }
 
 model FooterLink {
-  id          String        @id @default(uuid())
-  sectionId   String
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  sectionId   String        @db.ObjectId
   section     FooterSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
   title       String
   url         String?
@@ -228,21 +268,21 @@ model FooterLink {
 }
 
 model ContactInquiry {
-  id        String   @id @default(uuid())
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   name      String
   email     String
   phone     String?
   subject   String
-  message   String   @db.Text
+  message   String
   status    String   @default("new")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Notification {
-  id          String   @id @default(uuid())
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
   title       String
-  message     String   @db.Text
+  message     String
   type        String
   referenceId String?
   isRead      Boolean  @default(false)
@@ -250,12 +290,12 @@ model Notification {
 }
 
 model JobPosition {
-  id           String           @id @default(uuid())
+  id           String           @id @default(auto()) @map("_id") @db.ObjectId
   title        String
   department   String
   location     String
   experience   String
-  description  String           @db.Text
+  description  String
   status       String           @default("active")
   applications JobApplication[]
   createdAt    DateTime         @default(now())
@@ -263,23 +303,23 @@ model JobPosition {
 }
 
 model JobApplication {
-  id        String      @id @default(uuid())
-  jobId     String
+  id        String      @id @default(auto()) @map("_id") @db.ObjectId
+  jobId     String      @db.ObjectId
   job       JobPosition @relation(fields: [jobId], references: [id], onDelete: Cascade)
   name      String
   email     String
   phone     String?
   resume    String?
-  message   String?     @db.Text
+  message   String?
   status    String      @default("pending")
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
 }
 
 model Faq {
-  id        String   @id @default(uuid())
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   question  String
-  answer    String   @db.Text
+  answer    String
   sortOrder Int      @default(0)
   status    String   @default("active")
   createdAt DateTime @default(now())
@@ -287,7 +327,7 @@ model Faq {
 }
 
 model Setting {
-  id                  String   @id @default(uuid())
+  id                  String   @id @default(auto()) @map("_id") @db.ObjectId
   primaryColor        String   @default("#003580")
   secondaryColor      String   @default("#0F172A")
   accentColor         String   @default("#1a73e8")
@@ -301,7 +341,7 @@ model Setting {
 }
 
 model MediaLibrary {
-  id        String   @id @default(uuid())
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   fileName  String
   fileUrl   String
   fileType  String

@@ -41,7 +41,9 @@ export default function ThemeSwitcher() {
           height: '36px',
         }}
         onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        onMouseLeave={() => {
+          setIsHovered(false)
+        }}
         onClick={(e) => {
           e.preventDefault()
           setIsOpen(!isOpen)
@@ -50,6 +52,9 @@ export default function ThemeSwitcher() {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault()
             setIsOpen(!isOpen)
+          } else if (e.key === 'Escape') {
+            e.preventDefault()
+            setIsOpen(false)
           }
         }}
       >
@@ -93,7 +98,8 @@ export default function ThemeSwitcher() {
         </svg>
       </div>
 
-      {/* Theme List Dropdown (Screenshot 3) */}
+      {/* Theme List Dropdown - Only render when open */}
+      {isOpen && (
       <div
         className="dropdown-content bg-base-200 text-base-content rounded-box border-white/5 shadow-2xl outline-black/5"
         style={{
@@ -190,6 +196,7 @@ export default function ThemeSwitcher() {
           })}
         </ul>
       </div>
+      )}
     </div>
   )
 }

@@ -366,10 +366,107 @@ export default function BusSearchResultsPage() {
 
   if (isLoading) {
     return (
-      <div style={{ padding: '2rem', textAlign: 'center' }}>
-        <div className="flex items-center justify-center gap-4">
-          <i className="fas fa-spinner fa-spin text-xl"></i>
-          <span>Loading buses...</span>
+      <div style={{ padding: '2rem 1rem', background: 'hsl(var(--b2))', minHeight: '60vh' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          {/* Header Skeleton */}
+          <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
+            <div style={{
+              height: '32px',
+              background: 'hsl(var(--b3))',
+              borderRadius: '8px',
+              marginBottom: '12px',
+              animation: 'pulse 2s infinite',
+              maxWidth: '400px',
+              margin: '0 auto 12px'
+            }}></div>
+            <div style={{
+              height: '16px',
+              background: 'hsl(var(--b3))',
+              borderRadius: '8px',
+              animation: 'pulse 2s infinite',
+              maxWidth: '300px',
+              margin: '0 auto'
+            }}></div>
+          </div>
+
+          {/* Bus Cards Skeleton */}
+          <div style={{ display: 'grid', gap: '16px' }}>
+            {[1, 2, 3, 4, 5].map((idx) => (
+              <div key={idx} style={{
+                background: 'hsl(var(--b1))',
+                borderRadius: '12px',
+                padding: '20px',
+                border: '1px solid hsl(var(--b3))',
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr 1fr 120px',
+                gap: '16px',
+                alignItems: 'center'
+              }}>
+                {/* Operator Skeleton */}
+                <div>
+                  <div style={{
+                    height: '20px',
+                    background: 'hsl(var(--b3))',
+                    borderRadius: '6px',
+                    marginBottom: '8px',
+                    animation: 'pulse 2s infinite',
+                    maxWidth: '200px'
+                  }}></div>
+                  <div style={{
+                    height: '14px',
+                    background: 'hsl(var(--b3))',
+                    borderRadius: '4px',
+                    animation: 'pulse 2s infinite',
+                    maxWidth: '150px'
+                  }}></div>
+                </div>
+
+                {/* Time Skeleton */}
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{
+                    height: '24px',
+                    background: 'hsl(var(--b3))',
+                    borderRadius: '6px',
+                    marginBottom: '8px',
+                    animation: 'pulse 2s infinite'
+                  }}></div>
+                  <div style={{
+                    height: '12px',
+                    background: 'hsl(var(--b3))',
+                    borderRadius: '4px',
+                    animation: 'pulse 2s infinite'
+                  }}></div>
+                </div>
+
+                {/* Price Skeleton */}
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{
+                    height: '28px',
+                    background: 'hsl(var(--b3))',
+                    borderRadius: '6px',
+                    animation: 'pulse 2s infinite',
+                    marginLeft: 'auto',
+                    maxWidth: '120px'
+                  }}></div>
+                </div>
+
+                {/* Button Skeleton */}
+                <div style={{
+                  height: '40px',
+                  background: 'hsl(var(--b3))',
+                  borderRadius: '6px',
+                  animation: 'pulse 2s infinite'
+                }}></div>
+              </div>
+            ))}
+          </div>
+
+          <style>{`
+            @keyframes pulse {
+              0%, 100% { opacity: 0.6 }
+              50% { opacity: 0.8 }
+            }
+          `}</style>
         </div>
       </div>
     )
