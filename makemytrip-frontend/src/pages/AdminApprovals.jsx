@@ -187,7 +187,7 @@ const AdminApprovals = () => {
                 </button>
                 <button
                   className="btn-primary"
-                  style={{ background: 'var(--success)', display: 'flex', alignItems: 'center', gap: '8px', padding: '0.625rem 1rem', fontSize: '0.9375rem', borderRadius: '0.5rem', cursor: 'pointer', border: 'none', color: '#fff' }}
+                  style={{ background: 'var(--success)', display: 'flex', alignItems: 'center', gap: '8px', padding: '0.625rem 1rem', fontSize: '0.9375rem', borderRadius: '0.5rem', cursor: 'pointer', border: 'none', color: 'hsl(var(--b1))' }}
                   onClick={confirmApprove}
                   disabled={processing}
                 >
@@ -266,7 +266,7 @@ const AdminApprovals = () => {
                 </button>
                 <button
                   className="btn-primary"
-                  style={{ background: 'var(--danger)', display: 'flex', alignItems: 'center', gap: '8px', padding: '0.625rem 1rem', fontSize: '0.9375rem', borderRadius: '0.5rem', cursor: 'pointer', border: 'none', color: '#fff' }}
+                  style={{ background: 'var(--danger)', display: 'flex', alignItems: 'center', gap: '8px', padding: '0.625rem 1rem', fontSize: '0.9375rem', borderRadius: '0.5rem', cursor: 'pointer', border: 'none', color: 'hsl(var(--b1))' }}
                   onClick={() => handleReject(rejectingId)}
                   disabled={processing || !rejectReason.trim()}
                 >

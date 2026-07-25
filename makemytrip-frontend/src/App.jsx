@@ -255,11 +255,11 @@ function AppContent() {
         const response = await cmsService.getSettings()
         const settings = response.data.data
         if (settings) {
-          document.documentElement.style.setProperty('--primary-color', settings.primaryColor || '#003580')
+          document.documentElement.style.setProperty('--primary-color', settings.primaryColor || 'hsl(var(--p))')
           document.documentElement.style.setProperty('--secondary-color', settings.secondaryColor || '#0F172A')
           document.documentElement.style.setProperty('--accent-color', settings.accentColor || '#1a73e8')
-          document.documentElement.style.setProperty('--footer-bg', settings.footerBg || '#003580')
-          document.documentElement.style.setProperty('--header-bg', settings.headerBg || '#ffffff')
+          document.documentElement.style.setProperty('--footer-bg', settings.footerBg || 'hsl(var(--p))')
+          document.documentElement.style.setProperty('--header-bg', settings.headerBg || 'hsl(var(--b1))')
         }
       } catch (err) {
         console.warn('Could not load theme settings:', err)

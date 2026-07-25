@@ -216,7 +216,7 @@ const AdminDashboard = () => {
                   <YAxis stroke={chartColors.text} style={{ fontSize: '12px' }} />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: theme === 'light' ? '#fff' : 'hsl(var(--bc) / 0.8)',
+                      backgroundColor: theme === 'light' ? 'hsl(var(--b1))' : 'hsl(var(--bc) / 0.8)',
                       border: `1px solid ${chartColors.grid}`,
                       borderRadius: '6px',
                       color: chartColors.text

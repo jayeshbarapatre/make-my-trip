@@ -13,7 +13,7 @@ export default function ProtectedRoute({ children }) {
         justifyContent: 'center',
         height: '100vh',
         fontSize: '18px',
-        color: '#666'
+        color: 'hsl(var(--nc))'
       }}>
         Loading...
       </div>

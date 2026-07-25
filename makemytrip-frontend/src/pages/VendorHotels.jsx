@@ -130,7 +130,7 @@ const VendorHotels = () => {
         </div>
 
         {error && (
-          <div style={{ padding: '16px', background: 'rgba(255, 77, 79, 0.1)', border: '1px solid rgba(255, 77, 79, 0.3)', borderRadius: '12px', color: '#ff4d4f', marginBottom: '24px' }}>
+          <div style={{ padding: '16px', background: 'rgba(255, 77, 79, 0.1)', border: '1px solid rgba(255, 77, 79, 0.3)', borderRadius: '12px', color: 'hsl(var(--er))', marginBottom: '24px' }}>
             {error}
           </div>
         )}
@@ -169,7 +169,7 @@ const VendorHotels = () => {
 
                   {/* Rejection Alert */}
                   {hotel.listingStatus === 'REJECTED' && hotel.rejectionReason && (
-                    <div style={{ padding: '12px', background: 'rgba(255, 77, 79, 0.05)', borderRadius: '10px', border: '1px dashed rgba(255, 77, 79, 0.3)', color: '#ff4d4f', fontSize: '12.5px', display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+                    <div style={{ padding: '12px', background: 'rgba(255, 77, 79, 0.05)', borderRadius: '10px', border: '1px dashed rgba(255, 77, 79, 0.3)', color: 'hsl(var(--er))', fontSize: '12.5px', display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
                       <i className="fas fa-exclamation-triangle" style={{ marginTop: '2px' }}></i>
                       <div>
                         <strong style={{ fontWeight: 600 }}>Rejection Reason:</strong> {hotel.rejectionReason}
@@ -304,7 +304,7 @@ const VendorHotels = () => {
                   width: '56px', height: '56px', borderRadius: '50%', flexShrink: 0,
                   display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px',
                   background: confirmDialog.type === 'delete' ? 'rgba(255, 77, 79, 0.12)' : 'rgba(46, 193, 88, 0.12)',
-                  color: confirmDialog.type === 'delete' ? '#ff4d4f' : '#2ec158',
+                  color: confirmDialog.type === 'delete' ? 'hsl(var(--er))' : '#2ec158',
                   border: `1px solid ${confirmDialog.type === 'delete' ? 'rgba(255, 77, 79, 0.2)' : 'rgba(46, 193, 88, 0.2)'}`
                 }}>
                   <i className={confirmDialog.type === 'delete' ? 'fas fa-trash-alt' : 'fas fa-paper-plane'}></i>

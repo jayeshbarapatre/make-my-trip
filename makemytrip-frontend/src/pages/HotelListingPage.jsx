@@ -10,7 +10,7 @@ import '../styles/UdaipurListing.css'
 /* ─────────── SVGs & Icons ─────────── */
 const I = {
   heart: (filled, c) => (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill={filled ? (c || "hsl(var(--er))") : "none"} stroke={filled ? (c || "hsl(var(--er))") : "#666"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill={filled ? (c || "hsl(var(--er))") : "none"} stroke={filled ? (c || "hsl(var(--er))") : "hsl(var(--nc))"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
     </svg>
   ),
@@ -170,7 +170,7 @@ function Checkbox({ label, count, checked, onChange, icon }) {
   return (
     <label className={"fc-row" + (checked ? " on" : "")} onClick={(e) => { e.preventDefault(); onChange(); }}>
       <span className={"fc-box" + (checked ? " on" : "")}>
-        {checked && <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
+        {checked && <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--b1))" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
       </span>
       <span className="fc-lbl">{icon}{label}</span>
       {count != null && <span className="fc-count">({count})</span>}
@@ -230,7 +230,7 @@ function MapPreview({ onOpen, pins }) {
         {/* pins */}
         {pins.slice(0, 6).map((p, i) => (
           <g key={i} transform={`translate(${p.x*200} ${p.y*130})`}>
-            <circle r="3" fill="hsl(var(--p))" stroke="#fff" strokeWidth="0.8"/>
+            <circle r="3" fill="hsl(var(--p))" stroke="hsl(var(--b1))" strokeWidth="0.8"/>
           </g>
         ))}
       </svg>
@@ -506,7 +506,7 @@ function HotelCard({ h, density, wishlist, toggleWishlist, onSelectHotel }) {
                     e.stopPropagation();
                     onSelectHotel && onSelectHotel(h);
                   }}
-                  style={{ padding: '6px 12px', fontSize: '11px', borderRadius: '6px', background: 'hsl(var(--er))', border: 'none', color: '#fff', fontWeight: 800 }}
+                  style={{ padding: '6px 12px', fontSize: '11px', borderRadius: '6px', background: 'hsl(var(--er))', border: 'none', color: 'hsl(var(--b1))', fontWeight: 800 }}
                 >
                   Book Stay
                 </button>
@@ -728,7 +728,7 @@ function MobileApp({ hotels, wishlist, toggleWishlist, onOpenFilter, onSelectHot
                     e.stopPropagation();
                     onSelectHotel && onSelectHotel(h);
                   }}
-                  style={{ padding: '6px 12px', fontSize: '11px', borderRadius: '6px', background: 'hsl(var(--er))', border: 'none', color: '#fff', fontWeight: 800 }}
+                  style={{ padding: '6px 12px', fontSize: '11px', borderRadius: '6px', background: 'hsl(var(--er))', border: 'none', color: 'hsl(var(--b1))', fontWeight: 800 }}
                 >
                   Book Stay
                 </button>
@@ -1141,7 +1141,7 @@ export default function HotelListingPage() {
 
               {/* Empty state when no results */}
               {!loading && filtered.length === 0 && (
-                <div className="empty-state" style={{ padding: '60px 20px', textAlign: 'center', color: '#666' }}>
+                <div className="empty-state" style={{ padding: '60px 20px', textAlign: 'center', color: 'hsl(var(--nc))' }}>
                   <p style={{ fontSize: '18px', marginBottom: '10px' }}>No hotels found in <strong>{cityQuery}</strong></p>
                   <p style={{ fontSize: '14px', color: '#999' }}>Try searching for a different city, area, or hotel name.</p>
                 </div>

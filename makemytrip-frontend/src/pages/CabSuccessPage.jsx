@@ -80,7 +80,7 @@ export default function CabSuccessPage() {
         scale: 2,
         useCORS: true,
         logging: false,
-        backgroundColor: '#ffffff'
+        backgroundColor: 'hsl(var(--b1))'
       });
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF({

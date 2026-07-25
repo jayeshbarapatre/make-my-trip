@@ -568,13 +568,13 @@ export default function SearchResultsPage() {
             <span className="fr-search-sub">{travelClass}</span>
             {showTravDrop && (
               <div className="fr-trip-dropdown" style={{ minWidth: 220 }} onMouseDown={e => e.stopPropagation()}>
-                <div style={{ padding: '10px 16px 6px', fontSize: 12, fontWeight: 700, color: '#666', textTransform: 'uppercase', letterSpacing: '0.6px' }}>Travellers</div>
+                <div style={{ padding: '10px 16px 6px', fontSize: 12, fontWeight: 700, color: 'hsl(var(--nc))', textTransform: 'uppercase', letterSpacing: '0.6px' }}>Travellers</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '6px 16px 12px' }}>
                   <button className="fr-qty-btn" onClick={e => { e.stopPropagation(); setPassengers(p => Math.max(1, p - 1)) }}>−</button>
                   <span style={{ fontWeight: 700, fontSize: 16, minWidth: 20, textAlign: 'center' }}>{passengers}</span>
                   <button className="fr-qty-btn" onClick={e => { e.stopPropagation(); setPassengers(p => Math.min(9, p + 1)) }}>+</button>
                 </div>
-                <div style={{ borderTop: '1px solid hsl(var(--b2))', padding: '8px 16px 6px', fontSize: 12, fontWeight: 700, color: '#666', textTransform: 'uppercase', letterSpacing: '0.6px' }}>Class</div>
+                <div style={{ borderTop: '1px solid hsl(var(--b2))', padding: '8px 16px 6px', fontSize: 12, fontWeight: 700, color: 'hsl(var(--nc))', textTransform: 'uppercase', letterSpacing: '0.6px' }}>Class</div>
                 {['Economy', 'Premium Economy', 'Business', 'First Class'].map(cls => (
                   <div key={cls} className={`fr-trip-option${travelClass === cls ? ' fr-trip-option-active' : ''}`}
                     onMouseDown={e => { e.stopPropagation(); setTravelClass(cls); setShowTravDrop(false) }}>

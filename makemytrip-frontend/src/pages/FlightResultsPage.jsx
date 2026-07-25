@@ -125,7 +125,7 @@ export default function FlightResultsPage() {
               onClick={() => navigate('/flights')}
               style={{
                 background: 'var(--color-primary)',
-                color: '#ffffff',
+                color: 'hsl(var(--b1))',
                 border: 'none',
                 padding: '12px 28px',
                 borderRadius: '8px',
@@ -156,7 +156,7 @@ export default function FlightResultsPage() {
               onClick={() => navigate('/flights')}
               style={{
                 background: 'var(--color-primary)',
-                color: '#ffffff',
+                color: 'hsl(var(--b1))',
                 border: 'none',
                 padding: '12px 28px',
                 borderRadius: '8px',
@@ -337,7 +337,7 @@ export default function FlightResultsPage() {
                         }}
                         style={{
                           background: 'var(--color-primary)',
-                          color: '#ffffff',
+                          color: 'hsl(var(--b1))',
                           border: 'none',
                           padding: '12px 24px',
                           borderRadius: '8px',

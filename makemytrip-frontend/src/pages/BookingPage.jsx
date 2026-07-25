@@ -683,7 +683,7 @@ export default function BookingPage() {
         },
 
         theme: {
-          color: '#003580'
+          color: 'hsl(var(--p))'
         },
 
         modal: {
@@ -715,7 +715,7 @@ export default function BookingPage() {
         scale: 2,
         useCORS: true,
         logging: false,
-        backgroundColor: '#ffffff'
+        backgroundColor: 'hsl(var(--b1))'
       })
       const imgData = canvas.toDataURL('image/png')
       const pdf = new jsPDF({
@@ -1736,7 +1736,7 @@ export default function BookingPage() {
                 </div>
                 <button
                   type="submit"
-                  style={{ width: '100%', background: 'var(--clr-primary, hsl(var(--er)))', color: '#fff', border: 'none', borderRadius: '8px', padding: '14px', fontSize: '15px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(239,68,68,0.3)' }}
+                  style={{ width: '100%', background: 'var(--clr-primary, hsl(var(--er)))', color: 'hsl(var(--b1))', border: 'none', borderRadius: '8px', padding: '14px', fontSize: '15px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(239,68,68,0.3)' }}
                 >
                   GET ONE TIME PASSWORD (OTP)
                 </button>
@@ -1772,7 +1772,7 @@ export default function BookingPage() {
                 </div>
                 <button
                   type="submit"
-                  style={{ width: '100%', background: 'hsl(var(--su))', color: '#fff', border: 'none', borderRadius: '8px', padding: '14px', fontSize: '15px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(16,185,129,0.3)' }}
+                  style={{ width: '100%', background: 'hsl(var(--su))', color: 'hsl(var(--b1))', border: 'none', borderRadius: '8px', padding: '14px', fontSize: '15px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(16,185,129,0.3)' }}
                 >
                   VERIFY &amp; RESUME BOOKING
                 </button>
@@ -1863,7 +1863,7 @@ const s = {
     background: '#1a1a2e',
     borderBottom: '1px solid rgba(255,255,255,0.1)',
     padding: '16px 0',
-    color: '#fff'
+    color: 'hsl(var(--b1))'
   },
   wizardInner: {
     maxWidth: '1200px',
@@ -1896,12 +1896,12 @@ const s = {
   },
   wizardNumActive: {
     background: '#e02026',
-    color: '#fff',
+    color: 'hsl(var(--b1))',
     boxShadow: '0 0 12px rgba(235,32,38,0.5)'
   },
   wizardNumDone: {
-    background: '#22c55e',
-    color: '#fff'
+    background: 'hsl(var(--su))',
+    color: 'hsl(var(--b1))'
   },
   wizardLabel: {
     fontSize: '13px',
@@ -1909,7 +1909,7 @@ const s = {
     color: 'rgba(255,255,255,0.55)'
   },
   wizardLabelActive: {
-    color: '#fff',
+    color: 'hsl(var(--b1))',
     fontWeight: 800
   },
   wizardLine: {
@@ -1987,7 +1987,7 @@ const s = {
     justifyContent: 'center',
     fontSize: '11px',
     fontWeight: 900,
-    color: '#fff'
+    color: 'hsl(var(--b1))'
   },
   airlineLabel: {
     fontSize: '15px',
@@ -2299,7 +2299,7 @@ const s = {
     width: '100%',
     padding: '14px',
     background: 'hsl(var(--er))',
-    color: '#fff',
+    color: 'hsl(var(--b1))',
     border: 'none',
     borderRadius: '6px',
     fontSize: '14px',
@@ -2375,7 +2375,7 @@ const s = {
   },
   successBanner: {
     background: 'linear-gradient(135deg, hsl(var(--p)), hsl(var(--p)))',
-    color: '#fff',
+    color: 'hsl(var(--b1))',
     borderRadius: '12px',
     padding: '36px 24px',
     textAlign: 'center',
@@ -2431,7 +2431,7 @@ const s = {
   actionBtnSec: {
     flex: '1 1 200px',
     padding: '16px',
-    background: '#fff',
+    background: 'hsl(var(--b1))',
     border: '1.5px solid hsl(var(--er))',
     color: 'hsl(var(--er))',
     borderRadius: '8px',
@@ -2443,7 +2443,7 @@ const s = {
     flex: '1 1 200px',
     padding: '16px',
     background: 'hsl(var(--bc))',
-    color: '#fff',
+    color: 'hsl(var(--b1))',
     border: 'none',
     borderRadius: '8px',
     fontSize: '13px',
@@ -2454,7 +2454,7 @@ const s = {
   /* Premium Confirmation Styles */
   successBannerPremium: {
     background: 'linear-gradient(135deg, hsl(var(--bc)) 0%, hsl(var(--bc) / 0.7) 100%)',
-    color: '#fff',
+    color: 'hsl(var(--b1))',
     padding: '48px 24px',
     textAlign: 'center',
     position: 'relative',
@@ -2477,7 +2477,7 @@ const s = {
     fontSize: '32px',
     fontWeight: 900,
     letterSpacing: '-0.5px',
-    color: '#fff'
+    color: 'hsl(var(--b1))'
   },
   successSubPremium: {
     margin: '8px 0 32px',
@@ -2507,7 +2507,7 @@ const s = {
   pnrValue: {
     fontSize: '20px',
     fontWeight: 900,
-    color: '#fff',
+    color: 'hsl(var(--b1))',
     letterSpacing: '1px'
   },
   pnrDivider: {

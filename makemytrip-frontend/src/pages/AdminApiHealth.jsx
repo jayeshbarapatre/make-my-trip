@@ -153,7 +153,7 @@ export default function AdminApiHealth() {
             disabled={flushing}
             style={{
               background: 'hsl(var(--er))',
-              color: '#ffffff',
+              color: 'hsl(var(--b1))',
               border: 'none',
               padding: '12px 24px',
               borderRadius: '8px',

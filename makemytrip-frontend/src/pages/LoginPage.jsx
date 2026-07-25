@@ -239,7 +239,7 @@ export default function LoginPage() {
           </div>
           <div className="mobile-hero-brand">
             <div className="brand-circle">m</div>
-            <span className="brand-text" style={{ color: '#fff' }}>
+            <span className="brand-text" style={{ color: 'hsl(var(--b1))' }}>
               make<span className="brand-trip">my</span>trip
             </span>
           </div>
