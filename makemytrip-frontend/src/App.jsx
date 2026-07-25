@@ -13,6 +13,8 @@ import BookingPage from './pages/BookingPage'
 import BusSearchResultsPage from './pages/BusSearchResultsPage'
 import BusBookingPage from './pages/BusBookingPage'
 import CabSearchResultsPage from './pages/CabSearchResultsPage'
+import CabPaymentPage from './pages/CabPaymentPage'
+import CabSuccessPage from './pages/CabSuccessPage'
 import LoginPage from './pages/LoginPage'
 import HotelsPage from './pages/HotelsPage'
 import HotelListingPage from './pages/HotelListingPage'
@@ -301,6 +303,8 @@ function AppContent() {
         <Route path="/homestays" element={<HomestaysPage />} />
         <Route path="/cabs" element={<CabsPage />} />
         <Route path="/cabs/results" element={<CabSearchResultsPage />} />
+        <Route path="/cab/payment" element={<ProtectedRoute><CabPaymentPage /></ProtectedRoute>} />
+        <Route path="/cab/success" element={<ProtectedRoute><CabSuccessPage /></ProtectedRoute>} />
         <Route path="/buses" element={<BusesPage />} />
         <Route path="/cruise" element={<CruisePage />} />
         <Route path="/forex" element={<ForexPage />} />
