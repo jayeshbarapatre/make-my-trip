@@ -30,7 +30,7 @@ export default function TrainPaymentPage() {
 
       // Call backend to create train booking (server generates PNR and bookingId)
       const response = await axios.post(
-        'http://localhost:5000/api/v1/bookings/train',
+        'http://localhost:5000/api/v1/bookings/trains',
         {
           userId,
           trainId: train.id || 'train_' + Date.now(),
