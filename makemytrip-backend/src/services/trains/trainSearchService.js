@@ -1,6 +1,8 @@
 import prisma from '../../config/prismaClient.js'
 import cacheService from '../cache/cacheService.js'
 import { searchTrainsAPI } from '../../config/allApiClients.js'
+import { comprehensiveTrainDatabase } from '../../data/trainDatabase.js'
+import { trainStations } from '../../data/trainStations.js'
 
 // Normalize train from DB to standardized format
 const normalizeTrainResult = (train, source = 'db') => ({
@@ -13,131 +15,119 @@ const normalizeTrainResult = (train, source = 'db') => ({
   arrival: train.arrival,
   durationMinutes: train.durationMinutes,
   duration: train.duration,
+  distance: train.distance,
   price: train.price,
   seatsAvailable: train.seatsAvailable || train.seats,
   seats: train.seats || train.seatsAvailable,
   amenities: train.amenities || [],
   image: train.image,
   isActive: train.isActive !== false,
-  source // 'cache' | 'db' | 'api' | 'irctc'
+  source // 'cache' | 'db' | 'api' | 'comprehensive'
 })
 
+// Helper function to match station codes/names
+const matchStation = (input, station) => {
+  if (!input || !station) return false
+  const input_lower = input.toLowerCase()
+  return (
+    station.code.toLowerCase() === input_lower ||
+    station.name.toLowerCase().includes(input_lower) ||
+    station.city.toLowerCase().includes(input_lower) ||
+    input_lower.includes(station.code.toLowerCase())
+  )
+}
+
+// Helper to find station code by name or code
+const findStationCode = (nameOrCode) => {
+  if (!nameOrCode) return null
+  const station = trainStations.find(s => matchStation(nameOrCode, s))
+  return station ? station.code : nameOrCode // Return code or original if not found
+}
+
 export const trainSearchService = {
-  // Search trains with Real API → Cache → Mock Data strategy
+  // Search trains with API → Comprehensive Database strategy
   search: async (params) => {
     const { from, to, date, type, minPrice, maxPrice, search: searchTerm, db = prisma } = params
 
-    // Build cache key (date-based for daily updates)
-    const cacheKey = `train:${from}:${to}:${date}`
+    console.log(`[TRAINS] Search: ${from} → ${to} on ${date}, type: ${type}`)
+
+    // Build cache key
+    const cacheKey = `train:${from}:${to}:${date}:${type || 'all'}`
 
     // 1. Check cache first
     const cachedResults = cacheService.get(cacheKey)
-    if (cachedResults) {
-      console.log('[TRAINS] Using cached results')
+    if (cachedResults && cachedResults.length > 0) {
+      console.log(`[TRAINS] ✅ Using ${cachedResults.length} cached results`)
       return cachedResults.map(t => normalizeTrainResult(t, 'cache'))
     }
 
     let results = []
 
     // 2. Try Real Train API if enabled
-    if (from && to && date) {
+    if (from && to && date && process.env.TRAIN_API_ENABLED === 'true') {
       try {
-        console.log(`[TRAINS] Attempting Train API search: ${from} → ${to} on ${date}`)
+        console.log(`[TRAINS] Attempting RapidAPI IRCTC search...`)
         const apiResults = await searchTrainsAPI(from, to, date)
         if (apiResults && apiResults.length > 0) {
           results = apiResults
-          console.log(`[TRAINS] ✅ Found ${results.length} trains from REAL API`)
-        } else {
-          console.log('[TRAINS] API returned 0 results, trying mock data...')
+          console.log(`[TRAINS] ✅ Found ${results.length} trains from IRCTC API`)
         }
       } catch (error) {
-        console.log(`[TRAINS] ⚠️ API failed: ${error.message} - falling back to mock data`)
+        console.log(`[TRAINS] API unavailable, using comprehensive database`)
       }
     }
 
-    // 3. Fallback to database/mock data if API failed or unavailable
+    // 3. Fallback to comprehensive local database (GUARANTEED DATA)
     if (results.length === 0) {
-      console.log('[TRAINS] No API results, using mock data fallback...')
-      const baseWhere = {
-        isActive: true,
-        ...(type && { type })
-      }
+      console.log('[TRAINS] Using comprehensive train database...')
 
+      // Normalize station codes
+      const fromCode = findStationCode(from)
+      const toCode = findStationCode(to)
+
+      console.log(`[TRAINS] Searching for: ${fromCode} → ${toCode}`)
+
+      // Filter trains from comprehensive database
+      let allTrains = comprehensiveTrainDatabase
+        .filter(t => t.isActive)
+        .filter(train => {
+          // Route matching
+          const fromMatch = train.from === fromCode || !fromCode
+          const toMatch = train.to === toCode || !toCode
+
+          // Train type filter
+          const typeMatch = !type || train.type?.toLowerCase().includes(type.toLowerCase())
+
+          return fromMatch && toMatch && typeMatch
+        })
+
+      console.log(`[TRAINS] Found ${allTrains.length} trains after filtering`)
+
+      // Apply price filter
       if (minPrice || maxPrice) {
-        baseWhere.price = {}
-        if (minPrice) baseWhere.price.gte = parseFloat(minPrice)
-        if (maxPrice) baseWhere.price.lte = parseFloat(maxPrice)
+        allTrains = allTrains.filter(t => {
+          const price = t.price || 0
+          if (minPrice && price < parseFloat(minPrice)) return false
+          if (maxPrice && price > parseFloat(maxPrice)) return false
+          return true
+        })
       }
 
-      if (searchTerm) {
-        baseWhere.OR = [
-          { operatorName: { contains: searchTerm, mode: 'insensitive' } },
-          { trainNumber: { contains: searchTerm, mode: 'insensitive' } }
-        ]
-      }
+      // Sort by price (default)
+      allTrains.sort((a, b) => (a.price || 0) - (b.price || 0))
 
-      const trains = await db.train.findMany({
-        where: baseWhere,
-        orderBy: { price: 'asc' }
-      })
+      results = allTrains.slice(0, 50) // Return top 50 results
 
-      console.log(`[TRAINS] Found ${trains.length} trains in database`)
-
-      // Filter by route - FLEXIBLE MATCHING for city names
-      results = trains.filter(t => {
-        if (!from && !to) return true
-
-        const departureCities = [
-          t.departure?.city || '',
-          t.from || '',
-          t.departureCity || ''
-        ].filter(c => c)
-
-        const arrivalCities = [
-          t.arrival?.city || '',
-          t.to || '',
-          t.arrivalCity || ''
-        ].filter(c => c)
-
-        const fromMatch = !from || departureCities.some(city =>
-          city.toLowerCase().includes(from.toLowerCase()) || from.toLowerCase().includes(city.toLowerCase())
-        )
-
-        const toMatch = !to || arrivalCities.some(city =>
-          city.toLowerCase().includes(to.toLowerCase()) || to.toLowerCase().includes(city.toLowerCase())
-        )
-
-        return fromMatch && toMatch
-      })
-
-      console.log(`[TRAINS] After route filter: ${results.length} trains`)
-
-      if (results.length === 0) {
-        console.log('[TRAINS] ⚠️ No matching trains found - FORCING MOCK DATA RETURN')
-        // If still no results, return ALL trains as fallback (better UX than empty)
-        results = trains.slice(0, 20)
-      }
+      console.log(`[TRAINS] ✅ Returning ${results.length} trains from comprehensive database`)
     }
 
-    // Apply price filters
-    if (results.length > 0 && (minPrice || maxPrice)) {
-      results = results.filter(t => {
-        const price = t.price || t.baseFare || 0
-        if (minPrice && price < parseFloat(minPrice)) return false
-        if (maxPrice && price > parseFloat(maxPrice)) return false
-        return true
-      })
+    // Cache results
+    if (results.length > 0) {
+      cacheService.set(cacheKey, results, 300)
     }
-
-    // Cache results for 5 minutes
-    cacheService.set(cacheKey, results, 300)
-
-    // Determine source and log
-    const source = results[0]?.provider ? 'api' : 'db'
-    console.log(`[TRAINS] Returning ${results.length} results from ${source}`)
 
     // Return normalized results
-    return results.map(t => normalizeTrainResult(t, source))
+    return results.map(t => normalizeTrainResult(t, results[0]?.provider ? 'api' : 'comprehensive'))
   },
 
   // Get train details by ID
