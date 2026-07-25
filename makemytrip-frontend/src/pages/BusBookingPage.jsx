@@ -316,10 +316,10 @@ export default function BusBookingPage() {
   // Guard: Show loading state if data is loading
   if (isLoading && !bus) {
     return (
-      <div style={{ minHeight: '100vh', background: '#f5f5f5', padding: '2rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ minHeight: '100vh', background: 'hsl(var(--b2))', padding: '2rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⏳</div>
-          <p style={{ color: '#666', fontSize: '1.125rem' }}>Loading bus details...</p>
+          <p style={{ color: 'hsl(var(--nc))', fontSize: '1.125rem' }}>Loading bus details...</p>
         </div>
       </div>
     )
@@ -328,11 +328,11 @@ export default function BusBookingPage() {
   // Guard: Show error if bus data not found
   if (!bus) {
     return (
-      <div style={{ minHeight: '100vh', background: '#f5f5f5', padding: '2rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ textAlign: 'center', background: 'white', padding: '2rem', borderRadius: '0.5rem', maxWidth: '400px' }}>
+      <div style={{ minHeight: '100vh', background: 'hsl(var(--b2))', padding: '2rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ textAlign: 'center', background: 'hsl(var(--b1))', padding: '2rem', borderRadius: '0.5rem', maxWidth: '400px' }}>
           <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>❌</div>
-          <h2 style={{ margin: '0 0 0.5rem', color: '#e63946' }}>Bus Not Found</h2>
-          <p style={{ color: '#666', marginBottom: '1.5rem' }}>The bus you're trying to book is no longer available.</p>
+          <h2 style={{ margin: '0 0 0.5rem', color: 'hsl(var(--er))' }}>Bus Not Found</h2>
+          <p style={{ color: 'hsl(var(--nc))', marginBottom: '1.5rem' }}>The bus you're trying to book is no longer available.</p>
           <button className="btn btn-primary" onClick={() => navigate(-1)}>Go Back</button>
         </div>
       </div>
@@ -409,7 +409,7 @@ export default function BusBookingPage() {
           <div className="bus-form-card">
             <h2 className="bus-form-title">Passenger Details</h2>
 
-            <div style={{ marginBottom: '2rem', padding: '1rem', background: '#f9f9f9', borderRadius: '0.5rem' }}>
+            <div style={{ marginBottom: '2rem', padding: '1rem', background: 'hsl(var(--b2))', borderRadius: '0.5rem' }}>
               <h3 style={{ marginTop: 0, marginBottom: '1rem', fontSize: '1rem' }}>Contact Information</h3>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div>
@@ -422,12 +422,12 @@ export default function BusBookingPage() {
                     style={{
                       width: '100%',
                       padding: '0.5rem',
-                      border: `1px solid ${errors.email ? '#e63946' : '#ddd'}`,
+                      border: `1px solid ${errors.email ? 'hsl(var(--er))' : 'hsl(var(--b2))'}`,
                       borderRadius: '0.375rem'
                     }}
                     placeholder="your@email.com"
                   />
-                  {errors.email && <p style={{ color: '#e63946', fontSize: '0.875rem', marginTop: '0.25rem' }}>{errors.email}</p>}
+                  {errors.email && <p style={{ color: 'hsl(var(--er))', fontSize: '0.875rem', marginTop: '0.25rem' }}>{errors.email}</p>}
                 </div>
                 <div>
                   <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, fontSize: '0.875rem' }}>PHONE</label>
@@ -439,13 +439,13 @@ export default function BusBookingPage() {
                     style={{
                       width: '100%',
                       padding: '0.5rem',
-                      border: `1px solid ${errors.phone ? '#e63946' : '#ddd'}`,
+                      border: `1px solid ${errors.phone ? 'hsl(var(--er))' : 'hsl(var(--b2))'}`,
                       borderRadius: '0.375rem'
                     }}
                     placeholder="10-digit number"
                     maxLength={10}
                   />
-                  {errors.phone && <p style={{ color: '#e63946', fontSize: '0.875rem', marginTop: '0.25rem' }}>{errors.phone}</p>}
+                  {errors.phone && <p style={{ color: 'hsl(var(--er))', fontSize: '0.875rem', marginTop: '0.25rem' }}>{errors.phone}</p>}
                 </div>
               </div>
             </div>
@@ -453,7 +453,7 @@ export default function BusBookingPage() {
             <h3 style={{ marginTop: 0, marginBottom: '1rem', fontSize: '1rem' }}>Passengers ({passengerCount})</h3>
             <div style={{ display: 'grid', gap: '1rem', marginBottom: '2rem' }}>
               {passengerDetails.map((p, i) => (
-                <div key={i} style={{ padding: '1rem', background: '#f9f9f9', borderRadius: '0.5rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+                <div key={i} style={{ padding: '1rem', background: 'hsl(var(--b2))', borderRadius: '0.5rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
                   <div>
                     <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, fontSize: '0.875rem' }}>SEAT {p.seat}</label>
                     <input
@@ -468,12 +468,12 @@ export default function BusBookingPage() {
                       style={{
                         width: '100%',
                         padding: '0.5rem',
-                        border: `1px solid ${errors[`p_${i}_name`] ? '#e63946' : '#ddd'}`,
+                        border: `1px solid ${errors[`p_${i}_name`] ? 'hsl(var(--er))' : 'hsl(var(--b2))'}`,
                         borderRadius: '0.375rem'
                       }}
                       placeholder="Full name"
                     />
-                    {errors[`p_${i}_name`] && <p style={{ color: '#e63946', fontSize: '0.875rem', marginTop: '0.25rem' }}>{errors[`p_${i}_name`]}</p>}
+                    {errors[`p_${i}_name`] && <p style={{ color: 'hsl(var(--er))', fontSize: '0.875rem', marginTop: '0.25rem' }}>{errors[`p_${i}_name`]}</p>}
                   </div>
                   <div>
                     <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, fontSize: '0.875rem' }}>AGE</label>
@@ -489,14 +489,14 @@ export default function BusBookingPage() {
                       style={{
                         width: '100%',
                         padding: '0.5rem',
-                        border: `1px solid ${errors[`p_${i}_age`] ? '#e63946' : '#ddd'}`,
+                        border: `1px solid ${errors[`p_${i}_age`] ? 'hsl(var(--er))' : 'hsl(var(--b2))'}`,
                         borderRadius: '0.375rem'
                       }}
                       placeholder="Age"
                       min="1"
                       max="120"
                     />
-                    {errors[`p_${i}_age`] && <p style={{ color: '#e63946', fontSize: '0.875rem', marginTop: '0.25rem' }}>{errors[`p_${i}_age`]}</p>}
+                    {errors[`p_${i}_age`] && <p style={{ color: 'hsl(var(--er))', fontSize: '0.875rem', marginTop: '0.25rem' }}>{errors[`p_${i}_age`]}</p>}
                   </div>
                   <div>
                     <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, fontSize: '0.875rem' }}>GENDER</label>
@@ -533,10 +533,10 @@ export default function BusBookingPage() {
         )}
 
         {step === 3 && (
-          <div style={{ background: 'white', borderRadius: '0.5rem', padding: '2rem', marginBottom: '2rem' }}>
+          <div style={{ background: 'hsl(var(--b1))', borderRadius: '0.5rem', padding: '2rem', marginBottom: '2rem' }}>
             <h2 style={{ marginTop: 0, marginBottom: '1.5rem' }}>Review & Confirm</h2>
 
-            <div style={{ marginBottom: '2rem', padding: '1.5rem', background: '#f9f9f9', borderRadius: '0.5rem' }}>
+            <div style={{ marginBottom: '2rem', padding: '1.5rem', background: 'hsl(var(--b2))', borderRadius: '0.5rem' }}>
               <h3 style={{ marginTop: 0, marginBottom: '1rem', fontSize: '1rem' }}>Price Summary</h3>
               <div style={{ display: 'grid', gap: '0.75rem', fontSize: '0.95rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -547,7 +547,7 @@ export default function BusBookingPage() {
                   <span>Taxes & Fees (18%)</span>
                   <span>{fmtPrice(taxes)}</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #ddd', paddingTop: '0.75rem', fontSize: '1.1rem', fontWeight: 700 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid hsl(var(--b2))', paddingTop: '0.75rem', fontSize: '1.1rem', fontWeight: 700 }}>
                   <span>Total Amount</span>
                   <span>{fmtPrice(totalAmount)}</span>
                 </div>
@@ -555,7 +555,7 @@ export default function BusBookingPage() {
             </div>
 
             <form onSubmit={handlePaymentSubmit}>
-              <div style={{ marginBottom: '2rem', padding: '1.5rem', background: '#f9f9f9', borderRadius: '0.5rem' }}>
+              <div style={{ marginBottom: '2rem', padding: '1.5rem', background: 'hsl(var(--b2))', borderRadius: '0.5rem' }}>
                 <h3 style={{ marginTop: 0, marginBottom: '1rem', fontSize: '1rem' }}>Payment Method</h3>
                 <div style={{ display: 'grid', gap: '0.75rem' }}>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
@@ -584,47 +584,47 @@ export default function BusBookingPage() {
         )}
 
         {step === 4 && bookingDetails && (
-          <div style={{ background: 'white', borderRadius: '0.5rem', padding: '2rem' }}>
+          <div style={{ background: 'hsl(var(--b1))', borderRadius: '0.5rem', padding: '2rem' }}>
             <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
               <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>✓</div>
-              <h2 style={{ margin: '0 0 0.5rem', color: '#27ae60', fontSize: '1.875rem' }}>Booking Confirmed!</h2>
-              <p style={{ margin: '0.5rem 0 0', color: '#666' }}>Your bus ticket has been booked successfully</p>
+              <h2 style={{ margin: '0 0 0.5rem', color: 'hsl(var(--su))', fontSize: '1.875rem' }}>Booking Confirmed!</h2>
+              <p style={{ margin: '0.5rem 0 0', color: 'hsl(var(--nc))' }}>Your bus ticket has been booked successfully</p>
             </div>
 
-            <div id="ticket-content" style={{ padding: '2rem', background: '#f9f9f9', borderRadius: '0.5rem', marginBottom: '2rem' }}>
-              <div style={{ marginBottom: '1.5rem', borderBottom: '1px solid #ddd', paddingBottom: '1rem' }}>
+            <div id="ticket-content" style={{ padding: '2rem', background: 'hsl(var(--b2))', borderRadius: '0.5rem', marginBottom: '2rem' }}>
+              <div style={{ marginBottom: '1.5rem', borderBottom: '1px solid hsl(var(--b2))', paddingBottom: '1rem' }}>
                 <h3 style={{ margin: '0 0 0.5rem', fontSize: '1.125rem' }}>Booking Confirmation</h3>
-                <p style={{ margin: 0, color: '#666', fontSize: '0.875rem' }}>Booking ID: <strong>{bookingDetails.id}</strong></p>
+                <p style={{ margin: 0, color: 'hsl(var(--nc))', fontSize: '0.875rem' }}>Booking ID: <strong>{bookingDetails.id}</strong></p>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
                 <div>
-                  <p style={{ margin: '0 0 0.5rem', fontSize: '0.75rem', color: '#666', fontWeight: 600, textTransform: 'uppercase' }}>OPERATOR</p>
+                  <p style={{ margin: '0 0 0.5rem', fontSize: '0.75rem', color: 'hsl(var(--nc))', fontWeight: 600, textTransform: 'uppercase' }}>OPERATOR</p>
                   <p style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>{bus.operatorName}</p>
                 </div>
                 <div>
-                  <p style={{ margin: '0 0 0.5rem', fontSize: '0.75rem', color: '#666', fontWeight: 600, textTransform: 'uppercase' }}>BUS TYPE</p>
+                  <p style={{ margin: '0 0 0.5rem', fontSize: '0.75rem', color: 'hsl(var(--nc))', fontWeight: 600, textTransform: 'uppercase' }}>BUS TYPE</p>
                   <p style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>{bus.type || 'AC'}</p>
                 </div>
                 <div>
-                  <p style={{ margin: '0 0 0.5rem', fontSize: '0.75rem', color: '#666', fontWeight: 600, textTransform: 'uppercase' }}>FROM</p>
+                  <p style={{ margin: '0 0 0.5rem', fontSize: '0.75rem', color: 'hsl(var(--nc))', fontWeight: 600, textTransform: 'uppercase' }}>FROM</p>
                   <p style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>{bus.from} - {fmtTime(bus.departure?.time)}</p>
                 </div>
                 <div>
-                  <p style={{ margin: '0 0 0.5rem', fontSize: '0.75rem', color: '#666', fontWeight: 600, textTransform: 'uppercase' }}>TO</p>
+                  <p style={{ margin: '0 0 0.5rem', fontSize: '0.75rem', color: 'hsl(var(--nc))', fontWeight: 600, textTransform: 'uppercase' }}>TO</p>
                   <p style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>{bus.to} - {fmtTime(bus.arrival?.time)}</p>
                 </div>
                 <div>
-                  <p style={{ margin: '0 0 0.5rem', fontSize: '0.75rem', color: '#666', fontWeight: 600, textTransform: 'uppercase' }}>PASSENGERS</p>
+                  <p style={{ margin: '0 0 0.5rem', fontSize: '0.75rem', color: 'hsl(var(--nc))', fontWeight: 600, textTransform: 'uppercase' }}>PASSENGERS</p>
                   <p style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>{passengerCount}</p>
                 </div>
                 <div>
-                  <p style={{ margin: '0 0 0.5rem', fontSize: '0.75rem', color: '#666', fontWeight: 600, textTransform: 'uppercase' }}>TOTAL AMOUNT</p>
+                  <p style={{ margin: '0 0 0.5rem', fontSize: '0.75rem', color: 'hsl(var(--nc))', fontWeight: 600, textTransform: 'uppercase' }}>TOTAL AMOUNT</p>
                   <p style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>{fmtPrice(totalAmount)}</p>
                 </div>
               </div>
 
-              <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid #ddd' }}>
+              <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid hsl(var(--b2))' }}>
                 <h4 style={{ marginTop: 0, marginBottom: '0.75rem', fontSize: '0.875rem', fontWeight: 600 }}>PASSENGERS</h4>
                 <div style={{ display: 'grid', gap: '0.5rem', fontSize: '0.875rem' }}>
                   {passengerDetails.map((p, i) => (

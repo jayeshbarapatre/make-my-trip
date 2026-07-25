@@ -56,7 +56,7 @@
 
 .bus-step.active {
   background: var(--color-primary);
-  color: #ffffff;
+  color: hsl(var(--pc));
 }
 
 /* Form Cards */
@@ -345,7 +345,7 @@
 /* Buttons */
 .bus-btn-primary {
   background: var(--color-primary);
-  color: #ffffff;
+  color: hsl(var(--pc));
   border: none;
   padding: 14px 32px;
   border-radius: 8px;
@@ -378,7 +378,7 @@
 
 .bus-btn-outline:hover {
   background: var(--color-primary);
-  color: #ffffff;
+  color: hsl(var(--pc));
 }
 
 /* Button Row */
