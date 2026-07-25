@@ -3,10 +3,23 @@ import jsPDF from 'jspdf'
 
 export const generateBookingPDF = async (booking, elementId = 'pdf-content') => {
   try {
-    const element = document.getElementById(elementId)
+    // Try primary ID first, then fallback to alternative ID
+    let element = document.getElementById(elementId)
+    if (!element && elementId !== 'booking-pdf-container') {
+      console.warn(`Element with ID "${elementId}" not found, trying fallback...`)
+      element = document.getElementById('booking-pdf-container')
+    }
+    if (!element && elementId !== 'pdf-content') {
+      console.warn(`Fallback element not found, trying primary ID...`)
+      element = document.getElementById('pdf-content')
+    }
+
     if (!element) {
-      console.error(`Element with ID "${elementId}" not found`)
-      return
+      throw new Error(`PDF content element not found. Tried IDs: "${elementId}", "booking-pdf-container", "pdf-content"`)
+    }
+
+    if (!booking || typeof booking !== 'object') {
+      throw new Error('Invalid booking object provided to PDF generator')
     }
 
     const canvas = await html2canvas(element, {
@@ -40,7 +53,11 @@ export const generateBookingPDF = async (booking, elementId = 'pdf-content') => 
       heightLeft -= pageHeight - 20
     }
 
-    const filename = `${booking.bookingId || 'booking'}_${booking.pnr || 'ticket'}.pdf`
+    // Fallback filenames if booking data missing
+    const bookingId = booking.bookingId || booking.id || 'booking_' + Date.now()
+    const pnr = booking.pnr || booking.refId || 'ticket_' + Math.random().toString(36).substr(2, 9)
+    const filename = `${bookingId}_${pnr}.pdf`
+
     pdf.save(filename)
 
     return { success: true, filename }

@@ -1,12 +1,12 @@
 import prisma from '../config/prismaClient.js'
 import trainSearchService from '../services/trains/trainSearchService.js'
 
-export const searchTraines = async (req, res) => {
+export const searchTrains = async (req, res) => {
   try {
     const { from, to, date, type, minPrice, maxPrice, page = 1, limit = 10, search } = req.query
 
     // Use service layer (cache → DB)
-    const allTraines = await trainSearchService.search({
+    const allTrains = await trainSearchService.search({
       from,
       to,
       date,
@@ -17,16 +17,16 @@ export const searchTraines = async (req, res) => {
     })
 
     const skip = (Number(page) - 1) * Number(limit)
-    const paginatedTraines = allTraines.slice(skip, skip + Number(limit))
+    const paginatedTrains = allTrains.slice(skip, skip + Number(limit))
 
     res.status(200).json({
       success: true,
-      data: paginatedTraines,
+      data: paginatedTrains,
       pagination: {
-        total: allTraines.length,
+        total: allTrains.length,
         page: Number(page),
         limit: Number(limit),
-        pages: Math.ceil(allTraines.length / Number(limit))
+        pages: Math.ceil(allTrains.length / Number(limit))
       }
     })
   } catch (error) {

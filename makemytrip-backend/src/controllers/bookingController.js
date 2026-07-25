@@ -233,16 +233,18 @@ export const createBooking = async (req, res) => {
         bookingFromCity = dep?.city || bus.from || fromCity || 'Unknown'
         bookingToCity = arr?.city || bus.to || toCity || 'Unknown'
 
-        // Check availability
+        // Calculate passenger count
         const passengerCount = Array.isArray(travellers?.passengers) ? travellers.passengers.length : 1
+
+        // Check availability before decrementing
         if (bus.seatsAvailable < passengerCount) {
           return res.status(400).json({ message: `Only ${bus.seatsAvailable} seats available` })
         }
 
-        // Decrement available seats
+        // Atomically decrement seats using Prisma's decrement operation
         await db.bus.update({
           where: { id: req.body.busId },
-          data: { seatsAvailable: bus.seatsAvailable - passengerCount }
+          data: { seatsAvailable: { decrement: passengerCount } }
         })
       }
 
@@ -276,7 +278,63 @@ export const createBooking = async (req, res) => {
           arrivalTime: busArrivalTime
         }
       })
-    } else if (['train', 'cab'].includes(type)) {
+    } else if (type === 'cab') {
+      let cabDetails = {}
+
+      // If cabId provided, fetch and validate cab availability
+      if (req.body.cabId) {
+        const cab = await db.cab.findUnique({ where: { id: req.body.cabId } })
+        if (!cab) {
+          return res.status(404).json({ message: 'Cab not found' })
+        }
+
+        if (!cab.isActive) {
+          return res.status(400).json({ message: 'Cab is not available' })
+        }
+
+        // Store cab details for booking record
+        cabDetails = {
+          cabId: cab.id,
+          cabType: cab.type || 'Standard',
+          cabModel: cab.model || '',
+          vehicleNumber: cab.licensePlate || cab.vehicleNumber || '',
+          driver: req.body.driverName || req.body.driver || 'TBD',
+          capacity: cab.capacity || 4
+        }
+      }
+
+      newBooking = await db.booking.create({
+        data: {
+          userId,
+          type,
+          fromCity: fromCity || req.body.pickupLocation || 'Unknown',
+          toCity: toCity || req.body.dropLocation || '',
+          departureDate: departureDate || new Date().toISOString().split('T')[0],
+          returnDate: returnDate || null,
+          travellers: travellers || { passengers: 1 },
+          passengers,
+          totalAmount: parseFloat(totalAmount),
+          bookingId: req.body.bookingId || bookingId,
+          pnr: req.body.pnr || pnr,
+          status: 'confirmed',
+          baseFare: baseFare || parseFloat(totalAmount) * 0.8,
+          taxes: taxes || parseFloat(totalAmount) * 0.15,
+          convenience: convenience || 0,
+          discount: discount || 0,
+          couponCode,
+          gst: gst || parseFloat(totalAmount) * 0.05,
+          paymentMethod,
+          paymentStatus,
+          transactionId,
+          // Cab-specific fields
+          airlineName: cabDetails.cabType,
+          boardingTime: req.body.pickupTime || '',
+          arrivalTime: req.body.dropTime || '',
+          departureTerminal: cabDetails.vehicleNumber,
+          arrivalTerminal: cabDetails.driver
+        }
+      })
+    } else if (type === 'train') {
       newBooking = await db.booking.create({
         data: {
           userId,

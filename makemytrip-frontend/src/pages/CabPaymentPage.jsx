@@ -5,7 +5,7 @@ import api from '../services/api';
 import '../styles/HotelPaymentPage.css';
 
 export default function CabPaymentPage() {
-  const location = useNavigate();
+  const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [isProcessing, setIsProcessing] = useState(false);
