@@ -25,7 +25,7 @@ export const generateBookingPDF = async (booking, elementId = 'pdf-content') => 
     const canvas = await html2canvas(element, {
       scale: 2,
       useCORS: true,
-      backgroundColor: '#ffffff'
+      backgroundColor: 'hsl(var(--b1))'
     })
 
     const imgData = canvas.toDataURL('image/png')

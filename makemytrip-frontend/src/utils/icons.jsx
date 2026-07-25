@@ -229,7 +229,7 @@ export const iconColors = {
   info: 'var(--clr-info, #2196F3)',
   text: 'var(--clr-text-primary, #212121)',
   textMuted: 'var(--clr-text-secondary, #757575)',
-  white: '#ffffff',
+  white: 'hsl(var(--b1))',
 }
 
 /**

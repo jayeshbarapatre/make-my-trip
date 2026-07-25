@@ -345,11 +345,25 @@ export default function BusBookingPage() {
         <div className="bus-page-title">
           <h1>Book Your Bus</h1>
           <div className="bus-steps-bar">
-            {[1, 2, 3, 4].map(s => (
-              <div key={s} className={`bus-step${step >= s ? ' active' : ''}`}>
-                Step {s}
-              </div>
-            ))}
+            <div className={`bus-step${step >= 1 ? ' completed' : ''}`}>
+              <div className="bus-step-num">{step > 1 ? '✓' : '1'}</div>
+              <span>1. Bus Details</span>
+            </div>
+            <div className="bus-step-sep">――――</div>
+            <div className={`bus-step${step >= 2 ? ' completed' : ''}${step === 2 ? ' active' : ''}`}>
+              <div className="bus-step-num">{step > 2 ? '✓' : '2'}</div>
+              <span>2. Passenger Info</span>
+            </div>
+            <div className="bus-step-sep">――――</div>
+            <div className={`bus-step${step >= 3 ? ' completed' : ''}${step === 3 ? ' active' : ''}`}>
+              <div className="bus-step-num">{step > 3 ? '✓' : '3'}</div>
+              <span>3. Review &amp; Pay</span>
+            </div>
+            <div className="bus-step-sep">――――</div>
+            <div className={`bus-step${step === 4 ? ' active' : ''}`}>
+              <div className="bus-step-num">{step === 4 ? '✓' : '4'}</div>
+              <span>4. Confirmation</span>
+            </div>
           </div>
         </div>
 
