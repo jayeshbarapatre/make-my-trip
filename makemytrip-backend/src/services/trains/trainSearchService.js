@@ -1,6 +1,6 @@
 import prisma from '../../config/prismaClient.js'
 import cacheService from '../cache/cacheService.js'
-import { searchTrainsCleartrip } from '../../config/allApiClients.js'
+import { searchTrainsAPI } from '../../config/allApiClients.js'
 
 // Normalize train from DB to standardized format
 const normalizeTrainResult = (train, source = 'db') => ({
@@ -23,7 +23,7 @@ const normalizeTrainResult = (train, source = 'db') => ({
 })
 
 export const trainSearchService = {
-  // Search trains with Cleartrip API → Cache → DB strategy
+  // Search trains with Real API → Cache → Mock Data strategy
   search: async (params) => {
     const { from, to, date, type, minPrice, maxPrice, search: searchTerm, db = prisma } = params
 
@@ -33,22 +33,25 @@ export const trainSearchService = {
     // 1. Check cache first
     const cachedResults = cacheService.get(cacheKey)
     if (cachedResults) {
+      console.log('[TRAINS] Using cached results')
       return cachedResults.map(t => normalizeTrainResult(t, 'cache'))
     }
 
     let results = []
 
-    // 2. Try Cleartrip API if credentials available
-    if (process.env.CLEARTRIP_API_KEY && from && to && date) {
+    // 2. Try Real Train API if enabled
+    if (from && to && date) {
       try {
-        console.log(`[TRAINS] Attempting Cleartrip API search: ${from} → ${to} on ${date}`)
-        const cleartripResults = await searchTrainsCleartrip(from, to, date)
-        if (cleartripResults && cleartripResults.length > 0) {
-          results = cleartripResults
-          console.log(`[TRAINS] Found ${results.length} trains from Cleartrip API`)
+        console.log(`[TRAINS] Attempting Train API search: ${from} → ${to} on ${date}`)
+        const apiResults = await searchTrainsAPI(from, to, date)
+        if (apiResults && apiResults.length > 0) {
+          results = apiResults
+          console.log(`[TRAINS] ✅ Found ${results.length} trains from REAL API`)
+        } else {
+          console.log('[TRAINS] API returned 0 results, trying mock data...')
         }
       } catch (error) {
-        console.log(`[TRAINS] Cleartrip API failed, falling back to mock data: ${error.message}`)
+        console.log(`[TRAINS] ⚠️ API failed: ${error.message} - falling back to mock data`)
       }
     }
 
@@ -91,7 +94,7 @@ export const trainSearchService = {
       }
     }
 
-    // Apply price filters if Cleartrip results used
+    // Apply price filters
     if (results.length > 0 && (minPrice || maxPrice)) {
       results = results.filter(t => {
         const price = t.price || t.baseFare || 0
@@ -104,8 +107,12 @@ export const trainSearchService = {
     // Cache results for 5 minutes
     cacheService.set(cacheKey, results, 300)
 
+    // Determine source and log
+    const source = results[0]?.provider ? 'api' : 'db'
+    console.log(`[TRAINS] Returning ${results.length} results from ${source}`)
+
     // Return normalized results
-    return results.map(t => normalizeTrainResult(t, results[0]?.provider === 'cleartrip' ? 'cleartrip' : 'db'))
+    return results.map(t => normalizeTrainResult(t, source))
   },
 
   // Get train details by ID

@@ -420,70 +420,78 @@ export async function searchOlaRides(fromLat, fromLng, toLat, toLng) {
   }
 }
 
-// ============ CLEARTRIP TRAINS ============
-const cleartripClient = axios.create({
-  baseURL: process.env.CLEARTRIP_API_HOST || 'https://www.cleartrip.com/api',
+// ============ RAPIDAPI INDIAN RAILWAYS TRAINS ============
+const trainApiClient = axios.create({
+  baseURL: `https://${process.env.RAPIDAPI_HOST_TRAINS || 'indian-railways-api.p.rapidapi.com'}`,
   timeout: 10000
 })
 
-export async function searchTrainsCleartrip(from, to, date) {
-  const cacheKey = `trains_cleartrip_${from}_${to}_${date}`
+export async function searchTrainsAPI(from, to, date) {
+  if (process.env.TRAIN_API_ENABLED !== 'true') {
+    console.log('[TRAIN API] Disabled - using mock data')
+    return []
+  }
+
+  const cacheKey = `trains_api_${from}_${to}_${date}`
   const cached = cache.get(cacheKey)
-  if (cached) return cached
+  if (cached) {
+    console.log('[TRAIN API] Using cached results')
+    return cached
+  }
 
   try {
-    console.log(`[CLEARTRIP] Searching trains: ${from} → ${to} on ${date}`)
+    console.log(`[TRAIN API] Searching trains: ${from} → ${to} on ${date}`)
 
-    // Cleartrip API endpoint for trains
-    const response = await cleartripClient.get('/train/search', {
+    const response = await trainApiClient.get('/search', {
       params: {
-        from: from,
-        to: to,
-        date: date,
-        apiKey: process.env.CLEARTRIP_API_KEY,
-        clientId: process.env.CLEARTRIP_CLIENT_ID
+        source: from,
+        destination: to,
+        date: date
       },
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.CLEARTRIP_API_KEY || ''}`
+        'X-RapidAPI-Key': process.env.RAPIDAPI_KEY,
+        'X-RapidAPI-Host': process.env.RAPIDAPI_HOST_TRAINS
       }
     })
 
-    // Handle Cleartrip response structure
-    const trains = response.data.data?.trains || response.data.trains || []
+    const trains = response.data?.data || response.data?.trains || response.data || []
 
-    const normalized = trains.map(train => ({
-      provider: 'cleartrip',
-      id: `cleartrip_${train.trainNumber}`,
-      trainNumber: train.trainNumber || train.number,
-      trainName: train.trainName || train.name,
+    if (!Array.isArray(trains)) {
+      console.log('[TRAIN API] Response is not an array:', typeof trains)
+      return []
+    }
+
+    const normalized = trains.map((train, idx) => ({
+      provider: 'indian-railways-api',
+      id: `ira_${train.trainNumber || idx}`,
+      trainNumber: train.trainNumber || train.number || `TR${idx}`,
+      trainName: train.trainName || train.name || 'Express',
       operatorName: 'Indian Railways',
-      from: train.fromStationCode || train.from || from,
-      to: train.toStationCode || train.to || to,
+      from: train.source || train.from || from,
+      to: train.destination || train.to || to,
       departure: train.departureTime || train.departure,
       arrival: train.arrivalTime || train.arrival,
-      duration: train.duration || calculateDuration(train.departureTime || train.departure, train.arrivalTime || train.arrival),
-      durationMinutes: train.durationMinutes || parseDurationToMinutes(train.duration || '0h'),
+      duration: train.duration || train.totalTime || '0h',
+      durationMinutes: train.durationInMinutes || parseDurationToMinutes(train.duration || '0h'),
       type: train.trainType || train.type || 'Express',
-      price: train.baseFare || train.fare || train.price || 500,
+      price: parseInt(train.price || train.fare || '500') || 500,
       currency: 'INR',
       seats: train.availableSeats || train.seatsAvailable || 50,
       seatsAvailable: train.availableSeats || train.seatsAvailable || 50,
       class: train.class || 'General',
       classType: train.classType || 'General',
-      amenities: train.amenities || ['Meals', 'Charging Point'],
-      rating: 4.5,
-      reviews: 2000,
+      amenities: Array.isArray(train.amenities) ? train.amenities : ['AC', 'Charging Point'],
+      rating: train.rating || 4.3,
+      reviews: train.reviews || 1500,
       isActive: true
     }))
 
-    console.log(`[CLEARTRIP] Found ${normalized.length} trains`)
+    console.log(`[TRAIN API] ✅ Found ${normalized.length} trains from API`)
     cache.set(cacheKey, normalized)
     return normalized
   } catch (error) {
-    console.error('[CLEARTRIP] API error:', error.message)
-    console.log('[CLEARTRIP] Falling back to mock data for trains')
-    return [] // Return empty to use mock data fallback
+    console.error('[TRAIN API] ❌ Error:', error.message)
+    return []
   }
 }
 
