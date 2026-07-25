@@ -84,7 +84,7 @@ export default function HotelsPage() {
     try {
       const saved = localStorage.getItem('recentSearches_hotels')
       return saved ? JSON.parse(saved) : [
-        { city: 'Udaipur', date: '2026-05-14' },
+        { city: 'Udaipur', date: new Date().toISOString().split('T')[0] || new Date().toISOString().split('T')[0] },
         { city: 'Goa', date: '2026-05-15' }
       ]
     } catch {
