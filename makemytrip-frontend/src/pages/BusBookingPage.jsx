@@ -365,7 +365,7 @@ export default function BusBookingPage() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '2rem' }}>
               <div>
                 <p style={{ margin: '0 0 0.5rem', fontSize: '0.875rem', color: '#666', fontWeight: 600, textTransform: 'uppercase' }}>OPERATOR</p>
-                <p style={{ margin: 0, fontSize: '1.125rem', fontWeight: 600 }}>{bus.operator}</p>
+                <p style={{ margin: 0, fontSize: '1.125rem', fontWeight: 600 }}>{bus.operatorName}</p>
               </div>
               <div>
                 <p style={{ margin: '0 0 0.5rem', fontSize: '0.875rem', color: '#666', fontWeight: 600, textTransform: 'uppercase' }}>BUS TYPE</p>
@@ -373,12 +373,12 @@ export default function BusBookingPage() {
               </div>
               <div>
                 <p style={{ margin: '0 0 0.5rem', fontSize: '0.875rem', color: '#666', fontWeight: 600, textTransform: 'uppercase' }}>DEPARTURE</p>
-                <p style={{ margin: 0, fontSize: '1rem' }}>{fmtTime(bus.departureTime)}</p>
+                <p style={{ margin: 0, fontSize: '1rem' }}>{fmtTime(bus.departure?.time)}</p>
                 <p style={{ margin: '0.25rem 0 0', fontSize: '0.875rem', color: '#666' }}>{fmtDate(bus.departure?.date)} - {bus.from}</p>
               </div>
               <div>
                 <p style={{ margin: '0 0 0.5rem', fontSize: '0.875rem', color: '#666', fontWeight: 600, textTransform: 'uppercase' }}>ARRIVAL</p>
-                <p style={{ margin: 0, fontSize: '1rem' }}>{fmtTime(bus.arrivalTime)}</p>
+                <p style={{ margin: 0, fontSize: '1rem' }}>{fmtTime(bus.arrival?.time)}</p>
                 <p style={{ margin: '0.25rem 0 0', fontSize: '0.875rem', color: '#666' }}>{fmtDate(bus.arrival?.date)} - {bus.to}</p>
               </div>
               <div>
@@ -613,7 +613,7 @@ export default function BusBookingPage() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
                 <div>
                   <p style={{ margin: '0 0 0.5rem', fontSize: '0.75rem', color: '#666', fontWeight: 600, textTransform: 'uppercase' }}>OPERATOR</p>
-                  <p style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>{bus.operator}</p>
+                  <p style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>{bus.operatorName}</p>
                 </div>
                 <div>
                   <p style={{ margin: '0 0 0.5rem', fontSize: '0.75rem', color: '#666', fontWeight: 600, textTransform: 'uppercase' }}>BUS TYPE</p>
@@ -621,11 +621,11 @@ export default function BusBookingPage() {
                 </div>
                 <div>
                   <p style={{ margin: '0 0 0.5rem', fontSize: '0.75rem', color: '#666', fontWeight: 600, textTransform: 'uppercase' }}>FROM</p>
-                  <p style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>{bus.from} - {fmtTime(bus.departureTime)}</p>
+                  <p style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>{bus.from} - {fmtTime(bus.departure?.time)}</p>
                 </div>
                 <div>
                   <p style={{ margin: '0 0 0.5rem', fontSize: '0.75rem', color: '#666', fontWeight: 600, textTransform: 'uppercase' }}>TO</p>
-                  <p style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>{bus.to} - {fmtTime(bus.arrivalTime)}</p>
+                  <p style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>{bus.to} - {fmtTime(bus.arrival?.time)}</p>
                 </div>
                 <div>
                   <p style={{ margin: '0 0 0.5rem', fontSize: '0.75rem', color: '#666', fontWeight: 600, textTransform: 'uppercase' }}>PASSENGERS</p>
