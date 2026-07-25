@@ -420,65 +420,74 @@ export async function searchOlaRides(fromLat, fromLng, toLat, toLng) {
   }
 }
 
-// ============ IRCTC TRAINS ============
-const irctcClient = axios.create({
-  baseURL: `https://${process.env.IRCTC_API_HOST || 'irctc.co.in'}/api`,
+// ============ CLEARTRIP TRAINS ============
+const cleartripClient = axios.create({
+  baseURL: process.env.CLEARTRIP_API_HOST || 'https://www.cleartrip.com/api',
   timeout: 10000
 })
 
-export async function searchTrainsIRCTC(from, to, date) {
-  const cacheKey = `trains_irctc_${from}_${to}_${date}`
+export async function searchTrainsCleartrip(from, to, date) {
+  const cacheKey = `trains_cleartrip_${from}_${to}_${date}`
   const cached = cache.get(cacheKey)
   if (cached) return cached
 
   try {
-    // IRCTC API endpoint - trains/search
-    const response = await irctcClient.get('/trains/search', {
+    console.log(`[CLEARTRIP] Searching trains: ${from} → ${to} on ${date}`)
+
+    // Cleartrip API endpoint for trains
+    const response = await cleartripClient.get('/train/search', {
       params: {
-        fromStationCode: from,
-        toStationCode: to,
+        from: from,
+        to: to,
         date: date,
-        apikey: process.env.IRCTC_API_KEY
+        apiKey: process.env.CLEARTRIP_API_KEY,
+        clientId: process.env.CLEARTRIP_CLIENT_ID
       },
       headers: {
-        'Authorization': `Bearer ${process.env.IRCTC_API_KEY || ''}`,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.CLEARTRIP_API_KEY || ''}`
       }
     })
 
-    const normalized = (response.data.data || response.data.trains || []).map(train => ({
-      provider: 'irctc',
-      id: `irctc_${train.trainNumber}`,
-      trainNumber: train.trainNumber,
+    // Handle Cleartrip response structure
+    const trains = response.data.data?.trains || response.data.trains || []
+
+    const normalized = trains.map(train => ({
+      provider: 'cleartrip',
+      id: `cleartrip_${train.trainNumber}`,
+      trainNumber: train.trainNumber || train.number,
       trainName: train.trainName || train.name,
       operatorName: 'Indian Railways',
-      from: train.fromStationCode || from,
-      to: train.toStationCode || to,
-      departure: train.departureTime,
-      arrival: train.arrivalTime,
-      duration: train.duration || calculateDuration(train.departureTime, train.arrivalTime),
-      durationMinutes: train.durationMinutes || 0,
-      type: train.trainType || 'Express',
-      price: train.baseFare || train.fare || 500,
+      from: train.fromStationCode || train.from || from,
+      to: train.toStationCode || train.to || to,
+      departure: train.departureTime || train.departure,
+      arrival: train.arrivalTime || train.arrival,
+      duration: train.duration || calculateDuration(train.departureTime || train.departure, train.arrivalTime || train.arrival),
+      durationMinutes: train.durationMinutes || parseDurationToMinutes(train.duration || '0h'),
+      type: train.trainType || train.type || 'Express',
+      price: train.baseFare || train.fare || train.price || 500,
       currency: 'INR',
-      seats: train.availableSeats || 50,
-      seatsAvailable: train.availableSeats || 50,
+      seats: train.availableSeats || train.seatsAvailable || 50,
+      seatsAvailable: train.availableSeats || train.seatsAvailable || 50,
       class: train.class || 'General',
+      classType: train.classType || 'General',
       amenities: train.amenities || ['Meals', 'Charging Point'],
       rating: 4.5,
+      reviews: 2000,
       isActive: true
     }))
 
+    console.log(`[CLEARTRIP] Found ${normalized.length} trains`)
     cache.set(cacheKey, normalized)
     return normalized
   } catch (error) {
-    console.error('IRCTC API error:', error.message)
-    console.log('Falling back to mock data for trains')
+    console.error('[CLEARTRIP] API error:', error.message)
+    console.log('[CLEARTRIP] Falling back to mock data for trains')
     return [] // Return empty to use mock data fallback
   }
 }
 
-// Helper function to calculate duration
+// Helper function to calculate duration (HH:MM format)
 function calculateDuration(departure, arrival) {
   if (!departure || !arrival) return '0h 0m'
   try {
@@ -495,4 +504,20 @@ function calculateDuration(departure, arrival) {
   } catch {
     return '0h 0m'
   }
+}
+
+// Helper function to parse duration string to minutes
+function parseDurationToMinutes(duration) {
+  if (!duration) return 0
+  try {
+    const match = duration.match(/(\d+)h\s*(\d+)?m?/)
+    if (match) {
+      const hours = parseInt(match[1]) || 0
+      const mins = parseInt(match[2]) || 0
+      return hours * 60 + mins
+    }
+  } catch (e) {
+    console.log('Duration parse error:', e.message)
+  }
+  return 0
 }

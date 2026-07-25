@@ -1,6 +1,6 @@
 import prisma from '../../config/prismaClient.js'
 import cacheService from '../cache/cacheService.js'
-import { searchTrainsIRCTC } from '../../config/allApiClients.js'
+import { searchTrainsCleartrip } from '../../config/allApiClients.js'
 
 // Normalize train from DB to standardized format
 const normalizeTrainResult = (train, source = 'db') => ({
@@ -23,7 +23,7 @@ const normalizeTrainResult = (train, source = 'db') => ({
 })
 
 export const trainSearchService = {
-  // Search trains with IRCTC API → Cache → DB strategy
+  // Search trains with Cleartrip API → Cache → DB strategy
   search: async (params) => {
     const { from, to, date, type, minPrice, maxPrice, search: searchTerm, db = prisma } = params
 
@@ -38,21 +38,21 @@ export const trainSearchService = {
 
     let results = []
 
-    // 2. Try IRCTC API if credentials available
-    if (process.env.IRCTC_API_KEY && from && to && date) {
+    // 2. Try Cleartrip API if credentials available
+    if (process.env.CLEARTRIP_API_KEY && from && to && date) {
       try {
-        console.log(`[TRAINS] Attempting IRCTC API search: ${from} → ${to} on ${date}`)
-        const irctcResults = await searchTrainsIRCTC(from, to, date)
-        if (irctcResults && irctcResults.length > 0) {
-          results = irctcResults
-          console.log(`[TRAINS] Found ${results.length} trains from IRCTC API`)
+        console.log(`[TRAINS] Attempting Cleartrip API search: ${from} → ${to} on ${date}`)
+        const cleartripResults = await searchTrainsCleartrip(from, to, date)
+        if (cleartripResults && cleartripResults.length > 0) {
+          results = cleartripResults
+          console.log(`[TRAINS] Found ${results.length} trains from Cleartrip API`)
         }
       } catch (error) {
-        console.log(`[TRAINS] IRCTC API failed, falling back to mock data: ${error.message}`)
+        console.log(`[TRAINS] Cleartrip API failed, falling back to mock data: ${error.message}`)
       }
     }
 
-    // 3. Fallback to database/mock data if IRCTC failed or unavailable
+    // 3. Fallback to database/mock data if Cleartrip failed or unavailable
     if (results.length === 0) {
       const baseWhere = {
         isActive: true,
@@ -91,7 +91,7 @@ export const trainSearchService = {
       }
     }
 
-    // Apply price filters if IRCTC results used
+    // Apply price filters if Cleartrip results used
     if (results.length > 0 && (minPrice || maxPrice)) {
       results = results.filter(t => {
         const price = t.price || t.baseFare || 0
@@ -105,7 +105,7 @@ export const trainSearchService = {
     cacheService.set(cacheKey, results, 300)
 
     // Return normalized results
-    return results.map(t => normalizeTrainResult(t, results[0]?.provider === 'irctc' ? 'irctc' : 'db'))
+    return results.map(t => normalizeTrainResult(t, results[0]?.provider === 'cleartrip' ? 'cleartrip' : 'db'))
   },
 
   // Get train details by ID
