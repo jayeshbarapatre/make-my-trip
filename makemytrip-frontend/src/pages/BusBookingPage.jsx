@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { busService } from '../services/busService'
 import { useAuth } from '../context/AuthContext'
 import { authService, bookingService } from '../services/authService'
+import showToast from '../utils/toast'
 import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
 import '../styles/BusBookingFlow.css'
@@ -290,7 +291,7 @@ export default function BusBookingPage() {
       setStep(4)
     } catch (error) {
       console.error('Booking failed:', error)
-      alert(error.response?.data?.message || 'Booking failed. Please try again.')
+      showToast(error.response?.data?.message || 'Booking failed. Please try again.', 'error')
     } finally {
       setPaymentLoading(false)
     }

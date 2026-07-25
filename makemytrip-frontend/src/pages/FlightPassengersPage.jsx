@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import showToast from '../utils/toast';
 import '../styles/FlightBookingFlow.css';
 
 export default function FlightPassengersPage() {
@@ -21,7 +22,7 @@ export default function FlightPassengersPage() {
 
   const handleAddPassenger = () => {
     if (passengers.length >= 9) {
-      alert("Maximum 9 passengers allowed per booking.");
+      showToast("Maximum 9 passengers allowed per booking.", "warning");
       return;
     }
     setPassengers([...passengers, { id: Date.now(), firstName: '', lastName: '', dob: '', gender: 'Male', nationality: 'Indian' }]);
@@ -29,7 +30,7 @@ export default function FlightPassengersPage() {
 
   const handleRemovePassenger = (id) => {
     if (passengers.length === 1) {
-      alert("At least one passenger is required.");
+      showToast("At least one passenger is required.", "warning");
       return;
     }
     setPassengers(passengers.filter(p => p.id !== id));
