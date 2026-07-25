@@ -1536,6 +1536,33 @@ const mockCabs = [
   }
 ]
 
+// Extra test data for comprehensive testing
+mockHotels.push(
+  // Jaipur Hotels
+  { id: 'HT-TEST-001', name: 'Rambagh Palace Jaipur', city: 'Jaipur', location: 'Jaipur', address: 'Jaipur', rating: 4.8, reviews: 2100, price: 8500, roomsAvailable: 15, totalRooms: 100, amenities: ['WiFi', 'Pool', 'Spa'], description: 'Luxury palace hotel', isActive: true, images: ['https://images.unsplash.com/photo-1631049307038-da31f703988f?auto=format&fit=crop&w=800&q=80'], taxes: 1700, discount: 0, nightsCount: 1, isAvailable: true, availableRooms: 15 },
+  { id: 'HT-TEST-002', name: 'Jaipur Marriott', city: 'Jaipur', location: 'Jaipur', address: 'Jaipur', rating: 4.5, reviews: 1543, price: 5500, roomsAvailable: 25, totalRooms: 200, amenities: ['WiFi', 'Pool'], description: 'Premium hotel', isActive: true, images: ['https://images.unsplash.com/photo-1578821868057-c31b76b80d73?auto=format&fit=crop&w=800&q=80'], taxes: 1100, discount: 550, nightsCount: 1, isAvailable: true, availableRooms: 25 },
+
+  // Agra Hotels
+  { id: 'HT-TEST-003', name: 'Taj View Hotel Agra', city: 'Agra', location: 'Agra', address: 'Agra', rating: 4.7, reviews: 1876, price: 6200, roomsAvailable: 18, totalRooms: 120, amenities: ['WiFi', 'Restaurant'], description: 'Taj view hotel', isActive: true, images: ['https://images.unsplash.com/photo-1566669537602-b8f7b5ff87f9?auto=format&fit=crop&w=800&q=80'], taxes: 1240, discount: 620, nightsCount: 1, isAvailable: true, availableRooms: 18 },
+  { id: 'HT-TEST-004', name: 'Agra Grand Hotel', city: 'Agra', location: 'Agra', address: 'Agra', rating: 4.3, reviews: 987, price: 3500, roomsAvailable: 30, totalRooms: 150, amenities: ['WiFi'], description: 'Budget hotel', isActive: true, images: ['https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?auto=format&fit=crop&w=800&q=80'], taxes: 700, discount: 350, nightsCount: 1, isAvailable: true, availableRooms: 30 },
+
+  // Goa Hotels
+  { id: 'HT-TEST-005', name: 'Taj Exotica Goa', city: 'Goa', location: 'Goa', address: 'Goa', rating: 4.8, reviews: 2345, price: 9500, roomsAvailable: 12, totalRooms: 80, amenities: ['WiFi', 'Pool', 'Beach'], description: 'Luxury beach resort', isActive: true, images: ['https://images.unsplash.com/photo-1595576142684-e58829a70f36?auto=format&fit=crop&w=800&q=80'], taxes: 1900, discount: 0, nightsCount: 1, isAvailable: true, availableRooms: 12 },
+  { id: 'HT-TEST-006', name: 'Goa Beach Resort', city: 'Goa', location: 'Goa', address: 'Goa', rating: 4.4, reviews: 1432, price: 4800, roomsAvailable: 22, totalRooms: 140, amenities: ['WiFi', 'Beach'], description: 'Beach resort', isActive: true, images: ['https://images.unsplash.com/photo-1559056199-641a0ac8b8d5?auto=format&fit=crop&w=800&q=80'], taxes: 960, discount: 480, nightsCount: 1, isAvailable: true, availableRooms: 22 },
+
+  // Hyderabad Hotels
+  { id: 'HT-TEST-007', name: 'Hyatt House Hyderabad', city: 'Hyderabad', location: 'Hyderabad', address: 'Hyderabad', rating: 4.6, reviews: 1654, price: 5999, roomsAvailable: 20, totalRooms: 180, amenities: ['WiFi', 'Pool'], description: 'Premium hotel', isActive: true, images: ['https://images.unsplash.com/photo-1564376264095-8d6e20a1c7f7?auto=format&fit=crop&w=800&q=80'], taxes: 1200, discount: 600, nightsCount: 1, isAvailable: true, availableRooms: 20 },
+
+  // Kolkata Hotels
+  { id: 'HT-TEST-008', name: 'Kolkata Heritage Hotel', city: 'Kolkata', location: 'Kolkata', address: 'Kolkata', rating: 4.5, reviews: 1234, price: 4200, roomsAvailable: 28, totalRooms: 160, amenities: ['WiFi'], description: 'Heritage hotel', isActive: true, images: ['https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&w=800&q=80'], taxes: 840, discount: 420, nightsCount: 1, isAvailable: true, availableRooms: 28 },
+
+  // Pune Hotels
+  { id: 'HT-TEST-009', name: 'Pune City Hotel', city: 'Pune', location: 'Pune', address: 'Pune', rating: 4.4, reviews: 1876, price: 3800, roomsAvailable: 35, totalRooms: 200, amenities: ['WiFi'], description: 'City hotel', isActive: true, images: ['https://images.unsplash.com/photo-1635558063341-0f4755adbc64?auto=format&fit=crop&w=800&q=80'], taxes: 760, discount: 380, nightsCount: 1, isAvailable: true, availableRooms: 35 },
+
+  // Srinagar Hotels
+  { id: 'HT-TEST-010', name: 'Srinagar Palace Hotel', city: 'Srinagar', location: 'Srinagar', address: 'Srinagar', rating: 4.7, reviews: 2154, price: 7200, roomsAvailable: 16, totalRooms: 100, amenities: ['WiFi', 'Lake View'], description: 'Lake view hotel', isActive: true, images: ['https://images.unsplash.com/photo-1569305817188-a1ba3a0fde2c?auto=format&fit=crop&w=800&q=80'], taxes: 1440, discount: 720, nightsCount: 1, isAvailable: true, availableRooms: 16 }
+)
+
 export default {
   flights: mockFlights,
   hotels: mockHotels,
