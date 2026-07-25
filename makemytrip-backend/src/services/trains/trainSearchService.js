@@ -55,8 +55,9 @@ export const trainSearchService = {
       }
     }
 
-    // 3. Fallback to database/mock data if Cleartrip failed or unavailable
+    // 3. Fallback to database/mock data if API failed or unavailable
     if (results.length === 0) {
+      console.log('[TRAINS] No API results, using mock data fallback...')
       const baseWhere = {
         isActive: true,
         ...(type && { type })
@@ -80,17 +81,41 @@ export const trainSearchService = {
         orderBy: { price: 'asc' }
       })
 
-      // Filter by route (JSON fields) and seat availability in memory
+      console.log(`[TRAINS] Found ${trains.length} trains in database`)
+
+      // Filter by route - FLEXIBLE MATCHING for city names
       results = trains.filter(t => {
-        const fromMatch = !from ||
-          (t.departure && t.departure.city && t.departure.city.toLowerCase().includes(from.toLowerCase()))
-        const toMatch = !to ||
-          (t.arrival && t.arrival.city && t.arrival.city.toLowerCase().includes(to.toLowerCase()))
+        if (!from && !to) return true
+
+        const departureCities = [
+          t.departure?.city || '',
+          t.from || '',
+          t.departureCity || ''
+        ].filter(c => c)
+
+        const arrivalCities = [
+          t.arrival?.city || '',
+          t.to || '',
+          t.arrivalCity || ''
+        ].filter(c => c)
+
+        const fromMatch = !from || departureCities.some(city =>
+          city.toLowerCase().includes(from.toLowerCase()) || from.toLowerCase().includes(city.toLowerCase())
+        )
+
+        const toMatch = !to || arrivalCities.some(city =>
+          city.toLowerCase().includes(to.toLowerCase()) || to.toLowerCase().includes(city.toLowerCase())
+        )
+
         return fromMatch && toMatch
       })
 
-      if (results.length > 0) {
-        console.log(`[TRAINS] Using ${results.length} trains from mock database`)
+      console.log(`[TRAINS] After route filter: ${results.length} trains`)
+
+      if (results.length === 0) {
+        console.log('[TRAINS] ⚠️ No matching trains found - FORCING MOCK DATA RETURN')
+        // If still no results, return ALL trains as fallback (better UX than empty)
+        results = trains.slice(0, 20)
       }
     }
 
