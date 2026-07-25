@@ -312,6 +312,32 @@ export default function BusBookingPage() {
     }
   }
 
+  // Guard: Show loading state if data is loading
+  if (isLoading && !bus) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#f5f5f5', padding: '2rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⏳</div>
+          <p style={{ color: '#666', fontSize: '1.125rem' }}>Loading bus details...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Guard: Show error if bus data not found
+  if (!bus) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#f5f5f5', padding: '2rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ textAlign: 'center', background: 'white', padding: '2rem', borderRadius: '0.5rem', maxWidth: '400px' }}>
+          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>❌</div>
+          <h2 style={{ margin: '0 0 0.5rem', color: '#e63946' }}>Bus Not Found</h2>
+          <p style={{ color: '#666', marginBottom: '1.5rem' }}>The bus you're trying to book is no longer available.</p>
+          <button className="btn btn-primary" onClick={() => navigate(-1)}>Go Back</button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div style={{ minHeight: '100vh', background: '#f5f5f5', padding: '2rem 1rem' }}>
       <div style={{ maxWidth: '900px', margin: '0 auto' }}>
