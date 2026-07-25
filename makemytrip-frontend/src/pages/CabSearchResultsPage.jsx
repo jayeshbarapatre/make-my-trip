@@ -106,8 +106,24 @@ export default function CabSearchResultsPage() {
       setShowCustomAlert(true)
       return
     }
-    // Simulate booking since we don't have a backend for cabs yet
-    alert(`Cab booking initiated for ${car.name}!`)
+    // Navigate to payment page with cab details
+    navigate('/cabs/payment', {
+      state: {
+        cab: {
+          id: car.id,
+          type: car.name,
+          model: car.type,
+          rating: car.rating,
+          price: parseInt(car.price.replace(/,/g, ''))
+        },
+        pickupLocation: fromVal,
+        dropLocation: toVal,
+        distance: '25 km',
+        estimatedTime: '45 mins',
+        totalAmount: parseInt(car.price.replace(/,/g, '')) + 117,
+        baseFare: parseInt(car.price.replace(/,/g, ''))
+      }
+    })
   }
 
   const fmtDateDisplay = (dateStr) => {
