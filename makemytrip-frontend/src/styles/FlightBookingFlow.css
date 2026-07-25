@@ -202,13 +202,19 @@
 }
 
 .flight-input {
-  border: 1px solid hsl(var(--b2));
+  border: 1px solid hsl(var(--bc) / 0.15);
   border-radius: 6px;
   padding: 10px 14px;
   font-size: 14px;
   outline: none;
   background: hsl(var(--b1));
   color: hsl(var(--bc));
+  transition: border-color 0.2s ease;
+}
+
+.flight-input:focus {
+  border-color: hsl(var(--p));
+  box-shadow: 0 0 0 3px hsl(var(--p) / 0.1);
 }
 
 .flight-add-pass-btn {

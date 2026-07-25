@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';
 import '../styles/FlightBookingFlow.css';
 
 export default function FlightResultsPage() {
@@ -35,7 +35,7 @@ export default function FlightResultsPage() {
     const fetchFlights = async () => {
       try {
         setError('');
-        const response = await axios.get('http://localhost:5000/api/v1/flights', {
+        const response = await api.get('/flights', {
           params: {
             from: searchParams.from,
             to: searchParams.to,
@@ -124,7 +124,7 @@ export default function FlightResultsPage() {
             <button
               onClick={() => navigate('/flights')}
               style={{
-                background: 'var(--color-primary)',
+                background: 'hsl(var(--p))',
                 color: '#ffffff',
                 border: 'none',
                 padding: '12px 28px',
@@ -155,7 +155,7 @@ export default function FlightResultsPage() {
             <button
               onClick={() => navigate('/flights')}
               style={{
-                background: 'var(--color-primary)',
+                background: 'hsl(var(--p))',
                 color: '#ffffff',
                 border: 'none',
                 padding: '12px 28px',
@@ -336,7 +336,7 @@ export default function FlightResultsPage() {
                           handleSelectFlight(flight);
                         }}
                         style={{
-                          background: 'var(--color-primary)',
+                          background: 'hsl(var(--p))',
                           color: '#ffffff',
                           border: 'none',
                           padding: '12px 24px',

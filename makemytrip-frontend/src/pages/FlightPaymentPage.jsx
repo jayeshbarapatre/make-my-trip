@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';
 import '../styles/FlightBookingFlow.css';
 
 export default function FlightPaymentPage() {
@@ -50,8 +50,8 @@ export default function FlightPaymentPage() {
 
       // Try backend first, but fall back to localStorage
       try {
-        const response = await axios.post(
-          'http://localhost:5000/api/v1/bookings/flights',
+        const response = await api.post(
+          '/bookings/flights',
           {
             userId,
             flightId: flight.id,

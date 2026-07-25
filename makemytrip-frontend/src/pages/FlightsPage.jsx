@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';
 
 export default function FlightsPage() {
   const navigate = useNavigate();
@@ -54,8 +54,8 @@ export default function FlightsPage() {
         tripType
       };
 
-      const response = await axios.get(
-        'http://localhost:5000/api/v1/flights',
+      const response = await api.get(
+        '/flights',
         { params: { from: fromCity, to: toCity, date: departDate, passengers } }
       );
 
@@ -225,7 +225,7 @@ export default function FlightsPage() {
             style={{
               width: '100%',
               padding: '16px',
-              background: loading ? 'hsl(var(--b3))' : 'var(--color-primary)',
+              background: loading ? 'hsl(var(--b3))' : 'hsl(var(--p))',
               color: '#ffffff',
               border: 'none',
               borderRadius: '8px',
@@ -272,7 +272,7 @@ export default function FlightsPage() {
                 }}
                 onMouseEnter={(e) => {
                   e.target.style.background = 'hsl(var(--b3))';
-                  e.target.style.borderColor = 'var(--color-primary)';
+                  e.target.style.borderColor = 'hsl(var(--p))';
                 }}
                 onMouseLeave={(e) => {
                   e.target.style.background = 'hsl(var(--b2))';

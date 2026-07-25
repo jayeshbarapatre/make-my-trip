@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';
 import '../styles/TrainBookingFlow.css';
 
 export default function TrainPaymentPage() {
@@ -29,8 +29,8 @@ export default function TrainPaymentPage() {
       const userId = localStorage.getItem('userId') || 'usr_guest_' + Date.now();
 
       // Call backend to create train booking (server generates PNR and bookingId)
-      const response = await axios.post(
-        'http://localhost:5000/api/v1/bookings/trains',
+      const response = await api.post(
+        '/bookings/trains',
         {
           userId,
           trainId: train.id || 'train_' + Date.now(),
