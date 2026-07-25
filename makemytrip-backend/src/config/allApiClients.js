@@ -420,10 +420,10 @@ export async function searchOlaRides(fromLat, fromLng, toLat, toLng) {
   }
 }
 
-// ============ RAPIDAPI INDIAN RAILWAYS TRAINS ============
-const trainApiClient = axios.create({
-  baseURL: `https://${process.env.RAPIDAPI_HOST_TRAINS || 'indian-railways-api.p.rapidapi.com'}`,
-  timeout: 10000
+// ============ RAPIDAPI INDIAN RAILWAY IRCTC TRAINS ============
+const irctcTrainClient = axios.create({
+  baseURL: `https://${process.env.RAPIDAPI_HOST_TRAINS || 'indian-railway-irctc.p.rapidapi.com'}`,
+  timeout: 15000
 })
 
 export async function searchTrainsAPI(from, to, date) {
@@ -442,55 +442,62 @@ export async function searchTrainsAPI(from, to, date) {
   try {
     console.log(`[TRAIN API] Searching trains: ${from} → ${to} on ${date}`)
 
-    const response = await trainApiClient.get('/search', {
+    // IRCTC API endpoint for train search
+    const response = await irctcTrainClient.get('/api/trains/v1/searchTrain', {
       params: {
-        source: from,
-        destination: to,
-        date: date
+        fromStationCode: from,
+        toStationCode: to,
+        dateOfJourney: date,
+        classType: 'General'
       },
       headers: {
+        'Content-Type': 'application/json',
+        'x-rapid-api': 'rapid-api-database',
         'X-RapidAPI-Key': process.env.RAPIDAPI_KEY,
         'X-RapidAPI-Host': process.env.RAPIDAPI_HOST_TRAINS
       }
     })
 
-    const trains = response.data?.data || response.data?.trains || response.data || []
+    // Handle IRCTC API response structure
+    const trains = response.data?.data || response.data?.trains || response.data?.result || []
 
     if (!Array.isArray(trains)) {
       console.log('[TRAIN API] Response is not an array:', typeof trains)
+      console.log('[TRAIN API] Response data:', JSON.stringify(response.data).substring(0, 200))
       return []
     }
 
     const normalized = trains.map((train, idx) => ({
-      provider: 'indian-railways-api',
-      id: `ira_${train.trainNumber || idx}`,
+      provider: 'irctc',
+      id: `irctc_${train.trainNumber || train.number || idx}`,
       trainNumber: train.trainNumber || train.number || `TR${idx}`,
-      trainName: train.trainName || train.name || 'Express',
-      operatorName: 'Indian Railways',
-      from: train.source || train.from || from,
-      to: train.destination || train.to || to,
-      departure: train.departureTime || train.departure,
-      arrival: train.arrivalTime || train.arrival,
-      duration: train.duration || train.totalTime || '0h',
-      durationMinutes: train.durationInMinutes || parseDurationToMinutes(train.duration || '0h'),
+      trainName: train.trainName || train.name || 'Express Train',
+      operatorName: train.operatorName || 'Indian Railways',
+      from: train.fromStationCode || train.from || from,
+      to: train.toStationCode || train.to || to,
+      departure: train.departureTime || train.departureIST || train.departure || '00:00',
+      arrival: train.arrivalTime || train.arrivalIST || train.arrival || '00:00',
+      duration: train.duration || train.totalTime || calculateDuration(train.departureTime, train.arrivalTime) || '0h',
+      durationMinutes: train.durationInMinutes || parseDurationToMinutes(train.duration || '0h') || 0,
       type: train.trainType || train.type || 'Express',
-      price: parseInt(train.price || train.fare || '500') || 500,
+      price: Math.floor(train.price || train.fare || train.baseFare || 500),
       currency: 'INR',
-      seats: train.availableSeats || train.seatsAvailable || 50,
+      seats: train.availableSeats || train.seatsAvailable || train.totalSeats || 50,
       seatsAvailable: train.availableSeats || train.seatsAvailable || 50,
-      class: train.class || 'General',
+      class: train.class || train.classType || 'General',
       classType: train.classType || 'General',
-      amenities: Array.isArray(train.amenities) ? train.amenities : ['AC', 'Charging Point'],
+      amenities: Array.isArray(train.amenities) ? train.amenities : ['Meals', 'Charging Point'],
       rating: train.rating || 4.3,
       reviews: train.reviews || 1500,
-      isActive: true
+      isActive: train.isActive !== false
     }))
 
-    console.log(`[TRAIN API] ✅ Found ${normalized.length} trains from API`)
+    console.log(`[TRAIN API] ✅ Found ${normalized.length} trains from IRCTC API`)
     cache.set(cacheKey, normalized)
     return normalized
   } catch (error) {
     console.error('[TRAIN API] ❌ Error:', error.message)
+    console.error('[TRAIN API] Response:', error.response?.data)
     return []
   }
 }
