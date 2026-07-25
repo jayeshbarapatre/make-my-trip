@@ -446,12 +446,14 @@
   padding-top: 12px;
   border-top: 1px dashed hsl(var(--b3));
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
+  gap: 16px;
 }
 .tc-action-info {
   font-size: 13px;
   color: hsl(var(--bc) / 0.7);
+  display: none;
 }
 .tc-action-info strong {
   color: hsl(var(--bc));
