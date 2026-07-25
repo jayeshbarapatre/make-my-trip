@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext'
 import { authService, bookingService } from '../services/authService'
 import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
+import '../styles/BusBookingFlow.css'
 
 const fmtTime = (val) => {
   if (!val) return 'N/A'
@@ -339,20 +340,13 @@ export default function BusBookingPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f5f5f5', padding: '2rem 1rem' }}>
-      <div style={{ maxWidth: '900px', margin: '0 auto' }}>
-        <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
-          <h1 style={{ margin: '0 0 0.5rem', fontSize: '1.875rem', fontWeight: 700 }}>Book Your Bus</h1>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '2rem', marginTop: '1rem' }}>
+    <div className="bus-flow-wrapper">
+      <div className="bus-flow-container">
+        <div className="bus-page-title">
+          <h1>Book Your Bus</h1>
+          <div className="bus-steps-bar">
             {[1, 2, 3, 4].map(s => (
-              <div key={s} style={{
-                padding: '0.75rem 1.5rem',
-                background: step >= s ? '#003580' : '#ccc',
-                color: 'white',
-                borderRadius: '50px',
-                fontSize: '0.875rem',
-                fontWeight: 600,
-              }}>
+              <div key={s} className={`bus-step${step >= s ? ' active' : ''}`}>
                 Step {s}
               </div>
             ))}
@@ -360,58 +354,51 @@ export default function BusBookingPage() {
         </div>
 
         {step === 1 && (
-          <div style={{ background: 'white', borderRadius: '0.5rem', padding: '2rem', marginBottom: '2rem' }}>
-            <h2 style={{ marginTop: 0, marginBottom: '1.5rem' }}>Review Bus Details</h2>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '2rem' }}>
-              <div>
-                <p style={{ margin: '0 0 0.5rem', fontSize: '0.875rem', color: '#666', fontWeight: 600, textTransform: 'uppercase' }}>OPERATOR</p>
-                <p style={{ margin: 0, fontSize: '1.125rem', fontWeight: 600 }}>{bus.operatorName}</p>
+          <div className="bus-form-card">
+            <h2 className="bus-form-title">Review Bus Details</h2>
+            <div className="bus-details-grid">
+              <div className="bus-detail-item">
+                <span className="bus-detail-label">Operator</span>
+                <span className="bus-detail-value">{bus.operatorName}</span>
               </div>
-              <div>
-                <p style={{ margin: '0 0 0.5rem', fontSize: '0.875rem', color: '#666', fontWeight: 600, textTransform: 'uppercase' }}>BUS TYPE</p>
-                <p style={{ margin: 0, fontSize: '1.125rem', fontWeight: 600 }}>{bus.type || 'AC'}</p>
+              <div className="bus-detail-item">
+                <span className="bus-detail-label">Bus Type</span>
+                <span className="bus-detail-value">{bus.type || 'AC'}</span>
               </div>
-              <div>
-                <p style={{ margin: '0 0 0.5rem', fontSize: '0.875rem', color: '#666', fontWeight: 600, textTransform: 'uppercase' }}>DEPARTURE</p>
-                <p style={{ margin: 0, fontSize: '1rem' }}>{fmtTime(bus.departure?.time)}</p>
-                <p style={{ margin: '0.25rem 0 0', fontSize: '0.875rem', color: '#666' }}>{fmtDate(bus.departure?.date)} - {bus.from}</p>
+              <div className="bus-detail-item">
+                <span className="bus-detail-label">Departure</span>
+                <span className="bus-detail-value">{fmtTime(bus.departure?.time)}</span>
+                <span className="bus-detail-sub">{fmtDate(bus.departure?.date)} - {bus.from}</span>
               </div>
-              <div>
-                <p style={{ margin: '0 0 0.5rem', fontSize: '0.875rem', color: '#666', fontWeight: 600, textTransform: 'uppercase' }}>ARRIVAL</p>
-                <p style={{ margin: 0, fontSize: '1rem' }}>{fmtTime(bus.arrival?.time)}</p>
-                <p style={{ margin: '0.25rem 0 0', fontSize: '0.875rem', color: '#666' }}>{fmtDate(bus.arrival?.date)} - {bus.to}</p>
+              <div className="bus-detail-item">
+                <span className="bus-detail-label">Arrival</span>
+                <span className="bus-detail-value">{fmtTime(bus.arrival?.time)}</span>
+                <span className="bus-detail-sub">{fmtDate(bus.arrival?.date)} - {bus.to}</span>
               </div>
-              <div>
-                <p style={{ margin: '0 0 0.5rem', fontSize: '0.875rem', color: '#666', fontWeight: 600, textTransform: 'uppercase' }}>DURATION</p>
-                <p style={{ margin: 0, fontSize: '1.125rem', fontWeight: 600 }}>{fmtDuration(bus.durationMinutes)}</p>
+              <div className="bus-detail-item">
+                <span className="bus-detail-label">Duration</span>
+                <span className="bus-detail-value">{fmtDuration(bus.durationMinutes)}</span>
               </div>
-              <div>
-                <p style={{ margin: '0 0 0.5rem', fontSize: '0.875rem', color: '#666', fontWeight: 600, textTransform: 'uppercase' }}>PRICE PER SEAT</p>
-                <p style={{ margin: 0, fontSize: '1.125rem', fontWeight: 600 }}>{fmtPrice(bus.price)}</p>
+              <div className="bus-detail-item">
+                <span className="bus-detail-label">Price Per Seat</span>
+                <span className="bus-detail-value">{fmtPrice(bus.price)}</span>
               </div>
             </div>
 
             {bus.amenities && bus.amenities.length > 0 && (
-              <div style={{ marginBottom: '2rem' }}>
-                <p style={{ margin: '0 0 0.75rem', fontSize: '0.875rem', color: '#666', fontWeight: 600, textTransform: 'uppercase' }}>AMENITIES</p>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
+              <div className="bus-amenities">
+                <span className="bus-amenities-label">Amenities</span>
+                <div className="bus-amenities-list">
                   {bus.amenities.map((a, i) => (
-                    <span key={i} style={{
-                      background: '#f0f0f0',
-                      padding: '0.5rem 1rem',
-                      borderRadius: '20px',
-                      fontSize: '0.875rem'
-                    }}>
-                      {a}
-                    </span>
+                    <span key={i} className="bus-amenity-tag">{a}</span>
                   ))}
                 </div>
               </div>
             )}
 
-            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
-              <button className="btn btn-outline" onClick={() => navigate(-1)}>Cancel</button>
-              <button className="btn btn-primary" onClick={handleProceedToPassengers}>
+            <div className="bus-button-row">
+              <button className="bus-btn-outline" onClick={() => navigate(-1)}>Cancel</button>
+              <button className="bus-btn-primary" onClick={handleProceedToPassengers}>
                 Continue to Passengers
               </button>
             </div>
@@ -419,8 +406,8 @@ export default function BusBookingPage() {
         )}
 
         {step === 2 && (
-          <div style={{ background: 'white', borderRadius: '0.5rem', padding: '2rem', marginBottom: '2rem' }}>
-            <h2 style={{ marginTop: 0, marginBottom: '1.5rem' }}>Passenger Details</h2>
+          <div className="bus-form-card">
+            <h2 className="bus-form-title">Passenger Details</h2>
 
             <div style={{ marginBottom: '2rem', padding: '1rem', background: '#f9f9f9', borderRadius: '0.5rem' }}>
               <h3 style={{ marginTop: 0, marginBottom: '1rem', fontSize: '1rem' }}>Contact Information</h3>
