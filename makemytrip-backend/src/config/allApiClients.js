@@ -419,3 +419,80 @@ export async function searchOlaRides(fromLat, fromLng, toLat, toLng) {
     return []
   }
 }
+
+// ============ IRCTC TRAINS ============
+const irctcClient = axios.create({
+  baseURL: `https://${process.env.IRCTC_API_HOST || 'irctc.co.in'}/api`,
+  timeout: 10000
+})
+
+export async function searchTrainsIRCTC(from, to, date) {
+  const cacheKey = `trains_irctc_${from}_${to}_${date}`
+  const cached = cache.get(cacheKey)
+  if (cached) return cached
+
+  try {
+    // IRCTC API endpoint - trains/search
+    const response = await irctcClient.get('/trains/search', {
+      params: {
+        fromStationCode: from,
+        toStationCode: to,
+        date: date,
+        apikey: process.env.IRCTC_API_KEY
+      },
+      headers: {
+        'Authorization': `Bearer ${process.env.IRCTC_API_KEY || ''}`,
+        'Content-Type': 'application/json'
+      }
+    })
+
+    const normalized = (response.data.data || response.data.trains || []).map(train => ({
+      provider: 'irctc',
+      id: `irctc_${train.trainNumber}`,
+      trainNumber: train.trainNumber,
+      trainName: train.trainName || train.name,
+      operatorName: 'Indian Railways',
+      from: train.fromStationCode || from,
+      to: train.toStationCode || to,
+      departure: train.departureTime,
+      arrival: train.arrivalTime,
+      duration: train.duration || calculateDuration(train.departureTime, train.arrivalTime),
+      durationMinutes: train.durationMinutes || 0,
+      type: train.trainType || 'Express',
+      price: train.baseFare || train.fare || 500,
+      currency: 'INR',
+      seats: train.availableSeats || 50,
+      seatsAvailable: train.availableSeats || 50,
+      class: train.class || 'General',
+      amenities: train.amenities || ['Meals', 'Charging Point'],
+      rating: 4.5,
+      isActive: true
+    }))
+
+    cache.set(cacheKey, normalized)
+    return normalized
+  } catch (error) {
+    console.error('IRCTC API error:', error.message)
+    console.log('Falling back to mock data for trains')
+    return [] // Return empty to use mock data fallback
+  }
+}
+
+// Helper function to calculate duration
+function calculateDuration(departure, arrival) {
+  if (!departure || !arrival) return '0h 0m'
+  try {
+    const [dHour, dMin] = departure.split(':').map(Number)
+    const [aHour, aMin] = arrival.split(':').map(Number)
+    let hours = aHour - dHour
+    let mins = aMin - dMin
+    if (mins < 0) {
+      hours--
+      mins += 60
+    }
+    if (hours < 0) hours += 24
+    return `${hours}h ${mins}m`
+  } catch {
+    return '0h 0m'
+  }
+}

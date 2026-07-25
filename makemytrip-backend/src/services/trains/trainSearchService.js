@@ -1,76 +1,111 @@
 import prisma from '../../config/prismaClient.js'
 import cacheService from '../cache/cacheService.js'
+import { searchTrainsIRCTC } from '../../config/allApiClients.js'
 
 // Normalize train from DB to standardized format
 const normalizeTrainResult = (train, source = 'db') => ({
-  id: train.id,
+  id: train.id || train.trainNumber,
   trainNumber: train.trainNumber,
-  operatorName: train.operatorName,
+  trainName: train.trainName || train.operatorName,
+  operatorName: train.operatorName || 'Indian Railways',
   type: train.type,
   departure: train.departure,
   arrival: train.arrival,
   durationMinutes: train.durationMinutes,
+  duration: train.duration,
   price: train.price,
-  seatsAvailable: train.seatsAvailable,
-  seats: train.seats,
+  seatsAvailable: train.seatsAvailable || train.seats,
+  seats: train.seats || train.seatsAvailable,
   amenities: train.amenities || [],
   image: train.image,
-  isActive: train.isActive,
-  source // 'cache' | 'db' | 'api'
+  isActive: train.isActive !== false,
+  source // 'cache' | 'db' | 'api' | 'irctc'
 })
 
 export const trainSearchService = {
-  // Search trains with cache → DB strategy
+  // Search trains with IRCTC API → Cache → DB strategy
   search: async (params) => {
     const { from, to, date, type, minPrice, maxPrice, search: searchTerm, db = prisma } = params
 
     // Build cache key (date-based for daily updates)
     const cacheKey = `train:${from}:${to}:${date}`
 
-    // 1. Check cache
+    // 1. Check cache first
     const cachedResults = cacheService.get(cacheKey)
     if (cachedResults) {
       return cachedResults.map(t => normalizeTrainResult(t, 'cache'))
     }
 
-    // 2. Query database
-    const baseWhere = {
-      isActive: true,
-      ...(type && { type })
+    let results = []
+
+    // 2. Try IRCTC API if credentials available
+    if (process.env.IRCTC_API_KEY && from && to && date) {
+      try {
+        console.log(`[TRAINS] Attempting IRCTC API search: ${from} → ${to} on ${date}`)
+        const irctcResults = await searchTrainsIRCTC(from, to, date)
+        if (irctcResults && irctcResults.length > 0) {
+          results = irctcResults
+          console.log(`[TRAINS] Found ${results.length} trains from IRCTC API`)
+        }
+      } catch (error) {
+        console.log(`[TRAINS] IRCTC API failed, falling back to mock data: ${error.message}`)
+      }
     }
 
-    if (minPrice || maxPrice) {
-      baseWhere.price = {}
-      if (minPrice) baseWhere.price.gte = parseFloat(minPrice)
-      if (maxPrice) baseWhere.price.lte = parseFloat(maxPrice)
+    // 3. Fallback to database/mock data if IRCTC failed or unavailable
+    if (results.length === 0) {
+      const baseWhere = {
+        isActive: true,
+        ...(type && { type })
+      }
+
+      if (minPrice || maxPrice) {
+        baseWhere.price = {}
+        if (minPrice) baseWhere.price.gte = parseFloat(minPrice)
+        if (maxPrice) baseWhere.price.lte = parseFloat(maxPrice)
+      }
+
+      if (searchTerm) {
+        baseWhere.OR = [
+          { operatorName: { contains: searchTerm, mode: 'insensitive' } },
+          { trainNumber: { contains: searchTerm, mode: 'insensitive' } }
+        ]
+      }
+
+      const trains = await db.train.findMany({
+        where: baseWhere,
+        orderBy: { price: 'asc' }
+      })
+
+      // Filter by route (JSON fields) and seat availability in memory
+      results = trains.filter(t => {
+        const fromMatch = !from ||
+          (t.departure && t.departure.city && t.departure.city.toLowerCase().includes(from.toLowerCase()))
+        const toMatch = !to ||
+          (t.arrival && t.arrival.city && t.arrival.city.toLowerCase().includes(to.toLowerCase()))
+        return fromMatch && toMatch
+      })
+
+      if (results.length > 0) {
+        console.log(`[TRAINS] Using ${results.length} trains from mock database`)
+      }
     }
 
-    if (searchTerm) {
-      baseWhere.OR = [
-        { operatorName: { contains: searchTerm, mode: 'insensitive' } },
-        { trainNumber: { contains: searchTerm, mode: 'insensitive' } }
-      ]
+    // Apply price filters if IRCTC results used
+    if (results.length > 0 && (minPrice || maxPrice)) {
+      results = results.filter(t => {
+        const price = t.price || t.baseFare || 0
+        if (minPrice && price < parseFloat(minPrice)) return false
+        if (maxPrice && price > parseFloat(maxPrice)) return false
+        return true
+      })
     }
-
-    const trains = await db.train.findMany({
-      where: baseWhere,
-      orderBy: { price: 'asc' }
-    })
-
-    // Filter by route (JSON fields) and seat availability in memory
-    let results = trains.filter(t => {
-      const fromMatch = !from ||
-        (t.departure && t.departure.city && t.departure.city.toLowerCase().includes(from.toLowerCase()))
-      const toMatch = !to ||
-        (t.arrival && t.arrival.city && t.arrival.city.toLowerCase().includes(to.toLowerCase()))
-      return fromMatch && toMatch
-    })
 
     // Cache results for 5 minutes
     cacheService.set(cacheKey, results, 300)
 
     // Return normalized results
-    return results.map(t => normalizeTrainResult(t, 'db'))
+    return results.map(t => normalizeTrainResult(t, results[0]?.provider === 'irctc' ? 'irctc' : 'db'))
   },
 
   // Get train details by ID
