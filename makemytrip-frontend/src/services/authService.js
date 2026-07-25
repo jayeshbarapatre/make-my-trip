@@ -22,12 +22,38 @@ export const bookingService = {
       throw e
     }
   },
+  createBusBooking: async (data) => {
+    try {
+      const res = await api.post('/bookings/buses', data)
+      return res?.data || res
+    } catch (e) {
+      console.error("Bus booking creation failed:", e)
+      throw e
+    }
+  },
   getUserBookings: async (userId) => {
     try {
       const res = await api.get(`/bookings/user/${userId}`)
       return res?.data || res || []
     } catch (e) {
       console.error("Failed to fetch bookings:", e)
+      throw e
+    }
+  },
+  getBooking: async (bookingId) => {
+    try {
+      const res = await api.get(`/bookings/${bookingId}`)
+      return res?.data || res
+    } catch (e) {
+      console.error("Failed to fetch booking:", e)
+      // Fallback: try to find in localStorage
+      try {
+        const localBookings = JSON.parse(localStorage.getItem('mmt_bookings') || '[]')
+        const found = localBookings.find(b => b.bookingId === bookingId || b.id === bookingId)
+        if (found) return found
+      } catch (err) {
+        console.error("Fallback lookup failed:", err)
+      }
       throw e
     }
   },

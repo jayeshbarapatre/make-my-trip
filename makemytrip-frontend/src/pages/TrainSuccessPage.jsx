@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -6,6 +7,61 @@ import '../styles/TrainBookingFlow.css';
 export default function TrainSuccessPage() {
   const location = useLocation();
   const navigate = useNavigate();
+
+  // Save booking to localStorage on success page load
+  useEffect(() => {
+    const booking = location.state?.booking || {};
+    const train = location.state?.train || {};
+    const searchParams = location.state?.searchParams || {};
+
+    if (booking?.bookingId || booking?.pnr) {
+      const totalAmount = location.state?.totalAmount || booking.totalAmount || 0;
+
+      const trainBooking = {
+        id: booking.bookingId || booking.id || 'TRN-' + Date.now(),
+        bookingId: booking.bookingId || 'MMT-TR-' + Math.floor(100000 + Math.random() * 900000),
+        pnr: booking.pnr || 'PNR-' + Math.floor(100000 + Math.random() * 900000),
+        status: 'confirmed',
+        type: 'train',
+        // Train Info
+        trainName: train.name || booking.trainDetails?.name || 'Train',
+        trainNumber: train.number || booking.trainDetails?.number || '',
+        fromCity: searchParams.fromCity || booking.fromCity || '',
+        toCity: searchParams.toCity || booking.toCity || '',
+        departureDate: searchParams.travelDate || booking.departureDate || '',
+        returnDate: searchParams.travelDate || booking.departureDate || '',
+        travellers: {
+          passengers: location.state?.passengers || booking.travellers?.passengers || [],
+          classCode: location.state?.selectedClass?.code || booking.travellers?.classCode || '',
+          quota: searchParams.quota || booking.travellers?.quota || 'General',
+          count: (location.state?.passengers || booking.travellers?.passengers || []).length
+        },
+        totalAmount: totalAmount,
+        paymentId: booking.paymentId || '',
+        createdAt: new Date().toISOString(),
+        // ✅ ENRICHED TRAIN FIELDS
+        baseFare: totalAmount * 0.8,
+        taxes: totalAmount * 0.15,
+        convenience: totalAmount * 0.05,
+        discount: 0,
+        gst: totalAmount * 0.05,
+        // Payment
+        paymentMethod: 'credit_card',
+        paymentStatus: 'completed',
+        transactionId: booking.paymentId || ''
+      };
+
+      // Save to localStorage
+      const existingBookings = JSON.parse(localStorage.getItem('mmt_bookings') || '[]');
+      const bookingExists = existingBookings.some(b => b.bookingId === trainBooking.bookingId);
+
+      if (!bookingExists) {
+        existingBookings.push(trainBooking);
+        localStorage.setItem('mmt_bookings', JSON.stringify(existingBookings));
+        console.log('💾 Train booking saved to localStorage:', existingBookings.length);
+      }
+    }
+  }, [location.state]);
 
   const booking = location.state?.booking || {
     id: "bkg_train_default",

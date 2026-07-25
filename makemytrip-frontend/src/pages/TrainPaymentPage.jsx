@@ -38,12 +38,25 @@ export default function TrainPaymentPage() {
           class: selectedClass.code,
           quota: searchParams.quota,
           totalAmount,
+          fromCity: searchParams.fromCity,
+          toCity: searchParams.toCity,
+          departureDate: searchParams.travelDate,
+          returnDate: searchParams.travelDate,
           travellers: {
             passengers,
             contact,
             searchParams,
             paymentMethod: finalMethod
-          }
+          },
+          // ✅ ENRICHED TRAIN FIELDS
+          baseFare: totalAmount * 0.8,
+          taxes: totalAmount * 0.15,
+          convenience: totalAmount * 0.05,
+          discount: 0,
+          gst: totalAmount * 0.05,
+          paymentMethod: 'credit_card',
+          paymentStatus: 'completed',
+          transactionId: ''
         },
         {
           headers: {
@@ -68,7 +81,7 @@ export default function TrainPaymentPage() {
           createdAt: new Date().toISOString()
         };
 
-        navigate('/trains/success', { state: { booking, train, selectedClass } });
+        navigate('/trains/success', { state: { booking, train, selectedClass, passengers, searchParams, totalAmount } });
       }
     } catch (err) {
       console.error('Payment error:', err);

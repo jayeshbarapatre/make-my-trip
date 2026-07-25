@@ -82,6 +82,54 @@ export default function BusBookingPage() {
   })
 
   const rawBus = data?.data || location.state?.bus
+
+  // Save booking to localStorage when step 4 is reached
+  useEffect(() => {
+    if (step === 4 && bookingDetails && rawBus) {
+      const baseFareCalc = rawBus.price * passengerDetails.length;
+      const taxesCalc = Math.round(baseFareCalc * 0.18);
+      const totalAmount = baseFareCalc + taxesCalc;
+
+      const busBooking = {
+        id: bookingDetails.id || 'BUS-' + Date.now(),
+        bookingId: bookingDetails.id || 'MMT-BS-' + Math.floor(100000 + Math.random() * 900000),
+        pnr: bookingDetails.pnr || 'BUS-' + Math.floor(100000 + Math.random() * 900000),
+        status: 'confirmed',
+        type: 'bus',
+        busOperator: rawBus?.operator || '',
+        busType: rawBus?.type || 'AC',
+        fromCity: rawBus?.from || rawBus?.source || '',
+        toCity: rawBus?.to || rawBus?.destination || '',
+        departureDate: searchDate || rawBus?.departure?.date || new Date().toISOString().split('T')[0],
+        returnDate: searchDate || rawBus?.departure?.date || new Date().toISOString().split('T')[0],
+        travellers: {
+          passengers: passengerDetails.length,
+          contact: contact
+        },
+        totalAmount: totalAmount,
+        paymentId: bookingDetails.paymentId || '',
+        createdAt: new Date().toISOString(),
+        // ✅ ENRICHED BUS FIELDS
+        baseFare: totalAmount * 0.8,
+        taxes: totalAmount * 0.15,
+        convenience: totalAmount * 0.05,
+        discount: 0,
+        gst: totalAmount * 0.05,
+        paymentMethod: 'credit_card',
+        paymentStatus: 'completed',
+        transactionId: bookingDetails.paymentId || ''
+      };
+
+      const existingBookings = JSON.parse(localStorage.getItem('mmt_bookings') || '[]');
+      const bookingExists = existingBookings.some(b => b.bookingId === busBooking.bookingId);
+
+      if (!bookingExists) {
+        existingBookings.push(busBooking);
+        localStorage.setItem('mmt_bookings', JSON.stringify(existingBookings));
+        console.log('💾 Bus booking saved to localStorage:', existingBookings.length);
+      }
+    }
+  }, [step, bookingDetails, rawBus, passengerDetails, searchDate, contact]);
   const bus = rawBus ? (() => {
     const departure = typeof rawBus.departure === 'string' ? JSON.parse(rawBus.departure) : rawBus.departure
     const arrival = typeof rawBus.arrival === 'string' ? JSON.parse(rawBus.arrival) : rawBus.arrival
@@ -215,6 +263,23 @@ export default function BusBookingPage() {
         totalPrice: totalAmount,
         contactEmail: contact.email,
         contactPhone: contact.phone,
+        // ✅ ENRICHED BUS FIELDS
+        fromCity: bus?.from || bus?.source || '',
+        toCity: bus?.to || bus?.destination || '',
+        departureDate: searchDate || bus?.departure?.date || new Date().toISOString().split('T')[0],
+        returnDate: searchDate || bus?.departure?.date || new Date().toISOString().split('T')[0],
+        travellers: {
+          passengers: passengerDetails.length,
+          contact: contact
+        },
+        baseFare: totalAmount * 0.8,
+        taxes: totalAmount * 0.15,
+        convenience: totalAmount * 0.05,
+        discount: 0,
+        gst: totalAmount * 0.05,
+        paymentMethod: 'credit_card',
+        paymentStatus: 'completed',
+        transactionId: ''
       }
 
       const response = await bookingService.createBusBooking(bookingPayload)
