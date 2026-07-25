@@ -480,12 +480,12 @@ export default function TrainResultsPage() {
                               Selected: <strong>{chosenCls.name} ({chosenCls.code})</strong>
                             </div>
                             <button className="tc-book-btn" onClick={() => handleProceedBook(train)}>
-                              Book Now
+                              BOOK NOW
                             </button>
                           </>
                         ) : (
-                          <button className="tc-book-btn" style={{flex: 1}} onClick={() => { setSelectedTrainId(train.id); setSelectedClassCode(train.classes[0].code); }}>
-                            Select & Book
+                          <button className="tc-book-btn" onClick={() => { setSelectedTrainId(train.id); setSelectedClassCode(train.classes[0].code); }}>
+                            SELECT & BOOK
                           </button>
                         )}
                       </div>
