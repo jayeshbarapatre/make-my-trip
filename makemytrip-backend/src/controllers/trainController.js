@@ -5,7 +5,8 @@ export const searchTrains = async (req, res) => {
   try {
     const { from, to, date, type, minPrice, maxPrice, page = 1, limit = 10, search } = req.query
 
-    // Use service layer (cache → DB)
+    // Use service layer with mock data support
+    const db = req.mockPrisma || prisma
     const allTrains = await trainSearchService.search({
       from,
       to,
@@ -13,7 +14,8 @@ export const searchTrains = async (req, res) => {
       type,
       minPrice,
       maxPrice,
-      search
+      search,
+      db
     })
 
     const skip = (Number(page) - 1) * Number(limit)

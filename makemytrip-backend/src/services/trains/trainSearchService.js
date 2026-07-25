@@ -22,7 +22,7 @@ const normalizeTrainResult = (train, source = 'db') => ({
 export const trainSearchService = {
   // Search trains with cache → DB strategy
   search: async (params) => {
-    const { from, to, date, type, minPrice, maxPrice, search: searchTerm } = params
+    const { from, to, date, type, minPrice, maxPrice, search: searchTerm, db = prisma } = params
 
     // Build cache key (date-based for daily updates)
     const cacheKey = `train:${from}:${to}:${date}`
@@ -52,7 +52,7 @@ export const trainSearchService = {
       ]
     }
 
-    const trains = await prisma.train.findMany({
+    const trains = await db.train.findMany({
       where: baseWhere,
       orderBy: { price: 'asc' }
     })
