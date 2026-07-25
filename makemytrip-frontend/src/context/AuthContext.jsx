@@ -52,6 +52,8 @@ export function AuthProvider({ children }) {
       if (res && res.data) {
         const { user: userData, token } = res.data
         localStorage.setItem('token', token)
+        localStorage.setItem('userId', userData.id)
+        localStorage.setItem('userEmail', userData.email)
         setUser(userData)
         toast.success("You have successfully logged in", "Congratulations")
         return userData
@@ -72,6 +74,8 @@ export function AuthProvider({ children }) {
       if (res && res.data) {
         const { user: newUser, token } = res.data
         localStorage.setItem('token', token)
+        localStorage.setItem('userId', newUser.id)
+        localStorage.setItem('userEmail', newUser.email)
         setUser(newUser)
         toast.success("You have successfully registered", "Congratulations")
         return newUser
@@ -92,6 +96,8 @@ export function AuthProvider({ children }) {
       if (res && res.data) {
         const { user: userData, token } = res.data
         localStorage.setItem('token', token)
+        localStorage.setItem('userId', userData.id)
+        localStorage.setItem('userEmail', userData.email)
         // Merge any locally-saved name/email for this phone number
         const saved = getMobileProfile(phone)
         const mergedUser = saved?.name ? { ...userData, ...saved } : userData
@@ -112,6 +118,8 @@ export function AuthProvider({ children }) {
       // Swallowing logout error in case token already expired on server
     } finally {
       localStorage.removeItem('token')
+      localStorage.removeItem('userId')
+      localStorage.removeItem('userEmail')
       setUser(null)
       toast.success("You have successfully logged out", "See you soon!")
     }

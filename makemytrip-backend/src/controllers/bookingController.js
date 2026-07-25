@@ -6,8 +6,14 @@ export const createBooking = async (req, res) => {
     const userId = req.userId || req.user?.id
 
     if (!userId) {
+      console.error('❌ Booking: No userId found in request')
+      console.error('  req.userId:', req.userId)
+      console.error('  req.user:', req.user)
+      console.error('  Authorization header:', req.headers.authorization ? '✓ present' : '✗ missing')
       return res.status(401).json({ message: 'Authentication required to create booking' })
     }
+
+    console.log(`✅ Booking: Creating booking for user ${userId}, type: ${req.body.type || 'unknown'}`)
 
     const {
       type = 'flight',
@@ -370,6 +376,8 @@ export const createBooking = async (req, res) => {
       userName: userName || newBooking.userName
     })
 
+    console.log(`✅ Booking created: ID ${newBooking.id || newBooking.bookingId} for user ${userId}`)
+
     res.status(201).json({ success: true, data: newBooking })
   } catch (err) {
     console.error('Create booking error:', err)
@@ -382,11 +390,17 @@ export const getUserBookings = async (req, res) => {
     const userId = req.userId || req.user?.id
 
     if (!userId) {
+      console.error('❌ getUserBookings: No userId found')
       return res.status(401).json({ message: 'Authentication required' })
     }
 
+    console.log(`📋 Fetching bookings for user ${userId}`)
+
     const db = req.mockPrisma || prisma
     const bookings = await db.booking.findMany({ where: { userId } })
+
+    console.log(`✅ Found ${bookings.length} bookings for user ${userId}`)
+
     res.json({ success: true, data: bookings })
   } catch (err) {
     console.error('Get user bookings error:', err)

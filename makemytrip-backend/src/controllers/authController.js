@@ -73,17 +73,24 @@ export const register = async (req, res) => {
 
     const db = req.mockPrisma || prisma
     const existing = await db.user.findUnique({ where: { email } })
-    if (existing) return res.status(409).json({ message: 'Email address already registered.' })
+    if (existing) {
+      console.log(`⚠️ Registration: Email ${email} already exists with ID ${existing.id}`)
+      return res.status(409).json({ message: 'Email address already registered.' })
+    }
 
     const hashed = await bcrypt.hash(password, 10)
     const newUser = await db.user.create({
       data: { name, email, password: hashed, phone, is_admin: false }
     })
 
+    console.log(`✅ Registration: Created user ${email} with ID ${newUser.id}`)
+
     const token = signToken(newUser.id)
-    res.status(201).json({
-      data: { user: { id: newUser.id, name: newUser.name, email: newUser.email, phone: newUser.phone, is_admin: false }, token }
-    })
+    const responseData = { user: { id: newUser.id, name: newUser.name, email: newUser.email, phone: newUser.phone, is_admin: false }, token }
+
+    console.log(`📤 Registration response:`, { userId: newUser.id, email: newUser.email })
+
+    res.status(201).json({ data: responseData })
   } catch (err) {
     console.error('Register error:', err)
     res.status(500).json({ message: err.message })
@@ -100,15 +107,26 @@ export const login = async (req, res) => {
 
     const db = req.mockPrisma || prisma
     const user = await db.user.findUnique({ where: { email } })
-    if (!user) return res.status(401).json({ message: 'Invalid email or password.' })
+    if (!user) {
+      console.log(`❌ Login: User ${email} not found in database`)
+      return res.status(401).json({ message: 'Invalid email or password.' })
+    }
+
+    console.log(`✅ Login: Found user ${email} with ID ${user.id}`)
 
     const isValid = await bcrypt.compare(password, user.password)
-    if (!isValid) return res.status(401).json({ message: 'Invalid email or password.' })
+    if (!isValid) {
+      console.log(`❌ Login: Invalid password for ${email}`)
+      return res.status(401).json({ message: 'Invalid email or password.' })
+    }
 
     const token = signToken(user.id)
-    res.json({
-      data: { user: { id: user.id, name: user.name, email: user.email, phone: user.phone, is_admin: user.is_admin }, token }
-    })
+    const responseData = { user: { id: user.id, name: user.name, email: user.email, phone: user.phone, is_admin: user.is_admin }, token }
+
+    console.log(`✅ Login successful for ${email} (ID: ${user.id})`)
+    console.log(`📤 Login response:`, { userId: user.id, email: user.email })
+
+    res.json({ data: responseData })
   } catch (err) {
     console.error('Login error:', err)
     res.status(500).json({ message: err.message })
@@ -204,17 +222,21 @@ export const resetPassword = async (req, res) => {
 export const getProfile = async (req, res) => {
   try {
     const targetId = req.userId || req.user?.id
+    if (!targetId) {
+      return res.status(401).json({ message: 'User ID not found in token' })
+    }
+
     const db = req.mockPrisma || prisma
     const user = await db.user.findUnique({
       where: { id: targetId }
     })
-    if (user) {
-      user = { id: user.id, name: user.name, email: user.email, phone: user.phone, is_admin: user.is_admin }
+
+    if (!user) {
+      return res.status(404).json({ message: 'User profile not found.' })
     }
 
-    if (!user) return res.status(404).json({ message: 'User profile not found.' })
-
-    res.json({ data: { user } })
+    const safeUser = { id: user.id, name: user.name, email: user.email, phone: user.phone, is_admin: user.is_admin }
+    res.json({ data: { user: safeUser } })
   } catch (err) {
     console.error('Profile fetch error:', err)
     res.status(500).json({ message: err.message })
@@ -222,6 +244,27 @@ export const getProfile = async (req, res) => {
 }
 
 export const logout = (_req, res) => res.json({ message: 'Logged out successfully.' })
+
+// DEBUG: Check database users
+export const debugGetAllUsers = async (req, res) => {
+  try {
+    const db = req.mockPrisma || prisma
+    const users = await db.user.findMany()
+    res.json({
+      message: 'Debug: All users in database',
+      count: users.length,
+      users: users.map(u => ({
+        id: u.id,
+        email: u.email,
+        name: u.name,
+        phone: u.phone,
+        is_admin: u.is_admin
+      }))
+    })
+  } catch (err) {
+    res.status(500).json({ message: err.message })
+  }
+}
 
 // ── 7. Razorpay-style Mobile OTP Login Handlers ──
 export const sendMobileOtp = async (req, res) => {

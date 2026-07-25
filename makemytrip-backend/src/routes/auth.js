@@ -8,7 +8,8 @@ import {
   getProfile,
   logout,
   sendMobileOtp,
-  promoteToAdmin
+  promoteToAdmin,
+  debugGetAllUsers
 } from '../controllers/authController.js'
 import { authenticate } from '../middleware/auth.js'
 // import { authLimiter, otpLimiter } from '../middleware/rateLimiter.js'  // DISABLED FOR TESTING
@@ -33,5 +34,8 @@ router.post('/send-otp', sendMobileOtp)  // otpLimiter disabled
 
 // Admin promotion endpoint
 router.post('/promote-admin', authenticate, promoteToAdmin)
+
+// DEBUG endpoints (development only)
+router.get('/debug/users', debugGetAllUsers)
 
 export default router
