@@ -376,7 +376,7 @@
 /* Buttons */
 .bus-btn-primary {
   background: var(--color-primary);
-  color: hsl(var(--pc));
+  color: var(--color-primary-content, #ffffff);
   border: none;
   padding: 14px 32px;
   border-radius: 8px;
@@ -384,16 +384,27 @@
   font-weight: 800;
   cursor: pointer;
   width: 100%;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.2s ease, transform 0.15s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .bus-btn-primary:hover {
-  opacity: 0.88;
+  opacity: 0.92;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.bus-btn-primary:active {
+  transform: translateY(0);
 }
 
 .bus-btn-primary:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  transform: none;
 }
 
 .bus-btn-outline {
@@ -405,11 +416,20 @@
   font-size: 14px;
   font-weight: 800;
   cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .bus-btn-outline:hover {
   background: var(--color-primary);
-  color: hsl(var(--pc));
+  color: var(--color-primary-content, #ffffff);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.bus-btn-outline:active {
+  opacity: 0.92;
 }
 
 /* Button Row */
@@ -417,17 +437,28 @@
   display: flex;
   gap: 16px;
   justify-content: flex-end;
-  margin-top: 24px;
+  align-items: center;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid hsl(var(--b2));
+}
+
+.bus-button-row .bus-btn-primary,
+.bus-button-row .bus-btn-outline {
+  min-width: 160px;
+  padding: 14px 32px;
 }
 
 @media (max-width: 768px) {
   .bus-button-row {
     flex-direction: column-reverse;
+    gap: 12px;
   }
 
   .bus-button-row .bus-btn-outline,
   .bus-button-row .bus-btn-primary {
     width: 100%;
+    min-width: unset;
   }
 }
 

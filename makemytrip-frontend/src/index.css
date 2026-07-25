@@ -27,6 +27,14 @@
     /* scroll-behavior: smooth; -- removed: prevents page-top scroll on navigation */
     margin: 0;
     padding: 0;
+    --color-primary: hsl(var(--p));
+    --color-primary-content: hsl(var(--pc));
+    --color-error: hsl(var(--er));
+    --color-error-content: hsl(var(--erc));
+    --color-success: hsl(var(--su));
+    --color-success-content: hsl(var(--suc));
+    --color-neutral: hsl(var(--n));
+    --color-neutral-content: hsl(var(--nc));
   }
 
   body {
