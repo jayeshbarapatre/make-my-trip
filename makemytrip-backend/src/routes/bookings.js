@@ -10,6 +10,14 @@ router.get('/user/:userId', authenticate, getUserBookings)
 router.get('/:id', authenticate, getBooking)
 router.put('/cancel/:id', authenticate, cancelBooking)
 
+// Type-specific booking endpoints
+router.post('/flights', authenticate, createBooking)
+router.post('/hotels', authenticate, createBooking)
+router.post('/buses', authenticate, createBooking)
+router.post('/trains', authenticate, createBooking)
+router.post('/cabs', authenticate, createBooking)
+
+// Generic endpoints
 router.post('/', authenticate, createBooking)
 router.delete('/:id', authenticate, cancelBooking)
 

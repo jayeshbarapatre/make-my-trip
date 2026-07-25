@@ -20,11 +20,38 @@ export const createBooking = async (req, res) => {
       checkIn,
       checkOut,
       travellers,
+      passengers,
       rooms,
       nights,
       totalAmount,
       userEmail,
-      userName
+      userName,
+      // Flight details
+      airlineName,
+      airlineCode,
+      flightNumber,
+      departureTime,
+      arrivalTime,
+      departureAirport,
+      arrivalAirport,
+      departureTerminal,
+      arrivalTerminal,
+      boardingTime,
+      stops = 0,
+      cabinClass,
+      numBags = 1,
+      travelInsurance = false,
+      // Fare breakdown
+      baseFare = 0,
+      taxes = 0,
+      convenience = 0,
+      discount = 0,
+      couponCode,
+      gst = 0,
+      // Payment details
+      paymentMethod,
+      paymentStatus = 'completed',
+      transactionId
     } = req.body
 
     if (!type || !totalAmount) {
@@ -34,6 +61,7 @@ export const createBooking = async (req, res) => {
     const bookingId = 'MMT-' + (type === 'hotel' ? 'HT-' : 'FL-') + Math.floor(100000 + Math.random() * 900000)
     const pnr = (type === 'hotel' ? 'HTL-' : 'PNR-') + Math.floor(100000 + Math.random() * 900000)
 
+    const db = req.mockPrisma || prisma
     let newBooking
     let seatsCabsRoomsToDecrement = 0
 
@@ -42,7 +70,7 @@ export const createBooking = async (req, res) => {
       let bookingToCity = toCity
 
       if (flightId) {
-        const flight = await prisma.flight.findUnique({ where: { id: flightId } })
+        const flight = await db.flight.findUnique({ where: { id: flightId } })
         if (!flight) {
           return res.status(404).json({ message: 'Flight not found' })
         }
@@ -58,13 +86,13 @@ export const createBooking = async (req, res) => {
         bookingFromCity = dep?.city || fromCity
         bookingToCity = arr?.city || toCity
 
-        await prisma.flight.update({
+        await db.flight.update({
           where: { id: flightId },
-          data: { seatsAvailable: { decrement: passengerCount } }
+          data: { seatsAvailable: flight.seatsAvailable - passengerCount }
         })
       }
 
-      newBooking = await prisma.booking.create({
+      newBooking = await db.booking.create({
         data: {
           userId,
           type,
@@ -73,10 +101,37 @@ export const createBooking = async (req, res) => {
           departureDate: departureDate || checkIn || new Date().toISOString().split('T')[0],
           returnDate: returnDate || checkOut || null,
           travellers,
+          passengers,
           totalAmount,
           bookingId,
           pnr,
-          status: 'confirmed'
+          status: 'confirmed',
+          // Flight details
+          airlineName,
+          airlineCode,
+          flightNumber,
+          departureTime,
+          arrivalTime,
+          departureAirport,
+          arrivalAirport,
+          departureTerminal,
+          arrivalTerminal,
+          boardingTime,
+          stops,
+          cabinClass,
+          numBags,
+          travelInsurance,
+          // Fare breakdown
+          baseFare: baseFare || totalAmount * 0.8,
+          taxes: taxes || totalAmount * 0.15,
+          convenience: convenience || 0,
+          discount: discount || 0,
+          couponCode,
+          gst: gst || totalAmount * 0.05,
+          // Payment details
+          paymentMethod,
+          paymentStatus,
+          transactionId
         }
       })
     } else if (type === 'hotel') {
@@ -84,7 +139,7 @@ export const createBooking = async (req, res) => {
 
       // If hotelId provided, validate availability
       if (hotelId) {
-        const hotel = await prisma.hotel.findUnique({ where: { id: hotelId } })
+        const hotel = await db.hotel.findUnique({ where: { id: hotelId } })
         if (!hotel) {
           return res.status(404).json({ message: 'Hotel not found' })
         }
@@ -93,7 +148,7 @@ export const createBooking = async (req, res) => {
           return res.status(400).json({ message: `Only ${hotel.roomsAvailable} rooms available` })
         }
 
-        newBooking = await prisma.booking.create({
+        newBooking = await db.booking.create({
           data: {
             userId,
             type,
@@ -102,20 +157,31 @@ export const createBooking = async (req, res) => {
             departureDate: checkIn || departureDate,
             returnDate: checkOut || returnDate,
             travellers: { ...travellers, rooms: roomsNeeded, nights },
+            passengers,
             totalAmount,
             bookingId,
             pnr,
-            status: 'confirmed'
+            status: 'confirmed',
+            baseFare: baseFare || totalAmount * 0.8,
+            taxes: taxes || totalAmount * 0.15,
+            convenience: convenience || 0,
+            discount: discount || 0,
+            couponCode,
+            gst: gst || totalAmount * 0.05,
+            paymentMethod,
+            paymentStatus,
+            transactionId,
+            numBags: nights || 1
           }
         })
 
-        await prisma.hotel.update({
+        await db.hotel.update({
           where: { id: hotelId },
-          data: { roomsAvailable: { decrement: roomsNeeded } }
+          data: { roomsAvailable: hotel.roomsAvailable - roomsNeeded }
         })
       } else {
         // Create booking without hotel lookup (for payment page flow)
-        newBooking = await prisma.booking.create({
+        newBooking = await db.booking.create({
           data: {
             userId,
             type,
@@ -124,15 +190,94 @@ export const createBooking = async (req, res) => {
             departureDate: checkIn || departureDate,
             returnDate: checkOut || returnDate,
             travellers,
+            passengers,
             totalAmount,
             bookingId,
             pnr,
-            status: 'confirmed'
+            status: 'confirmed',
+            baseFare: baseFare || totalAmount * 0.8,
+            taxes: taxes || totalAmount * 0.15,
+            convenience: convenience || 0,
+            discount: discount || 0,
+            couponCode,
+            gst: gst || totalAmount * 0.05,
+            paymentMethod,
+            paymentStatus,
+            transactionId,
+            numBags: nights || 1
           }
         })
       }
-    } else if (['train', 'bus', 'cab'].includes(type)) {
-      newBooking = await prisma.booking.create({
+    } else if (type === 'bus') {
+      let busOperatorName = ''
+      let busBusNumber = ''
+      let busArrivalTime = ''
+      let busDepartureTime = ''
+      let bookingFromCity = fromCity
+      let bookingToCity = toCity
+
+      // If busId provided, fetch and validate bus
+      if (req.body.busId) {
+        const bus = await db.bus.findUnique({ where: { id: req.body.busId } })
+        if (!bus) {
+          return res.status(404).json({ message: 'Bus not found' })
+        }
+
+        busOperatorName = bus.operatorName || ''
+        busBusNumber = bus.busNumber || ''
+        busDepartureTime = bus.departure?.time || departureTime || ''
+        busArrivalTime = bus.arrival?.time || arrivalTime || ''
+
+        const dep = typeof bus.departure === 'string' ? JSON.parse(bus.departure) : bus.departure
+        const arr = typeof bus.arrival === 'string' ? JSON.parse(bus.arrival) : bus.arrival
+        bookingFromCity = dep?.city || bus.from || fromCity || 'Unknown'
+        bookingToCity = arr?.city || bus.to || toCity || 'Unknown'
+
+        // Check availability
+        const passengerCount = Array.isArray(travellers?.passengers) ? travellers.passengers.length : 1
+        if (bus.seatsAvailable < passengerCount) {
+          return res.status(400).json({ message: `Only ${bus.seatsAvailable} seats available` })
+        }
+
+        // Decrement available seats
+        await db.bus.update({
+          where: { id: req.body.busId },
+          data: { seatsAvailable: bus.seatsAvailable - passengerCount }
+        })
+      }
+
+      newBooking = await db.booking.create({
+        data: {
+          userId,
+          type,
+          fromCity: bookingFromCity,
+          toCity: bookingToCity,
+          departureDate: departureDate || new Date().toISOString().split('T')[0],
+          returnDate: returnDate || null,
+          travellers: travellers || {},
+          passengers,
+          totalAmount: parseFloat(totalAmount),
+          bookingId: req.body.bookingId || bookingId,
+          pnr: req.body.pnr || pnr,
+          status: 'confirmed',
+          baseFare: baseFare || parseFloat(totalAmount) * 0.8,
+          taxes: taxes || parseFloat(totalAmount) * 0.15,
+          convenience: convenience || 0,
+          discount: discount || 0,
+          couponCode,
+          gst: gst || parseFloat(totalAmount) * 0.05,
+          paymentMethod,
+          paymentStatus,
+          transactionId,
+          // Bus-specific fields
+          airlineName: busOperatorName,
+          busNumber: busBusNumber,
+          departureTime: busDepartureTime,
+          arrivalTime: busArrivalTime
+        }
+      })
+    } else if (['train', 'cab'].includes(type)) {
+      newBooking = await db.booking.create({
         data: {
           userId,
           type,
@@ -141,10 +286,20 @@ export const createBooking = async (req, res) => {
           departureDate: departureDate || new Date().toISOString().split('T')[0],
           returnDate: returnDate || null,
           travellers: travellers || {},
+          passengers,
           totalAmount: parseFloat(totalAmount),
           bookingId: req.body.bookingId || bookingId,
           pnr: req.body.pnr || pnr,
-          status: 'confirmed'
+          status: 'confirmed',
+          baseFare: baseFare || parseFloat(totalAmount) * 0.8,
+          taxes: taxes || parseFloat(totalAmount) * 0.15,
+          convenience: convenience || 0,
+          discount: discount || 0,
+          couponCode,
+          gst: gst || parseFloat(totalAmount) * 0.05,
+          paymentMethod,
+          paymentStatus,
+          transactionId
         }
       })
     } else {
@@ -172,7 +327,8 @@ export const getUserBookings = async (req, res) => {
       return res.status(401).json({ message: 'Authentication required' })
     }
 
-    const bookings = await prisma.booking.findMany({ where: { userId } })
+    const db = req.mockPrisma || prisma
+    const bookings = await db.booking.findMany({ where: { userId } })
     res.json({ success: true, data: bookings })
   } catch (err) {
     console.error('Get user bookings error:', err)
@@ -189,7 +345,8 @@ export const getBooking = async (req, res) => {
       return res.status(401).json({ message: 'Authentication required' })
     }
 
-    const booking = await prisma.booking.findUnique({ where: { id } })
+    const db = req.mockPrisma || prisma
+    const booking = await db.booking.findUnique({ where: { id } })
 
     if (!booking) {
       return res.status(404).json({ message: 'Booking not found' })
@@ -215,7 +372,8 @@ export const cancelBooking = async (req, res) => {
       return res.status(401).json({ message: 'Authentication required' })
     }
 
-    const booking = await prisma.booking.findUnique({ where: { id } })
+    const db = req.mockPrisma || prisma
+    const booking = await db.booking.findUnique({ where: { id } })
 
     if (!booking) {
       return res.status(404).json({ message: 'Booking not found' })
@@ -229,7 +387,7 @@ export const cancelBooking = async (req, res) => {
       return res.status(400).json({ message: 'Booking is already cancelled' })
     }
 
-    const updated = await prisma.booking.update({
+    const updated = await db.booking.update({
       where: { id },
       data: { status: 'cancelled' }
     })
@@ -255,18 +413,17 @@ export const checkHotelOverlap = async (req, res) => {
     }
     
     // Find overlapping hotel bookings for the exact same dates
-    const overlappingBookings = await prisma.booking.findMany({
+    const db = req.mockPrisma || prisma
+    const overlappingBookings = await db.booking.findMany({
       where: {
         type: 'hotel',
         OR: [
           { fromCity: targetHotel },
           { toCity: targetHotel }
         ],
-        status: { in: ['confirmed'] },
-        AND: [
-          { departureDate: targetCheckIn },
-          { returnDate: targetCheckOut }
-        ]
+        status: 'confirmed',
+        departureDate: targetCheckIn,
+        returnDate: targetCheckOut
       }
     });
 
@@ -313,19 +470,15 @@ export const checkHotelOverlap = async (req, res) => {
 export const getHotelBlockedDates = async (req, res) => {
   try {
     const { hotelName } = req.params;
-    const bookings = await prisma.booking.findMany({
+    const db = req.mockPrisma || prisma
+    const bookings = await db.booking.findMany({
       where: {
         type: 'hotel',
         OR: [
           { fromCity: hotelName },
           { toCity: hotelName }
         ],
-        status: { in: ['confirmed'] }
-      },
-      select: {
-        departureDate: true,
-        returnDate: true,
-        travellers: true
+        status: 'confirmed'
       }
     });
 
@@ -353,10 +506,8 @@ export const getHotelBlockedDates = async (req, res) => {
 
 export const getAllBookings = async (req, res) => {
   try {
-    const bookings = await prisma.booking.findMany({
-      include: {
-        user: { select: { name: true, email: true } }
-      },
+    const db = req.mockPrisma || prisma
+    const bookings = await db.booking.findMany({
       orderBy: { createdAt: 'desc' }
     });
     res.json({ success: true, data: bookings });
