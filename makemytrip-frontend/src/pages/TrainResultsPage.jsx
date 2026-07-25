@@ -473,16 +473,22 @@ export default function TrainResultsPage() {
                         ))}
                       </div>
 
-                      {isSelectedTrain && (
-                        <div className="tc-action-row">
-                          <div className="tc-action-info">
-                            Selected: <strong>{chosenCls.name} ({chosenCls.code})</strong>
-                          </div>
-                          <button className="tc-book-btn" onClick={() => handleProceedBook(train)}>
-                            Book Now
+                      <div className="tc-action-row">
+                        {isSelectedTrain ? (
+                          <>
+                            <div className="tc-action-info">
+                              Selected: <strong>{chosenCls.name} ({chosenCls.code})</strong>
+                            </div>
+                            <button className="tc-book-btn" onClick={() => handleProceedBook(train)}>
+                              Book Now
+                            </button>
+                          </>
+                        ) : (
+                          <button className="tc-book-btn" style={{flex: 1}} onClick={() => { setSelectedTrainId(train.id); setSelectedClassCode(train.classes[0].code); }}>
+                            Select & Book
                           </button>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
                   )
                 })
