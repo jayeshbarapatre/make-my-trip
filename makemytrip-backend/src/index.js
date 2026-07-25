@@ -3,9 +3,11 @@ import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
 import { connectDB } from './config/db.js'
+import { mockDataMiddleware } from './middleware/useMockData.js'
 import authRoutes from './routes/auth.js'
 import flightRoutes from './routes/flights.js'
 import busRoutes from './routes/buses.js'
+import cabRoutes from './routes/cabs.js'
 import bookingRoutes from './routes/bookings.js'
 import paymentRoutes from './routes/paymentRoutes.js'
 import userRoutes from './routes/userRoutes.js'
@@ -39,13 +41,18 @@ app.use(cors({
 app.use(express.json())
 app.use('/uploads', express.static('public/uploads'))
 
-app.get('/health', (_req, res) => res.json({ status: 'ok' }))
+// Mock data middleware - must come before routes
+app.use(mockDataMiddleware)
+
+app.get('/health', (_req, res) => res.json({ status: 'ok', mockDataEnabled: process.env.USE_MOCK_DATA === 'true' }))
 app.use('/api/auth', authRoutes)
 app.use('/api/v1/auth', authRoutes)
 app.use('/api/flights', flightRoutes)
 app.use('/api/v1/flights', flightRoutes)
 app.use('/api/buses', busRoutes)
 app.use('/api/v1/buses', busRoutes)
+app.use('/api/cabs', cabRoutes)
+app.use('/api/v1/cabs', cabRoutes)
 app.use('/api/bookings', bookingRoutes)
 app.use('/api/v1/bookings', bookingRoutes)
 app.use('/api/payment', paymentRoutes)
