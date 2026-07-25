@@ -2,11 +2,46 @@
 // Intercepts database calls and returns realistic mock data when USE_MOCK_DATA=true
 
 import mockData from '../services/mockData.js'
+import bcrypt from 'bcryptjs'
 
 // In-memory mock storage for bookings created during this session
 let mockBookings = []
 let mockUsers = []
 let otpStore = {} // Store OTPs temporarily
+
+// Pre-populate with test users for easy testing
+const initializeTestUsers = async () => {
+  // Only add if empty (first initialization)
+  if (mockUsers.length === 0) {
+    const hashedPassword1 = await bcrypt.hash('test@1234', 10)
+    const hashedPassword2 = await bcrypt.hash('demo@1234', 10)
+
+    mockUsers.push(
+      {
+        id: 'test-user-1',
+        name: 'Test User',
+        email: 'test@makemytrip.com',
+        phone: '9876543210',
+        password: hashedPassword1,
+        is_admin: false,
+        createdAt: new Date()
+      },
+      {
+        id: 'test-user-2',
+        name: 'Demo User',
+        email: 'demo@makemytrip.com',
+        phone: '9123456789',
+        password: hashedPassword2,
+        is_admin: false,
+        createdAt: new Date()
+      }
+    )
+    console.log('✅ Test users initialized for mock database')
+  }
+}
+
+// Initialize test users on module load
+initializeTestUsers()
 
 // Helper: Filter mock data based on search criteria
 const filterMockData = (data, filters) => {
