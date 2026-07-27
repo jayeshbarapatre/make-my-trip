@@ -261,8 +261,10 @@ export default function BusBookingPage() {
     try {
       // Step 1: Create booking order on backend
       const bookingPayload = {
+        bookingType: 'bus',
         busId: bus.id,
-        passengers: passengerDetails,
+        passengers: passengerDetails.map(p => `${p.name}`),
+        totalAmount: totalAmount,
         totalPrice: totalAmount,
         contactEmail: contact.email,
         contactPhone: contact.phone,
@@ -274,11 +276,11 @@ export default function BusBookingPage() {
           passengers: passengerDetails.length,
           contact: contact
         },
-        baseFare: totalAmount * 0.8,
-        taxes: totalAmount * 0.15,
-        convenience: totalAmount * 0.05,
+        baseFare: Math.round(totalAmount * 0.8),
+        taxes: Math.round(totalAmount * 0.15),
+        convenience: Math.round(totalAmount * 0.05),
         discount: 0,
-        gst: totalAmount * 0.05,
+        gst: Math.round(totalAmount * 0.05),
         paymentMethod: 'razorpay',
         paymentStatus: 'pending',
         transactionId: ''
@@ -609,13 +611,13 @@ export default function BusBookingPage() {
         {step === 3 && (
           <div style={{ marginBottom: '2rem' }}>
             {/* Main Payment Layout - 3 Column */}
-            <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr 340px', gap: '2rem', marginBottom: '2rem' }}>
+            <form onSubmit={handlePaymentSubmit} style={{ display: 'grid', gridTemplateColumns: '320px 1fr 340px', gap: '2rem', marginBottom: '2rem' }}>
 
               {/* Left Column: Payment Options */}
               <div>
                 <h3 style={{ marginTop: 0, marginBottom: '1.5rem', fontSize: '0.95rem', fontWeight: 700, color: 'hsl(var(--bc))' }}>SELECT PAYMENT MODE</h3>
 
-                <form onSubmit={handlePaymentSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                   <label style={{
                     padding: '1rem',
                     borderRadius: '0.5rem',
@@ -673,7 +675,7 @@ export default function BusBookingPage() {
                       ← Back
                     </button>
                   </div>
-                </form>
+                </div>
               </div>
 
               {/* Center Column: Payment Interface */}
@@ -758,25 +760,23 @@ export default function BusBookingPage() {
                 </div>
 
                 {/* Pay Button */}
-                <form onSubmit={handlePaymentSubmit} style={{ display: 'contents' }}>
-                  <button type="submit" disabled={paymentLoading} style={{
-                    width: '100%',
-                    padding: '1rem',
-                    borderRadius: '0.5rem',
-                    border: 'none',
-                    background: 'hsl(var(--p))',
-                    color: 'white',
-                    fontWeight: 700,
-                    cursor: paymentLoading ? 'not-allowed' : 'pointer',
-                    fontSize: '0.95rem',
-                    opacity: paymentLoading ? 0.6 : 1
-                  }}>
-                    {paymentLoading ? 'Processing...' : `PAY NOW ${fmtPrice(totalAmount)}`}
-                  </button>
-                </form>
+                <button type="submit" disabled={paymentLoading} style={{
+                  width: '100%',
+                  padding: '1rem',
+                  borderRadius: '0.5rem',
+                  border: 'none',
+                  background: 'hsl(var(--p))',
+                  color: 'white',
+                  fontWeight: 700,
+                  cursor: paymentLoading ? 'not-allowed' : 'pointer',
+                  fontSize: '0.95rem',
+                  opacity: paymentLoading ? 0.6 : 1
+                }}>
+                  {paymentLoading ? 'Processing...' : `PAY NOW ${fmtPrice(totalAmount)}`}
+                </button>
               </div>
 
-            </div>
+            </form>
           </div>
         )}
 
