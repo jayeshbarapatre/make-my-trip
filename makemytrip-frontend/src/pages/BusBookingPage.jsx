@@ -259,13 +259,13 @@ export default function BusBookingPage() {
 
     setPaymentLoading(true)
     try {
+      // Step 1: Create booking order on backend
       const bookingPayload = {
         busId: bus.id,
         passengers: passengerDetails,
         totalPrice: totalAmount,
         contactEmail: contact.email,
         contactPhone: contact.phone,
-        // ✅ ENRICHED BUS FIELDS
         fromCity: bus?.from || bus?.source || '',
         toCity: bus?.to || bus?.destination || '',
         departureDate: searchDate || bus?.departure?.date || new Date().toISOString().split('T')[0],
@@ -279,20 +279,79 @@ export default function BusBookingPage() {
         convenience: totalAmount * 0.05,
         discount: 0,
         gst: totalAmount * 0.05,
-        paymentMethod: 'credit_card',
-        paymentStatus: 'completed',
+        paymentMethod: 'razorpay',
+        paymentStatus: 'pending',
         transactionId: ''
       }
 
       const response = await bookingService.createBusBooking(bookingPayload)
       const booking = response.data
 
-      setBookingDetails(booking)
-      setStep(4)
+      // Step 2: Initialize Razorpay payment
+      if (!window.Razorpay) {
+        showToast('Razorpay not loaded. Please refresh and try again.', 'error')
+        setPaymentLoading(false)
+        return
+      }
+
+      const razorpayOptions = {
+        key: process.env.REACT_APP_RAZORPAY_KEY_ID || 'rzp_test_1234567890',
+        amount: totalAmount * 100, // Amount in paise
+        currency: 'INR',
+        name: 'MakeMyTrip',
+        description: `Bus Booking - ${bus.operatorName} (${bus.from} → ${bus.to})`,
+        order_id: booking.id || `order_${Date.now()}`,
+        handler: async (response) => {
+          try {
+            // Step 3: Verify payment on backend
+            const verifyPayload = {
+              bookingId: booking.id,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpayOrderId: response.razorpay_order_id,
+              razorpaySignature: response.razorpay_signature,
+              totalAmount: totalAmount,
+              paymentStatus: 'completed'
+            }
+
+            // Verify with backend
+            await bookingService.verifyBusPayment(verifyPayload)
+
+            // Update booking details and move to confirmation
+            setBookingDetails({
+              ...booking,
+              paymentStatus: 'completed',
+              transactionId: response.razorpay_payment_id
+            })
+
+            showToast('Payment successful! Your bus booking is confirmed.', 'success')
+            setStep(4)
+          } catch (verifyError) {
+            console.error('Payment verification failed:', verifyError)
+            showToast('Payment verification failed. Please contact support.', 'error')
+          } finally {
+            setPaymentLoading(false)
+          }
+        },
+        prefill: {
+          email: contact.email,
+          contact: contact.phone
+        },
+        theme: {
+          color: 'hsl(var(--p))'
+        },
+        modal: {
+          ondismiss: () => {
+            setPaymentLoading(false)
+            showToast('Payment cancelled', 'info')
+          }
+        }
+      }
+
+      const razorpay = new window.Razorpay(razorpayOptions)
+      razorpay.open()
     } catch (error) {
-      console.error('Booking failed:', error)
-      showToast(error.response?.data?.message || 'Booking failed. Please try again.', 'error')
-    } finally {
+      console.error('Payment initiation failed:', error)
+      showToast(error.response?.data?.message || 'Payment failed. Please try again.', 'error')
       setPaymentLoading(false)
     }
   }
@@ -549,25 +608,6 @@ export default function BusBookingPage() {
 
         {step === 3 && (
           <div style={{ marginBottom: '2rem' }}>
-            {/* Step Progress */}
-            <div style={{ marginBottom: '2rem', padding: '1rem', background: 'hsl(var(--b1))', borderRadius: '0.5rem' }}>
-              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' }}>
-                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '50%', background: 'hsl(var(--su))', color: 'white', fontWeight: 700, fontSize: '0.875rem' }}>✓</div>
-                  <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>Review Flight</span>
-                </div>
-                <div style={{ flex: 1, maxWidth: '60px', height: '2px', background: 'hsl(var(--b2))' }}></div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '50%', background: 'hsl(var(--su))', color: 'white', fontWeight: 700, fontSize: '0.875rem' }}>✓</div>
-                <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>Add Passengers</span>
-                <div style={{ flex: 1, maxWidth: '60px', height: '2px', background: 'hsl(var(--b2))' }}></div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '50%', background: 'hsl(var(--p))', color: 'white', fontWeight: 700, fontSize: '0.875rem' }}>3</div>
-                <span style={{ fontWeight: 600, fontSize: '0.875rem', color: 'hsl(var(--p))' }}>Make Payment</span>
-                <div style={{ flex: 1, maxWidth: '60px', height: '2px', background: 'hsl(var(--b2))' }}></div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '50%', background: 'hsl(var(--b2))', color: 'hsl(var(--bc))', fontWeight: 700, fontSize: '0.875rem' }}>4</div>
-                <span style={{ fontWeight: 600, fontSize: '0.875rem', color: 'hsl(var(--nc))' }}>Success Ticket</span>
-              </div>
-            </div>
-
             {/* Main Payment Layout - 3 Column */}
             <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr 340px', gap: '2rem', marginBottom: '2rem' }}>
 
