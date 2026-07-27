@@ -548,53 +548,195 @@ export default function BusBookingPage() {
         )}
 
         {step === 3 && (
-          <div style={{ background: 'hsl(var(--b1))', borderRadius: '0.5rem', padding: '2rem', marginBottom: '2rem' }}>
-            <h2 style={{ marginTop: 0, marginBottom: '1.5rem' }}>Review & Confirm</h2>
-
-            <div style={{ marginBottom: '2rem', padding: '1.5rem', background: 'hsl(var(--b2))', borderRadius: '0.5rem' }}>
-              <h3 style={{ marginTop: 0, marginBottom: '1rem', fontSize: '1rem' }}>Price Summary</h3>
-              <div style={{ display: 'grid', gap: '0.75rem', fontSize: '0.95rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>Base Price ({passengerCount} × {fmtPrice(bus.price)})</span>
-                  <span>{fmtPrice(basePrice)}</span>
+          <div style={{ marginBottom: '2rem' }}>
+            {/* Step Progress */}
+            <div style={{ marginBottom: '2rem', padding: '1rem', background: 'hsl(var(--b1))', borderRadius: '0.5rem' }}>
+              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '50%', background: 'hsl(var(--su))', color: 'white', fontWeight: 700, fontSize: '0.875rem' }}>✓</div>
+                  <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>Review Flight</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>Taxes & Fees (18%)</span>
-                  <span>{fmtPrice(taxes)}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid hsl(var(--b2))', paddingTop: '0.75rem', fontSize: '1.1rem', fontWeight: 700 }}>
-                  <span>Total Amount</span>
-                  <span>{fmtPrice(totalAmount)}</span>
-                </div>
+                <div style={{ flex: 1, maxWidth: '60px', height: '2px', background: 'hsl(var(--b2))' }}></div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '50%', background: 'hsl(var(--su))', color: 'white', fontWeight: 700, fontSize: '0.875rem' }}>✓</div>
+                <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>Add Passengers</span>
+                <div style={{ flex: 1, maxWidth: '60px', height: '2px', background: 'hsl(var(--b2))' }}></div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '50%', background: 'hsl(var(--p))', color: 'white', fontWeight: 700, fontSize: '0.875rem' }}>3</div>
+                <span style={{ fontWeight: 600, fontSize: '0.875rem', color: 'hsl(var(--p))' }}>Make Payment</span>
+                <div style={{ flex: 1, maxWidth: '60px', height: '2px', background: 'hsl(var(--b2))' }}></div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '50%', background: 'hsl(var(--b2))', color: 'hsl(var(--bc))', fontWeight: 700, fontSize: '0.875rem' }}>4</div>
+                <span style={{ fontWeight: 600, fontSize: '0.875rem', color: 'hsl(var(--nc))' }}>Success Ticket</span>
               </div>
             </div>
 
-            <form onSubmit={handlePaymentSubmit}>
-              <div style={{ marginBottom: '2rem', padding: '1.5rem', background: 'hsl(var(--b2))', borderRadius: '0.5rem' }}>
-                <h3 style={{ marginTop: 0, marginBottom: '1rem', fontSize: '1rem' }}>Payment Method</h3>
-                <div style={{ display: 'grid', gap: '0.75rem' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
-                    <input type="radio" name="payment" value="upi" defaultChecked style={{ cursor: 'pointer' }} />
-                    <span>UPI (Recommended)</span>
+            {/* Main Payment Layout - 3 Column */}
+            <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr 340px', gap: '2rem', marginBottom: '2rem' }}>
+
+              {/* Left Column: Payment Options */}
+              <div>
+                <h3 style={{ marginTop: 0, marginBottom: '1.5rem', fontSize: '0.95rem', fontWeight: 700, color: 'hsl(var(--bc))' }}>SELECT PAYMENT MODE</h3>
+
+                <form onSubmit={handlePaymentSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  <label style={{
+                    padding: '1rem',
+                    borderRadius: '0.5rem',
+                    border: '2px solid hsl(var(--p))',
+                    background: 'hsl(var(--b1))',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    gap: '0.75rem',
+                    alignItems: 'center'
+                  }}>
+                    <input type="radio" name="payment" value="upi" defaultChecked style={{ cursor: 'pointer', width: '16px', height: '16px' }} />
+                    <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>📱 UPI (GPay, PhonePe, BHIM)</span>
                   </label>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
-                    <input type="radio" name="payment" value="card" style={{ cursor: 'pointer' }} />
-                    <span>Credit/Debit Card</span>
+
+                  <label style={{
+                    padding: '1rem',
+                    borderRadius: '0.5rem',
+                    border: '1px solid hsl(var(--b2))',
+                    background: 'hsl(var(--b1))',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    gap: '0.75rem',
+                    alignItems: 'center'
+                  }}>
+                    <input type="radio" name="payment" value="card" style={{ cursor: 'pointer', width: '16px', height: '16px' }} />
+                    <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>💳 Credit / Debit Card</span>
                   </label>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
-                    <input type="radio" name="payment" value="netbanking" style={{ cursor: 'pointer' }} />
-                    <span>Net Banking</span>
+
+                  <label style={{
+                    padding: '1rem',
+                    borderRadius: '0.5rem',
+                    border: '1px solid hsl(var(--b2))',
+                    background: 'hsl(var(--b1))',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    gap: '0.75rem',
+                    alignItems: 'center'
+                  }}>
+                    <input type="radio" name="payment" value="netbanking" style={{ cursor: 'pointer', width: '16px', height: '16px' }} />
+                    <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>🏦 Net Banking</span>
                   </label>
+
+                  {/* Buttons at bottom */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '2rem' }}>
+                    <button type="button" onClick={() => setStep(2)} style={{
+                      padding: '0.75rem',
+                      borderRadius: '0.5rem',
+                      border: '1px solid hsl(var(--b2))',
+                      background: 'hsl(var(--b1))',
+                      color: 'hsl(var(--bc))',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      fontSize: '0.875rem'
+                    }}>
+                      ← Back
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              {/* Center Column: Payment Interface */}
+              <div style={{ background: 'hsl(var(--b1))', padding: '2rem', borderRadius: '0.75rem', border: '1px solid hsl(var(--b2))' }}>
+                <h3 style={{ marginTop: 0, marginBottom: '1.5rem', fontSize: '0.95rem', fontWeight: 700, color: 'hsl(var(--bc))' }}>PAY USING UNIFIED PAYMENTS INTERFACE</h3>
+
+                <div style={{ background: 'hsl(var(--b2))', padding: '1.5rem', borderRadius: '0.5rem', marginBottom: '1.5rem', textAlign: 'center' }}>
+                  <p style={{ margin: '0 0 1rem', fontSize: '0.875rem', color: 'hsl(var(--nc))' }}>Enter your Virtual Private Address (VPA) or scan the generated QR code below.</p>
+
+                  <div style={{ marginBottom: '1.5rem' }}>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, marginBottom: '0.5rem', textAlign: 'left', color: 'hsl(var(--nc))' }}>ENTER UPI ID</label>
+                    <input type="text" placeholder="username@upi" style={{
+                      width: '100%',
+                      padding: '0.75rem',
+                      borderRadius: '0.5rem',
+                      border: '1px solid hsl(var(--b2))',
+                      background: 'hsl(var(--b1))',
+                      color: 'hsl(var(--bc))',
+                      fontSize: '0.875rem',
+                      boxSizing: 'border-box'
+                    }} />
+                  </div>
+
+                  {/* QR Code */}
+                  <div style={{ background: 'white', padding: '1.5rem', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' }}>
+                    <svg viewBox="0 0 200 200" style={{ width: '200px', height: '200px' }}>
+                      <rect width="200" height="200" fill="white"/>
+                      <rect x="20" y="20" width="60" height="60" fill="black"/>
+                      <rect x="120" y="20" width="60" height="60" fill="black"/>
+                      <rect x="20" y="120" width="60" height="60" fill="black"/>
+                      <rect x="50" y="50" width="20" height="20" fill="white"/>
+                      <rect x="150" y="50" width="20" height="20" fill="white"/>
+                      <rect x="50" y="150" width="20" height="20" fill="white"/>
+                      {Array.from({ length: 9 }).map((_, i) => (
+                        <rect key={i} x={80 + i * 12} y={60 + (i % 3) * 12} width="8" height="8" fill={Math.random() > 0.5 ? 'black' : 'white'} />
+                      ))}
+                    </svg>
+                  </div>
+                  <p style={{ margin: 0, fontSize: '0.75rem', color: 'hsl(var(--nc))' }}>Scan this QR code to pay instantly with any UPI app.</p>
                 </div>
               </div>
 
-              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
-                <button type="button" className="btn btn-outline" onClick={() => setStep(2)}>Back</button>
-                <button type="submit" className="btn btn-primary" disabled={paymentLoading}>
-                  {paymentLoading ? 'Processing...' : `Confirm & Pay ${fmtPrice(totalAmount)}`}
-                </button>
+              {/* Right Sidebar: Booking Summary */}
+              <div style={{ background: 'hsl(var(--b1))', padding: '1.5rem', borderRadius: '0.75rem', border: '1px solid hsl(var(--b2))', height: 'fit-content', position: 'sticky', top: '20px' }}>
+                <h3 style={{ marginTop: 0, marginBottom: '1.5rem', fontSize: '0.95rem', fontWeight: 700, color: 'hsl(var(--bc))' }}>BOOKING SUMMARY</h3>
+
+                {/* Bus Details Card */}
+                <div style={{ background: 'hsl(var(--b2))', padding: '1rem', borderRadius: '0.5rem', marginBottom: '1rem', fontSize: '0.875rem' }}>
+                  <div style={{ fontWeight: 700, color: 'hsl(var(--bc))', marginBottom: '0.25rem' }}>{bus.operatorName} {bus.type || 'AC'}</div>
+                  <div style={{ color: 'hsl(var(--nc))', fontSize: '0.8rem' }}>
+                    {bus.from} ({fmtTime(bus.departure?.time)}) → {bus.to} ({fmtTime(bus.arrival?.time)})
+                  </div>
+                </div>
+
+                {/* Price Breakdown */}
+                <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px solid hsl(var(--b2))' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.875rem', color: 'hsl(var(--nc))' }}>
+                    <span>Base Charge ({passengerCount} × {fmtPrice(bus.price)})</span>
+                    <span>{fmtPrice(basePrice)}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.875rem', color: 'hsl(var(--nc))' }}>
+                    <span>Taxes:</span>
+                    <span>{fmtPrice(taxes)}</span>
+                  </div>
+                </div>
+
+                {/* Total */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem', fontSize: '1.25rem', fontWeight: 700, color: 'hsl(var(--p))' }}>
+                  <span>Payable Amt:</span>
+                  <span>{fmtPrice(totalAmount)}</span>
+                </div>
+
+                {/* Passengers */}
+                <div style={{ marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid hsl(var(--b2))' }}>
+                  <div style={{ fontSize: '0.75rem', fontWeight: 700, marginBottom: '0.5rem', color: 'hsl(var(--nc))' }}>PASSENGERS</div>
+                  <div style={{ display: 'grid', gap: '0.5rem', fontSize: '0.8rem' }}>
+                    {passengerDetails.slice(0, 3).map((p, i) => (
+                      <div key={i}>• {p.name} (Age: {p.age})</div>
+                    ))}
+                    {passengerCount > 3 && <div style={{ color: 'hsl(var(--nc))' }}>+ {passengerCount - 3} more</div>}
+                  </div>
+                </div>
+
+                {/* Pay Button */}
+                <form onSubmit={handlePaymentSubmit} style={{ display: 'contents' }}>
+                  <button type="submit" disabled={paymentLoading} style={{
+                    width: '100%',
+                    padding: '1rem',
+                    borderRadius: '0.5rem',
+                    border: 'none',
+                    background: 'hsl(var(--p))',
+                    color: 'white',
+                    fontWeight: 700,
+                    cursor: paymentLoading ? 'not-allowed' : 'pointer',
+                    fontSize: '0.95rem',
+                    opacity: paymentLoading ? 0.6 : 1
+                  }}>
+                    {paymentLoading ? 'Processing...' : `PAY NOW ${fmtPrice(totalAmount)}`}
+                  </button>
+                </form>
               </div>
-            </form>
+
+            </div>
           </div>
         )}
 

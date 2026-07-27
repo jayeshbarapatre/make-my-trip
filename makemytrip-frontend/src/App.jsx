@@ -249,10 +249,25 @@ function AppContent() {
     const savedTheme = localStorage.getItem('daisyui-theme') || 'business'
     document.documentElement.setAttribute('data-theme', savedTheme)
 
-    // Load theme settings from CMS
+    // Load theme settings from CMS (non-blocking with timeout)
     const loadThemeSettings = async () => {
       try {
-        const response = await cmsService.getSettings()
+        const token = localStorage.getItem('token')
+        if (!token) {
+          // Skip API call if not authenticated
+          return
+        }
+
+        // Add timeout to prevent blocking
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Theme load timeout')), 2000)
+        )
+
+        const response = await Promise.race([
+          cmsService.getSettings(),
+          timeoutPromise
+        ])
+
         const settings = response.data.data
         if (settings) {
           document.documentElement.style.setProperty('--primary-color', settings.primaryColor || '#003580')
