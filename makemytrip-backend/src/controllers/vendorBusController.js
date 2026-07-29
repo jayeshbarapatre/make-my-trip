@@ -1,158 +1,109 @@
-import prisma from '../config/prismaClient.js'
+import { createVendorCrud } from './factories/firestoreVendorCrud.js'
 
-export const getMyBuses = async (req, res) => {
-  try {
-    const vendorId = req.user.id
-    const buses = await prisma.bus.findMany({
-      where: { vendorId },
-      orderBy: { createdAt: 'desc' }
-    })
-    res.status(200).json({ success: true, data: { buses } })
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message })
-  }
+// Migrated from Prisma/MongoDB to Firestore. Stored field names match the
+// public bus search so approved vendor inventory appears on the site.
+
+const num = (v, fallback = null) => {
+  if (v === undefined || v === null || v === '') return fallback
+  const n = Number(v)
+  return Number.isFinite(n) ? n : fallback
 }
 
-export const createBus = async (req, res) => {
-  try {
-    const vendorId = req.user.id
-    const { operatorName, busNumber, type, departure, arrival, durationMinutes, price, seats, amenities, image } = req.body
-
-    if (!operatorName || !busNumber || !type || !price) {
-      return res.status(400).json({ success: false, message: 'Missing required fields' })
-    }
-
-    const existing = await prisma.bus.findUnique({ where: { busNumber } })
-    if (existing) {
-      return res.status(400).json({ success: false, message: 'Bus number already exists' })
-    }
-
-    const bus = await prisma.bus.create({
-      data: {
-        vendorId,
-        operatorName,
-        busNumber,
-        type,
-        departure: departure || {},
-        arrival: arrival || {},
-        durationMinutes: parseInt(durationMinutes) || 0,
-        price: parseFloat(price),
-        seats: parseInt(seats) || 45,
-        seatsAvailable: parseInt(seats) || 45,
-        amenities: amenities || [],
-        image: image || null,
-        listingStatus: 'DRAFT'
-      }
-    })
-
-    res.status(201).json({ success: true, data: bus })
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message })
-  }
+const cityOf = (value) => {
+  if (!value) return undefined
+  if (typeof value === 'string') return value.trim()
+  return value.city ?? undefined
 }
 
-export const updateBus = async (req, res) => {
-  try {
-    const { id } = req.params
-    const vendorId = req.user.id
-
-    const bus = await prisma.bus.findFirst({ where: { id, vendorId } })
-
-    if (!bus) {
-      return res.status(404).json({ success: false, message: 'Bus not found' })
-    }
-
-    const { operatorName, busNumber, type, departure, arrival, durationMinutes, price, seats, amenities, image } = req.body
-
-    if (busNumber && busNumber !== bus.busNumber) {
-      const existing = await prisma.bus.findUnique({ where: { busNumber } })
-      if (existing) {
-        return res.status(400).json({ success: false, message: 'Bus number already exists' })
-      }
-    }
-
-    const updateData = {
-      operatorName: operatorName || bus.operatorName,
-      busNumber: busNumber || bus.busNumber,
-      type: type || bus.type,
-      departure: departure || bus.departure,
-      arrival: arrival || bus.arrival,
-      price: price ? parseFloat(price) : bus.price,
-      seats: seats ? parseInt(seats) : bus.seats,
-      seatsAvailable: seats ? parseInt(seats) : bus.seatsAvailable,
-      amenities: amenities || bus.amenities,
-      image: image || bus.image
-    }
-
-    if (durationMinutes !== undefined) {
-      updateData.durationMinutes = parseInt(durationMinutes)
-    }
-
-    // If bus is already approved, editing it requires re-approval
-    if (bus.listingStatus === 'APPROVED') {
-      updateData.listingStatus = 'PENDING_APPROVAL'
-      updateData.submittedAt = new Date()
-      updateData.approvedAt = null
-      updateData.approvedBy = null
-    }
-
-    const updatedBus = await prisma.bus.update({
-      where: { id },
-      data: updateData
-    })
-
-    res.status(200).json({ success: true, data: updatedBus })
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message })
-  }
+const timeOf = (value) => {
+  if (!value) return undefined
+  if (typeof value === 'string') return value
+  return value.time ?? undefined
 }
 
-export const deleteBus = async (req, res) => {
-  try {
-    const { id } = req.params
-    const vendorId = req.user.id
+const validate = (body, { partial = false } = {}) => {
+  const errors = {}
+  const from = cityOf(body.from ?? body.departure)
+  const to = cityOf(body.to ?? body.arrival)
 
-    const bus = await prisma.bus.findFirst({ where: { id, vendorId } })
-
-    if (!bus) {
-      return res.status(404).json({ success: false, message: 'Bus not found' })
-    }
-
-    await prisma.bus.delete({ where: { id } })
-    res.status(200).json({ success: true, message: 'Bus deleted' })
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message })
+  if (!partial) {
+    if (!(body.busName ?? body.operatorName)?.trim?.()) errors.operatorName = 'Operator name is required'
+    if (!body.busNumber?.trim?.()) errors.busNumber = 'Bus number is required'
+    if (!(body.busType ?? body.type)) errors.type = 'Bus type is required'
+    if (num(body.price) === null) errors.price = 'Price is required'
   }
+
+  const price = num(body.price)
+  if (price !== null && price <= 0) errors.price = 'Price must be greater than zero'
+
+  const seats = num(body.totalSeats ?? body.seats)
+  if (seats !== null && (seats < 0 || seats > 100)) errors.seats = 'Seats must be between 0 and 100'
+
+  if (from && to && from.toLowerCase() === to.toLowerCase()) {
+    errors.to = 'Destination must differ from origin'
+  }
+
+  return errors
 }
 
-export const submitBusForApproval = async (req, res) => {
-  try {
-    const { id } = req.params
-    const vendorId = req.user.id
+const toStorage = (body, { partial = false } = {}) => {
+  const out = {}
 
-    const bus = await prisma.bus.findFirst({ where: { id, vendorId } })
+  const name = body.busName ?? body.operatorName
+  if (name !== undefined) out.busName = String(name).trim()
+  if (body.operatorName !== undefined) out.operatorName = String(body.operatorName).trim()
+  if (body.busNumber !== undefined) out.busNumber = String(body.busNumber).trim().toUpperCase()
 
-    if (!bus) {
-      return res.status(404).json({ success: false, message: 'Bus not found' })
-    }
+  const from = cityOf(body.from ?? body.departure)
+  const to = cityOf(body.to ?? body.arrival)
+  if (from !== undefined) out.from = from
+  if (to !== undefined) out.to = to
 
-    if (bus.listingStatus !== 'DRAFT' && bus.listingStatus !== 'REJECTED') {
-      return res.status(400).json({
-        success: false,
-        message: 'Only draft or rejected buses can be submitted'
-      })
-    }
+  const dep = timeOf(body.departureTime ?? body.departure)
+  const arr = timeOf(body.arrivalTime ?? body.arrival)
+  if (dep !== undefined) out.departureTime = dep
+  if (arr !== undefined) out.arrivalTime = arr
 
-    const updatedBus = await prisma.bus.update({
-      where: { id },
-      data: {
-        listingStatus: 'PENDING_APPROVAL',
-        submittedAt: new Date()
-      }
-    })
+  if (body.busType !== undefined || body.type !== undefined) out.busType = body.busType ?? body.type
+  if (body.amenities !== undefined) out.amenities = Array.isArray(body.amenities) ? body.amenities : []
+  if (body.image !== undefined) out.image = body.image
 
-    res.status(200).json({ success: true, data: updatedBus, message: 'Bus submitted for approval' })
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message })
+  const price = num(body.price)
+  if (price !== null) out.price = price
+
+  const mins = num(body.durationMinutes ?? body.duration)
+  if (mins !== null) out.durationMinutes = mins
+
+  const seats = num(body.totalSeats ?? body.seats)
+  if (seats !== null) {
+    out.totalSeats = seats
+    if (body.seatsAvailable === undefined && !partial) out.seatsAvailable = seats
   }
+  if (body.seatsAvailable !== undefined) out.seatsAvailable = num(body.seatsAvailable, 0)
+
+  if (!partial) {
+    out.totalSeats = out.totalSeats ?? 45
+    out.seatsAvailable = out.seatsAvailable ?? out.totalSeats
+    out.busType = out.busType ?? 'AC'
+    out.durationMinutes = out.durationMinutes ?? 0
+  }
+
+  return out
 }
+
+const crud = createVendorCrud({
+  collection: 'buses',
+  label: 'Bus',
+  listKey: 'buses',
+  uniqueField: 'busNumber',
+  validate,
+  toStorage
+})
+
+export const getMyBuses = crud.list
+export const createBus = crud.create
+export const getMyBusById = crud.getById
+export const updateBus = crud.update
+export const deleteBus = crud.remove
+export const submitBusForApproval = crud.submitForApproval
+export const toggleBusStatus = crud.toggleStatus

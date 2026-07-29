@@ -3,9 +3,10 @@ import { useParams, useNavigate, useSearchParams, useLocation } from 'react-rout
 import { useQuery } from '@tanstack/react-query'
 import { flightService } from '../services/flightService'
 import { useAuth } from '../context/AuthContext'
-import { authService, bookingService } from '../services/authService'
+import { bookingService } from '../services/authService'
 import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
+import OtpLoginModal from '../components/Auth/OtpLoginModal'
 
 const fmtTime = (val) => {
   if (!val) return 'N/A'
@@ -70,13 +71,9 @@ export default function BookingPage() {
   const rawTripType = location.state?.tripType || params.get('type')
   const isRoundTrip = rawTripType === 'roundtrip' || rawTripType === 'round-trip'
 
-  const { user, verifyOtpLogin } = useAuth()
+  const { user } = useAuth()
   const [showLoginModal, setShowLoginModal] = useState(false)
-  const [mobilePhone, setMobilePhone] = useState('')
-  const [otpCode, setOtpCode] = useState('')
-  const [otpSent, setOtpSent] = useState(false)
   const [pendingStep, setPendingStep] = useState(null)
-  const [loginError, setLoginError] = useState('')
   const [toastMsg, setToastMsg] = useState('')
   const [toastType, setToastType] = useState('info') // 'info', 'error', 'success'
   const [showToast, setShowToast] = useState(false)
@@ -131,50 +128,6 @@ export default function BookingPage() {
   // Confirmation data state
   const [bookingDetails, setBookingDetails] = useState(null)
 
-  // 💾 Save flight booking to localStorage when success page is shown
-  useEffect(() => {
-    if (step === 4 && bookingDetails) {
-      try {
-        const flightBooking = {
-          id: bookingDetails.bookingId || 'FLIGHT-' + Date.now(),
-          bookingId: bookingDetails.bookingId,
-          pnr: bookingDetails.pnr,
-          status: 'confirmed',
-          type: 'flight',
-          flight: {
-            airline: bookingDetails.flight?.airline,
-            flightNumber: bookingDetails.flight?.flightNumber,
-            source: bookingDetails.flight?.source,
-            destination: bookingDetails.flight?.destination,
-            departure: bookingDetails.flight?.departure,
-            arrival: bookingDetails.flight?.arrival,
-            duration: bookingDetails.flight?.duration,
-            price: bookingDetails.flight?.price,
-          },
-          travellers: bookingDetails.travellers,
-          contact: bookingDetails.contact,
-          amount: bookingDetails.amount,
-          totalAmount: bookingDetails.amount,
-          paymentId: bookingDetails.paymentId,
-          departureDate: bookingDetails.flight?.departure?.date || new Date().toISOString().split('T')[0],
-          createdAt: new Date().toISOString(),
-          userId: user?.id
-        }
-
-        // Save to localStorage
-        const existingBookings = JSON.parse(localStorage.getItem('mmt_bookings') || '[]')
-        const bookingExists = existingBookings.some(b => b.bookingId === flightBooking.bookingId)
-
-        if (!bookingExists) {
-          existingBookings.push(flightBooking)
-          localStorage.setItem('mmt_bookings', JSON.stringify(existingBookings))
-          console.log('💾 Flight booking saved to localStorage:', existingBookings.length)
-        }
-      } catch (err) {
-        console.error('Error saving flight booking to localStorage:', err)
-      }
-    }
-  }, [step, bookingDetails, user?.id])
 
   const { data, isLoading } = useQuery({
     queryKey: ['flight', flightId],
@@ -275,7 +228,7 @@ export default function BookingPage() {
   }, 0)
 
   const totalPassengers = adultsCount + childrenCount + infantsCount
-  const multiplier = isRoundTrip ? 2 : 1
+  const _multiplier = isRoundTrip ? 2 : 1
   const returnPrice = returnFlight ? returnFlight.price : (isRoundTrip ? flight.price : 0)
   const basePrice = (flight.price + returnPrice) * (adultsCount + childrenCount) + Math.round((flight.price + returnPrice) * 0.4 * infantsCount)
   const taxes = Math.round(basePrice * 0.18)
@@ -314,44 +267,7 @@ export default function BookingPage() {
     setStep(2)
   }
 
-  const handleSendOtp = async (e) => {
-    e.preventDefault()
-    if (!mobilePhone || mobilePhone.length < 10) {
-      setLoginError('Please enter a valid 10-digit mobile number')
-      return
-    }
-    setLoginError('')
-    try {
-      const res = await authService.sendMobileOtp(mobilePhone)
-      if (res && (res.data || res.message)) {
-        setOtpSent(true)
-      } else {
-        setLoginError('Failed to send OTP. Please try again.')
-      }
-    } catch (err) {
-      setLoginError(err.message || 'Failed to send OTP. Please try again.')
-    }
-  }
-
-  const handleVerifyOtp = async (e) => {
-    e.preventDefault()
-    if (!otpCode || otpCode.length < 6) {
-      setLoginError('Please enter a valid 6-digit OTP (e.g., 123456)')
-      return
-    }
-    setLoginError('')
-    try {
-      await verifyOtpLogin(mobilePhone, otpCode)
-      setShowLoginModal(false)
-      if (pendingStep) {
-        setStep(pendingStep)
-      }
-    } catch (err) {
-      setLoginError(err.message || 'Verification failed. Try 123456.')
-    }
-  }
-
-  const handleProceedToPayment = () => {
+      const handleProceedToPayment = () => {
     if (!user) {
       showToastMsg("Please login to continue booking", "info")
       setPendingStep(3)
@@ -451,7 +367,8 @@ export default function BookingPage() {
             const verifyResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/payment/verify`, {
               method: 'POST',
               headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
               },
               body: JSON.stringify({
                 orderId: response.razorpay_order_id,
@@ -532,137 +449,39 @@ export default function BookingPage() {
             console.log('  destination:', flight.destination)
             console.log('  Full flight object:', flight)
 
-            bookingService.createBooking(bookingPayload)
-              .then((res) => {
-                console.log('✓ Booking created!', res)
-                setPaymentLoading(false)
-                const confirmedData = res?.data || {}
+            // The booking is only confirmed once the backend has written it to
+            // Firestore and returned its reference. Previously a failure here
+            // still advanced to the confirmation screen with an invented
+            // booking id and PNR, so the customer saw a confirmation for a
+            // booking that did not exist.
+            try {
+              const res = await bookingService.createBooking(bookingPayload)
+              const confirmedData = res?.data || res || {}
 
-                // Extract enriched flight data for localStorage
-                const departureObj = typeof flight.departure === 'object' ? flight.departure : { date: '2026-05-20' }
-                const arrivalObj = typeof flight.arrival === 'object' ? flight.arrival : {}
+              if (!confirmedData.bookingId) {
+                throw new Error('The booking could not be confirmed.')
+              }
 
-                const successBooking = {
-                  id: confirmedData.bookingId || 'FLIGHT-' + Date.now(),
-                  bookingId: confirmedData.bookingId || 'MMT' + Math.floor(10000000 + Math.random() * 90000000),
-                  pnr: confirmedData.pnr || 'PNR' + Math.random().toString(36).substring(2, 8).toUpperCase(),
-                  status: 'confirmed',
-                  type: 'flight',
-                  flight,
-                  travellers: travellerDetails,
-                  contact: passenger,
-                  amount: totalAmount,
-                  totalAmount: totalAmount,
-                  paymentId: response.razorpay_payment_id,
-                  departureDate: flight.departure?.date || new Date().toISOString().split('T')[0],
-                  createdAt: new Date().toISOString(),
-                  userId: user?.id,
-                  // ✅ ADD ENRICHED FIELDS
-                  fromCity: flight.source || departureObj.city || 'Unknown',
-                  toCity: flight.destination || arrivalObj.city || 'Unknown',
-                  airlineName: flight.airline || 'Unknown Airline',
-                  airlineCode: flight.airlineCode || flight.code,
-                  flightNumber: flight.flightNumber || flight.number || 'N/A',
-                  departureTime: departureObj.time || '00:00',
-                  arrivalTime: arrivalObj.time || '00:00',
-                  departureAirport: departureObj.airport || flight.source,
-                  arrivalAirport: arrivalObj.airport || flight.destination,
-                  stops: flight.stops || 0,
-                  cabinClass: 'Economy',
-                  // Fare breakdown
-                  baseFare: totalAmount * 0.8,
-                  taxes: totalAmount * 0.15,
-                  convenience: totalAmount * 0.05,
-                  discount: 0,
-                  gst: totalAmount * 0.05,
-                  // Payment
-                  paymentMethod: 'credit_card',
-                  paymentStatus: 'completed',
-                  transactionId: response.razorpay_payment_id
-                }
-
-                // 💾 Save to localStorage (backup)
-                const existingBookings = JSON.parse(localStorage.getItem('mmt_bookings') || '[]')
-                existingBookings.push(successBooking)
-                localStorage.setItem('mmt_bookings', JSON.stringify(existingBookings))
-                console.log('💾 Booking saved to localStorage (backup):', existingBookings.length)
-
-                setBookingDetails({
-                  bookingId: successBooking.bookingId,
-                  pnr: successBooking.pnr,
-                  flight,
-                  travellers: travellerDetails,
-                  contact: passenger,
-                  amount: totalAmount,
-                  paymentId: response.razorpay_payment_id,
-                  date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
-                })
-                setStep(4)
-                showToastMsg('🎉 Booking confirmed! Your ticket has been sent to your email.', 'success')
+              setPaymentLoading(false)
+              setBookingDetails({
+                bookingId: confirmedData.bookingId,
+                pnr: confirmedData.pnr,
+                flight,
+                travellers: travellerDetails,
+                contact: passenger,
+                amount: totalAmount,
+                paymentId: response.razorpay_payment_id,
+                date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
               })
-              .catch((err) => {
-                console.error('Booking creation error:', err)
-                // Even if booking creation fails, payment was successful
-                setPaymentLoading(false)
-                const fallbackBooking = {
-                  id: 'FLIGHT-' + Date.now(),
-                  bookingId: 'MMT' + Math.floor(10000000 + Math.random() * 90000000),
-                  pnr: 'PNR' + Math.random().toString(36).substring(2, 8).toUpperCase(),
-                  status: 'confirmed',
-                  type: 'flight',
-                  flight,
-                  travellers: travellerDetails,
-                  contact: passenger,
-                  amount: totalAmount,
-                  totalAmount: totalAmount,
-                  paymentId: response.razorpay_payment_id,
-                  departureDate: flight.departure?.date || new Date().toISOString().split('T')[0],
-                  createdAt: new Date().toISOString(),
-                  userId: user?.id,
-                  // ✅ ADD ENRICHED FIELDS
-                  fromCity: flight.source || departureObj.city || 'Unknown',
-                  toCity: flight.destination || arrivalObj.city || 'Unknown',
-                  airlineName: flight.airline || 'Unknown Airline',
-                  airlineCode: flight.airlineCode || flight.code,
-                  flightNumber: flight.flightNumber || flight.number || 'N/A',
-                  departureTime: departureObj.time || '00:00',
-                  arrivalTime: arrivalObj.time || '00:00',
-                  departureAirport: departureObj.airport || flight.source,
-                  arrivalAirport: arrivalObj.airport || flight.destination,
-                  stops: flight.stops || 0,
-                  cabinClass: 'Economy',
-                  // Fare breakdown
-                  baseFare: totalAmount * 0.8,
-                  taxes: totalAmount * 0.15,
-                  convenience: totalAmount * 0.05,
-                  discount: 0,
-                  gst: totalAmount * 0.05,
-                  // Payment
-                  paymentMethod: 'credit_card',
-                  paymentStatus: 'completed',
-                  transactionId: response.razorpay_payment_id
-                }
-
-                // 💾 Save to localStorage as fallback
-                console.log('💾 Saving booking to localStorage:', fallbackBooking)
-                const existingBookings = JSON.parse(localStorage.getItem('mmt_bookings') || '[]')
-                existingBookings.push(fallbackBooking)
-                localStorage.setItem('mmt_bookings', JSON.stringify(existingBookings))
-                console.log('✅ Booking saved to localStorage! Total:', existingBookings.length)
-
-                setBookingDetails({
-                  bookingId: fallbackBooking.bookingId,
-                  pnr: fallbackBooking.pnr,
-                  flight,
-                  travellers: travellerDetails,
-                  contact: passenger,
-                  amount: totalAmount,
-                  paymentId: response.razorpay_payment_id,
-                  date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
-                })
-                setStep(4)
-                showToastMsg('✓ Payment successful! Your booking is being processed.', 'success')
-              })
+              setStep(4)
+              showToastMsg('🎉 Booking confirmed! Your ticket has been sent to your email.', 'success')
+            } catch (_bookingErr) {
+              setPaymentLoading(false)
+              showToastMsg(
+                'Your payment went through but we could not confirm the booking. Our team has been notified — please check My Trips before retrying. Reference: ' + response.razorpay_payment_id,
+                'error'
+              )
+            }
           } catch (err) {
             console.error('Payment verification error:', err)
             setPaymentLoading(false)
@@ -733,6 +552,12 @@ export default function BookingPage() {
       console.error('PDF Generation Error:', error)
       showToastMsg('Failed to generate PDF. Please try again.', 'error')
     }
+  }
+
+
+  const handleOtpLoginSuccess = () => {
+    setShowLoginModal(false)
+    if (pendingStep) setStep(pendingStep)
   }
 
   return (
@@ -1656,131 +1481,11 @@ export default function BookingPage() {
         </div>
       </div>
 
-      {showLoginModal && (
-        <div style={{
-          position: 'fixed',
-          inset: 0,
-          background: 'rgba(0,0,0,0.7)',
-          backdropFilter: 'blur(5px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 9999
-        }}>
-          <div style={{
-            background: 'hsl(var(--b1))',
-            borderRadius: '16px',
-            width: '90%',
-            maxWidth: '420px',
-            padding: '32px 28px',
-            boxShadow: '0 24px 48px rgba(0,0,0,0.2)',
-            position: 'relative',
-            boxSizing: 'border-box'
-          }}>
-            <button
-              onClick={() => setShowLoginModal(false)}
-              style={{
-                position: 'absolute',
-                top: '20px',
-                right: '20px',
-                background: 'hsl(var(--b2))',
-                border: 'none',
-                width: '32px',
-                height: '32px',
-                borderRadius: '50%',
-                fontSize: '14px',
-                fontWeight: 700,
-                cursor: 'pointer'
-              }}
-            >
-              ✕
-            </button>
-
-            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-              <span style={{ fontSize: '36px', display: 'block', marginBottom: '8px' }}>🔐</span>
-              <h3 style={{ margin: '0 0 8px', fontSize: '22px', fontWeight: 900, color: 'hsl(var(--bc) / 0.9)' }}>
-                Login to Continue
-              </h3>
-              <p style={{ margin: 0, fontSize: '13px', color: 'hsl(var(--bc) / 0.6)' }}>
-                MakeMyTrip requires verification before booking. Enter your mobile number to instantly login.
-              </p>
-            </div>
-
-            {loginError && (
-              <div style={{ background: 'hsl(var(--er) / 0.08)', color: 'hsl(var(--er) / 0.7)', padding: '10px 14px', borderRadius: '8px', fontSize: '12px', marginBottom: '16px', textAlign: 'center', fontWeight: 600 }}>
-                {loginError}
-              </div>
-            )}
-
-            {!otpSent ? (
-              <form onSubmit={handleSendOtp}>
-                <div style={{ marginBottom: '20px' }}>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'hsl(var(--bc) / 0.65)', marginBottom: '6px' }}>
-                    MOBILE NUMBER
-                  </label>
-                  <div style={{ display: 'flex', gap: '10px' }}>
-                    <span style={{ background: 'hsl(var(--b2))', border: '1px solid hsl(var(--b3))', borderRadius: '8px', padding: '10px 14px', fontSize: '14px', fontWeight: 700, color: 'hsl(var(--bc) / 0.7)', display: 'flex', alignItems: 'center' }}>
-                      +91
-                    </span>
-                    <input
-                      type="tel"
-                      placeholder="10-digit mobile number"
-                      value={mobilePhone}
-                      maxLength={10}
-                      onChange={(e) => setMobilePhone(e.target.value)}
-                      style={{ flex: 1, border: '1px solid hsl(var(--b3))', borderRadius: '8px', padding: '10px 14px', fontSize: '14px', fontWeight: 600, outline: 'none', width: '100%', boxSizing: 'border-box' }}
-                      autoFocus
-                      required
-                    />
-                  </div>
-                </div>
-                <button
-                  type="submit"
-                  style={{ width: '100%', background: 'var(--clr-primary, hsl(var(--er)))', color: '#fff', border: 'none', borderRadius: '8px', padding: '14px', fontSize: '15px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(239,68,68,0.3)' }}
-                >
-                  GET ONE TIME PASSWORD (OTP)
-                </button>
-              </form>
-            ) : (
-              <form onSubmit={handleVerifyOtp}>
-                <div style={{ marginBottom: '20px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                    <label style={{ fontSize: '12px', fontWeight: 700, color: 'hsl(var(--bc) / 0.65)' }}>
-                      ENTER 6-DIGIT OTP
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => setOtpSent(false)}
-                      style={{ background: 'none', border: 'none', color: 'var(--clr-primary, hsl(var(--er)))', fontSize: '12px', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }}
-                    >
-                      Change Number
-                    </button>
-                  </div>
-                  <input
-                    type="text"
-                    maxLength="6"
-                    placeholder="e.g. 123456"
-                    value={otpCode}
-                    onChange={(e) => setOtpCode(e.target.value)}
-                    style={{ width: '100%', border: '2px solid var(--clr-primary, hsl(var(--er)))', borderRadius: '8px', padding: '12px 14px', fontSize: '18px', fontWeight: 800, letterSpacing: '4px', textAlign: 'center', outline: 'none', boxSizing: 'border-box' }}
-                    autoFocus
-                    required
-                  />
-                  <span style={{ display: 'block', textAlign: 'center', fontSize: '11px', color: 'hsl(var(--su))', marginTop: '8px', fontWeight: 600 }}>
-                    ✓ Simulated OTP sent! (Use test OTP: 123456)
-                  </span>
-                </div>
-                <button
-                  type="submit"
-                  style={{ width: '100%', background: 'hsl(var(--su))', color: '#fff', border: 'none', borderRadius: '8px', padding: '14px', fontSize: '15px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(16,185,129,0.3)' }}
-                >
-                  VERIFY &amp; RESUME BOOKING
-                </button>
-              </form>
-            )}
-          </div>
-        </div>
-      )}
+      <OtpLoginModal
+        open={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onSuccess={handleOtpLoginSuccess}
+      />
 
       {/* ── Custom Toast Notification ── */}
       {showToast && (

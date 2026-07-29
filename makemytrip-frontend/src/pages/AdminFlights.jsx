@@ -16,10 +16,6 @@ const AdminFlights = () => {
   const [editingFlight, setEditingFlight] = useState(null)
 
   useEffect(() => {
-    fetchFlights()
-  }, [])
-
-  useEffect(() => {
     if (search.trim() === '') {
       setFlights(allFlights)
     } else {
@@ -57,12 +53,16 @@ const AdminFlights = () => {
     }
   }
 
+  useEffect(() => {
+    fetchFlights()
+  }, [])
+
   const handleDelete = async (id) => {
     if (window.confirm('Delete this flight? This action cannot be undone.')) {
       try {
         await adminFlightsService.delete(id)
         setFlights(flights.filter(f => f.id !== id))
-      } catch (err) {
+      } catch (_err) {
         setError('Failed to delete flight')
       }
     }
@@ -72,7 +72,7 @@ const AdminFlights = () => {
     try {
       await adminFlightsService.toggleStatus(id)
       setFlights(flights.map(f => f.id === id ? { ...f, isActive: !f.isActive } : f))
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to update status')
     }
   }
@@ -99,7 +99,7 @@ const AdminFlights = () => {
         setFlights([response.data.data.flight, ...flights])
       }
       handleCloseForm()
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to save flight')
     }
   }

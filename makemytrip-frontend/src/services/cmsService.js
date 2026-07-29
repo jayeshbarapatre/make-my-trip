@@ -46,7 +46,9 @@ export const cmsService = {
   updateFaq: (id, data) => api.put(`/admin/faqs/${id}`, data),
   deleteFaq: (id) => api.delete(`/admin/faqs/${id}`),
 
-  getSettings: () => api.get('/admin/settings'),
+  // Distinct name from the public getSettings above: as a duplicate key this
+  // silently shadowed it, so the public app was calling the admin endpoint.
+  getAdminSettings: () => api.get('/admin/settings'),
   updateSettings: (data) => api.put('/admin/settings', data),
 
   uploadMedia: (file) => {

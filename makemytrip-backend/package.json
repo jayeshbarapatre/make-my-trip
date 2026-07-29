@@ -7,9 +7,15 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
+    "test:email": "node scripts/testEmailAndOtp.js",
     "seed": "node scripts/seed.js",
     "seed:flights": "node scripts/seedFlights.js",
-    "seed:trains": "node scripts/seedTrains.js"
+    "seed:trains": "node scripts/seedTrains.js",
+    "seed:email-templates": "node scripts/seedEmailTemplates.js",
+    "preview:email": "node scripts/previewEmails.js",
+    "test:otp": "node scripts/testOtpNumbers.js",
+    "migrate:roles": "node scripts/backfillUserRoles.js",
+    "admin:create": "node scripts/createAdmin.js"
   },
   "keywords": [],
   "author": "",
@@ -18,17 +24,23 @@
     "@prisma/client": "^5.11.0",
     "axios": "^1.16.1",
     "bcryptjs": "^2.4.3",
+    "bullmq": "^5.10.4",
     "cors": "^2.8.5",
     "dotenv": "^16.0.0",
+    "exceljs": "^4.4.0",
     "express": "^4.18.0",
     "express-rate-limit": "^8.5.2",
     "firebase-admin": "^13.9.0",
+    "handlebars": "^4.7.8",
+    "ioredis": "^5.3.8",
     "jsonwebtoken": "^9.0.0",
     "mongoose": "^9.6.2",
     "multer": "^2.1.1",
     "node-cache": "^5.1.2",
     "nodemailer": "^8.0.7",
-    "razorpay": "^2.9.6"
+    "pdfkit": "^0.14.0",
+    "razorpay": "^2.9.6",
+    "winston": "^3.14.2"
   },
   "devDependencies": {
     "prisma": "^5.11.0"

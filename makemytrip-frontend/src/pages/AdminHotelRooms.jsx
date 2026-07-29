@@ -27,7 +27,7 @@ const AdminHotelRooms = () => {
 
         const roomsResponse = await adminRoomsService.getRooms(hotelId)
         setRooms(roomsResponse.data.data || [])
-      } catch (err) {
+      } catch (_err) {
         setError('Failed to fetch hotel or rooms')
       } finally {
         setLoading(false)
@@ -44,7 +44,7 @@ const AdminHotelRooms = () => {
       const response = await adminRoomsService.createRoom(hotelId, formData)
       setRooms([...rooms, response.data.data.room])
       setShowForm(false)
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to add room')
     }
   }
@@ -55,7 +55,7 @@ const AdminHotelRooms = () => {
       setRooms(rooms.map(r => (r.id === editingRoom.id ? response.data.data.room : r)))
       setShowForm(false)
       setEditingRoom(null)
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to update room')
     }
   }
@@ -66,7 +66,7 @@ const AdminHotelRooms = () => {
     try {
       await adminRoomsService.deleteRoom(hotelId, roomId)
       setRooms(rooms.filter(r => r.id !== roomId))
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to delete room')
     }
   }
@@ -75,7 +75,7 @@ const AdminHotelRooms = () => {
     try {
       const response = await adminRoomsService.toggleRoom(hotelId, roomId)
       setRooms(rooms.map(r => (r.id === roomId ? response.data.data.room : r)))
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to update status')
     }
   }

@@ -1,41 +1,41 @@
 import { Router } from 'express'
-import {
-  register,
-  login,
-  forgotPassword,
-  verifyOtp,
-  resetPassword,
-  getProfile,
-  logout,
-  sendMobileOtp,
-  promoteToAdmin,
-  debugGetAllUsers
-} from '../controllers/authController.js'
 import { authenticate } from '../middleware/auth.js'
-// import { authLimiter, otpLimiter } from '../middleware/rateLimiter.js'  // DISABLED FOR TESTING
+import { authLimiter, otpLimiter } from '../middleware/rateLimiter.js'
+import {
+  firebaseRegister,
+  firebaseLogin,
+  firebaseGetProfile,
+  firebaseLogout,
+  firebaseForgotPassword,
+  firebaseResetPassword,
+  firebaseVerifyOtp,
+  firebaseSendMobileOtp,
+  firebaseSendEmailOtp,
+  otpChannelStatus
+} from '../controllers/firebaseAuthController.js'
 
 const router = Router()
 
-// Direct standard auth endpoints
-// TEMPORARILY DISABLED FOR TESTING - uncomment authLimiter when deploying to production
-router.post('/signup', register)  // authLimiter disabled
-router.post('/register', register)  // authLimiter disabled
-router.post('/login', login)  // authLimiter disabled
-router.post('/forgot-password', forgotPassword)  // otpLimiter disabled
+router.post('/signup', authLimiter, firebaseRegister)
+router.post('/register', authLimiter, firebaseRegister)
+router.post('/login', authLimiter, firebaseLogin)
 
-// Dual-purpose verify-otp (handles both Forgot Password & Mobile OTP)
-router.post('/verify-otp', verifyOtp)  // otpLimiter disabled
-router.post('/reset-password', resetPassword)  // otpLimiter disabled
-router.get('/profile', authenticate, getProfile)
-router.post('/logout', authenticate, logout)
+// Password reset
+router.post('/forgot-password', otpLimiter, firebaseForgotPassword)
+router.post('/reset-password', authLimiter, firebaseResetPassword)
 
-// Razorpay-style Mobile OTP Login endpoints
-router.post('/send-otp', sendMobileOtp)  // otpLimiter disabled
+// OTP delivery — mobile and email. Resend reuses the send handler; the
+// per-number cooldown lives in otpService, not in a separate endpoint.
+router.post('/send-otp', otpLimiter, firebaseSendMobileOtp)
+router.post('/resend-otp', otpLimiter, firebaseSendMobileOtp)
+router.post('/send-email-otp', otpLimiter, firebaseSendEmailOtp)
+router.post('/resend-email-otp', otpLimiter, firebaseSendEmailOtp)
 
-// Admin promotion endpoint
-router.post('/promote-admin', authenticate, promoteToAdmin)
+// Verification (mobile OTP, email OTP, and password-reset pre-check)
+router.post('/verify-otp', otpLimiter, firebaseVerifyOtp)
 
-// DEBUG endpoints (development only)
-router.get('/debug/users', debugGetAllUsers)
+router.get('/otp-status', otpChannelStatus)
+router.get('/profile', authenticate, firebaseGetProfile)
+router.post('/logout', authenticate, firebaseLogout)
 
 export default router

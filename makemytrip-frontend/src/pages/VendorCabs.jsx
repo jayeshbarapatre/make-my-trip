@@ -4,7 +4,6 @@ import VendorLayout from '../components/Vendor/VendorLayout'
 import VendorCabForm from '../components/Vendor/VendorCabForm'
 import { vendorCabsService } from '../services/vendorService'
 import { useTheme } from '../context/ThemeContext'
-import Icons from '../utils/icons'
 import toast from 'react-hot-toast'
 import './VendorBuses.css'
 
@@ -19,10 +18,6 @@ const VendorCabs = () => {
   const [showFormModal, setShowFormModal] = useState(false)
   const [editingCabId, setEditingCabId] = useState(null)
 
-  useEffect(() => {
-    fetchCabs()
-  }, [])
-
   const fetchCabs = async () => {
     try {
       setLoading(true)
@@ -36,6 +31,10 @@ const VendorCabs = () => {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    fetchCabs()
+  }, [])
 
   const handleSubmitForApproval = (id) => {
     setConfirmDialog({

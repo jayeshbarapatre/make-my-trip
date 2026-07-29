@@ -3,7 +3,9 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
-Full-stack travel platform (MakeMyTrip clone) supporting flights, hotels, buses, cabs, trains, and more. Built with React 18 + Vite (frontend) and Node.js + Express + MongoDB/Firestore (backend). Includes complete user booking system and admin panel for content management.
+Full-stack travel platform (MakeMyTrip clone) supporting flights, hotels, buses, cabs, trains, and more. Built with React 18 + Vite (frontend) and Node.js + Express + **Firebase/Firestore as the only database and source of truth** (backend). Includes complete user booking system and admin panel for content management.
+
+**IMPORTANT — Database policy:** Firestore is the single source of truth for all user-facing data (users, bookings, flights, hotels, buses, trains, cabs, OTPs). Do NOT reintroduce MongoDB/Mongoose or Prisma into user-facing paths. Use the `firebase*Controller.js` controllers. Legacy Prisma controllers remain only in admin/vendor portal paths pending migration.
 
 ## Monorepo Structure
 ```
@@ -89,9 +91,8 @@ VITE_API_BASE_URL=http://localhost:5000/api/v1
 ## Backend Stack
 - **Node.js ESM** (always use `import/export`, never `require()`)
 - **Express.js** — REST API with versioned routes (`/api/v1/*`)
-- **MongoDB + Mongoose** — primary database (users, bookings, content)
-- **Firebase Admin SDK** — Firestore for flights/hotels/availability (fallback/hybrid)
-- **Prisma** — optional ORM configuration for structured data
+- **Firebase Admin SDK + Firestore** — the only database: users, bookings, flights, hotels, buses, trains, cabs, OTPs
+- Firestore is configured with `ignoreUndefinedProperties: true`; avoid `where + orderBy` combos that need composite indexes (sort in memory instead)
 - **JWT (`jsonwebtoken`)** — token-based auth (Bearer scheme)
 - **bcryptjs** — password hashing
 - **Nodemailer** — email notifications (booking confirmations)

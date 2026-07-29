@@ -1,6 +1,19 @@
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
-import prisma from '../config/prismaClient.js'
+import { db } from '../config/firebase.js'
+import { Role, AccountStatus, resolveRole, resolveAccountStatus } from '../config/roles.js'
+import { writeAuditLog, AuditAction } from '../services/auditLog.js'
+
+// Migrated from Prisma/MongoDB to Firestore, mirroring the admin migration.
+//
+// Vendors are `users` documents with role=vendor and a vendorId, so the same
+// token works against the RBAC-protected APIs and the vendorId that every
+// inventory query scopes on comes from one place.
+//
+// Self-service registration no longer grants vendor access on the spot — that
+// would let anyone create a vendor account and publish inventory. New vendors
+// go through the application workflow in vendorRequestController; an approved
+// application is what grants the role.
 
 if (!process.env.JWT_SECRET) {
   throw new Error('FATAL: JWT_SECRET environment variable is not set. This is required for security. Set JWT_SECRET in your .env file.')
@@ -8,42 +21,104 @@ if (!process.env.JWT_SECRET) {
 
 const JWT_SECRET = process.env.JWT_SECRET
 
-const signToken = (id) => jwt.sign({ id }, JWT_SECRET, { expiresIn: '8h' })
+const signToken = (user) =>
+  jwt.sign(
+    { id: user.id, email: user.email, role: resolveRole(user), accountStatus: resolveAccountStatus(user) },
+    JWT_SECRET,
+    { expiresIn: '8h' }
+  )
+
+const publicVendor = (u) => ({
+  id: u.id,
+  name: u.name,
+  email: u.email,
+  phone: u.phone ?? null,
+  vendorId: u.vendorId ?? null,
+  vendorName: u.vendorName ?? u.businessName ?? null,
+  vendorType: u.vendorType ?? 'hotel',
+  vendorStatus: u.accountStatus ?? AccountStatus.ACTIVE,
+  // Retained for existing vendor UI checks.
+  is_vendor: true
+})
+
+const findUserById = async (id) => {
+  const snap = await db.collection('users').where('id', '==', id).limit(1).get()
+  return snap.empty ? null : { ref: snap.docs[0].ref, data: snap.docs[0].data() }
+}
 
 export const vendorRegister = async (req, res) => {
   try {
-    const { name, email, password } = req.body
+    const { name, email, password, businessName } = req.body
 
     if (!name || !email || !password) {
       return res.status(400).json({ message: 'Name, email, and password are required' })
     }
+    if (password.length < 8) {
+      return res.status(400).json({ message: 'Password must be at least 8 characters long' })
+    }
 
-    const existing = await prisma.user.findUnique({ where: { email } })
-    if (existing) {
+    const ref = db.collection('users').doc(email)
+    if ((await ref.get()).exists) {
       return res.status(409).json({ message: 'Email already registered' })
     }
 
-    const hashed = await bcrypt.hash(password, 10)
-    const vendor = await prisma.user.create({
-      data: {
-        name,
-        email,
-        password: hashed,
-        phone: '0000000000',
-        is_vendor: true,
-        vendorType: 'hotel'
-      },
-      select: { id: true, name: true, email: true, is_vendor: true, vendorType: true }
+    const id = `user_${Date.now()}`
+    const doc = {
+      id,
+      name,
+      email,
+      phone: req.body.phone ?? null,
+      password: await bcrypt.hash(password, 10),
+      // Created as a customer. The vendor role is granted only when an admin
+      // approves the application below.
+      role: Role.CUSTOMER,
+      accountStatus: AccountStatus.ACTIVE,
+      vendorType: req.body.vendorType ?? 'hotel',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      isDeleted: false
+    }
+
+    await ref.set(doc)
+
+    // Open the onboarding application in the same shape the admin queue reads.
+    const applicationRef = db.collection('vendor_requests').doc(`vr_${id}`)
+    await applicationRef.set({
+      userId: id,
+      userEmail: email,
+      businessName: businessName?.trim() || name,
+      businessType: doc.vendorType,
+      contactPhone: doc.phone,
+      status: 'pending',
+      rejectionReason: null,
+      changeRequestNote: null,
+      history: [{ status: 'pending', at: new Date().toISOString(), by: id, note: 'Submitted via vendor signup' }],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      createdBy: id,
+      updatedBy: id,
+      isDeleted: false
     })
 
-    const token = signToken(vendor.id)
+    writeAuditLog({
+      req,
+      action: 'vendor_request_submitted',
+      entity: 'vendor_requests',
+      entityId: `vr_${id}`,
+      newValue: { email, businessName: businessName ?? name }
+    })
+
     res.status(201).json({
-      message: 'Vendor created successfully',
-      data: { vendor, token }
+      message: 'Your vendor application has been submitted and is pending review.',
+      data: {
+        vendor: { id, name, email, vendorType: doc.vendorType, vendorStatus: 'pending', is_vendor: false },
+        token: signToken(doc),
+        applicationStatus: 'pending'
+      }
     })
   } catch (err) {
-    console.error('Vendor register error:', err)
-    res.status(500).json({ message: err.message })
+    console.error('Vendor register error:', err.message)
+    res.status(500).json({ message: 'Registration failed' })
   }
 }
 
@@ -55,46 +130,74 @@ export const vendorLogin = async (req, res) => {
       return res.status(400).json({ message: 'Email and password are required' })
     }
 
-    const user = await prisma.user.findUnique({ where: { email } })
-    if (!user || !user.is_vendor) {
-      return res.status(401).json({ message: 'Invalid credentials or not a vendor' })
+    const snap = await db.collection('users').doc(email).get()
+    const user = snap.exists ? snap.data() : null
+
+    // One message for every failure mode so this cannot be used to enumerate
+    // which addresses exist or which of them are vendors.
+    const reject = () => res.status(401).json({ message: 'Invalid credentials or not a vendor' })
+
+    if (!user?.password) return reject()
+    if (!(await bcrypt.compare(password, user.password))) return reject()
+
+    if (resolveRole(user) !== Role.VENDOR) {
+      // Distinguish "applied but not approved yet" so the UI can say something
+      // useful, without revealing anything to a non-owner of the account.
+      const application = await db.collection('vendor_requests').doc(`vr_${user.id}`).get()
+      if (application.exists) {
+        const status = application.data().status
+        return res.status(403).json({
+          code: 'APPLICATION_' + String(status).toUpperCase(),
+          message: status === 'rejected'
+            ? `Your vendor application was rejected. ${application.data().rejectionReason ?? ''}`.trim()
+            : status === 'changes_requested'
+              ? `Your application needs changes. ${application.data().changeRequestNote ?? ''}`.trim()
+              : 'Your vendor application is still pending review.'
+        })
+      }
+      return reject()
     }
 
-    const isValid = await bcrypt.compare(password, user.password)
-    if (!isValid) {
-      return res.status(401).json({ message: 'Invalid credentials' })
+    if (resolveAccountStatus(user) !== AccountStatus.ACTIVE) {
+      return res.status(403).json({
+        code: 'ACCOUNT_NOT_ACTIVE',
+        message: `This vendor account is ${resolveAccountStatus(user)}.`
+      })
     }
 
-    const token = signToken(user.id)
+    writeAuditLog({
+      req,
+      action: AuditAction.LOGIN,
+      entity: 'users',
+      entityId: user.id,
+      newValue: { email, role: Role.VENDOR, portal: 'vendor' }
+    })
+
     res.json({
       message: 'Login successful',
-      data: {
-        vendor: { id: user.id, name: user.name, email: user.email, is_vendor: user.is_vendor, vendorType: user.vendorType },
-        token
-      }
+      data: { vendor: publicVendor(user), token: signToken(user) }
     })
   } catch (err) {
-    console.error('Vendor login error:', err)
-    res.status(500).json({ message: err.message })
+    console.error('Vendor login error:', err.message)
+    res.status(500).json({ message: 'Login failed' })
   }
 }
 
 export const getVendorProfile = async (req, res) => {
   try {
-    const vendor = await prisma.user.findUnique({
-      where: { id: req.vendorId },
-      select: { id: true, name: true, email: true, phone: true, is_vendor: true, vendorType: true, vendorName: true, vendorStatus: true }
-    })
-    if (!vendor || !vendor.is_vendor) {
+    const found = await findUserById(req.principal?.uid)
+    if (!found || resolveRole(found.data) !== Role.VENDOR) {
       return res.status(404).json({ message: 'Vendor not found' })
     }
-    res.json({ data: { vendor } })
+    res.json({ data: { vendor: publicVendor(found.data) } })
   } catch (err) {
-    res.status(500).json({ message: err.message })
+    console.error('Vendor profile error:', err.message)
+    res.status(500).json({ message: 'Could not load profile' })
   }
 }
 
 export const vendorLogout = (req, res) => {
+  writeAuditLog({ req, action: AuditAction.LOGOUT, entity: 'users', entityId: req.principal?.uid })
   res.json({ message: 'Logged out successfully' })
 }
 
@@ -105,33 +208,39 @@ export const changePassword = async (req, res) => {
     if (!currentPassword || !newPassword) {
       return res.status(400).json({ message: 'Current and new passwords are required' })
     }
-
     if (newPassword.length < 8) {
       return res.status(400).json({ message: 'New password must be at least 8 characters long' })
     }
-
     if (!/\d/.test(newPassword)) {
       return res.status(400).json({ message: 'New password must contain at least one number' })
     }
 
-    const vendor = await prisma.user.findUnique({ where: { id: req.vendorId } })
-    if (!vendor) {
-      return res.status(404).json({ message: 'Vendor not found' })
-    }
+    const found = await findUserById(req.principal?.uid)
+    if (!found) return res.status(404).json({ message: 'Vendor not found' })
 
-    const isValid = await bcrypt.compare(currentPassword, vendor.password)
-    if (!isValid) {
+    if (!(await bcrypt.compare(currentPassword, found.data.password))) {
+      writeAuditLog({
+        req,
+        action: AuditAction.PASSWORD_RESET,
+        entity: 'users',
+        entityId: req.principal?.uid,
+        status: 'failure',
+        newValue: { reason: 'wrong_current_password' }
+      })
       return res.status(401).json({ message: 'Invalid current password' })
     }
 
-    const hashed = await bcrypt.hash(newPassword, 10)
-    await prisma.user.update({
-      where: { id: req.vendorId },
-      data: { password: hashed }
+    await found.ref.update({
+      password: await bcrypt.hash(newPassword, 10),
+      updatedAt: new Date().toISOString(),
+      updatedBy: req.principal?.uid
     })
+
+    writeAuditLog({ req, action: AuditAction.PASSWORD_RESET, entity: 'users', entityId: req.principal?.uid })
 
     res.json({ message: 'Password updated successfully' })
   } catch (err) {
-    res.status(500).json({ message: err.message })
+    console.error('Vendor change password error:', err.message)
+    res.status(500).json({ message: 'Could not update password' })
   }
 }

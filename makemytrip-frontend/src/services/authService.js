@@ -4,12 +4,23 @@ export const authService = {
   login: (credentials) => api.post('/auth/login', credentials),
   register: (data) => api.post('/auth/signup', data),
   forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
-  verifyOtp: (email, otp) => api.post('/auth/verify-otp', { email, otp }),
+  verifyOtp: (email, otp) => api.post('/auth/verify-otp', { email, otp, purpose: 'password_reset' }),
   resetPassword: (email, otp, password) => api.post('/auth/reset-password', { email, otp, password }),
   getProfile: () => api.get('/auth/profile'),
   logout: () => api.post('/auth/logout'),
+
+  // Mobile OTP
   sendMobileOtp: (phone) => api.post('/auth/send-otp', { phone }),
-  verifyMobileOtp: (phone, otp) => api.post('/auth/verify-otp', { phone, otp })
+  resendMobileOtp: (phone) => api.post('/auth/resend-otp', { phone }),
+  verifyMobileOtp: (phone, otp) => api.post('/auth/verify-otp', { phone, otp }),
+
+  // Email OTP (passwordless)
+  sendEmailOtp: (email) => api.post('/auth/send-email-otp', { email }),
+  resendEmailOtp: (email) => api.post('/auth/resend-email-otp', { email }),
+  verifyEmailOtp: (email, otp) => api.post('/auth/verify-otp', { email, otp }),
+
+  // Which delivery channels the server can actually use
+  otpStatus: () => api.get('/auth/otp-status')
 }
 
 export const bookingService = {
@@ -41,31 +52,16 @@ export const bookingService = {
     }
   },
   getBooking: async (bookingId) => {
-    try {
-      const res = await api.get(`/bookings/${bookingId}`)
-      return res?.data || res
-    } catch (e) {
-      console.error("Failed to fetch booking:", e)
-      // Fallback: try to find in localStorage
-      try {
-        const localBookings = JSON.parse(localStorage.getItem('mmt_bookings') || '[]')
-        const found = localBookings.find(b => b.bookingId === bookingId || b.id === bookingId)
-        if (found) return found
-      } catch (err) {
-        console.error("Fallback lookup failed:", err)
-      }
-      throw e
-    }
+    const res = await api.get(`/bookings/${bookingId}`)
+    return res?.data || res
   },
-  cancelBooking: async (id) => {
-    try {
-      const res = await api.put(`/bookings/cancel/${id}`)
-      return res?.data || res
-    } catch (e) {
-      console.warn("Using offline fallback cancel:", e)
-      return { id, status: 'cancelled' }
-    }
-  },
+  // Must surface failure: returning a synthetic cancelled record told the user
+  // their booking was cancelled when the server had not cancelled anything.
+  // Returns the whole envelope, not just .data — the refund quote the server
+  // computed travels alongside the updated booking.
+  cancelBooking: async (id, reason) => api.put(`/bookings/cancel/${id}`, { reason }),
+  previewRefund: (bookingId) => api.get(`/refunds/preview/${bookingId}`),
+  listMyRefunds: () => api.get('/refunds/mine'),
   verifyBusPayment: async (paymentData) => {
     try {
       const res = await api.post('/payment/verify', paymentData)
@@ -102,26 +98,12 @@ export const paymentService = {
 
 export const userService = {
   getProfile: async () => {
-    try {
-      const res = await api.get('/user/profile')
-      return res?.data || res
-    } catch (e) {
-      console.warn('Fallback offline profile:', e)
-      return {
-        user: { id: "usr_1111-2222-3333-4444", name: "Jayesh Sharma", email: "jayesh@gmail.com", phone: "9876543210" }
-      }
-    }
+    const res = await api.get('/user/profile')
+    return res?.data || res
   },
   updateProfile: async (data) => {
-    try {
-      const res = await api.put('/user/update', data)
-      return res?.data || res
-    } catch (e) {
-      console.warn('Fallback offline update:', e)
-      return {
-        user: { id: "usr_1111-2222-3333-4444", name: "Jayesh Sharma", email: "jayesh@gmail.com", phone: "9876543210", ...data }
-      }
-    }
+    const res = await api.put('/user/update', data)
+    return res?.data || res
   }
 }
 

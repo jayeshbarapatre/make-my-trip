@@ -1,119 +1,76 @@
-import prisma from '../config/prismaClient.js'
+import { db } from '../config/firebase.js'
+import { cacheService } from '../services/cache/cacheService.js'
 
-const sanitizeQuery = (q) => q ? String(q).trim().toLowerCase() : ''
+// Autocomplete fires on every keystroke. Reading the whole flights collection
+// each time would dominate the Firestore read budget, so the derived facet
+// lists are built once and cached; the per-request work is a filter over a
+// small in-memory array.
+const FACET_TTL_SECONDS = 300
+const CACHE_KEY = 'autocomplete:facets'
 
-export const getAirlines = async (req, res) => {
-  try {
-    const { q } = req.query
-    const searchQuery = sanitizeQuery(q)
+const sanitizeQuery = (q) => (q ? String(q).trim().toLowerCase() : '')
 
-    const flights = await prisma.flight.findMany({
-      select: { airline: true },
-      where: { isActive: true },
-      distinct: ['airline']
-    })
+const buildFacets = async () => {
+  const snapshot = await db.collection('flights').get()
 
-    const airlines = flights
-      .map(f => f.airline)
-      .filter(airline => airline && airline.toLowerCase().includes(searchQuery))
-      .sort()
+  const cities = new Set()
+  const airports = new Set()
+  const airlines = new Set()
+  const aircrafts = new Set()
+  const flightNumbers = new Set()
 
-    res.json({ data: airlines })
-  } catch (err) {
-    res.status(500).json({ message: err.message })
+  snapshot.forEach((doc) => {
+    const f = doc.data()
+    if (f.isActive === false) return
+
+    if (f.source) cities.add(f.source)
+    if (f.destination) cities.add(f.destination)
+    if (f.sourceAirport) airports.add(f.sourceAirport)
+    if (f.destinationAirport) airports.add(f.destinationAirport)
+    if (f.airline) airlines.add(f.airline)
+    if (f.aircraft) aircrafts.add(f.aircraft)
+    if (f.flightNumber) flightNumbers.add(f.flightNumber)
+  })
+
+  const sorted = (set) => Array.from(set).sort()
+
+  return {
+    cities: sorted(cities),
+    airports: sorted(airports),
+    airlines: sorted(airlines),
+    aircrafts: sorted(aircrafts),
+    flightNumbers: sorted(flightNumbers)
   }
 }
 
-export const getAirports = async (req, res) => {
+const getFacets = async () => {
+  const cached = cacheService.get(CACHE_KEY)
+  if (cached) return cached
+
+  const facets = await buildFacets()
+  cacheService.set(CACHE_KEY, facets, FACET_TTL_SECONDS)
+  return facets
+}
+
+const respondWithFacet = (facet) => async (req, res) => {
   try {
-    const { q } = req.query
-    const searchQuery = sanitizeQuery(q)
+    const searchQuery = sanitizeQuery(req.query.q)
+    const facets = await getFacets()
+    const values = facets[facet] || []
 
-    const flights = await prisma.flight.findMany({
-      where: { isActive: true }
-    })
+    const filtered = searchQuery
+      ? values.filter((v) => v.toLowerCase().includes(searchQuery))
+      : values
 
-    const airports = new Set()
-    flights.forEach(flight => {
-      if (flight.departure?.airport) airports.add(flight.departure.airport)
-      if (flight.arrival?.airport) airports.add(flight.arrival.airport)
-    })
-
-    const filtered = Array.from(airports)
-      .filter(airport => airport.toLowerCase().includes(searchQuery))
-      .sort()
-
-    res.json({ data: filtered })
+    res.json({ data: filtered.slice(0, 50) })
   } catch (err) {
-    res.status(500).json({ message: err.message })
+    console.error(`Autocomplete (${facet}) failed:`, err.message)
+    res.status(500).json({ message: 'Failed to load suggestions' })
   }
 }
 
-export const getCities = async (req, res) => {
-  try {
-    const { q } = req.query
-    const searchQuery = sanitizeQuery(q)
-
-    const flights = await prisma.flight.findMany({
-      where: { isActive: true }
-    })
-
-    const cities = new Set()
-    flights.forEach(flight => {
-      if (flight.departure?.city) cities.add(flight.departure.city)
-      if (flight.arrival?.city) cities.add(flight.arrival.city)
-    })
-
-    const filtered = Array.from(cities)
-      .filter(city => city.toLowerCase().includes(searchQuery))
-      .sort()
-
-    res.json({ data: filtered })
-  } catch (err) {
-    res.status(500).json({ message: err.message })
-  }
-}
-
-export const getAircrafts = async (req, res) => {
-  try {
-    const { q } = req.query
-    const searchQuery = sanitizeQuery(q)
-
-    const flights = await prisma.flight.findMany({
-      select: { aircraft: true },
-      where: { isActive: true, aircraft: { not: null } },
-      distinct: ['aircraft']
-    })
-
-    const aircrafts = flights
-      .map(f => f.aircraft)
-      .filter(aircraft => aircraft && aircraft.toLowerCase().includes(searchQuery))
-      .sort()
-
-    res.json({ data: aircrafts })
-  } catch (err) {
-    res.status(500).json({ message: err.message })
-  }
-}
-
-export const getFlightNumbers = async (req, res) => {
-  try {
-    const { q } = req.query
-    const searchQuery = sanitizeQuery(q)
-
-    const flights = await prisma.flight.findMany({
-      select: { flightNumber: true },
-      where: { isActive: true },
-      distinct: ['flightNumber']
-    })
-
-    const flightNumbers = flights
-      .map(f => f.flightNumber)
-      .filter(num => num && num.toLowerCase().includes(searchQuery))
-      .sort()
-
-    res.json({ data: flightNumbers })
-  } catch (err) {
-    res.status(500).json({ message: err.message })
-  }
-}
+export const getAirlines = respondWithFacet('airlines')
+export const getAirports = respondWithFacet('airports')
+export const getCities = respondWithFacet('cities')
+export const getAircrafts = respondWithFacet('aircrafts')
+export const getFlightNumbers = respondWithFacet('flightNumbers')

@@ -1,154 +1,112 @@
-import prisma from '../config/prismaClient.js'
+import { createAdminCrud } from './factories/firestoreAdminCrud.js'
 
-export const createBus = async (req, res) => {
-  try {
-    const { operatorName, busNumber, type, departure, arrival, durationMinutes, price, seats, amenities, image } = req.body
+// Migrated from Prisma/MongoDB to Firestore.
+//
+// Field names follow the stored shape the public bus search already reads —
+// busName / from / to / departureTime / arrivalTime / durationMinutes /
+// totalSeats / seatsAvailable — rather than the old Prisma column names, so
+// buses created here actually appear in search results.
 
-    if (!operatorName || !busNumber || !type || !departure || !arrival || !price) {
-      return res.status(400).json({ message: 'Missing required fields' })
-    }
-
-    const existing = await prisma.bus.findUnique({ where: { busNumber } })
-    if (existing) {
-      return res.status(409).json({ message: 'Bus number already exists' })
-    }
-
-    const bus = await prisma.bus.create({
-      data: {
-        operatorName,
-        busNumber,
-        type,
-        departure: departure || {},
-        arrival: arrival || {},
-        durationMinutes: parseInt(durationMinutes) || 0,
-        price: parseFloat(price),
-        seats: parseInt(seats) || 45,
-        seatsAvailable: parseInt(seats) || 45,
-        amenities: amenities || [],
-        image: image || null,
-        listingStatus: 'APPROVED' // Admins can create approved directly
-      }
-    })
-
-    res.status(201).json({ message: 'Bus created successfully', data: { bus } })
-  } catch (err) {
-    res.status(500).json({ message: err.message })
-  }
+const num = (v, fallback = null) => {
+  if (v === undefined || v === null || v === '') return fallback
+  const n = Number(v)
+  return Number.isFinite(n) ? n : fallback
 }
 
-export const getAllBuses = async (req, res) => {
-  try {
-    const { page = 1, limit = 10, search, type, status } = req.query
-    const skip = (parseInt(page) - 1) * parseInt(limit)
-
-    const query = {}
-    
-    if (search) {
-      query.OR = [
-        { operatorName: { contains: search, mode: 'insensitive' } },
-        { busNumber: { contains: search, mode: 'insensitive' } }
-      ]
-    }
-    if (type) query.type = type
-    if (status === 'active') query.isActive = true
-    if (status === 'inactive') query.isActive = false
-
-    const total = await prisma.bus.count({ where: query })
-    const buses = await prisma.bus.findMany({
-      where: query,
-      skip,
-      take: parseInt(limit),
-      orderBy: { createdAt: 'desc' }
-    })
-
-    res.json({
-      data: { buses, pagination: { page: parseInt(page), limit: parseInt(limit), total, pages: Math.ceil(total / parseInt(limit)) } }
-    })
-  } catch (err) {
-    res.status(500).json({ message: err.message })
-  }
+// The admin form has used both a flat string and a { city, time } object.
+const cityOf = (value) => {
+  if (!value) return undefined
+  if (typeof value === 'string') return value.trim()
+  return value.city ?? undefined
 }
 
-export const getBusById = async (req, res) => {
-  try {
-    const bus = await prisma.bus.findUnique({ where: { id: req.params.id } })
-    if (!bus) {
-      return res.status(404).json({ message: 'Bus not found' })
-    }
-    res.json({ data: { bus } })
-  } catch (err) {
-    res.status(500).json({ message: err.message })
-  }
+const timeOf = (value) => {
+  if (!value) return undefined
+  if (typeof value === 'string') return value
+  return value.time ?? undefined
 }
 
-export const updateBus = async (req, res) => {
-  try {
-    const { id } = req.params
-    const updates = req.body
+const validate = (body, { partial = false } = {}) => {
+  const errors = {}
+  const from = cityOf(body.from ?? body.departure)
+  const to = cityOf(body.to ?? body.arrival)
 
-    const busExists = await prisma.bus.findUnique({ where: { id } })
-    if (!busExists) {
-      return res.status(404).json({ message: 'Bus not found' })
-    }
-
-    if (updates.busNumber && updates.busNumber !== busExists.busNumber) {
-      const existing = await prisma.bus.findUnique({ where: { busNumber: updates.busNumber } })
-      if (existing) {
-        return res.status(409).json({ message: 'Bus number already exists' })
-      }
-    }
-
-    const bus = await prisma.bus.update({
-      where: { id },
-      data: {
-        operatorName: updates.operatorName,
-        busNumber: updates.busNumber,
-        type: updates.type,
-        departure: updates.departure,
-        arrival: updates.arrival,
-        durationMinutes: updates.durationMinutes ? parseInt(updates.durationMinutes) : undefined,
-        price: updates.price ? parseFloat(updates.price) : undefined,
-        seats: updates.seats ? parseInt(updates.seats) : undefined,
-        seatsAvailable: updates.seatsAvailable ? parseInt(updates.seatsAvailable) : undefined,
-        amenities: updates.amenities,
-        image: updates.image,
-        listingStatus: updates.listingStatus,
-        rejectionReason: updates.rejectionReason,
-        isActive: updates.isActive
-      }
-    })
-
-    res.json({ message: 'Bus updated successfully', data: { bus } })
-  } catch (err) {
-    res.status(500).json({ message: err.message })
+  if (!partial) {
+    if (!(body.busName ?? body.operatorName)?.trim?.()) errors.operatorName = 'Operator name is required'
+    if (!from) errors.from = 'Origin is required'
+    if (!to) errors.to = 'Destination is required'
+    if (num(body.price) === null) errors.price = 'Price is required'
   }
+
+  const price = num(body.price)
+  if (price !== null && price <= 0) errors.price = 'Price must be greater than zero'
+
+  const seats = num(body.totalSeats ?? body.seats)
+  if (seats !== null && (seats < 0 || seats > 100)) errors.seats = 'Seats must be between 0 and 100'
+
+  if (from && to && from.toLowerCase() === to.toLowerCase()) {
+    errors.to = 'Destination must differ from origin'
+  }
+
+  return errors
 }
 
-export const deleteBus = async (req, res) => {
-  try {
-    const bus = await prisma.bus.findUnique({ where: { id: req.params.id } })
-    if (!bus) {
-      return res.status(404).json({ message: 'Bus not found' })
-    }
-    await prisma.bus.delete({ where: { id: req.params.id } })
-    res.json({ message: 'Bus deleted successfully' })
-  } catch (err) {
-    res.status(500).json({ message: err.message })
+const toStorage = (body, { partial = false } = {}) => {
+  const out = {}
+
+  const name = body.busName ?? body.operatorName
+  if (name !== undefined) out.busName = String(name).trim()
+  if (body.busNumber !== undefined) out.busNumber = String(body.busNumber).trim().toUpperCase()
+
+  const from = cityOf(body.from ?? body.departure)
+  const to = cityOf(body.to ?? body.arrival)
+  if (from !== undefined) out.from = from
+  if (to !== undefined) out.to = to
+
+  const dep = timeOf(body.departureTime ?? body.departure)
+  const arr = timeOf(body.arrivalTime ?? body.arrival)
+  if (dep !== undefined) out.departureTime = dep
+  if (arr !== undefined) out.arrivalTime = arr
+
+  if (body.busType !== undefined || body.type !== undefined) out.busType = body.busType ?? body.type
+  if (body.amenities !== undefined) out.amenities = Array.isArray(body.amenities) ? body.amenities : []
+  if (body.image !== undefined) out.image = body.image
+  if (body.isActive !== undefined) out.isActive = Boolean(body.isActive)
+
+  const price = num(body.price)
+  if (price !== null) out.price = price
+
+  const mins = num(body.durationMinutes ?? body.duration)
+  if (mins !== null) out.durationMinutes = mins
+
+  const seats = num(body.totalSeats ?? body.seats)
+  if (seats !== null) {
+    out.totalSeats = seats
+    if (body.seatsAvailable === undefined && !partial) out.seatsAvailable = seats
   }
+  if (body.seatsAvailable !== undefined) out.seatsAvailable = num(body.seatsAvailable, 0)
+
+  if (!partial) {
+    out.totalSeats = out.totalSeats ?? 45
+    out.seatsAvailable = out.seatsAvailable ?? out.totalSeats
+    out.busType = out.busType ?? 'AC'
+    out.durationMinutes = out.durationMinutes ?? 0
+  }
+
+  return out
 }
 
-export const toggleBusStatus = async (req, res) => {
-  try {
-    const bus = await prisma.bus.findUnique({ where: { id: req.params.id } })
-    if (!bus) {
-      return res.status(404).json({ message: 'Bus not found' })
-    }
-    const updatedBus = await prisma.bus.update({
-      where: { id: req.params.id },
-      data: { isActive: !bus.isActive }
-    })
-    res.json({ message: `Bus ${updatedBus.isActive ? 'activated' : 'deactivated'}`, data: { bus: updatedBus } })
-  } catch (err) {
-    res.status(500).json({ message: err.message })
-  }
-}
+const crud = createAdminCrud({
+  collection: 'buses',
+  label: 'Bus',
+  uniqueField: 'busNumber',
+  validate,
+  toStorage
+})
+
+export const createBus = crud.create
+export const getAllBuses = crud.list
+export const getBusById = crud.getById
+export const updateBus = crud.update
+export const deleteBus = crud.remove
+export const toggleBusStatus = crud.toggleStatus

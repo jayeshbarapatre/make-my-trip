@@ -1,9 +1,10 @@
-import React, { useState, useRef, useMemo, useEffect } from 'react'
+import { useState, useRef, useMemo, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import CustomCalendarPicker from '../components/CustomCalendarPicker'
 import { CITIES } from '../data/cities'
 import '../styles/TrainResults.css' // We use train results styles for consistency
+import { photo } from '../utils/images'
 
 export default function CabSearchResultsPage() {
   const location = useLocation()
@@ -58,11 +59,10 @@ export default function CabSearchResultsPage() {
     setToOpen(false)
   }
 
-  const [showLoginModal, setShowLoginModal] = useState(false)
+  const [_showLoginModal, _setShowLoginModal] = useState(false)
   const [showCustomAlert, setShowCustomAlert] = useState(false)
   const [alertMsg, setAlertMsg] = useState('')
 
-  const img = (id) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=600&h=400&q=80`
 
   const CARS = [
     {
@@ -74,7 +74,7 @@ export default function CabSearchResultsPage() {
       oldPrice: '3,400',
       rating: '4.8 (140 ratings)',
       icon: '🚗',
-      img: 'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&w=600&h=400&q=80' // Car image
+      img: photo('cab-sedan')
     },
     {
       id: 'c2',
@@ -85,7 +85,7 @@ export default function CabSearchResultsPage() {
       oldPrice: '4,900',
       rating: '4.9 (210 ratings)',
       icon: '🚙',
-      img: 'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=600&h=400&q=80' // SUV image
+      img: photo('cab-suv-2')
     },
     {
       id: 'c3',
@@ -96,7 +96,7 @@ export default function CabSearchResultsPage() {
       oldPrice: '6,600',
       rating: '4.95 (380 ratings)',
       icon: '👑',
-      img: 'https://images.unsplash.com/photo-1606152421802-db97b9c7a11b?auto=format&fit=crop&w=600&h=400&q=80' // Premium SUV
+      img: photo('cab-interior')
     }
   ]
 
@@ -107,7 +107,7 @@ export default function CabSearchResultsPage() {
       return
     }
     // Navigate to payment page with cab details
-    navigate('/cabs/payment', {
+    navigate('/cab/payment', {
       state: {
         cab: {
           id: car.id,
@@ -334,7 +334,7 @@ export default function CabSearchResultsPage() {
             ) : filteredSortedCabs.map((car) => (
               <div key={car.id} className="tc-card tc-cab-card" onClick={() => handleSelectCab(car)}>
                 <div className="tc-cab-img">
-                  <img src={car.img} alt={car.name} onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&w=600&h=400&q=80' }} />
+                  <img src={car.img} alt={car.name} loading="lazy" decoding="async" onError={(e) => { e.target.src = photo('cab-sedan') }} />
                 </div>
                 <div className="tc-cab-main-row">
                   <div className="tc-train-col" style={{ flex: 1, width: 'auto' }}>

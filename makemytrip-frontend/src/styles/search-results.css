@@ -593,7 +593,7 @@
 }
 
 .route-divider {
-  color: hsl(var(--bc) / 0.4);
+  color: hsl(var(--bc) / 0.55);
   align-self: center;
 }
 

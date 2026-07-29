@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -8,58 +7,6 @@ export default function CabSuccessPage() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Save booking to localStorage on success page load
-  useEffect(() => {
-    const booking = location.state?.booking || {};
-    const cab = location.state?.cab || {};
-    const totalAmount = location.state?.totalAmount || booking.totalAmount || 0;
-
-    if (booking?.bookingId || booking?.id) {
-      const cabBooking = {
-        id: booking.bookingId || booking.id || 'CAB-' + Date.now(),
-        bookingId: booking.bookingId || 'MMT-CB-' + Math.floor(100000 + Math.random() * 900000),
-        pnr: booking.pnr || 'CAB-' + Math.floor(100000 + Math.random() * 900000),
-        status: 'confirmed',
-        type: 'cab',
-        cabType: cab.type || location.state?.cab?.type || 'Sedan',
-        pickupLocation: location.state?.pickupLocation || '',
-        dropLocation: location.state?.dropLocation || '',
-        distance: location.state?.distance || '',
-        estimatedTime: location.state?.estimatedTime || '',
-        driverName: cab.driver || location.state?.cab?.driver || '',
-        totalAmount: totalAmount,
-        paymentId: booking.paymentId || '',
-        createdAt: new Date().toISOString(),
-        // ✅ ENRICHED CAB FIELDS
-        fromCity: location.state?.pickupLocation || '',
-        toCity: location.state?.dropLocation || '',
-        departureDate: new Date().toISOString().split('T')[0],
-        returnDate: new Date().toISOString().split('T')[0],
-        travellers: {
-          passengers: 1,
-          type: cab.type || 'Sedan'
-        },
-        baseFare: totalAmount * 0.8,
-        taxes: totalAmount * 0.15,
-        convenience: totalAmount * 0.05,
-        discount: 0,
-        gst: totalAmount * 0.05,
-        paymentMethod: 'credit_card',
-        paymentStatus: 'completed',
-        transactionId: booking.paymentId || ''
-      };
-
-      const existingBookings = JSON.parse(localStorage.getItem('mmt_bookings') || '[]');
-      const bookingExists = existingBookings.some(b => b.bookingId === cabBooking.bookingId);
-
-      if (!bookingExists) {
-        existingBookings.push(cabBooking);
-        localStorage.setItem('mmt_bookings', JSON.stringify(existingBookings));
-        console.log('💾 Cab booking saved to localStorage:', existingBookings.length);
-      }
-    }
-  }, [location.state]);
-
   const booking = location.state?.booking || {};
   const cab = location.state?.cab || { type: 'Sedan', driver: 'Driver' };
   const pickupLocation = location.state?.pickupLocation || '—';
@@ -68,8 +15,11 @@ export default function CabSuccessPage() {
   const estimatedTime = location.state?.estimatedTime || '—';
   const totalAmount = location.state?.totalAmount || 0;
 
-  const bookingId = booking.bookingId || 'MMT-CB-' + Math.floor(100000 + Math.random() * 900000);
-  const pnr = booking.pnr || 'CAB-' + Math.floor(100000 + Math.random() * 900000);
+  // Booking references are issued by the backend. If they are missing the
+  // booking did not complete, so show that rather than inventing a reference
+  // the user could quote to support.
+  const bookingId = booking.bookingId || null;
+  const pnr = booking.pnr || null;
 
   const handleDownloadPDF = async () => {
     const element = document.getElementById('cab-ticket-content');
@@ -99,6 +49,22 @@ export default function CabSuccessPage() {
       alert('Failed to generate PDF');
     }
   };
+
+  if (!bookingId) {
+    return (
+      <div className="succ-wrapper">
+        <div className="succ-container" style={{ padding: '60px 24px', textAlign: 'center' }}>
+          <h1 style={{ fontSize: '24px', fontWeight: 800, marginBottom: '10px' }}>Booking reference unavailable</h1>
+          <p style={{ marginBottom: '24px', opacity: 0.7 }}>
+            We could not confirm this cab booking. If you were charged, it will appear in My Trips shortly.
+          </p>
+          <button onClick={() => navigate('/my-trips')} style={{ padding: '10px 24px', borderRadius: '8px', border: 'none', background: 'hsl(var(--p))', color: 'hsl(var(--pc))', fontWeight: 700, cursor: 'pointer' }}>
+            Go to My Trips
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="succ-wrapper">

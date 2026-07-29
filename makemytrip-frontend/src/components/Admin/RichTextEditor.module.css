@@ -1,5 +1,5 @@
 .editorWrapper {
-  border: 1px solid #ddd;
+  border: 1px solid hsl(var(--b3));
   border-radius: 8px;
   overflow: hidden;
 }
@@ -8,35 +8,37 @@
   display: flex;
   gap: 4px;
   padding: 10px;
-  background: #f5f5f5;
-  border-bottom: 1px solid #ddd;
+  background: hsl(var(--b2));
+  border-bottom: 1px solid hsl(var(--b3));
   flex-wrap: wrap;
 }
 
 .toolbar button {
   padding: 6px 12px;
-  border: 1px solid #ddd;
+  border: 1px solid hsl(var(--b3));
   border-radius: 4px;
-  background: white;
+  background: hsl(var(--b1));
+  color: hsl(var(--bc));
   cursor: pointer;
   font-size: 14px;
   transition: all 0.2s;
 }
 
 .toolbar button:hover {
-  background: #f0f0f0;
+  background: hsl(var(--b3));
 }
 
 .toolbar button.active {
-  background: #003580;
-  color: white;
-  border-color: #003580;
+  background: hsl(var(--p));
+  color: hsl(var(--pc));
+  border-color: hsl(var(--p));
 }
 
 .editor {
   min-height: 400px;
   padding: 16px;
-  background: white;
+  background: hsl(var(--b1));
+  color: hsl(var(--bc));
   font-family: 'Inter', sans-serif;
   line-height: 1.6;
 }
@@ -74,7 +76,7 @@
 }
 
 .editor :global(a) {
-  color: #003580;
+  color: hsl(var(--p));
   text-decoration: underline;
 }
 
@@ -91,7 +93,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: hsl(0 0% 0% / 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -99,46 +101,50 @@
 }
 
 .modalContent {
-  background: white;
+  background: hsl(var(--b1));
   padding: 20px;
   border-radius: 8px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 16px hsl(0 0% 0% / 0.2);
   width: 90%;
   max-width: 500px;
+  color: hsl(var(--bc));
 }
 
 .modalContent h3 {
   margin-top: 0;
-  color: #003580;
+  color: hsl(var(--p));
 }
 
 .modalContent input {
   width: 100%;
   padding: 10px;
-  border: 1px solid #ddd;
+  border: 1px solid hsl(var(--b3));
   border-radius: 4px;
   font-size: 14px;
   font-family: 'Inter', sans-serif;
+  background: hsl(var(--b1));
+  color: hsl(var(--bc));
 }
 
 .modalContent button {
   padding: 8px 16px;
   margin-right: 8px;
   margin-top: 10px;
-  border: 1px solid #ddd;
+  border: 1px solid hsl(var(--b3));
   border-radius: 4px;
-  background: white;
+  background: hsl(var(--b1));
+  color: hsl(var(--bc));
   cursor: pointer;
   font-size: 14px;
 }
 
 .modalContent button:first-of-type {
-  background: white;
-  color: #333;
+  background: hsl(var(--b1));
+  color: hsl(var(--bc));
 }
 
 .modalContent button:last-child {
-  background: #003580;
-  color: white;
-  border-color: #003580;
+  background: hsl(var(--p));
+  color: hsl(var(--pc));
+  border-color: hsl(var(--p));
 }

@@ -1,4 +1,3 @@
-import React from 'react'
 import { INFO_CARDS } from '../../data/homepageData'
 import '../../styles/Sections.css'
 

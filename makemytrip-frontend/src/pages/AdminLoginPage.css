@@ -231,7 +231,7 @@ padding: 10px 12px 10px 42px;
   left: 14px;
   top: 50%;
   transform: translateY(-50%);
-  color: hsl(var(--bc) / 0.4);
+  color: hsl(var(--bc) / 0.60);
   font-size: 15px;
   transition: color 0.2s ease;
   pointer-events: none;
@@ -278,13 +278,13 @@ padding: 10px 12px 10px 42px;
 }
 
 .form-group input::placeholder {
-  color: hsl(var(--bc) / 0.4);
+  color: hsl(var(--bc) / 0.55);
   font-weight: 400;
 }
 
 .form-group input:disabled {
   background-color: hsl(var(--b3)) !important;
-  color: hsl(var(--bc) / 0.4) !important;
+  color: hsl(var(--bc) / 0.65) !important;
   cursor: not-allowed;
 }
 

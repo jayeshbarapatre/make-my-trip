@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import './FormStyles.css'
 
-export const RoomForm = ({ room, onSave, onClose, hotelId }) => {
+export const RoomForm = ({ room, onSave, onClose, hotelId: _hotelId }) => {
   const [formData, setFormData] = useState({
     categoryName: '',
     description: '',

@@ -12,10 +12,6 @@ const AdminApprovals = () => {
   const [processing, setProcessing] = useState(false)
   const [approvingId, setApprovingId] = useState(null)
 
-  useEffect(() => {
-    fetchPendingHotels()
-  }, [])
-
   const fetchPendingHotels = async () => {
     try {
       setLoading(true)
@@ -28,6 +24,10 @@ const AdminApprovals = () => {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    fetchPendingHotels()
+  }, [])
 
   const confirmApprove = async () => {
     if (!approvingId) return

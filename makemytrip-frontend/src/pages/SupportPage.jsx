@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useToast } from '../hooks/useToast';
 import Header from '../components/Common/Header';
 import Footer from '../components/Common/Footer';

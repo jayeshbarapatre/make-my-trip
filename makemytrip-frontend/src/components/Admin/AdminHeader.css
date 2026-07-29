@@ -86,8 +86,8 @@
 .search-input:focus {
   outline: none;
   background: var(--bg-surface) !important;
-  border-color: #ed4a29 !important;
-  box-shadow: 0 0 0 3px rgba(237, 74, 41, 0.1) !important;
+  border-color: hsl(var(--p)) !important;
+  box-shadow: 0 0 0 3px hsl(var(--p) / 0.1) !important;
 }
 
 @media (max-width: 768px) {
@@ -131,8 +131,8 @@
   position: absolute;
   top: 2px;
   right: 2px;
-  background: #ed4a29;
-  color: white;
+  background: hsl(var(--p));
+  color: hsl(var(--pc));
   font-size: 9px;
   font-weight: 700;
   padding: 1px 4px;
@@ -217,8 +217,8 @@
 }
 
 .tab-btn.active {
-  color: #ed4a29;
-  border-bottom-color: #ed4a29;
+  color: hsl(var(--p));
+  border-bottom-color: hsl(var(--p));
 }
 
 .notification-list {
@@ -245,8 +245,8 @@
 .notification-icon {
   width: 32px;
   height: 32px;
-  background: rgba(237, 74, 41, 0.1);
-  color: #ed4a29;
+  background: hsl(var(--p) / 0.1);
+  color: hsl(var(--p));
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -280,7 +280,7 @@
   background: none;
   border: none;
   border-top: 1px solid var(--border);
-  color: #ed4a29;
+  color: hsl(var(--p));
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -331,14 +331,14 @@
 
 .admin-info-trigger:hover {
   background: var(--bg-body);
-  border-color: #ed4a29;
+  border-color: hsl(var(--p));
 }
 
 .admin-avatar {
   width: 28px;
   height: 28px;
-  background: linear-gradient(135deg, #ed4a29 0%, #ff6b4a 100%);
-  color: white;
+  background: hsl(var(--p));
+  color: hsl(var(--pc));
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -346,7 +346,7 @@
   font-weight: 700;
   font-size: 12px;
   flex-shrink: 0;
-  box-shadow: 0 2px 6px rgba(237, 74, 41, 0.2);
+  box-shadow: 0 2px 6px hsl(var(--p) / 0.2);
 }
 
 .admin-text {
@@ -446,16 +446,16 @@
 
 .dropdown-item:hover {
   background: var(--bg-body);
-  color: #ed4a29;
+  color: hsl(var(--p));
 }
 
 .dropdown-item.logout {
-  color: #ef4444;
+  color: hsl(var(--er));
 }
 
 .dropdown-item.logout:hover {
-  background: rgba(239, 68, 68, 0.08);
-  color: #ef4444;
+  background: hsl(var(--er) / 0.08);
+  color: hsl(var(--er));
 }
 
 .dropdown-item .icon {
@@ -566,13 +566,13 @@
 }
 
 .save-btn {
-  background: #ed4a29;
-  color: white;
+  background: hsl(var(--p));
+  color: hsl(var(--pc));
 }
 
 .save-btn:hover {
-  background: #d83e20;
-  box-shadow: 0 4px 12px rgba(237, 74, 41, 0.25);
+  background: hsl(var(--p) / 0.85);
+  box-shadow: 0 4px 12px hsl(var(--p) / 0.25);
 }
 
 .save-btn:disabled {
@@ -581,22 +581,22 @@
 }
 
 .error-text {
-  color: #dc2626;
+  color: hsl(var(--er));
   font-size: 12px;
-  background: rgba(220, 38, 38, 0.08);
+  background: hsl(var(--er) / 0.08);
   padding: 8px 12px;
   border-radius: 6px;
-  border: 1px solid rgba(220, 38, 38, 0.15);
+  border: 1px solid hsl(var(--er) / 0.15);
   margin-bottom: 12px;
 }
 
 .success-text {
-  color: #059669;
+  color: hsl(var(--su));
   font-size: 12px;
-  background: rgba(5, 150, 105, 0.08);
+  background: hsl(var(--su) / 0.08);
   padding: 8px 12px;
   border-radius: 6px;
-  border: 1px solid rgba(5, 150, 105, 0.15);
+  border: 1px solid hsl(var(--su) / 0.15);
   margin-bottom: 12px;
 }
 

@@ -16,10 +16,6 @@ const AdminHotels = () => {
   const [editingHotel, setEditingHotel] = useState(null)
 
   useEffect(() => {
-    fetchHotels()
-  }, [])
-
-  useEffect(() => {
     if (search.trim() === '') {
       setHotels(allHotels)
     } else {
@@ -38,19 +34,23 @@ const AdminHotels = () => {
       setAllHotels(response.data.data)
       setHotels(response.data.data)
       setError('')
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to load hotels')
     } finally {
       setLoading(false)
     }
   }
 
+  useEffect(() => {
+    fetchHotels()
+  }, [])
+
   const handleDelete = async (id) => {
     if (window.confirm('Delete this hotel?')) {
       try {
         await adminHotelsService.delete(id)
         setHotels(hotels.filter(h => h.id !== id))
-      } catch (err) {
+      } catch (_err) {
         setError('Failed to delete hotel')
       }
     }
@@ -60,7 +60,7 @@ const AdminHotels = () => {
     try {
       await adminHotelsService.toggleStatus(id)
       setHotels(hotels.map(h => h.id === id ? { ...h, isActive: !h.isActive } : h))
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to update status')
     }
   }
@@ -87,7 +87,7 @@ const AdminHotels = () => {
         setHotels([response.data.data.hotel, ...hotels])
       }
       handleCloseForm()
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to save hotel')
     }
   }

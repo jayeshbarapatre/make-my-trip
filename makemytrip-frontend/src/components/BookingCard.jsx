@@ -1,9 +1,8 @@
-import React from 'react'
 
 export default function BookingCard({ booking, onCancel, onViewDetails, onTriggerPayment }) {
   const isFlight = booking.type === 'flight'
   const isTrain = booking.type === 'train'
-  const isHotel = booking.type === 'hotel'
+  const _isHotel = booking.type === 'hotel'
   
   // Format travelers text
   const getTravellersText = (t) => {

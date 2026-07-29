@@ -6,23 +6,19 @@ const VendorContext = createContext()
 
 export const VendorProvider = ({ children }) => {
   const [vendor, setVendor] = useState(null)
-  const [token, setToken] = useState(localStorage.getItem('vendorToken'))
-  const [loading, setLoading] = useState(false)
+  const [token, setToken] = useState(() => localStorage.getItem('vendorToken'))
+  // Same reasoning as AdminContext: without this, the first render looks
+  // unauthenticated and every vendor deep link bounces through the login page.
+  const [loading, setLoading] = useState(() => Boolean(localStorage.getItem('vendorToken')))
   const [error, setError] = useState(null)
   const toast = useToastContext()
-
-  useEffect(() => {
-    if (token && !vendor) {
-      verifyVendor()
-    }
-  }, [token])
 
   const verifyVendor = async () => {
     try {
       setLoading(true)
       const response = await vendorAuthService.getProfile()
       setVendor(response.data.data.vendor)
-    } catch (err) {
+    } catch (_err) {
       localStorage.removeItem('vendorToken')
       setToken(null)
       setVendor(null)
@@ -30,6 +26,12 @@ export const VendorProvider = ({ children }) => {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    if (token && !vendor) {
+      verifyVendor()
+    }
+  }, [token])
 
   const login = async (email, password) => {
     try {

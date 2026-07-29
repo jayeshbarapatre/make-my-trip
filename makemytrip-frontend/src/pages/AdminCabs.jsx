@@ -16,29 +16,29 @@ const AdminCabs = () => {
   const [editingId, setEditingId] = useState(null)
   const [editingCab, setEditingCab] = useState(null)
 
-  useEffect(() => {
-    fetchCabs()
-  }, [page, search])
-
   const fetchCabs = async () => {
     try {
       setLoading(true)
       const response = await adminCabsService.getAll({ page, limit: 10, search })
       setCabs(response.data.data.cabs)
       setPagination(response.data.data.pagination)
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to load cabs')
     } finally {
       setLoading(false)
     }
   }
 
+  useEffect(() => {
+    fetchCabs()
+  }, [page, search])
+
   const handleDelete = async (id) => {
     if (window.confirm('Delete this cab?')) {
       try {
         await adminCabsService.delete(id)
         setCabs(cabs.filter(c => c._id !== id))
-      } catch (err) {
+      } catch (_err) {
         setError('Failed to delete cab')
       }
     }
@@ -48,7 +48,7 @@ const AdminCabs = () => {
     try {
       await adminCabsService.toggleStatus(id)
       setCabs(cabs.map(c => c._id === id ? { ...c, isActive: !c.isActive } : c))
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to update status')
     }
   }
@@ -75,7 +75,7 @@ const AdminCabs = () => {
         setCabs([response.data.data.cab, ...cabs])
       }
       handleCloseForm()
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to save cab')
     }
   }

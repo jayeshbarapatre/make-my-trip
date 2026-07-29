@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { userService } from '../services/authService'
 import { useAuth } from '../context/AuthContext'
 import { Link } from 'react-router-dom'
@@ -12,7 +12,10 @@ function saveMobileProfile(phone, data) {
     const all = JSON.parse(localStorage.getItem(MOBILE_PROFILE_KEY) || '{}')
     all[phone] = { ...all[phone], ...data, updatedAt: Date.now() }
     localStorage.setItem(MOBILE_PROFILE_KEY, JSON.stringify(all))
-  } catch {}
+  } catch {
+    // Storage can be full or blocked (private mode); a cached profile is
+    // convenience only, so failing to persist it must not break the page.
+  }
 }
 
 // Retrieve saved profile for a given phone number
@@ -117,7 +120,7 @@ export default function Profile() {
       setUser(updatedUser)
       setEditing(false)
       showToast('Profile updated successfully!', 'success')
-    } catch (err) {
+    } catch (_err) {
       showToast('Failed to update profile.', 'error')
     } finally {
       setLoading(false)

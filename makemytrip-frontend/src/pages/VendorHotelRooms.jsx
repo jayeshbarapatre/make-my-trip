@@ -22,10 +22,6 @@ const VendorHotelRooms = () => {
     amenities: []
   })
 
-  useEffect(() => {
-    fetchHotelAndRooms()
-  }, [hotelId])
-
   const fetchHotelAndRooms = async () => {
     try {
       setLoading(true)
@@ -35,13 +31,17 @@ const VendorHotelRooms = () => {
       ])
       setHotel(hotelRes.data.data.hotel)
       setRooms(roomsRes.data.data.rooms || [])
-    } catch (err) {
+    } catch (_err) {
       toast.error('Failed to load hotel or rooms')
       navigate('/vendor/hotels')
     } finally {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    fetchHotelAndRooms()
+  }, [hotelId])
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
@@ -103,7 +103,7 @@ const VendorHotelRooms = () => {
       await vendorRoomsService.delete(hotelId, roomId)
       toast.success('Room deleted successfully')
       setRooms(rooms.filter(r => r.id !== roomId))
-    } catch (err) {
+    } catch (_err) {
       toast.error('Failed to delete room')
     }
   }

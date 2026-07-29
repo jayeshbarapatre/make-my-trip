@@ -7,19 +7,11 @@ export default function FlightSuccessPage() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const booking = location.state?.booking || {
-    bookingId: "MMT-FL-123456",
-    pnr: "MMT-FL-849210",
-    status: "confirmed",
-    flight: { airline: "IndiGo", flightNumber: "6E-205", departure: { city: "Delhi", time: "06:00" }, arrival: { city: "Mumbai", time: "08:15" } },
-    passengers: [{ firstName: "Jayesh", lastName: "Sharma", dob: "1995-05-15", gender: "Male", nationality: "Indian" }],
-    totalAmount: 4699,
-    baseFare: 4500,
-    departureDate: new Date().toISOString().split('T')[0],
-    paymentMethod: "UPI / Google Pay"
-  };
-
-  const flight = booking.flight || { airline: "IndiGo", flightNumber: "6E-205", departure: { city: "Delhi", time: "06:00" }, arrival: { city: "Mumbai", time: "08:15" } };
+  // Reached only via navigation from the payment step, which passes the
+  // backend-issued booking. Rendering sample data here previously showed a
+  // stranger's name and a fake PNR to anyone who opened the URL directly.
+  const booking = location.state?.booking || null;
+  const flight = booking?.flight || null;
 
   const handleDownloadPDF = async () => {
     const element = document.getElementById('flight-ticket-content');
@@ -49,6 +41,20 @@ export default function FlightSuccessPage() {
       alert('Failed to generate PDF');
     }
   };
+
+  if (!booking?.bookingId) {
+    return (
+      <div style={{ padding: '80px 24px', textAlign: 'center' }}>
+        <h1 style={{ fontSize: '24px', fontWeight: 800, marginBottom: '10px' }}>Booking reference unavailable</h1>
+        <p style={{ marginBottom: '24px', opacity: 0.7 }}>
+          We could not confirm this flight booking. If you were charged, it will appear in My Trips shortly.
+        </p>
+        <button onClick={() => navigate('/my-trips')} style={{ padding: '10px 24px', borderRadius: '8px', border: 'none', background: 'hsl(var(--p))', color: 'hsl(var(--pc))', fontWeight: 700, cursor: 'pointer' }}>
+          Go to My Trips
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="flight-flow-wrapper" style={{ background: 'hsl(var(--b2))', minHeight: '100vh', padding: '40px 20px' }}>

@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { useState, useEffect, useMemo, useRef } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { trainService } from '../services/trainService';
 import CustomCalendarPicker from '../components/CustomCalendarPicker';
 import { CITIES } from '../data/cities';
@@ -143,7 +143,7 @@ export default function TrainResultsPage() {
         const arrTime = tr.arrivalTime || tr.arrival?.time || '18:00';
         return {
           id: tr.id,
-          name: tr.operatorName || tr.name || 'Express Train',
+          name: tr.trainName || tr.operatorName || tr.name || 'Express Train',
           type: tr.type || 'Express',
           number: `${tr.trainNumber || '12001'} · ${tr.type || 'Express'}`,
           depTime,

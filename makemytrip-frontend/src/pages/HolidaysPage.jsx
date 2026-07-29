@@ -1,10 +1,11 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { SERVICE_TABS } from '../data/homepageData'
 import { useWeather } from '../hooks/useWeather'
 import CustomCalendarPicker from '../components/CustomCalendarPicker'
 import TabIcon from '../components/TabIcon'
 import '../styles/Hero.css'
+import { photo } from '../utils/images'
 
 export default function HolidaysPage() {
   const navigate = useNavigate()
@@ -27,7 +28,6 @@ export default function HolidaysPage() {
     }
   }
 
-  const img = (id) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=600&h=400&q=80`
 
   const THEMES = [
     { title: 'Honeymoon', desc: '284 packages', icon: '💕' },
@@ -46,7 +46,7 @@ export default function HolidaysPage() {
       inclusions: ['✈ Flights', '🏨 4N hotel', '🚐 Transfers'],
       price: '24,999',
       duration: 'per person · 5D 4N',
-      img: img('1571896349842-33c89424de2d')
+      img: photo('dest-kerala')
     },
     {
       title: 'Royal Rajasthan',
@@ -55,7 +55,7 @@ export default function HolidaysPage() {
       inclusions: ['✈ Flights', '🏨 6N stay', '🎭 Sightseeing'],
       price: '32,499',
       duration: 'per person · 7D 6N',
-      img: img('1520250497591-112f2f40a3f4')
+      img: photo('dest-jaipur')
     },
     {
       title: 'Goa Getaway',
@@ -64,7 +64,7 @@ export default function HolidaysPage() {
       inclusions: ['✈ Flights', '🏨 3N beach hotel', '🍽 Breakfast'],
       price: '14,499',
       duration: 'per person · 4D 3N',
-      img: img('1507525428034-b723cf961d3e')
+      img: photo('dest-goa')
     },
     {
       title: 'Spiti Valley Circuit',
@@ -73,7 +73,7 @@ export default function HolidaysPage() {
       inclusions: ['🚐 Road trip', '🏨 7N camps', '🧗 Activities'],
       price: '28,999',
       duration: 'per person · 8D 7N',
-      img: img('1454496522488-7a8e488e8606')
+      img: photo('dest-rishikesh')
     },
     {
       title: 'Andaman Escape',
@@ -82,7 +82,7 @@ export default function HolidaysPage() {
       inclusions: ['✈ Flights', '🏨 5N resort', '🤿 Scuba dive'],
       price: '38,499',
       duration: 'per person · 6D 5N',
-      img: img('1506905925346-21bda4d32df4')
+      img: photo('dest-shimla')
     },
     {
       title: 'Himachal Highlights',
@@ -91,15 +91,15 @@ export default function HolidaysPage() {
       inclusions: ['🚐 Volvo + cab', '🏨 5N stay', '🍽 Meals'],
       price: '19,999',
       duration: 'per person · 6D 5N',
-      img: img('1464822759023-fed622ff2c3b')
+      img: photo('dest-manali')
     }
   ]
 
   const INTL = [
-    { title: 'Maldives', desc: '5N · Overwater villas', price: '78,999', img: img('1507525428034-b723cf961d3e') },
-    { title: 'Bali', desc: '6N · Beaches + spa', price: '54,499', img: img('1537996194471-e657df975ab4') },
-    { title: 'Thailand', desc: '5N · Bangkok + Phuket', price: '32,999', img: img('1528181304-70df26d252c7') },
-    { title: 'Europe', desc: '9N · 4 countries', price: '1,49,999', img: img('1485081661824-319a3ad148b7') }
+    { title: 'Maldives', desc: '5N · Overwater villas', price: '78,999', img: photo('dest-maldives') },
+    { title: 'Bali', desc: '6N · Beaches + spa', price: '54,499', img: photo('dest-bali') },
+    { title: 'Thailand', desc: '5N · Bangkok + Phuket', price: '32,999', img: photo('dest-thailand') },
+    { title: 'Europe', desc: '9N · 4 countries', price: '1,49,999', img: photo('dest-dubai') }
   ]
 
   const handleTabChange = (id) => {

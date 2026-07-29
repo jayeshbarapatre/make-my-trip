@@ -6,6 +6,22 @@ if (!process.env.JWT_SECRET) {
 
 const JWT_SECRET = process.env.JWT_SECRET
 
+// Attaches req.user/req.userId when a valid token is present, but never rejects.
+// Used on endpoints that must work for both authenticated and unauthenticated callers.
+export const optionalAuthenticate = (req, _res, next) => {
+  const header = req.headers.authorization
+  if (header?.startsWith('Bearer ')) {
+    try {
+      const decoded = jwt.verify(header.slice(7), JWT_SECRET)
+      req.user = decoded
+      req.userId = decoded.id
+    } catch {
+      // Invalid token on an optional-auth route: proceed unauthenticated
+    }
+  }
+  next()
+}
+
 export const authenticate = (req, res, next) => {
   const header = req.headers.authorization
   if (!header?.startsWith('Bearer ')) {

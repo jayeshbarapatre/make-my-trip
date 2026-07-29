@@ -1,6 +1,6 @@
 import { Router } from 'express'
-import { getProfile, updateProfile } from '../controllers/userController.js'
-import { getUserBookings } from '../controllers/bookingController.js'
+import { getProfile, updateProfile } from '../controllers/firebaseUserController.js'
+import { getUserBookings } from '../controllers/firebaseBookingController.js'
 import { authenticate } from '../middleware/auth.js'
 
 const router = Router()

@@ -1,10 +1,11 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { SERVICE_TABS } from '../data/homepageData'
 import { useWeather } from '../hooks/useWeather'
 import CustomCalendarPicker from '../components/CustomCalendarPicker'
 import TabIcon from '../components/TabIcon'
 import '../styles/Hero.css'
+import { photo } from '../utils/images'
 
 export default function CabsPage() {
   const navigate = useNavigate()
@@ -64,7 +65,6 @@ export default function CabsPage() {
   // Fetch live weather data for our cab destination: Jaipur!
   const { weather } = useWeather('Jaipur')
 
-  const img = (id) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=600&h=400&q=80`
 
   const CARS = [
     {
@@ -75,7 +75,7 @@ export default function CabsPage() {
       old: '3,400',
       rating: '4.8 (140 ratings)',
       icon: '🚗',
-      img: img('1533719160912-f8510e8d1519')
+      img: photo('cab-sedan')
     },
     {
       name: 'Ertiga, Lodgy',
@@ -85,7 +85,7 @@ export default function CabsPage() {
       old: '4,900',
       rating: '4.9 (210 ratings)',
       icon: '🚙',
-      img: img('1533473359331-0135ef1b58bf')
+      img: photo('cab-suv')
     },
     {
       name: 'Innova Crysta',
@@ -95,7 +95,7 @@ export default function CabsPage() {
       old: '6,600',
       rating: '4.95 (380 ratings)',
       icon: '👑',
-      img: img('1549399542-7e3f8b79c341')
+      img: photo('cab-interior')
     }
   ]
 
@@ -361,7 +361,7 @@ export default function CabsPage() {
                   <span className="price">₹{car.price}</span>
                   <small>Free cancellation</small>
                 </div>
-                <button onClick={() => alert(`Initiating cab booking for ${car.name}`)}>
+                <button onClick={handleSearchCabs}>
                   BOOK CAB
                 </button>
               </div>

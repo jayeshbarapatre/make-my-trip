@@ -1,7 +1,7 @@
 
 
 import { useState, useEffect, useMemo, useRef } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import AOS from 'aos'
 import 'aos/dist/aos.css'
@@ -9,7 +9,6 @@ import { Swiper, SwiperSlide } from 'swiper/react'
 import { Navigation, Autoplay } from 'swiper/modules'
 import 'swiper/css'
 import 'swiper/css/navigation'
-import { setCriteria } from '../store/reducers/searchReducer'
 import { SERVICE_TABS } from '../data/homepageData'
 import { CITIES } from '../data/cities'
 import { flightService } from '../services/flightService'
@@ -20,6 +19,7 @@ import { useTranslation } from '../hooks/useTranslation'
 
 import '../styles/HomePage.css'
 import '../styles/Hero.css'
+import { photo } from '../utils/images'
 
 const TRIP_TYPES = [
   { id: 'oneway',    label: 'One-way' },
@@ -30,11 +30,11 @@ const TRIP_TYPES = [
 const FARES = ['Regular', 'Student', 'Armed Forces', 'Senior Citizen', 'Doctors & Nurses']
 
 const OFFERS = [
-  { type: 'flight',  tag: 'FLIGHTS',  title: 'Flat 25% off domestic flights',  desc: 'Save up to ₹3,000 on bookings made with HDFC credit cards. Code: MMTHDFC',          cta: 'Book Now', image: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=400&h=250&q=80' },
-  { type: 'hotel',   tag: 'HOTELS',   title: 'Hotels at ₹999 per night',        desc: 'Verified 3-star+ stays across 80 Indian cities. Free cancellation included.',        cta: 'View Deals', image: 'https://images.unsplash.com/photo-1566073771259-1b7e4634a69b?auto=format&fit=crop&w=400&h=250&q=80' },
-  { type: 'luxury',  tag: 'LUXURY',   title: 'Premium escapes, up to 40% off',  desc: 'Curated 5-star resorts in Maldives, Bali, and the Andamans for your dream getaway.', cta: 'Explore', image: 'https://images.unsplash.com/photo-1506929113675-b5b42d069b2d?auto=format&fit=crop&w=400&h=250&q=80' },
-  { type: 'beach',   tag: 'PACKAGES', title: 'Goa long weekend bundle',          desc: 'Flights + hotel + airport transfer from ₹14,499 per person. 3N / 4D.',              cta: 'Book Now', image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=400&h=250&q=80' },
-  { type: 'cab',     tag: 'CABS',     title: 'Flat ₹200 off airport cabs',       desc: 'Reliable airport transfers in 60+ cities. Pay only when you ride.',                  cta: 'Book Cab', image: 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=400&h=250&q=80' },
+  { type: 'flight',  tag: 'FLIGHTS',  title: 'Flat 25% off domestic flights',  desc: 'Save up to ₹3,000 on bookings made with HDFC credit cards. Code: MMTHDFC',          cta: 'Book Now', image: photo('flight-airplane') },
+  { type: 'hotel',   tag: 'HOTELS',   title: 'Hotels at ₹999 per night',        desc: 'Verified 3-star+ stays across 80 Indian cities. Free cancellation included.',        cta: 'View Deals', image: photo('hotel-luxury-exterior') },
+  { type: 'luxury',  tag: 'LUXURY',   title: 'Premium escapes, up to 40% off',  desc: 'Curated 5-star resorts in Maldives, Bali, and the Andamans for your dream getaway.', cta: 'Explore', image: photo('hotel-rooftop') },
+  { type: 'beach',   tag: 'PACKAGES', title: 'Goa long weekend bundle',          desc: 'Flights + hotel + airport transfer from ₹14,499 per person. 3N / 4D.',              cta: 'Book Now', image: photo('dest-goa') },
+  { type: 'cab',     tag: 'CABS',     title: 'Flat ₹200 off airport cabs',       desc: 'Reliable airport transfers in 60+ cities. Pay only when you ride.',                  cta: 'Book Cab', image: photo('cab-taxi') },
 ]
 
 const CATEGORIES = [
@@ -125,9 +125,9 @@ export default function HomePage() {
   const [phone,      setPhone]      = useState('')
 
   // Results & Loading controls
-  const [loading, setLoading] = useState(false)
-  const [searched, setSearched] = useState(false)
-  const [flights, setFlights] = useState([])
+  const [_loading, setLoading] = useState(false)
+  const [_searched, setSearched] = useState(false)
+  const [_flights, setFlights] = useState([])
 
   const fromRef = useRef(null)
   const toRef = useRef(null)
@@ -305,9 +305,9 @@ export default function HomePage() {
     };
   };
 
-  const dispatch  = useDispatch()
+  const _dispatch  = useDispatch()
   const navigate  = useNavigate()
-  const { user }  = useSelector(s => s.auth)
+  const { _user }  = useSelector(s => s.auth)
 
   const triggerSearch = async (fromVal, toVal, dateVal) => {
     setLoading(true)

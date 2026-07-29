@@ -1,10 +1,11 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { SERVICE_TABS } from '../data/homepageData'
 import { useWeather } from '../hooks/useWeather'
 import CustomCalendarPicker from '../components/CustomCalendarPicker'
 import TabIcon from '../components/TabIcon'
 import '../styles/Hero.css'
+import { photo } from '../utils/images'
 
 export default function HomestaysPage() {
   const navigate = useNavigate()
@@ -29,7 +30,6 @@ export default function HomestaysPage() {
     }
   }
 
-  const img = (id) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=600&h=400&q=80`
 
   const HOMESTAYS = [
     {
@@ -38,7 +38,7 @@ export default function HomestaysPage() {
       price: '6,499',
       rating: '4.9',
       badge: 'SUPERHOST',
-      img: img('1502672260266-1c1ef2d93688')
+      img: photo('phero-homestays')
     },
     {
       title: 'Riverside Cottage',
@@ -46,7 +46,7 @@ export default function HomestaysPage() {
       price: '3,899',
       rating: '4.7',
       badge: 'NEW',
-      img: img('1580587771525-78b9dba3b914')
+      img: photo('hotel-suite')
     },
     {
       title: 'Heritage Haveli',
@@ -54,7 +54,7 @@ export default function HomestaysPage() {
       price: '14,999',
       rating: '4.8',
       badge: 'LUXURY',
-      img: img('1520250497591-112f2f40a3f4')
+      img: photo('hotel-room-3')
     },
     {
       title: 'Sea Breeze Villa',
@@ -62,7 +62,7 @@ export default function HomestaysPage() {
       price: '11,499',
       rating: '4.9',
       badge: 'BEACHFRONT',
-      img: img('1512917774080-9991f1c4c750')
+      img: photo('hotel-resort')
     },
     {
       title: 'Island Treehouse',
@@ -70,7 +70,7 @@ export default function HomestaysPage() {
       price: '8,199',
       rating: '4.9',
       badge: 'UNIQUE',
-      img: img('1506905925346-21bda4d32df4')
+      img: photo('dest-shimla')
     },
     {
       title: 'Pine View Lodge',
@@ -78,7 +78,7 @@ export default function HomestaysPage() {
       price: '4,799',
       rating: '4.6',
       badge: 'MOUNTAIN',
-      img: img('1464822759023-fed622ff2c3b')
+      img: photo('dest-manali')
     }
   ]
 

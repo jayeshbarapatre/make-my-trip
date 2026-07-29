@@ -39,7 +39,7 @@
 }
 
 .flight-step.active {
-  color: #0099D9;
+  color: hsl(var(--p));
 }
 
 .flight-step.completed {
@@ -59,8 +59,8 @@
 }
 
 .flight-step.active .flight-step-num {
-  background: #0099D9;
-  color: #ffffff;
+  background: hsl(var(--p));
+  color: hsl(var(--pc));
 }
 
 .flight-step.completed .flight-step-num {
@@ -107,8 +107,8 @@
 }
 
 .flight-rb-badge {
-  background: var(--color-primary);
-  color: #ffffff;
+  background: hsl(var(--p));
+  color: hsl(var(--pc));
   font-size: 12px;
   font-weight: 800;
   padding: 4px 12px;
@@ -330,7 +330,10 @@
 
 /* Success hero header */
 .flight-success-hero {
-  background: linear-gradient(135deg, var(--color-primary, #0099D9) 0%, oklch(from var(--color-primary, oklch(0.6 0.15 230)) calc(l - 0.15) c h) 100%);
+  /* Real photograph of a boarding pass and passport, dimmed so the copy stays legible */
+  background:
+    linear-gradient(135deg, rgba(0, 90, 150, 0.86) 0%, rgba(4, 32, 62, 0.90) 100%),
+    url('/images/states/state-success-800.webp') center / cover no-repeat;
   color: #ffffff;
   padding: 48px 32px;
   text-align: center;

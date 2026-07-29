@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { cmsService } from '../services/cmsService';
 import './CmsPageRenderer.css';
@@ -8,7 +8,7 @@ export default function CmsPageRenderer({ slug: propsSlug }) {
   const slug = propsSlug || paramsSlug;
   const [page, setPage] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [_error, setError] = useState('');
   
   // Accordion active index for cancellation page
   const [activeFaq, setActiveFaq] = useState(null);
@@ -16,17 +16,13 @@ export default function CmsPageRenderer({ slug: propsSlug }) {
   // Sticky legal nav active section
   const [activeLegalSection, setActiveLegalSection] = useState('section1');
 
-  useEffect(() => {
-    fetchPageData();
-  }, [slug]);
-
   const fetchPageData = async () => {
     try {
       setLoading(true);
       const response = await cmsService.getPageBySlug(slug);
       setPage(response.data?.data || null);
       setError('');
-    } catch (err) {
+    } catch (_err) {
       console.warn(`CMS page "${slug}" not found in database, loading dynamic frontend template.`);
       setPage(null);
       setError('');
@@ -34,6 +30,10 @@ export default function CmsPageRenderer({ slug: propsSlug }) {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchPageData();
+  }, [slug]);
 
   // ── DYNAMIC PAGE TEMPLATE DATABASE ───────────────────────────────────
   const getPageTemplate = () => {

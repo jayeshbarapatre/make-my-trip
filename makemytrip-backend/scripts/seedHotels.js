@@ -2,21 +2,21 @@ import prisma from '../src/config/prismaClient.js'
 
 const hotelImages = {
   amara: [
-    "https://img.magnific.com/free-photo/type-entertainment-complex-popular-resort-with-pools-water-parks-turkey-with-more-than-5-million-visitors-year-amara-dolce-vita-luxury-hotel-resort-tekirova-kemer_146671-18728.jpg?w=1480",
-    "https://img.magnific.com/free-photo/swimming-pool-beach-luxury-hotel-type-entertainment-complex-amara-dolce-vita-luxury-hotel-resort-tekirova-kemer-turkey_146671-18726.jpg?w=1480",
+    "/images/hotels/hotel-luxury-exterior-800.webp",
+    "/images/hotels/hotel-room-800.webp",
   ],
   bedroom: [
-    "https://img.magnific.com/free-photo/luxury-bedroom-suite-resort-high-rise-hotel-with-working-table_105762-1783.jpg?w=1480",
-    "https://img.magnific.com/free-photo/luxury-bedroom-hotel_1150-10836.jpg?w=1480",
-    "https://img.magnific.com/free-photo/modern-studio-apartment-design-with-bedroom-living-space_1262-12375.jpg?w=1480",
+    "/images/hotels/hotel-pool-800.webp",
+    "/images/hotels/hotel-lobby-800.webp",
+    "/images/hotels/hotel-restaurant-800.webp",
   ],
   lobby: [
-    "https://img.magnific.com/free-photo/luxury-hotel-reception-hall-lounge-restaurant-with-high-ceiling_105762-1771.jpg?w=1480",
-    "https://img.magnific.com/free-photo/modern-luxury-hotel-office-reception-lounge-with-meeting-room_105762-1772.jpg?w=1480",
+    "/images/hotels/hotel-suite-800.webp",
+    "/images/hotels/hotel-room-2-800.webp",
   ],
   pool: [
-    "https://img.magnific.com/free-photo/swimming-pool_74190-1977.jpg?w=1480",
-    "https://img.magnific.com/free-photo/umbrella-chair-around-swimming-pool_1203-2419.jpg?w=1480",
+    "/images/hotels/hotel-reception-800.webp",
+    "/images/hotels/hotel-rooftop-800.webp",
   ],
 }
 

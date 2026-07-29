@@ -11,7 +11,7 @@ export default function Signup({ onSwitchTab }) {
   const [form, setForm] = useState({ name: '', email: '', phone: '', password: '', confirmPassword: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
+  const [showPassword, _setShowPassword] = useState(false)
 
   const handleChange = (k) => (e) => {
     setError('')

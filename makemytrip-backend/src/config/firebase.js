@@ -4,34 +4,70 @@ import { createRequire } from 'module'
 import { existsSync } from 'fs'
 import { resolve } from 'path'
 
+let db = null
+
 if (!getApps().length) {
   const keyFilePath = resolve(process.cwd(), 'serviceAccountKey.json')
 
+  console.log('🔥 Initializing Firebase...')
+
   if (existsSync(keyFilePath)) {
-    // Preferred: use the downloaded JSON file directly (no PEM parsing issues)
+    console.log('✅ Found serviceAccountKey.json, using it for Firebase initialization')
     const require = createRequire(import.meta.url)
     const serviceAccount = require(keyFilePath)
     initializeApp({ credential: cert(serviceAccount) })
   } else {
-    // Fallback: use individual env vars
-    const privateKey = process.env.FIREBASE_PRIVATE_KEY
-      ?.replace(/\\n/g, '\n')   // handle literal \n from .env
-      ?.replace(/^"|"$/g, '')   // strip surrounding quotes if any
+    console.log('📝 Using environment variables for Firebase initialization')
 
-    if (!privateKey || !process.env.FIREBASE_PROJECT_ID || !process.env.FIREBASE_CLIENT_EMAIL) {
+    const projectId = process.env.FIREBASE_PROJECT_ID
+    const clientEmail = process.env.FIREBASE_CLIENT_EMAIL
+    let privateKey = process.env.FIREBASE_PRIVATE_KEY
+
+    console.log(`📋 Firebase Project ID: ${projectId}`)
+    console.log(`📧 Firebase Client Email: ${clientEmail}`)
+
+    if (!projectId || !clientEmail || !privateKey) {
       throw new Error(
         'Firebase credentials missing. Either place serviceAccountKey.json in the backend root, ' +
         'or set FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, and FIREBASE_PRIVATE_KEY in .env'
       )
     }
-    initializeApp({
-      credential: cert({
-        projectId: process.env.FIREBASE_PROJECT_ID,
-        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        privateKey,
-      }),
-    })
+
+    // Handle private key formatting
+    // The key might have literal \n characters that need to be converted to actual newlines
+    if (typeof privateKey === 'string') {
+      // Remove surrounding quotes if present
+      privateKey = privateKey.replace(/^["']|["']$/g, '')
+      // Convert literal \n to actual newlines
+      privateKey = privateKey.replace(/\\n/g, '\n')
+    }
+
+    console.log('🔐 Private key length:', privateKey.length)
+
+    try {
+      initializeApp({
+        credential: cert({
+          projectId,
+          clientEmail,
+          privateKey,
+        }),
+      })
+      console.log('✅ Firebase app initialized successfully')
+    } catch (err) {
+      console.error('❌ Firebase initialization error:', err.message)
+      throw err
+    }
   }
 }
 
-export const db = getFirestore()
+// Get Firestore instance
+try {
+  db = getFirestore()
+  db.settings({ ignoreUndefinedProperties: true })
+  console.log('✅ Firestore database connected')
+} catch (err) {
+  console.error('❌ Firestore connection error:', err.message)
+  throw err
+}
+
+export { db }

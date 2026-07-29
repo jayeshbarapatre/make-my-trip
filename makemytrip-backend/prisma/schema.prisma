@@ -348,3 +348,37 @@ model MediaLibrary {
   size      Int
   createdAt DateTime @default(now())
 }
+
+model EmailTemplate {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  key         String   @unique
+  name        String
+  module      String   // "flight" | "hotel" | "bus" | "cab" | "train" | "system"
+  subject     String
+  htmlBody    String   @db.String
+  variables   Json?
+  isActive    Boolean  @default(true)
+  updatedBy   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model EmailLog {
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  emailType         String   // "booking_confirmation" | "welcome" | "otp" | "payment_receipt" | "cancellation" | "refund_initiated" | "refund_completed" | "travel_reminder" | "hotel_checkin_reminder"
+  templateKey       String?
+  recipientEmail    String
+  subject           String
+  bookingId         String?
+  userId            String?
+  status            String   @default("queued")  // queued | sending | sent | failed | retrying
+  attempts          Int      @default(0)
+  maxAttempts       Int      @default(5)
+  lastError         String?
+  smtpResponse      String?
+  providerMessageId String?
+  payloadSnapshot   Json?
+  sentAt            DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}

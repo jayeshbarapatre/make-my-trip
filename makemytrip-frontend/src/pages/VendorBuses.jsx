@@ -17,10 +17,6 @@ const VendorBuses = () => {
   const [showFormModal, setShowFormModal] = useState(false)
   const [editingBusId, setEditingBusId] = useState(null)
 
-  useEffect(() => {
-    fetchBuses()
-  }, [])
-
   const fetchBuses = async () => {
     try {
       setLoading(true)
@@ -34,6 +30,10 @@ const VendorBuses = () => {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    fetchBuses()
+  }, [])
 
   const handleSubmitForApproval = (id) => {
     setConfirmDialog({

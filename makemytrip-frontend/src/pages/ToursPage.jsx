@@ -1,9 +1,10 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { SERVICE_TABS } from '../data/homepageData'
 import CustomCalendarPicker from '../components/CustomCalendarPicker'
 import TabIcon from '../components/TabIcon'
 import '../styles/Hero.css'
+import { photo } from '../utils/images'
 
 export default function ToursPage() {
   const navigate = useNavigate()
@@ -29,7 +30,6 @@ export default function ToursPage() {
     };
   };
 
-  const img = (id) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=600&h=400&q=80`
 
   const TOURS = [
     {
@@ -41,7 +41,7 @@ export default function ToursPage() {
       oldPrice: '6,000',
       rating: '4.9 (4,210 reviews)',
       badge: 'BESTSELLER',
-      img: img('1513622470522-26c3c8a854bc')
+      img: photo('phero-tours')
     },
     {
       title: 'Dubai Desert Safari with BBQ Dinner',
@@ -52,7 +52,7 @@ export default function ToursPage() {
       oldPrice: '4,500',
       rating: '4.8 (2,890 reviews)',
       badge: 'POPULAR',
-      img: img('1545569341951-405807c424f1')
+      img: photo('dest-jaipur')
     },
     {
       title: 'Eiffel Tower Summit Priority Access',
@@ -63,7 +63,7 @@ export default function ToursPage() {
       oldPrice: '5,500',
       rating: '4.95 (1,650 reviews)',
       badge: 'MUST VISIT',
-      img: img('1502602898657-3e91760cbb34')
+      img: photo('dest-goa')
     }
   ]
 

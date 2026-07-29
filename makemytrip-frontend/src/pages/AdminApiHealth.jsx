@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 
 export default function AdminApiHealth() {
@@ -7,12 +7,6 @@ export default function AdminApiHealth() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [flushing, setFlushing] = useState(false);
-
-  useEffect(() => {
-    fetchApiHealth();
-    const interval = setInterval(fetchApiHealth, 5000); // Refresh every 5 seconds
-    return () => clearInterval(interval);
-  }, []);
 
   const fetchApiHealth = async () => {
     try {
@@ -33,6 +27,12 @@ export default function AdminApiHealth() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchApiHealth();
+    const interval = setInterval(fetchApiHealth, 5000); // Refresh every 5 seconds
+    return () => clearInterval(interval);
+  }, []);
 
   const handleFlushCache = async () => {
     if (!window.confirm('Are you sure you want to flush all cached data?')) {

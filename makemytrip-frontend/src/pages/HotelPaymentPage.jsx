@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import '../styles/HotelPaymentPage.css';
+import { photo } from '../utils/images'
 
 export default function HotelPaymentPage() {
   const location = useLocation();
@@ -17,7 +18,7 @@ export default function HotelPaymentPage() {
     }
   }, [user, navigate, location.pathname]);
 
-  const defaultImage = "https://images.unsplash.com/photo-1542314831-c53cd4b85d05?auto=format&fit=crop&w=240&h=180&q=80";
+  const defaultImage = photo('hotel-luxury-exterior', 400);
   const hotel = location.state?.hotel || {
     id: "hotel-fallback",
     name: "Axiom Resort Luxury Cottages, Arambol",
@@ -28,8 +29,8 @@ export default function HotelPaymentPage() {
 
   const getImageUrl = (h) => {
     if (h.image) return h.image;
-    if (h.images && h.images.length > 0) return h.images[0].includes('unsplash.com') ? h.images[0] : `https://images.unsplash.com/photo-${h.images[0]}?auto=format&fit=crop&w=240&h=180&q=80`;
-    if (h.seed && h.seed.length > 0) return h.seed[0].includes('unsplash.com') ? h.seed[0] : `https://images.unsplash.com/photo-${h.seed[0]}?auto=format&fit=crop&w=240&h=180&q=80`;
+    if (h.images && h.images.length > 0) return h.images[0];
+    if (h.seed && h.seed.length > 0) return h.seed[0];
     if (h.img) return h.img;
     return defaultImage;
   };
@@ -45,12 +46,12 @@ export default function HotelPaymentPage() {
   const bookEntireHotel = location.state?.bookEntireHotel || false;
 
   const [secureAdded, setSecureAdded] = useState(false);
-  const [selectedMethod, setSelectedMethod] = useState('UPI');
+  const [selectedMethod, _setSelectedMethod] = useState('UPI');
 
   const finalDue = secureAdded ? totalAmount + 59 : totalAmount;
 
   // Price breakdown (consistent with Review page: 18% GST)
-  const basePrice      = location.state?.basePrice      || Math.round(finalDue / (1 - 0.15 + 0.18) * (1 - 0.15));
+  const _basePrice      = location.state?.basePrice      || Math.round(finalDue / (1 - 0.15 + 0.18) * (1 - 0.15));
   const taxesBreakdown = Math.round(finalDue * 0.18 / 1.18) || Math.round(finalDue * 0.18);
   const serviceFees    = Math.round(finalDue * 0.005) || 297;
   const hotelFare      = finalDue - serviceFees;
@@ -59,6 +60,11 @@ export default function HotelPaymentPage() {
     if (!user) {
       setToastMessage('Please login to continue booking');
       setTimeout(() => setToastMessage(''), 3500);
+      return;
+    }
+
+    if (isProcessing) {
+      console.warn('⚠️ Payment already processing, ignoring duplicate request');
       return;
     }
 
@@ -122,7 +128,8 @@ export default function HotelPaymentPage() {
             const verifyResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/payment/verify`, {
               method: 'POST',
               headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
               },
               body: JSON.stringify({
                 orderId: response.razorpay_order_id,
@@ -146,7 +153,7 @@ export default function HotelPaymentPage() {
             console.log('📝 Creating hotel booking...');
 
             const bookingPayload = {
-              userId: user?.id || 'usr_1111-2222-3333-4444',
+              userId: user.id,
               type: 'hotel',
               fromCity: hotel.name,
               toCity: hotel.locality || hotel.location || '',
@@ -189,13 +196,17 @@ export default function HotelPaymentPage() {
               transactionId: response.razorpay_payment_id
             };
 
-            const bookingResponse = await api.post('/bookings', bookingPayload);
+            const bookingResponse = await api.post('/bookings/create', bookingPayload);
             console.log('✓ Hotel booking created!', bookingResponse);
 
+            // api interceptor unwraps res.data — the created booking lives in .data
+            const createdBooking = bookingResponse?.data || bookingResponse;
+            if (!createdBooking?.bookingId) {
+              throw new Error('The booking could not be confirmed.');
+            }
+
             const bookingData = {
-              ...bookingResponse,
-              pnr: bookingResponse.pnr || 'HTL-' + Math.floor(100000 + Math.random() * 900000),
-              bookingId: bookingResponse.bookingId || 'MMT-HT-' + Math.floor(100000 + Math.random() * 900000),
+              ...createdBooking,
               paymentId: response.razorpay_payment_id
             };
 
@@ -449,6 +460,16 @@ export default function HotelPaymentPage() {
         </div>
       </div>
 
+      {toastMessage && (
+        <div style={{
+          position: 'fixed', bottom: '24px', right: '24px', zIndex: 9999,
+          background: 'hsl(var(--n))', color: 'hsl(var(--nc))',
+          padding: '12px 20px', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
+          fontSize: '14px', fontWeight: 600, maxWidth: '340px'
+        }}>
+          {toastMessage}
+        </div>
+      )}
     </div>
   );
 }

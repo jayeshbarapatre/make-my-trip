@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import './CustomCalendarPicker.css';
 
 /**
@@ -10,7 +10,7 @@ export default function CustomCalendarPicker({
   onChange,
   onClose,
   isOpen,
-  labelText = 'Departure',
+  labelText: _labelText = 'Departure',
   disabledDates = []
 }) {
   const containerRef = useRef(null);

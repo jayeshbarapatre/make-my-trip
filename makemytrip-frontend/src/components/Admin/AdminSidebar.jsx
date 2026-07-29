@@ -32,7 +32,17 @@ const AdminSidebar = ({ isOpen, toggleSidebar }) => {
         { path: '/admin/vendors', label: 'Vendors', icon: 'fas fa-store' },
         { path: '/admin/approvals', label: 'Hotel Approvals', icon: 'fas fa-check-circle' },
         { path: '/admin/bus-approvals', label: 'Bus Approvals', icon: 'fas fa-bus' },
-        { path: '/admin/cab-approvals', label: 'Cab Approvals', icon: 'fas fa-taxi' }
+        { path: '/admin/cab-approvals', label: 'Cab Approvals', icon: 'fas fa-taxi' },
+        { path: '/admin/vendor-requests', label: 'Vendor Applications', icon: 'fas fa-user-check' }
+      ]
+    },
+    {
+      title: 'REVENUE & CARE',
+      items: [
+        { path: '/admin/reports', label: 'Reports', icon: 'fas fa-chart-line' },
+        { path: '/admin/refunds', label: 'Refunds', icon: 'fas fa-rotate-left' },
+        { path: '/admin/coupons', label: 'Coupons', icon: 'fas fa-tags' },
+        { path: '/admin/support', label: 'Support', icon: 'fas fa-headset' }
       ]
     }
   ]

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import {
-  AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
+  AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, 
   ResponsiveContainer
 } from 'recharts'
 import AdminLayout from '../components/Admin/AdminLayout'
@@ -16,11 +16,6 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [greetingTime, setGreetingTime] = useState('Morning')
-
-  useEffect(() => {
-    fetchData()
-    updateGreeting()
-  }, [])
 
   const updateGreeting = () => {
     const hour = new Date().getHours()
@@ -48,6 +43,11 @@ const AdminDashboard = () => {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    fetchData()
+    updateGreeting()
+  }, [])
 
   const getChartColors = () => ({
     area: theme === 'light' ? 'hsl(var(--p))' : 'hsl(var(--p))',
@@ -315,7 +315,7 @@ const AdminDashboard = () => {
   )
 }
 
-const KPICard = ({ icon, label, value, color, trend }) => (
+const KPICard = ({ icon, label, value, _color, trend }) => (
   <div style={{
     background: 'var(--bg-surface)',
     border: '1px solid var(--border)',
@@ -379,7 +379,7 @@ const KPICard = ({ icon, label, value, color, trend }) => (
   </div>
 )
 
-const BookingCard = ({ icon, label, value, color }) => (
+const BookingCard = ({ icon, label, value, color: _color }) => (
   <div className="booking-card">
     <div className="booking-icon-container" style={{ backgroundColor: 'rgba(237, 74, 41, 0.1)', color: '#ed4a29' }}>
       <i className={icon}></i>

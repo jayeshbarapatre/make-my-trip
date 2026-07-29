@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import '../../styles/Sections.css'
 
 export default function AppDownload() {

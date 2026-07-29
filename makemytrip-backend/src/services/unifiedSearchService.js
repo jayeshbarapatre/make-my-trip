@@ -1,5 +1,24 @@
 import * as rapidApiClients from '../config/rapidApiClients.js'
 
+// Local hotel photographs used for unified-search result thumbnails.
+const SEARCH_HOTEL_IMAGES = [
+  '/images/hotels/hotel-luxury-exterior-800.webp',
+  '/images/hotels/hotel-room-800.webp',
+  '/images/hotels/hotel-pool-800.webp',
+  '/images/hotels/hotel-lobby-800.webp',
+  '/images/hotels/hotel-restaurant-800.webp',
+  '/images/hotels/hotel-suite-800.webp',
+  '/images/hotels/hotel-room-2-800.webp',
+  '/images/hotels/hotel-reception-800.webp',
+  '/images/hotels/hotel-rooftop-800.webp',
+  '/images/hotels/hotel-pool-2-800.webp',
+  '/images/hotels/hotel-room-3-800.webp',
+  '/images/hotels/hotel-resort-800.webp',
+  '/images/hotels/hotel-restaurant-2-800.webp',
+  '/images/hotels/hotel-bathroom-800.webp',
+]
+
+
 class UnifiedSearchService {
   async searchFlights(from, to, date, passengers) {
     try {
@@ -133,7 +152,7 @@ class UnifiedSearchService {
       currency: 'INR',
       rating: hotel.star,
       reviewCount: Math.floor(Math.random() * 500) + 50,
-      image: `https://images.unsplash.com/photo-1445631867${5 + i}95-1502672260266?auto=format&fit=crop&w=500&h=350&q=80`,
+      image: SEARCH_HOTEL_IMAGES[i % SEARCH_HOTEL_IMAGES.length],
       amenities: ['WiFi', 'Pool', 'AC', 'Restaurant', 'Parking'].slice(0, Math.random() > 0.5 ? 5 : 3),
       roomsLeft: Math.floor(Math.random() * 5) + 1,
       checkIn: checkinDate,

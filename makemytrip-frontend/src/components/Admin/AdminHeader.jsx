@@ -24,7 +24,7 @@ const AdminHeader = ({ toggleSidebar }) => {
   const notificationRef = useRef(null)
   const navigate = useNavigate()
 
-  const getPageName = () => {
+  const _getPageName = () => {
     const pathMap = {
       '/admin/dashboard': 'Dashboard',
       '/admin/flights': 'Flights',

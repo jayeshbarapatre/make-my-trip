@@ -1,143 +1,95 @@
-import prisma from '../config/prismaClient.js'
+import { createAdminCrud } from './factories/firestoreAdminCrud.js'
 
-export const createCab = async (req, res) => {
-  try {
-    const { operatorName, cabNumber, type, baseFare, perKmRate, perMinuteRate, location, currentCity, cabs, image } = req.body
+// Migrated from Prisma/MongoDB to Firestore. Stored field names match what the
+// public cab search reads: from / to / type / price / capacity / available /
+// estimatedTime / driver / vehicleNumber.
 
-    if (!operatorName || !cabNumber || !type || !baseFare || !perKmRate || !perMinuteRate) {
-      return res.status(400).json({ success: false, message: 'Missing required fields' })
-    }
-
-    const cab = await prisma.cab.create({
-      data: {
-        operatorName,
-        cabNumber,
-        type,
-        baseFare: parseFloat(baseFare),
-        perKmRate: parseFloat(perKmRate),
-        perMinuteRate: parseFloat(perMinuteRate),
-        location,
-        currentCity,
-        cabs: parseInt(cabs) || 20,
-        cabsAvailable: parseInt(cabs) || 20,
-        image,
-        listingStatus: 'APPROVED' // Admins can create pre-approved cabs
-      }
-    })
-
-    res.status(201).json({ success: true, message: 'Cab created successfully', data: { cab } })
-  } catch (err) {
-    if (err.code === 'P2002') {
-      return res.status(409).json({ success: false, message: 'Cab number already exists' })
-    }
-    res.status(500).json({ success: false, message: err.message })
-  }
+const num = (v, fallback = null) => {
+  if (v === undefined || v === null || v === '') return fallback
+  const n = Number(v)
+  return Number.isFinite(n) ? n : fallback
 }
 
-export const getAllCabs = async (req, res) => {
-  try {
-    const { page = 1, limit = 10, search, type, status } = req.query
-    const skip = (parseInt(page) - 1) * parseInt(limit)
+const validate = (body, { partial = false } = {}) => {
+  const errors = {}
 
-    const where = {}
-    if (search) {
-      where.OR = [
-        { operatorName: { contains: search, mode: 'insensitive' } },
-        { cabNumber: { contains: search, mode: 'insensitive' } },
-        { currentCity: { contains: search, mode: 'insensitive' } }
-      ]
-    }
-    if (type) where.type = type
-    if (status === 'active') where.isActive = true
-    if (status === 'inactive') where.isActive = false
-
-    const total = await prisma.cab.count({ where })
-    const cabs = await prisma.cab.findMany({
-      where,
-      skip,
-      take: parseInt(limit),
-      orderBy: { createdAt: 'desc' }
-    })
-
-    res.json({
-      success: true,
-      data: { cabs, pagination: { page: parseInt(page), limit: parseInt(limit), total, pages: Math.ceil(total / limit) } }
-    })
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message })
+  if (!partial) {
+    if (!(body.type ?? body.cabType)?.trim?.()) errors.type = 'Cab type is required'
+    if (num(body.price ?? body.baseFare) === null) errors.price = 'Fare is required'
   }
+
+  const price = num(body.price ?? body.baseFare)
+  if (price !== null && price <= 0) errors.price = 'Fare must be greater than zero'
+
+  const capacity = num(body.capacity)
+  if (capacity !== null && (capacity < 1 || capacity > 20)) errors.capacity = 'Capacity must be between 1 and 20'
+
+  const rating = num(body.rating)
+  if (rating !== null && (rating < 0 || rating > 5)) errors.rating = 'Rating must be between 0 and 5'
+
+  if (body.from && body.to && String(body.from).trim().toLowerCase() === String(body.to).trim().toLowerCase()) {
+    errors.to = 'Drop-off must differ from pickup'
+  }
+
+  return errors
 }
 
-export const getCabById = async (req, res) => {
-  try {
-    const cab = await prisma.cab.findUnique({ where: { id: req.params.id } })
-    if (!cab) {
-      return res.status(404).json({ success: false, message: 'Cab not found' })
-    }
-    res.json({ success: true, data: { cab } })
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message })
+const toStorage = (body, { partial = false } = {}) => {
+  const out = {}
+
+  if (body.from !== undefined || body.currentCity !== undefined) {
+    out.from = String(body.from ?? body.currentCity).trim()
   }
+  if (body.to !== undefined) out.to = String(body.to).trim()
+  if (body.type !== undefined || body.cabType !== undefined) out.type = body.type ?? body.cabType
+  if (body.driver !== undefined || body.operatorName !== undefined) out.driver = body.driver ?? body.operatorName
+  if (body.vehicleNumber !== undefined || body.cabNumber !== undefined) {
+    out.vehicleNumber = String(body.vehicleNumber ?? body.cabNumber).trim().toUpperCase()
+  }
+  if (body.phone !== undefined) out.phone = body.phone
+  if (body.estimatedTime !== undefined) out.estimatedTime = body.estimatedTime
+  if (body.image !== undefined) out.image = body.image
+  if (body.isActive !== undefined) out.isActive = Boolean(body.isActive)
+
+  const price = num(body.price ?? body.baseFare)
+  if (price !== null) out.price = price
+
+  // Per-km / per-minute rates are retained when supplied so fare breakdowns
+  // stay reproducible, even though search sorts on the flat price.
+  const perKm = num(body.perKmRate)
+  if (perKm !== null) out.perKmRate = perKm
+  const perMin = num(body.perMinuteRate)
+  if (perMin !== null) out.perMinuteRate = perMin
+
+  const capacity = num(body.capacity ?? body.cabs)
+  if (capacity !== null) out.capacity = capacity
+
+  const rating = num(body.rating)
+  if (rating !== null) out.rating = rating
+
+  const available = num(body.available)
+  if (available !== null) out.available = available
+
+  if (!partial) {
+    out.capacity = out.capacity ?? 4
+    out.available = out.available ?? 1
+    out.rating = out.rating ?? 4.5
+    out.type = out.type ?? 'Sedan'
+  }
+
+  return out
 }
 
-export const updateCab = async (req, res) => {
-  try {
-    const { id } = req.params
-    const { operatorName, cabNumber, type, baseFare, perKmRate, perMinuteRate, location, currentCity, cabs, image } = req.body
+const crud = createAdminCrud({
+  collection: 'cabs',
+  label: 'Cab',
+  validate,
+  toStorage
+})
 
-    const data = {}
-    if (operatorName !== undefined) data.operatorName = operatorName
-    if (cabNumber !== undefined) data.cabNumber = cabNumber
-    if (type !== undefined) data.type = type
-    if (baseFare !== undefined) data.baseFare = parseFloat(baseFare)
-    if (perKmRate !== undefined) data.perKmRate = parseFloat(perKmRate)
-    if (perMinuteRate !== undefined) data.perMinuteRate = parseFloat(perMinuteRate)
-    if (location !== undefined) data.location = location
-    if (currentCity !== undefined) data.currentCity = currentCity
-    if (cabs !== undefined) data.cabs = parseInt(cabs)
-    if (image !== undefined) data.image = image
-
-    const cab = await prisma.cab.update({
-      where: { id },
-      data
-    })
-
-    res.json({ success: true, message: 'Cab updated successfully', data: { cab } })
-  } catch (err) {
-    if (err.code === 'P2025') {
-      return res.status(404).json({ success: false, message: 'Cab not found' })
-    }
-    res.status(500).json({ success: false, message: err.message })
-  }
-}
-
-export const deleteCab = async (req, res) => {
-  try {
-    await prisma.cab.delete({ where: { id: req.params.id } })
-    res.json({ success: true, message: 'Cab deleted successfully' })
-  } catch (err) {
-    if (err.code === 'P2025') {
-      return res.status(404).json({ success: false, message: 'Cab not found' })
-    }
-    res.status(500).json({ success: false, message: err.message })
-  }
-}
-
-export const toggleCabStatus = async (req, res) => {
-  try {
-    const { id } = req.params
-    const cab = await prisma.cab.findUnique({ where: { id } })
-    if (!cab) {
-      return res.status(404).json({ success: false, message: 'Cab not found' })
-    }
-    
-    const updatedCab = await prisma.cab.update({
-      where: { id },
-      data: { isActive: !cab.isActive }
-    })
-    
-    res.json({ success: true, message: `Cab ${updatedCab.isActive ? 'activated' : 'deactivated'}`, data: { cab: updatedCab } })
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message })
-  }
-}
+export const createCab = crud.create
+export const getAllCabs = crud.list
+export const getCabById = crud.getById
+export const updateCab = crud.update
+export const deleteCab = crud.remove
+export const toggleCabStatus = crud.toggleStatus

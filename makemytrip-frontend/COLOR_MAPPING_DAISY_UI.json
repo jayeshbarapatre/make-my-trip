@@ -1,0 +1,1177 @@
+{
+  "metadata": {
+    "title": "MakeMyTrip Frontend - Hardcoded Color to DaisyUI Migration Map",
+    "date": "2026-07-27",
+    "description": "Complete mapping of all hardcoded hex colors (#XXXXXX) in CSS and JSX files to recommended DaisyUI CSS variables",
+    "total_colors_found": 87,
+    "unique_colors": 52,
+    "priority_files_analyzed": [
+      "src/components/Admin/AdminHeader.css",
+      "src/components/Admin/AdminSidebar.css",
+      "src/components/Admin/AutocompleteInput.css",
+      "src/components/Admin/RichTextEditor.module.css",
+      "src/components/Vendor/VendorHeader.css",
+      "src/components/Vendor/VendorSidebar.css",
+      "src/pages/*.css",
+      "src/styles/*.css",
+      "src/**/*.jsx"
+    ]
+  },
+  "color_replacements": [
+    {
+      "originalColor": "#ed4a29",
+      "daisyuiVariable": "hsl(var(--a))",
+      "fallbackVariable": "hsl(var(--er))",
+      "frequency": 38,
+      "usage": [
+        "Admin header buttons and accents",
+        "Admin sidebar active states and backgrounds",
+        "Vendor sidebar primary color",
+        "Vendor header and navigation elements",
+        "Admin dashboard stat card accents",
+        "Vendor pages (hotels, buses, cabs) - form buttons and icons"
+      ],
+      "reasoning": "This is the admin/vendor accent color - should map to DaisyUI accent (--a) or error (--er) variable. Currently serves as a brand override for admin area.",
+      "affectedFiles": [
+        "src/components/Admin/AdminHeader.css",
+        "src/components/Admin/AdminSidebar.css",
+        "src/components/Vendor/VendorSidebar.css",
+        "src/components/Vendor/VendorHeader.css",
+        "src/pages/AdminDashboard.css",
+        "src/pages/VendorDashboard.css",
+        "src/pages/AdminDashboard.jsx",
+        "src/components/Vendor/VendorCabForm.jsx"
+      ],
+      "migrationPriority": "HIGH"
+    },
+    {
+      "originalColor": "#ffffff",
+      "daisyuiVariable": "hsl(var(--b1))",
+      "fallbackVariable": "hsl(var(--pc))",
+      "frequency": 30,
+      "usage": [
+        "Modal backgrounds",
+        "Button text (white text on colored backgrounds)",
+        "Card backgrounds",
+        "Text color (white on dark)"
+      ],
+      "reasoning": "Pure white (#ffffff) should use DaisyUI base-100 (--b1) for cards and backgrounds, or primary-content (--pc) for text. Fallback to hsl(var(--pc)) for text color.",
+      "affectedFiles": [
+        "src/pages/BookingPage.jsx",
+        "src/pages/HotelReviewPage.jsx",
+        "src/pages/HotelDetailsPage.jsx",
+        "src/pages/TrainSuccessPage.jsx",
+        "src/styles/BusBookingFlow.css",
+        "src/styles/FlightBookingFlow.css",
+        "src/styles/TrainBookingFlow.css"
+      ],
+      "migrationPriority": "HIGH"
+    },
+    {
+      "originalColor": "#fff",
+      "daisyuiVariable": "hsl(var(--b1))",
+      "fallbackVariable": "hsl(var(--pc))",
+      "frequency": 25,
+      "usage": [
+        "White text on buttons",
+        "White backgrounds",
+        "Icon colors (white icons)"
+      ],
+      "reasoning": "Shorthand for #ffffff - same replacement strategy. Use base-100 (--b1) for backgrounds and primary-content (--pc) for text.",
+      "affectedFiles": [
+        "src/styles/FlightBookingFlow.css",
+        "src/styles/TrainBookingFlow.css",
+        "src/styles/BusBookingFlow.css",
+        "src/pages/TrainsPage.jsx",
+        "src/pages/CabsPage.jsx",
+        "src/pages/BusesPage.jsx",
+        "src/pages/HotelListingPage.jsx"
+      ],
+      "migrationPriority": "HIGH"
+    },
+    {
+      "originalColor": "#ff4d4f",
+      "daisyuiVariable": "hsl(var(--er))",
+      "fallbackVariable": "hsl(var(--er))",
+      "frequency": 8,
+      "usage": [
+        "Error messages and alerts",
+        "Delete button styling",
+        "Error state text color",
+        "Error borders and backgrounds"
+      ],
+      "reasoning": "This is an error red color - maps directly to DaisyUI error (--er) variable.",
+      "affectedFiles": [
+        "src/pages/VendorHotels.jsx",
+        "src/pages/VendorCabs.jsx",
+        "src/pages/VendorBuses.jsx",
+        "src/pages/AdminVendors.jsx"
+      ],
+      "migrationPriority": "HIGH"
+    },
+    {
+      "originalColor": "#666",
+      "daisyuiVariable": "hsl(var(--bc) / 0.65)",
+      "fallbackVariable": "hsl(var(--nc))",
+      "frequency": 15,
+      "usage": [
+        "Secondary text color (muted text)",
+        "Placeholder text",
+        "Disabled text",
+        "Helper text",
+        "Icon color (secondary)"
+      ],
+      "reasoning": "Medium gray (#666) is secondary/muted text - maps to base-content with 65% opacity (--bc / 0.65) or neutral-content (--nc).",
+      "affectedFiles": [
+        "src/styles/FlightForm.module.css",
+        "src/styles/FlightFormDemo.module.css",
+        "src/pages/SearchResultsPage.jsx",
+        "src/pages/TrainResultsPage.jsx",
+        "src/pages/BusSearchResultsPage.jsx",
+        "src/pages/HomePage.jsx",
+        "src/components/ProtectedRoute.jsx",
+        "src/components/Admin/ProtectedAdminRoute.jsx"
+      ],
+      "migrationPriority": "HIGH"
+    },
+    {
+      "originalColor": "#333",
+      "daisyuiVariable": "hsl(var(--bc))",
+      "fallbackVariable": "hsl(var(--bc) / 0.85)",
+      "frequency": 8,
+      "usage": [
+        "Dark text (primary text)",
+        "Headings",
+        "Border color (dark borders)",
+        "Icon color (dark)"
+      ],
+      "reasoning": "Dark gray (#333) is primary/dark text - maps to base-content (--bc) or slightly muted version.",
+      "affectedFiles": [
+        "src/styles/UdaipurListing.css",
+        "src/pages/ContactPage.css",
+        "src/styles/FlightForm.module.css",
+        "src/styles/FlightFormDemo.module.css",
+        "src/components/Admin/RichTextEditor.module.css"
+      ],
+      "migrationPriority": "HIGH"
+    },
+    {
+      "originalColor": "#111",
+      "daisyuiVariable": "hsl(var(--bc))",
+      "fallbackVariable": "hsl(var(--bc))",
+      "frequency": 6,
+      "usage": [
+        "Very dark text",
+        "Dark text (almost black)",
+        "Dark backgrounds"
+      ],
+      "reasoning": "Very dark gray (#111) is essentially black text - maps to base-content (--bc).",
+      "affectedFiles": [
+        "src/styles/UdaipurListing.css",
+        "src/pages/VisaPage.jsx",
+        "src/pages/ForexPage.jsx"
+      ],
+      "migrationPriority": "MEDIUM"
+    },
+    {
+      "originalColor": "#ddd",
+      "daisyuiVariable": "hsl(var(--b3))",
+      "fallbackVariable": "hsl(var(--b3) / 0.8)",
+      "frequency": 8,
+      "usage": [
+        "Light borders",
+        "Input borders",
+        "Divider lines",
+        "Light gray background"
+      ],
+      "reasoning": "Light gray (#ddd) is border/divider color - maps to base-300 (--b3) variable.",
+      "affectedFiles": [
+        "src/styles/FlightForm.module.css",
+        "src/components/Admin/RichTextEditor.module.css",
+        "src/components/Admin/AutocompleteInput.css",
+        "src/pages/BusBookingPage.jsx",
+        "src/pages/ContactPage.css"
+      ],
+      "migrationPriority": "MEDIUM"
+    },
+    {
+      "originalColor": "#eee",
+      "daisyuiVariable": "hsl(var(--b2))",
+      "fallbackVariable": "hsl(var(--b3))",
+      "frequency": 6,
+      "usage": [
+        "Light gray background",
+        "Subtle background shading",
+        "Border/divider color"
+      ],
+      "reasoning": "Very light gray (#eee) is background color - maps to base-200 (--b2) or base-300 (--b3).",
+      "affectedFiles": [
+        "src/styles/UdaipurListing.css",
+        "src/styles/Sections.css",
+        "src/components/Admin/FormStyles.css"
+      ],
+      "migrationPriority": "MEDIUM"
+    },
+    {
+      "originalColor": "#ccc",
+      "daisyuiVariable": "hsl(var(--b3))",
+      "fallbackVariable": "hsl(var(--b3) / 0.7)",
+      "frequency": 4,
+      "usage": [
+        "Border color (light)",
+        "Disabled button borders"
+      ],
+      "reasoning": "Light gray-middle (#ccc) is border color - maps to base-300 (--b3).",
+      "affectedFiles": [
+        "src/pages/Hero.css",
+        "src/pages/TrainResultsPage.jsx",
+        "src/pages/BusSearchResultsPage.jsx"
+      ],
+      "migrationPriority": "MEDIUM"
+    },
+    {
+      "originalColor": "#003580",
+      "daisyuiVariable": "hsl(var(--p))",
+      "fallbackVariable": "hsl(var(--p))",
+      "frequency": 13,
+      "usage": [
+        "Primary color (links, buttons, headings)",
+        "Brand color for contact/company pages",
+        "Button backgrounds",
+        "Text color (primary)"
+      ],
+      "reasoning": "This is the original primary brand color (#003580) - should map to DaisyUI primary (--p) variable for consistency.",
+      "affectedFiles": [
+        "src/pages/ContactPage.css",
+        "src/pages/CompanyPage.css",
+        "src/pages/BookingPage.jsx",
+        "src/components/Admin/RichTextEditor.module.css",
+        "src/components/Admin/AutocompleteInput.css",
+        "src/pages/CabPaymentPage.jsx",
+        "src/pages/HotelPaymentPage.jsx",
+        "src/pages/PaymentButton.jsx"
+      ],
+      "migrationPriority": "HIGH"
+    },
+    {
+      "originalColor": "#1a73e8",
+      "daisyuiVariable": "hsl(var(--in))",
+      "fallbackVariable": "hsl(var(--p))",
+      "frequency": 7,
+      "usage": [
+        "Link color (blue)",
+        "Info color",
+        "Button hover state",
+        "Focus/active state color"
+      ],
+      "reasoning": "This is Google-style link blue (#1a73e8) - maps to info (--in) or primary (--p) depending on context.",
+      "affectedFiles": [
+        "src/context/ThemeContext.jsx",
+        "src/pages/CompanyPage.css",
+        "src/pages/ContactPage.css",
+        "src/components/Admin/AutocompleteInput.css"
+      ],
+      "migrationPriority": "MEDIUM"
+    },
+    {
+      "originalColor": "#2ec158",
+      "daisyuiVariable": "hsl(var(--su))",
+      "fallbackVariable": "hsl(var(--su))",
+      "frequency": 5,
+      "usage": [
+        "Success state color",
+        "Green checkmark icon",
+        "Approved status indicator"
+      ],
+      "reasoning": "Success green (#2ec158) - maps directly to DaisyUI success (--su) variable.",
+      "affectedFiles": [
+        "src/pages/VendorHotels.jsx",
+        "src/pages/VendorCabs.jsx",
+        "src/pages/VendorBuses.jsx",
+        "src/pages/AdminVendors.jsx"
+      ],
+      "migrationPriority": "HIGH"
+    },
+    {
+      "originalColor": "#f59e0b",
+      "daisyuiVariable": "hsl(var(--wa))",
+      "fallbackVariable": "hsl(var(--wa))",
+      "frequency": 5,
+      "usage": [
+        "Warning/Amber color",
+        "Star rating color",
+        "Pending status indicator"
+      ],
+      "reasoning": "Amber/warning color (#f59e0b) - maps directly to DaisyUI warning (--wa) variable.",
+      "affectedFiles": [
+        "src/pages/VendorDashboard.css",
+        "src/components/Vendor/VendorSidebar.css",
+        "src/components/Vendor/VendorLayout.css",
+        "src/pages/AdminVendors.jsx"
+      ],
+      "migrationPriority": "MEDIUM"
+    },
+    {
+      "originalColor": "#d39e00",
+      "daisyuiVariable": "hsl(var(--wa))",
+      "fallbackVariable": "hsl(var(--wa) / 0.9)",
+      "frequency": 3,
+      "usage": [
+        "Warning/pending icon color",
+        "Hourglass icon (pending state)"
+      ],
+      "reasoning": "Darker amber/warning (#d39e00) - maps to warning (--wa) with reduced opacity.",
+      "affectedFiles": [
+        "src/pages/VendorHotels.jsx",
+        "src/pages/VendorCabs.jsx",
+        "src/pages/VendorBuses.jsx"
+      ],
+      "migrationPriority": "LOW"
+    },
+    {
+      "originalColor": "#059669",
+      "daisyuiVariable": "hsl(var(--su))",
+      "fallbackVariable": "hsl(var(--su))",
+      "frequency": 2,
+      "usage": [
+        "Success button gradient",
+        "Green accent"
+      ],
+      "reasoning": "Success green (#059669) - maps to success (--su) variable.",
+      "affectedFiles": [
+        "src/styles/HotelDetailsPage.css",
+        "src/components/Admin/AdminHeader.css"
+      ],
+      "migrationPriority": "LOW"
+    },
+    {
+      "originalColor": "#dc2626",
+      "daisyuiVariable": "hsl(var(--er))",
+      "fallbackVariable": "hsl(var(--er))",
+      "frequency": 3,
+      "usage": [
+        "Error/danger button background",
+        "Error color",
+        "Rejected status indicator"
+      ],
+      "reasoning": "Error red (#dc2626) - maps to error (--er) variable.",
+      "affectedFiles": [
+        "src/styles/HotelDetailsPage.css",
+        "src/pages/AdminDashboard.css",
+        "src/pages/AdminVendors.jsx"
+      ],
+      "migrationPriority": "MEDIUM"
+    },
+    {
+      "originalColor": "#e02026",
+      "daisyuiVariable": "hsl(var(--er))",
+      "fallbackVariable": "hsl(var(--er))",
+      "frequency": 3,
+      "usage": [
+        "Error button background",
+        "Cancel button styling"
+      ],
+      "reasoning": "Red error color (#e02026) - maps to error (--er) variable.",
+      "affectedFiles": [
+        "src/styles/FlightBookingFlow.css"
+      ],
+      "migrationPriority": "LOW"
+    },
+    {
+      "originalColor": "#f3f4f6",
+      "daisyuiVariable": "hsl(var(--b2))",
+      "fallbackVariable": "hsl(var(--b2) / 0.8)",
+      "frequency": 3,
+      "usage": [
+        "Light gray background",
+        "Form section background",
+        "Hover state background"
+      ],
+      "reasoning": "Very light gray (#f3f4f6) - maps to base-200 (--b2).",
+      "affectedFiles": [
+        "src/components/Admin/FormStyles.css",
+        "src/components/Admin/AutocompleteInput.css"
+      ],
+      "migrationPriority": "LOW"
+    },
+    {
+      "originalColor": "#f0f0f0",
+      "daisyuiVariable": "hsl(var(--b2))",
+      "fallbackVariable": "hsl(var(--b3))",
+      "frequency": 1,
+      "usage": [
+        "Toolbar background color"
+      ],
+      "reasoning": "Light gray background (#f0f0f0) - maps to base-200/300 (--b2/--b3).",
+      "affectedFiles": [
+        "src/components/Admin/RichTextEditor.module.css"
+      ],
+      "migrationPriority": "LOW"
+    },
+    {
+      "originalColor": "#f5f5f5",
+      "daisyuiVariable": "hsl(var(--b2))",
+      "fallbackVariable": "hsl(var(--b3))",
+      "frequency": 1,
+      "usage": [
+        "Editor toolbar background"
+      ],
+      "reasoning": "Very light gray (#f5f5f5) - maps to base-200/300 (--b2/--b3).",
+      "affectedFiles": [
+        "src/components/Admin/RichTextEditor.module.css"
+      ],
+      "migrationPriority": "LOW"
+    },
+    {
+      "originalColor": "#1F6DB8",
+      "daisyuiVariable": "hsl(var(--p))",
+      "fallbackVariable": "hsl(var(--p))",
+      "frequency": 1,
+      "usage": [
+        "Icon color (primary blue)"
+      ],
+      "reasoning": "Primary blue icon color - maps to primary (--p).",
+      "affectedFiles": [
+        "src/utils/icons.jsx"
+      ],
+      "migrationPriority": "LOW"
+    },
+    {
+      "originalColor": "#F44336",
+      "daisyuiVariable": "hsl(var(--er))",
+      "fallbackVariable": "hsl(var(--er))",
+      "frequency": 1,
+      "usage": [
+        "Icon error color"
+      ],
+      "reasoning": "Material Design error red - maps to error (--er).",
+      "affectedFiles": [
+        "src/utils/icons.jsx"
+      ],
+      "migrationPriority": "LOW"
+    },
+    {
+      "originalColor": "#4CAF50",
+      "daisyuiVariable": "hsl(var(--su))",
+      "fallbackVariable": "hsl(var(--su))",
+      "frequency": 1,
+      "usage": [
+        "Icon success color"
+      ],
+      "reasoning": "Material Design success green - maps to success (--su).",
+      "affectedFiles": [
+        "src/utils/icons.jsx"
+      ],
+      "migrationPriority": "LOW"
+    },
+    {
+      "originalColor": "#FF9800",
+      "daisyuiVariable": "hsl(var(--wa))",
+      "fallbackVariable": "hsl(var(--wa))",
+      "frequency": 1,
+      "usage": [
+        "Icon warning color"
+      ],
+      "reasoning": "Material Design warning orange - maps to warning (--wa).",
+      "affectedFiles": [
+        "src/utils/icons.jsx"
+      ],
+      "migrationPriority": "LOW"
+    },
+    {
+      "originalColor": "#2196F3",
+      "daisyuiVariable": "hsl(var(--in))",
+      "fallbackVariable": "hsl(var(--p))",
+      "frequency": 1,
+      "usage": [
+        "Icon info color"
+      ],
+      "reasoning": "Material Design info blue - maps to info (--in).",
+      "affectedFiles": [
+        "src/utils/icons.jsx"
+      ],
+      "migrationPriority": "LOW"
+    },
+    {
+      "originalColor": "#212121",
+      "daisyuiVariable": "hsl(var(--bc))",
+      "fallbackVariable": "hsl(var(--bc))",
+      "frequency": 1,
+      "usage": [
+        "Icon text color (dark)"
+      ],
+      "reasoning": "Very dark text - maps to base-content (--bc).",
+      "affectedFiles": [
+        "src/utils/icons.jsx"
+      ],
+      "migrationPriority": "LOW"
+    },
+    {
+      "originalColor": "#757575",
+      "daisyuiVariable": "hsl(var(--bc) / 0.65)",
+      "fallbackVariable": "hsl(var(--nc))",
+      "frequency": 1,
+      "usage": [
+        "Icon muted text color"
+      ],
+      "reasoning": "Medium gray text - maps to base-content with opacity or neutral-content.",
+      "affectedFiles": [
+        "src/utils/icons.jsx"
+      ],
+      "migrationPriority": "LOW"
+    },
+    {
+      "originalColor": "#8b5cf6",
+      "daisyuiVariable": "hsl(var(--a))",
+      "fallbackVariable": "hsl(var(--p))",
+      "frequency": 2,
+      "usage": [
+        "Accent color (purple)",
+        "Bus booking type indicator"
+      ],
+      "reasoning": "Purple accent - maps to accent (--a) or primary (--p).",
+      "affectedFiles": [
+        "src/context/ThemeContext.jsx",
+        "src/pages/AdminUsers.jsx"
+      ],
+      "migrationPriority": "LOW"
+    },
+    {
+      "originalColor": "#06b6d4",
+      "daisyuiVariable": "hsl(var(--in))",
+      "fallbackVariable": "hsl(var(--p))",
+      "frequency": 1,
+      "usage": [
+        "Accent color (cyan)"
+      ],
+      "reasoning": "Cyan accent - maps to info (--in).",
+      "affectedFiles": [
+        "src/context/ThemeContext.jsx"
+      ],
+      "migrationPriority": "LOW"
+    },
+    {
+      "originalColor": "#6366f1",
+      "daisyuiVariable": "hsl(var(--p))",
+      "fallbackVariable": "hsl(var(--a))",
+      "frequency": 1,
+      "usage": [
+        "Accent color (indigo)"
+      ],
+      "reasoning": "Indigo accent - maps to primary (--p) or accent (--a).",
+      "affectedFiles": [
+        "src/context/ThemeContext.jsx"
+      ],
+      "migrationPriority": "LOW"
+    },
+    {
+      "originalColor": "#ec4899",
+      "daisyuiVariable": "hsl(var(--a))",
+      "fallbackVariable": "hsl(var(--er))",
+      "frequency": 1,
+      "usage": [
+        "Accent color (pink)"
+      ],
+      "reasoning": "Pink accent - maps to accent (--a).",
+      "affectedFiles": [
+        "src/context/ThemeContext.jsx"
+      ],
+      "migrationPriority": "LOW"
+    },
+    {
+      "originalColor": "#3b82f6",
+      "daisyuiVariable": "hsl(var(--p))",
+      "fallbackVariable": "hsl(var(--in))",
+      "frequency": 1,
+      "usage": [
+        "Flight booking type indicator (blue)"
+      ],
+      "reasoning": "Blue for flight type - maps to primary (--p) or info (--in).",
+      "affectedFiles": [
+        "src/pages/AdminUsers.jsx"
+      ],
+      "migrationPriority": "LOW"
+    },
+    {
+      "originalColor": "#10b981",
+      "daisyuiVariable": "hsl(var(--su))",
+      "fallbackVariable": "hsl(var(--su))",
+      "frequency": 2,
+      "usage": [
+        "Success/approved indicator",
+        "Train booking type indicator"
+      ],
+      "reasoning": "Success green - maps to success (--su).",
+      "affectedFiles": [
+        "src/pages/AdminUsers.jsx",
+        "src/pages/AdminDashboard.jsx"
+      ],
+      "migrationPriority": "LOW"
+    },
+    {
+      "originalColor": "#f97316",
+      "daisyuiVariable": "hsl(var(--wa))",
+      "fallbackVariable": "hsl(var(--er))",
+      "frequency": 1,
+      "usage": [
+        "Cab booking type indicator (orange)"
+      ],
+      "reasoning": "Orange for cab type - maps to warning (--wa).",
+      "affectedFiles": [
+        "src/pages/AdminUsers.jsx"
+      ],
+      "migrationPriority": "LOW"
+    },
+    {
+      "originalColor": "#6b7280",
+      "daisyuiVariable": "hsl(var(--bc) / 0.65)",
+      "fallbackVariable": "hsl(var(--nc))",
+      "frequency": 2,
+      "usage": [
+        "Gray text (secondary)",
+        "Default booking type indicator"
+      ],
+      "reasoning": "Gray secondary text - maps to base-content with opacity.",
+      "affectedFiles": [
+        "src/pages/AdminUsers.jsx",
+        "src/pages/VendorDashboard.css"
+      ],
+      "migrationPriority": "LOW"
+    },
+    {
+      "originalColor": "#d1d5db",
+      "daisyuiVariable": "hsl(var(--b3))",
+      "fallbackVariable": "hsl(var(--b3) / 0.9)",
+      "frequency": 2,
+      "usage": [
+        "Border color (input)"
+      ],
+      "reasoning": "Light gray border - maps to base-300 (--b3).",
+      "affectedFiles": [
+        "src/components/Admin/AutocompleteInput.css"
+      ],
+      "migrationPriority": "LOW"
+    },
+    {
+      "originalColor": "#e5e7eb",
+      "daisyuiVariable": "hsl(var(--b3))",
+      "fallbackVariable": "hsl(var(--b3))",
+      "frequency": 2,
+      "usage": [
+        "Border color (form divider)"
+      ],
+      "reasoning": "Light gray border - maps to base-300 (--b3).",
+      "affectedFiles": [
+        "src/components/Admin/FormStyles.css"
+      ],
+      "migrationPriority": "LOW"
+    },
+    {
+      "originalColor": "#9ca3af",
+      "daisyuiVariable": "hsl(var(--bc) / 0.65)",
+      "fallbackVariable": "hsl(var(--nc))",
+      "frequency": 2,
+      "usage": [
+        "Muted text color (placeholder, disabled)"
+      ],
+      "reasoning": "Gray placeholder/muted text - maps to base-content with opacity.",
+      "affectedFiles": [
+        "src/components/Admin/AutocompleteInput.css"
+      ],
+      "migrationPriority": "LOW"
+    },
+    {
+      "originalColor": "#1a1f36",
+      "daisyuiVariable": "hsl(var(--bc))",
+      "fallbackVariable": "hsl(var(--bc))",
+      "frequency": 2,
+      "usage": [
+        "Dark text (form labels)"
+      ],
+      "reasoning": "Very dark text - maps to base-content (--bc).",
+      "affectedFiles": [
+        "src/components/Admin/AutocompleteInput.css"
+      ],
+      "migrationPriority": "LOW"
+    },
+    {
+      "originalColor": "#e63946",
+      "daisyuiVariable": "hsl(var(--er))",
+      "fallbackVariable": "hsl(var(--er))",
+      "frequency": 1,
+      "usage": [
+        "Error text color"
+      ],
+      "reasoning": "Error red - maps to error (--er).",
+      "affectedFiles": [
+        "src/components/Admin/AutocompleteInput.css"
+      ],
+      "migrationPriority": "LOW"
+    },
+    {
+      "originalColor": "#cbd5e1",
+      "daisyuiVariable": "hsl(var(--b3))",
+      "fallbackVariable": "hsl(var(--b2) / 0.8)",
+      "frequency": 1,
+      "usage": [
+        "Autocomplete option hover background"
+      ],
+      "reasoning": "Light gray background - maps to base-300/200.",
+      "affectedFiles": [
+        "src/components/Admin/AutocompleteInput.css"
+      ],
+      "migrationPriority": "LOW"
+    },
+    {
+      "originalColor": "#94a3b8",
+      "daisyuiVariable": "hsl(var(--bc) / 0.65)",
+      "fallbackVariable": "hsl(var(--nc))",
+      "frequency": 2,
+      "usage": [
+        "Autocomplete hover background",
+        "Muted text"
+      ],
+      "reasoning": "Gray text/background - maps to base-content with opacity.",
+      "affectedFiles": [
+        "src/components/Admin/AutocompleteInput.css",
+        "src/pages/FaqPage.css"
+      ],
+      "migrationPriority": "LOW"
+    },
+    {
+      "originalColor": "#374151",
+      "daisyuiVariable": "hsl(var(--bc))",
+      "fallbackVariable": "hsl(var(--bc) / 0.85)",
+      "frequency": 2,
+      "usage": [
+        "Dark text",
+        "Dark button background"
+      ],
+      "reasoning": "Dark gray/charcoal - maps to base-content.",
+      "affectedFiles": [
+        "src/styles/FlightBookingFlow.css",
+        "src/components/Admin/AutocompleteInput.css"
+      ],
+      "migrationPriority": "LOW"
+    },
+    {
+      "originalColor": "#f1f5f9",
+      "daisyuiVariable": "hsl(var(--b2))",
+      "fallbackVariable": "hsl(var(--b3))",
+      "frequency": 1,
+      "usage": [
+        "Light background (autocomplete)"
+      ],
+      "reasoning": "Light gray background - maps to base-200/300.",
+      "affectedFiles": [
+        "src/components/Admin/AutocompleteInput.css"
+      ],
+      "migrationPriority": "LOW"
+    },
+    {
+      "originalColor": "#0f172a",
+      "daisyuiVariable": "hsl(var(--bc))",
+      "fallbackVariable": "hsl(var(--bc))",
+      "frequency": 2,
+      "usage": [
+        "Dark text/heading"
+      ],
+      "reasoning": "Very dark text - maps to base-content.",
+      "affectedFiles": [
+        "src/pages/FaqPage.css"
+      ],
+      "migrationPriority": "LOW"
+    },
+    {
+      "originalColor": "#2e7d32",
+      "daisyuiVariable": "hsl(var(--su))",
+      "fallbackVariable": "hsl(var(--su))",
+      "frequency": 2,
+      "usage": [
+        "Success message text and border"
+      ],
+      "reasoning": "Success green - maps to success (--su).",
+      "affectedFiles": [
+        "src/pages/ContactPage.css"
+      ],
+      "migrationPriority": "LOW"
+    },
+    {
+      "originalColor": "#e8f5e9",
+      "daisyuiVariable": "hsl(var(--su) / 0.1)",
+      "fallbackVariable": "hsl(var(--su) / 0.15)",
+      "frequency": 1,
+      "usage": [
+        "Success message background"
+      ],
+      "reasoning": "Light success green background - maps to success with opacity.",
+      "affectedFiles": [
+        "src/pages/ContactPage.css"
+      ],
+      "migrationPriority": "LOW"
+    },
+    {
+      "originalColor": "#001f4d",
+      "daisyuiVariable": "hsl(var(--p) / 0.8)",
+      "fallbackVariable": "hsl(var(--p))",
+      "frequency": 3,
+      "usage": [
+        "Dark primary color (gradient background)"
+      ],
+      "reasoning": "Dark blue (darker primary) - maps to primary with opacity.",
+      "affectedFiles": [
+        "src/pages/FaqPage.css",
+        "src/pages/CompanyPage.css",
+        "src/pages/CmsPageRenderer.css",
+        "src/pages/CareersPage.css"
+      ],
+      "migrationPriority": "LOW"
+    },
+    {
+      "originalColor": "#ff6b4a",
+      "daisyuiVariable": "hsl(var(--a))",
+      "fallbackVariable": "hsl(var(--er))",
+      "frequency": 3,
+      "usage": [
+        "Gradient accent (darker orange)",
+        "Admin header gradient"
+      ],
+      "reasoning": "Orange accent - maps to accent (--a) or error.",
+      "affectedFiles": [
+        "src/components/Admin/AdminSidebar.css",
+        "src/components/Vendor/VendorSidebar.css",
+        "src/pages/AdminProfile.jsx"
+      ],
+      "migrationPriority": "LOW"
+    },
+    {
+      "originalColor": "#d83e20",
+      "daisyuiVariable": "hsl(var(--er))",
+      "fallbackVariable": "hsl(var(--a))",
+      "frequency": 1,
+      "usage": [
+        "Admin header button active state"
+      ],
+      "reasoning": "Red/orange active state - maps to error or accent.",
+      "affectedFiles": [
+        "src/components/Admin/AdminHeader.css"
+      ],
+      "migrationPriority": "LOW"
+    },
+    {
+      "originalColor": "#ef4444",
+      "daisyuiVariable": "hsl(var(--er))",
+      "fallbackVariable": "hsl(var(--er))",
+      "frequency": 2,
+      "usage": [
+        "Error/danger color"
+      ],
+      "reasoning": "Error red - maps to error (--er).",
+      "affectedFiles": [
+        "src/components/Admin/AdminHeader.css",
+        "src/pages/AdminDashboard.jsx"
+      ],
+      "migrationPriority": "LOW"
+    },
+    {
+      "originalColor": "#22c55e",
+      "daisyuiVariable": "hsl(var(--su))",
+      "fallbackVariable": "hsl(var(--su))",
+      "frequency": 1,
+      "usage": [
+        "Success button background"
+      ],
+      "reasoning": "Success green - maps to success (--su).",
+      "affectedFiles": [
+        "src/pages/BookingPage.jsx"
+      ],
+      "migrationPriority": "LOW"
+    },
+    {
+      "originalColor": "#1a1a2e",
+      "daisyuiVariable": "hsl(var(--bc))",
+      "fallbackVariable": "hsl(var(--b1))",
+      "frequency": 1,
+      "usage": [
+        "Dark background (modal)"
+      ],
+      "reasoning": "Very dark background - maps to base-content or dark base-100.",
+      "affectedFiles": [
+        "src/pages/BookingPage.jsx"
+      ],
+      "migrationPriority": "LOW"
+    },
+    {
+      "originalColor": "#f9f9f9",
+      "daisyuiVariable": "hsl(var(--b2))",
+      "fallbackVariable": "hsl(var(--b1))",
+      "frequency": 1,
+      "usage": [
+        "Light gray background"
+      ],
+      "reasoning": "Very light gray background - maps to base-200 or base-100.",
+      "affectedFiles": [
+        "src/pages/ContactPage.css"
+      ],
+      "migrationPriority": "LOW"
+    },
+    {
+      "originalColor": "#ffc107",
+      "daisyuiVariable": "hsl(var(--wa))",
+      "fallbackVariable": "hsl(var(--wa))",
+      "frequency": 4,
+      "usage": [
+        "Warning/alert icon color",
+        "Admin warning indicator"
+      ],
+      "reasoning": "Amber/warning - maps to warning (--wa).",
+      "affectedFiles": [
+        "src/styles/AdminComponents.css",
+        "src/pages/AdminFlights.css"
+      ],
+      "migrationPriority": "MEDIUM"
+    },
+    {
+      "originalColor": "#c82333",
+      "daisyuiVariable": "hsl(var(--er))",
+      "fallbackVariable": "hsl(var(--er))",
+      "frequency": 2,
+      "usage": [
+        "Danger/error button background"
+      ],
+      "reasoning": "Red danger color - maps to error (--er).",
+      "affectedFiles": [
+        "src/styles/AdminComponents.css"
+      ],
+      "migrationPriority": "LOW"
+    },
+    {
+      "originalColor": "#1e8449",
+      "daisyuiVariable": "hsl(var(--su))",
+      "fallbackVariable": "hsl(var(--su))",
+      "frequency": 1,
+      "usage": [
+        "Success button background"
+      ],
+      "reasoning": "Success green - maps to success (--su).",
+      "affectedFiles": [
+        "src/styles/AdminComponents.css"
+      ],
+      "migrationPriority": "LOW"
+    },
+    {
+      "originalColor": "#d97706",
+      "daisyuiVariable": "hsl(var(--wa))",
+      "fallbackVariable": "hsl(var(--wa))",
+      "frequency": 1,
+      "usage": [
+        "Warning button background"
+      ],
+      "reasoning": "Amber/warning - maps to warning (--wa).",
+      "affectedFiles": [
+        "src/styles/AdminComponents.css"
+      ],
+      "migrationPriority": "LOW"
+    },
+    {
+      "originalColor": "#002b5f",
+      "daisyuiVariable": "hsl(var(--p) / 0.7)",
+      "fallbackVariable": "hsl(var(--p))",
+      "frequency": 1,
+      "usage": [
+        "Dark primary button background"
+      ],
+      "reasoning": "Very dark blue (darker than primary) - maps to primary with opacity.",
+      "affectedFiles": [
+        "src/styles/AdminComponents.css"
+      ],
+      "migrationPriority": "LOW"
+    },
+    {
+      "originalColor": "#eab308",
+      "daisyuiVariable": "hsl(var(--wa))",
+      "fallbackVariable": "hsl(var(--wa))",
+      "frequency": 1,
+      "usage": [
+        "Warning/alert icon color"
+      ],
+      "reasoning": "Yellow/warning - maps to warning (--wa).",
+      "affectedFiles": [
+        "src/components/Vendor/VendorCabForm.jsx"
+      ],
+      "migrationPriority": "LOW"
+    },
+    {
+      "originalColor": "#27ae60",
+      "daisyuiVariable": "hsl(var(--su))",
+      "fallbackVariable": "hsl(var(--su))",
+      "frequency": 3,
+      "usage": [
+        "Success/green indicator",
+        "Vendor dashboard stat color"
+      ],
+      "reasoning": "Success green - maps to success (--su).",
+      "affectedFiles": [
+        "src/pages/VendorDashboard.css",
+        "src/components/Vendor/VendorLayout.css",
+        "src/pages/AdminUsers.jsx"
+      ],
+      "migrationPriority": "LOW"
+    },
+    {
+      "originalColor": "#dc3545",
+      "daisyuiVariable": "hsl(var(--er))",
+      "fallbackVariable": "hsl(var(--er))",
+      "frequency": 3,
+      "usage": [
+        "Danger/error indicator",
+        "Vendor dashboard stat color"
+      ],
+      "reasoning": "Bootstrap error red - maps to error (--er).",
+      "affectedFiles": [
+        "src/pages/VendorDashboard.css",
+        "src/components/Vendor/VendorLayout.css",
+        "src/pages/AdminVendors.jsx"
+      ],
+      "migrationPriority": "LOW"
+    },
+    {
+      "originalColor": "#F59E0B",
+      "daisyuiVariable": "hsl(var(--wa))",
+      "fallbackVariable": "hsl(var(--wa))",
+      "frequency": 1,
+      "usage": [
+        "Rating star color"
+      ],
+      "reasoning": "Amber/warning - maps to warning (--wa).",
+      "affectedFiles": [
+        "src/pages/AdminVendors.jsx"
+      ],
+      "migrationPriority": "LOW"
+    },
+    {
+      "originalColor": "#0099D9",
+      "daisyuiVariable": "hsl(var(--p))",
+      "fallbackVariable": "hsl(var(--in))",
+      "frequency": 2,
+      "usage": [
+        "Step indicator color (train booking)"
+      ],
+      "reasoning": "Blue step color - maps to primary (--p) or info (--in).",
+      "affectedFiles": [
+        "src/styles/TrainBookingFlow.css",
+        "src/styles/FlightBookingFlow.css"
+      ],
+      "migrationPriority": "LOW"
+    }
+  ],
+  "biggest_offenders": {
+    "by_frequency": [
+      {
+        "color": "#ed4a29",
+        "frequency": 38,
+        "impact": "Admin/Vendor brand color - widely used across all admin components",
+        "recommendation": "Standardize to single DaisyUI variable (--a or --er)"
+      },
+      {
+        "color": "#ffffff",
+        "frequency": 30,
+        "impact": "White text on colored backgrounds - very common",
+        "recommendation": "Use hsl(var(--pc)) for text, hsl(var(--b1)) for backgrounds"
+      },
+      {
+        "color": "#fff",
+        "frequency": 25,
+        "impact": "Shorthand white - common in CSS",
+        "recommendation": "Replace with hsl(var(--b1)) or hsl(var(--pc))"
+      },
+      {
+        "color": "#666",
+        "frequency": 15,
+        "impact": "Secondary text color - very common",
+        "recommendation": "Use hsl(var(--bc) / 0.65) consistently"
+      },
+      {
+        "color": "#003580",
+        "frequency": 13,
+        "impact": "Original primary brand color",
+        "recommendation": "Already mapped to hsl(var(--p)) - ensure consistency"
+      }
+    ],
+    "by_impact": [
+      {
+        "color": "#ed4a29",
+        "files_affected": 8,
+        "description": "Admin/Vendor accent color dominates admin panel styling"
+      },
+      {
+        "color": "#ffffff / #fff",
+        "files_affected": 12,
+        "description": "White text widely used across all page types"
+      },
+      {
+        "color": "#666",
+        "files_affected": 8,
+        "description": "Secondary text color throughout the application"
+      },
+      {
+        "color": "#003580",
+        "files_affected": 8,
+        "description": "Primary brand color scattered across pages"
+      },
+      {
+        "color": "#ddd / #ccc",
+        "files_affected": 8,
+        "description": "Border and divider colors used extensively"
+      }
+    ]
+  },
+  "migration_strategy": {
+    "phase_1_critical": {
+      "colors": ["#ed4a29", "#ffffff", "#fff", "#666", "#003580"],
+      "priority": "Fix immediately - these 5 colors account for 121 occurrences (83 unique instances)",
+      "effort": "HIGH - Many files affected, but predictable replacements",
+      "files": [
+        "src/components/Admin/AdminHeader.css",
+        "src/components/Admin/AdminSidebar.css",
+        "src/components/Vendor/VendorSidebar.css",
+        "src/components/Vendor/VendorHeader.css",
+        "src/styles/FlightBookingFlow.css",
+        "src/styles/TrainBookingFlow.css",
+        "src/styles/BusBookingFlow.css"
+      ]
+    },
+    "phase_2_high": {
+      "colors": ["#333", "#ddd", "#eee", "#ff4d4f", "#ffc107", "#2ec158", "#f59e0b"],
+      "priority": "Fix next - semantic colors for errors, warnings, success",
+      "effort": "MEDIUM - Clear semantic mappings",
+      "estimated_files": 25
+    },
+    "phase_3_low": {
+      "colors": [
+        "#111", "#ccc", "#f3f4f6", "#f0f0f0", "#f5f5f5",
+        "#1F6DB8", "#F44336", "#4CAF50", "#FF9800", "#212121",
+        "#757575", "#8b5cf6", "#06b6d4", "#6366f1", "#ec4899",
+        "#3b82f6", "#10b981", "#f97316", "#6b7280", "#d1d5db",
+        "#e5e7eb", "#9ca3af", "#1a1f36", "#e63946", "#cbd5e1",
+        "#94a3b8", "#374151", "#f1f5f9", "#0f172a", "#2e7d32",
+        "#e8f5e9", "#001f4d", "#ff6b4a", "#d83e20", "#ef4444",
+        "#22c55e", "#1a1a2e", "#f9f9f9", "#c82333", "#1e8449",
+        "#d97706", "#002b5f", "#eab308", "#27ae60", "#dc3545",
+        "#F59E0B", "#0099D9"
+      ],
+      "priority": "Fix last - minor colors and edge cases",
+      "effort": "LOW - Scattered usage, easy replacements"
+    }
+  },
+  "notes_and_recommendations": {
+    "consistency": "The codebase has mixed approaches - some files use DaisyUI variables (hsl(var(--p))), while others use hardcoded colors. Standardization is critical.",
+    "brand_colors": "Admin/Vendor areas heavily use #ed4a29 which is not in DaisyUI default palette. Consider adding as custom CSS variable or mapping to --a (accent).",
+    "semantic_adoption": "Many colors have clear semantic meaning (errors, warnings, success) but are still hardcoded. Adopting semantic variables will improve maintainability.",
+    "text_colors": "Primary text (#333, #111) and secondary text (#666) should consistently use --bc and --bc with opacity rather than hardcoded values.",
+    "white_usage": "Pure white (#ffffff, #fff) is used for both text and backgrounds - need context-aware replacement (--pc for text, --b1 for backgrounds).",
+    "borders": "Light gray borders (#ddd, #ccc, #e5e7eb) should consolidate to --b3 (base-300).",
+    "gradients": "Several gradients mix hardcoded colors with variables - should update to use only variables.",
+    "admin_vs_user": "Admin panel uses different color scheme (#ed4a29 vs primary blue) - consider creating admin-specific color tokens or overrides."
+  }
+}

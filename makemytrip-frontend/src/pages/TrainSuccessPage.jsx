@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -8,79 +7,10 @@ export default function TrainSuccessPage() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Save booking to localStorage on success page load
-  useEffect(() => {
-    const booking = location.state?.booking || {};
-    const train = location.state?.train || {};
-    const searchParams = location.state?.searchParams || {};
-
-    if (booking?.bookingId || booking?.pnr) {
-      const totalAmount = location.state?.totalAmount || booking.totalAmount || 0;
-
-      const trainBooking = {
-        id: booking.bookingId || booking.id || 'TRN-' + Date.now(),
-        bookingId: booking.bookingId || 'MMT-TR-' + Math.floor(100000 + Math.random() * 900000),
-        pnr: booking.pnr || 'PNR-' + Math.floor(100000 + Math.random() * 900000),
-        status: 'confirmed',
-        type: 'train',
-        // Train Info
-        trainName: train.name || booking.trainDetails?.name || 'Train',
-        trainNumber: train.number || booking.trainDetails?.number || '',
-        fromCity: searchParams.fromCity || booking.fromCity || '',
-        toCity: searchParams.toCity || booking.toCity || '',
-        departureDate: searchParams.travelDate || booking.departureDate || '',
-        returnDate: searchParams.travelDate || booking.departureDate || '',
-        travellers: {
-          passengers: location.state?.passengers || booking.travellers?.passengers || [],
-          classCode: location.state?.selectedClass?.code || booking.travellers?.classCode || '',
-          quota: searchParams.quota || booking.travellers?.quota || 'General',
-          count: (location.state?.passengers || booking.travellers?.passengers || []).length
-        },
-        totalAmount: totalAmount,
-        paymentId: booking.paymentId || '',
-        createdAt: new Date().toISOString(),
-        // ✅ ENRICHED TRAIN FIELDS
-        baseFare: totalAmount * 0.8,
-        taxes: totalAmount * 0.15,
-        convenience: totalAmount * 0.05,
-        discount: 0,
-        gst: totalAmount * 0.05,
-        // Payment
-        paymentMethod: 'credit_card',
-        paymentStatus: 'completed',
-        transactionId: booking.paymentId || ''
-      };
-
-      // Save to localStorage
-      const existingBookings = JSON.parse(localStorage.getItem('mmt_bookings') || '[]');
-      const bookingExists = existingBookings.some(b => b.bookingId === trainBooking.bookingId);
-
-      if (!bookingExists) {
-        existingBookings.push(trainBooking);
-        localStorage.setItem('mmt_bookings', JSON.stringify(existingBookings));
-        console.log('💾 Train booking saved to localStorage:', existingBookings.length);
-      }
-    }
-  }, [location.state]);
-
-  const booking = location.state?.booking || {
-    id: "bkg_train_default",
-    pnr: "PNR-8492018492",
-    bookingId: "MMT-TR-849210",
-    fromCity: "New Delhi (NDLS)",
-    toCity: "Mumbai Central (BCT)",
-    departureDate: new Date().toISOString().split('T')[0],
-    travellers: { 
-      passengers: [{ name: "Jayesh Sharma", age: 29, gender: "Male", berth: "Lower Berth" }],
-      classCode: "3A",
-      quota: "General",
-      method: "UPI / Google Pay"
-    },
-    totalAmount: 2160,
-    trainDetails: { name: "Rajdhani Express", number: "12952", depTime: "16:55", arrTime: "08:30" }
-  };
-
-  const train = booking.trainDetails || { name: "Rajdhani Express", number: "12952", depTime: "16:55", arrTime: "08:30" };
+  // Sample data here rendered a fake PNR and a stranger's name to anyone who
+  // opened this URL directly.
+  const booking = location.state?.booking || null;
+  const train = booking?.trainDetails || null;
 
   const handleDownloadPDF = async () => {
     const element = document.getElementById('train-ticket-content');
@@ -110,6 +40,20 @@ export default function TrainSuccessPage() {
       alert('Failed to generate PDF');
     }
   };
+
+  if (!booking?.bookingId) {
+    return (
+      <div style={{ padding: '80px 24px', textAlign: 'center' }}>
+        <h1 style={{ fontSize: '24px', fontWeight: 800, marginBottom: '10px' }}>Booking reference unavailable</h1>
+        <p style={{ marginBottom: '24px', opacity: 0.7 }}>
+          We could not confirm this train booking. If you were charged, it will appear in My Trips shortly.
+        </p>
+        <button onClick={() => navigate('/my-trips')} style={{ padding: '10px 24px', borderRadius: '8px', border: 'none', background: 'hsl(var(--p))', color: 'hsl(var(--pc))', fontWeight: 700, cursor: 'pointer' }}>
+          Go to My Trips
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="train-flow-wrapper" style={{ background: 'hsl(var(--b2))', minHeight: '100vh', padding: '40px 20px' }}>

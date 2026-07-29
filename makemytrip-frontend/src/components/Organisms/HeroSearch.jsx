@@ -1,8 +1,7 @@
-import React, { useState, useRef } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { setCriteria } from '../../store/reducers/searchReducer'
-import { logout } from '../../store/reducers/authReducer'
 import { SERVICE_TABS, SPECIAL_FARES } from '../../data/homepageData'
 import TabIcon from '../TabIcon'
 import '../../styles/Hero.css'
@@ -10,7 +9,7 @@ import '../../styles/Hero.css'
 export default function HeroSearch() {
   const navigate = useNavigate()
   const dispatch = useDispatch()
-  const { user } = useSelector((s) => s.auth)
+  const { _user } = useSelector((s) => s.auth)
 
   const depInputRef = useRef(null)
   const retInputRef = useRef(null)
@@ -19,7 +18,7 @@ export default function HeroSearch() {
     if (inputRef.current) {
       try {
         inputRef.current.showPicker()
-      } catch (err) {
+      } catch (_err) {
         inputRef.current.click()
       }
     }

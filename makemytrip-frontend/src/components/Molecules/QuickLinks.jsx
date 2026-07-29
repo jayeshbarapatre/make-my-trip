@@ -1,4 +1,3 @@
-import React from 'react'
 import { QUICK_LINKS } from '../../data/homepageData'
 import '../../styles/Hero.css'
 

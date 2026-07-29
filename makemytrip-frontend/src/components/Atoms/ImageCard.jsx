@@ -1,4 +1,3 @@
-import React from 'react'
 import '../../styles/Sections.css'
 
 export default function ImageCard({

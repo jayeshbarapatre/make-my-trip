@@ -1,6 +1,16 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import Photo from '../components/Common/Photo';
+import { photo } from '../utils/images';
+
+const CABIN_GALLERY = [
+  { name: 'flight-cabin', caption: 'Modern cabins', copy: 'Wide seats and generous legroom across every partner airline.' },
+  { name: 'flight-boarding-gate', caption: 'Priority boarding', copy: 'Skip the queue at the gate with select fares.' },
+  { name: 'flight-terminal', caption: 'Seamless terminals', copy: 'Web check-in and lounge access at 60+ airports.' },
+  { name: 'flight-runway', caption: 'On-time departures', copy: 'Live status tracking from gate to runway.' },
+  { name: 'flight-passenger', caption: 'Travel your way', copy: 'Meals, baggage and seats — picked before you fly.' },
+];
 
 export default function FlightsPage() {
   const navigate = useNavigate();
@@ -73,14 +83,31 @@ export default function FlightsPage() {
   };
 
   return (
-    <div style={{ background: 'hsl(var(--b1))', minHeight: '100vh', padding: '40px 20px' }}>
-      <div style={{ maxWidth: '900px', margin: '0 auto' }}>
-        <h1 style={{ fontSize: '32px', fontWeight: 900, marginBottom: '8px', textAlign: 'center' }}>
+    <div style={{ background: 'hsl(var(--b1))', minHeight: '100vh' }}>
+
+      {/* Hero banner — real photograph of an aircraft on approach */}
+      <div style={{
+        position: 'relative',
+        minHeight: '420px',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        padding: '96px 20px 120px',
+        backgroundImage: `linear-gradient(180deg, rgba(6, 14, 32, 0.58) 0%, rgba(6, 14, 32, 0.45) 55%, hsl(var(--b1)) 100%), url(${photo('phero-flights', 1920)})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center 22%',
+        textAlign: 'center',
+        boxSizing: 'border-box',
+      }}>
+        <h1 style={{ fontSize: 'clamp(28px, 5vw, 44px)', fontWeight: 900, margin: '0 0 10px', color: '#fff', letterSpacing: '-0.02em' }}>
           Book Flights Online
         </h1>
-        <p style={{ fontSize: '16px', color: 'hsl(var(--bc) / 0.6)', textAlign: 'center', marginBottom: '40px' }}>
+        <p style={{ fontSize: 'clamp(14px, 2vw, 18px)', color: 'rgba(255,255,255,0.88)', margin: 0 }}>
           Search, compare, and book flights to your favourite destinations
         </p>
+      </div>
+
+      <div style={{ maxWidth: '900px', margin: '-64px auto 0', padding: '0 20px 40px', position: 'relative' }}>
 
         <form onSubmit={handleSearch} style={{ background: 'hsl(var(--b2))', borderRadius: '12px', padding: '32px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
 
@@ -283,6 +310,39 @@ export default function FlightsPage() {
                   {route.from} → {route.to}
                 </div>
               </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Flying with us — real photography of cabins, gates, terminals and runways */}
+        <div style={{ marginTop: '64px' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: 800, marginBottom: '8px', textAlign: 'center' }}>
+            Flying With Us
+          </h2>
+          <p style={{ fontSize: '15px', color: 'hsl(var(--bc) / 0.6)', textAlign: 'center', marginBottom: '28px' }}>
+            From the boarding gate to the runway, every step of the journey covered
+          </p>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px' }}>
+            {CABIN_GALLERY.map((item) => (
+              <figure key={item.name} style={{
+                margin: 0,
+                borderRadius: '14px',
+                overflow: 'hidden',
+                background: 'hsl(var(--b2))',
+                border: '1px solid hsl(var(--b3))',
+                boxShadow: '0 6px 20px rgba(10, 17, 40, 0.06)',
+              }}>
+                <Photo
+                  name={item.name}
+                  sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 300px"
+                  style={{ width: '100%', height: '170px', objectFit: 'cover', display: 'block' }}
+                />
+                <figcaption style={{ padding: '14px 16px 18px' }}>
+                  <div style={{ fontSize: '15px', fontWeight: 800, marginBottom: '4px' }}>{item.caption}</div>
+                  <div style={{ fontSize: '13px', color: 'hsl(var(--bc) / 0.65)', lineHeight: 1.5 }}>{item.copy}</div>
+                </figcaption>
+              </figure>
             ))}
           </div>
         </div>

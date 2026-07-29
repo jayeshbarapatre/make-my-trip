@@ -3,12 +3,11 @@ import { useSearchParams, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { flightService } from '../services/flightService'
 import FlightLoader from '../components/Atoms/FlightLoader'
-import { ErrorState } from '../components/EmptyState'
 import { useAuth } from '../context/AuthContext'
-import { authService } from '../services/authService'
 import CustomCalendarPicker from '../components/CustomCalendarPicker'
 import { CITIES } from '../data/cities'
 import '../styles/FlightResults.css'
+import OtpLoginModal from '../components/Auth/OtpLoginModal'
 
 // ── Airline meta ──────────────────────────────────────────────
 const AIRLINE_COLOR = {
@@ -124,13 +123,9 @@ export default function SearchResultsPage() {
   const returnCalRef = useRef(null)
   const travRef = useRef(null)
 
-  const { user, verifyOtpLogin } = useAuth()
+  const { user } = useAuth()
   const [showLoginModal, setShowLoginModal] = useState(false)
-  const [mobilePhone, setMobilePhone] = useState('')
-  const [otpCode, setOtpCode] = useState('')
-  const [otpSent, setOtpSent] = useState(false)
   const [selectedFlight, setSelectedFlight] = useState(null)
-  const [loginError, setLoginError] = useState('')
   const [showCustomAlert, setShowCustomAlert] = useState(false)
   const [alertMsg, setAlertMsg] = useState('')
 
@@ -157,6 +152,17 @@ export default function SearchResultsPage() {
       console.error(e)
     }
   }, [criteria.passengers, criteria.travelClass])
+
+  const handleOtpLoginSuccess = () => {
+    setShowLoginModal(false)
+    if (isRoundTrip) {
+      if (selectedOutbound && selectedReturn) {
+        navigate(`/booking/${selectedOutbound.id}`, { state: { flight: selectedOutbound, returnFlight: selectedReturn, searchDate: criteria.date, returnDate: returnDate, tripType: tripType } })
+      }
+    } else if (selectedFlight) {
+      navigate(`/booking/${selectedFlight.id}`, { state: { flight: selectedFlight, searchDate: criteria.date, returnDate: returnDate, tripType: tripType } })
+    }
+  }
 
   const handleSelectFlight = (flight) => {
     if (!user) {
@@ -187,50 +193,9 @@ export default function SearchResultsPage() {
     })
   }
 
-  const handleSendOtp = async (e) => {
-    e.preventDefault()
-    if (!mobilePhone || mobilePhone.length < 10) {
-      setLoginError('Please enter a valid 10-digit mobile number')
-      return
-    }
-    setLoginError('')
-    try {
-      const res = await authService.sendMobileOtp(mobilePhone)
-      if (res && (res.data || res.message)) {
-        setOtpSent(true)
-      } else {
-        setLoginError('Failed to send OTP. Please try again.')
-      }
-    } catch (err) {
-      setLoginError(err.message || 'Failed to send OTP. Please try again.')
-    }
-  }
+      const isRoundTrip = tripType === 'round-trip' || tripType === 'roundtrip'
 
-  const handleVerifyOtp = async (e) => {
-    e.preventDefault()
-    if (!otpCode || otpCode.length < 6) {
-      setLoginError('Please enter a valid 6-digit OTP (e.g., 123456)')
-      return
-    }
-    setLoginError('')
-    try {
-      await verifyOtpLogin(mobilePhone, otpCode)
-      setShowLoginModal(false)
-      if (isRoundTrip) {
-        if (selectedOutbound && selectedReturn) {
-          navigate(`/booking/${selectedOutbound.id}`, { state: { flight: selectedOutbound, returnFlight: selectedReturn, searchDate: criteria.date, returnDate: returnDate, tripType: tripType } })
-        }
-      } else if (selectedFlight) {
-        navigate(`/booking/${selectedFlight.id}`, { state: { flight: selectedFlight, searchDate: criteria.date, returnDate: returnDate, tripType: tripType } })
-      }
-    } catch (err) {
-      setLoginError(err.message || 'Verification failed. Try 123456.')
-    }
-  }
-
-  const isRoundTrip = tripType === 'round-trip' || tripType === 'roundtrip'
-
-  const { data, isLoading, isError, refetch } = useQuery({
+  const { data, isLoading, isError, _refetch } = useQuery({
     queryKey: ['flights', criteria.from, criteria.to, criteria.date, returnDate, tripType],
     queryFn:  async () => {
       console.log('🔍 Querying flights with criteria:', criteria)
@@ -413,8 +378,8 @@ export default function SearchResultsPage() {
 
   if (isLoading) return <FlightLoader />
 
-  const fromCode   = getCode(criteria.from)
-  const toCode     = getCode(criteria.to)
+  const _fromCode   = getCode(criteria.from)
+  const _toCode     = getCode(criteria.to)
   const hasFilters = filterStops.length > 0 || filterAirlines.length > 0
 
   return (
@@ -712,7 +677,7 @@ export default function SearchResultsPage() {
                   {filteredSorted.length === 0 ? (
                     <div className="fr-no-flights">No outbound flights found.</div>
                   ) : (
-                    filteredSorted.map((flight, idx) => {
+                    filteredSorted.map((flight, _idx) => {
                       const color = AIRLINE_COLOR[flight.airline] || 'var(--clr-text-secondary)'
                       const code  = AIRLINE_CODE[flight.airline]  || flight.airline.slice(0,2).toUpperCase()
                       const isSelected = selectedOutbound?.id === flight.id
@@ -765,7 +730,7 @@ export default function SearchResultsPage() {
                   {filteredSortedReturn.length === 0 ? (
                     <div className="fr-no-flights">No return flights found.</div>
                   ) : (
-                    filteredSortedReturn.map((flight, idx) => {
+                    filteredSortedReturn.map((flight, _idx) => {
                       const color = AIRLINE_COLOR[flight.airline] || 'var(--clr-text-secondary)'
                       const code  = AIRLINE_CODE[flight.airline]  || flight.airline.slice(0,2).toUpperCase()
                       const isSelected = selectedReturn?.id === flight.id
@@ -972,62 +937,11 @@ export default function SearchResultsPage() {
         </div>
       )}
 
-      {showLoginModal && (
-        <div className="custom-modal-overlay">
-          <div className="custom-login-card">
-            <button className="custom-modal-close" onClick={() => setShowLoginModal(false)}>✕</button>
-
-            <div className="custom-login-header">
-              <span className="custom-login-icon">🔐</span>
-              <h3>Login to Continue</h3>
-              <p>MakeMyTrip requires verification before booking. Enter your mobile number to instantly login.</p>
-            </div>
-
-            {loginError && <div className="custom-login-error">{loginError}</div>}
-
-            {!otpSent ? (
-              <form onSubmit={handleSendOtp}>
-                <div className="custom-input-group">
-                  <label>MOBILE NUMBER</label>
-                  <div className="custom-phone-input">
-                    <span className="custom-country-code">+91</span>
-                    <input
-                      type="tel"
-                      placeholder="10-digit mobile number"
-                      value={mobilePhone}
-                      maxLength={10}
-                      onChange={(e) => setMobilePhone(e.target.value)}
-                      autoFocus
-                      required
-                    />
-                  </div>
-                </div>
-                <button type="submit" className="custom-login-btn">GET ONE TIME PASSWORD (OTP)</button>
-              </form>
-            ) : (
-              <form onSubmit={handleVerifyOtp}>
-                <div className="custom-input-group">
-                  <div className="custom-otp-header">
-                    <label>ENTER 6-DIGIT OTP</label>
-                    <button type="button" onClick={() => setOtpSent(false)}>Change Number</button>
-                  </div>
-                  <input
-                    type="text"
-                    maxLength="6"
-                    placeholder="Enter 6-digit OTP"
-                    value={otpCode}
-                    onChange={(e) => setOtpCode(e.target.value)}
-                    className="custom-otp-input"
-                    autoFocus
-                    required
-                  />
-                </div>
-                <button type="submit" className="custom-verify-btn">VERIFY & RESUME BOOKING</button>
-              </form>
-            )}
-          </div>
-        </div>
-      )}
+      <OtpLoginModal
+        open={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onSuccess={handleOtpLoginSuccess}
+      />
 
       {showCustomAlert && (
         <div className="custom-modal-overlay" style={{ zIndex: 10000 }}>
@@ -1076,6 +990,7 @@ function PromoBanner({ banner }) {
       </div>
     )
   }
+
   return (
     <div className="fr-promo-wrapper">
       <div className={`fr-promo-banner ${banner.type==='hdfc'?'fr-promo-hdfc':'fr-promo-cashback'}`}>

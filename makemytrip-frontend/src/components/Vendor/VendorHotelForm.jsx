@@ -31,10 +31,6 @@ const VendorHotelForm = ({ hotelId, onClose, onSuccess }) => {
     'Dormitory Room', 'Economy Room', 'Honeymoon Suite'
   ]
 
-  useEffect(() => {
-    if (isEditing) fetchHotel()
-  }, [hotelId])
-
   const fetchHotel = async () => {
     try {
       setLoading(true)
@@ -50,13 +46,17 @@ const VendorHotelForm = ({ hotelId, onClose, onSuccess }) => {
       })
       setSelectedAmenities(hotel.amenities || [])
       setSelectedRoomTypes(hotel.roomTypes || [])
-    } catch (err) {
+    } catch (_err) {
       toast.error('Failed to load hotel details')
       onClose()
     } finally {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    if (isEditing) fetchHotel()
+  }, [hotelId])
 
   const handleInputChange = (e) => {
     const { name, value } = e.target

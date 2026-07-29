@@ -1,8 +1,9 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { SERVICE_TABS } from '../data/homepageData'
 import TabIcon from '../components/TabIcon'
 import '../styles/Hero.css'
+import { photo } from '../utils/images'
 
 export default function InsurancePage() {
   const navigate = useNavigate()
@@ -137,7 +138,7 @@ export default function InsurancePage() {
         <div className="cabs-list-stack">
           {PLANS.map((plan, idx) => (
             <div key={plan.name} className="cab-result-card" data-aos="fade-up" data-aos-delay={idx * 100}>
-              <div className="cab-card-img" style={{ backgroundImage: `url(https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=600&h=400&q=80)` }} />
+              <div className="cab-card-img" style={{ backgroundImage: `url(${photo('phero-insurance', 1280)})` }} />
               <div className="cab-card-body">
                 <div className="cab-badge-row">
                   <span className="cab-icon">🛡️</span>

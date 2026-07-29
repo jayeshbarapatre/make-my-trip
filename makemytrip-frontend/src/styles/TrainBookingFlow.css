@@ -493,7 +493,10 @@
 
 /* Success hero header — fixed gradient that always has white text readability */
 .train-success-hero {
-  background: linear-gradient(135deg, var(--color-primary, #0099D9) 0%, oklch(from var(--color-primary, oklch(0.6 0.15 230)) calc(l - 0.15) c h) 100%);
+  /* Real photograph of a railway platform, dimmed so the confirmation copy stays legible */
+  background:
+    linear-gradient(135deg, rgba(0, 90, 150, 0.86) 0%, rgba(4, 32, 62, 0.90) 100%),
+    url('/images/trains/train-platform-800.webp') center / cover no-repeat;
   color: #ffffff;
   padding: 48px 32px;
   text-align: center;

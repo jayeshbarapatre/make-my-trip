@@ -3,11 +3,13 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { busService } from '../services/busService'
 import { useAuth } from '../context/AuthContext'
-import { authService, bookingService } from '../services/authService'
+import api from '../services/api'
 import showToast from '../utils/toast'
 import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
 import '../styles/BusBookingFlow.css'
+import OtpLoginModal from '../components/Auth/OtpLoginModal'
+import { photo } from '../utils/images'
 
 const fmtTime = (val) => {
   if (!val) return 'N/A'
@@ -45,13 +47,9 @@ export default function BusBookingPage() {
   const location = useLocation()
   const searchDate = location.state?.searchDate
 
-  const { user, verifyOtpLogin } = useAuth()
+  const { user } = useAuth()
   const [showLoginModal, setShowLoginModal] = useState(false)
-  const [mobilePhone, setMobilePhone] = useState('')
-  const [otpCode, setOtpCode] = useState('')
-  const [otpSent, setOtpSent] = useState(false)
   const [pendingStep, setPendingStep] = useState(null)
-  const [loginError, setLoginError] = useState('')
 
   const [step, setStep] = useState(1)
 
@@ -77,61 +75,18 @@ export default function BusBookingPage() {
   const [paymentLoading, setPaymentLoading] = useState(false)
   const [bookingDetails, setBookingDetails] = useState(null)
 
-  const { data, isLoading } = useQuery({
+  // Use bus from navigation state if available (no API call needed)
+  const hasBusInState = !!location.state?.bus
+
+  const { data, isLoading, isError, _error } = useQuery({
     queryKey: ['bus', busId],
     queryFn: () => busService.getById(busId),
     retry: false,
+    enabled: !hasBusInState, // Skip API call if bus is in navigation state
   })
 
-  const rawBus = data?.data || location.state?.bus
+  const rawBus = hasBusInState ? location.state.bus : (data?.data || null)
 
-  // Save booking to localStorage when step 4 is reached
-  useEffect(() => {
-    if (step === 4 && bookingDetails && rawBus) {
-      const baseFareCalc = rawBus.price * passengerDetails.length;
-      const taxesCalc = Math.round(baseFareCalc * 0.18);
-      const totalAmount = baseFareCalc + taxesCalc;
-
-      const busBooking = {
-        id: bookingDetails.id || 'BUS-' + Date.now(),
-        bookingId: bookingDetails.id || 'MMT-BS-' + Math.floor(100000 + Math.random() * 900000),
-        pnr: bookingDetails.pnr || 'BUS-' + Math.floor(100000 + Math.random() * 900000),
-        status: 'confirmed',
-        type: 'bus',
-        busOperator: rawBus?.operator || '',
-        busType: rawBus?.type || 'AC',
-        fromCity: rawBus?.from || rawBus?.source || '',
-        toCity: rawBus?.to || rawBus?.destination || '',
-        departureDate: searchDate || rawBus?.departure?.date || new Date().toISOString().split('T')[0],
-        returnDate: searchDate || rawBus?.departure?.date || new Date().toISOString().split('T')[0],
-        travellers: {
-          passengers: passengerDetails.length,
-          contact: contact
-        },
-        totalAmount: totalAmount,
-        paymentId: bookingDetails.paymentId || '',
-        createdAt: new Date().toISOString(),
-        // ✅ ENRICHED BUS FIELDS
-        baseFare: totalAmount * 0.8,
-        taxes: totalAmount * 0.15,
-        convenience: totalAmount * 0.05,
-        discount: 0,
-        gst: totalAmount * 0.05,
-        paymentMethod: 'credit_card',
-        paymentStatus: 'completed',
-        transactionId: bookingDetails.paymentId || ''
-      };
-
-      const existingBookings = JSON.parse(localStorage.getItem('mmt_bookings') || '[]');
-      const bookingExists = existingBookings.some(b => b.bookingId === busBooking.bookingId);
-
-      if (!bookingExists) {
-        existingBookings.push(busBooking);
-        localStorage.setItem('mmt_bookings', JSON.stringify(existingBookings));
-        console.log('💾 Bus booking saved to localStorage:', existingBookings.length);
-      }
-    }
-  }, [step, bookingDetails, rawBus, passengerDetails, searchDate, contact]);
   const bus = rawBus ? (() => {
     const departure = typeof rawBus.departure === 'string' ? JSON.parse(rawBus.departure) : rawBus.departure
     const arrival = typeof rawBus.arrival === 'string' ? JSON.parse(rawBus.arrival) : rawBus.arrival
@@ -152,20 +107,96 @@ export default function BusBookingPage() {
   }, [step])
 
   if (isLoading && !bus) return (
-    <div style={{ padding: '2rem', textAlign: 'center' }}>
-      <p>Loading bus details…</p>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-base-100 transition-colors duration-300">
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-16 h-16 border-4 rounded-full animate-spin" style={{
+          borderColor: 'hsl(var(--b3))',
+          borderTopColor: 'hsl(var(--p))'
+        }} />
+        <p className="text-lg font-semibold text-base-content/70">Loading bus details…</p>
+      </div>
     </div>
   )
 
-  if (!bus) return (
-    <div style={{ padding: '2rem', textAlign: 'center' }}>
-      <p>Bus not found.</p>
-      <button className="btn btn-secondary" onClick={() => navigate(-1)}>Go Back</button>
+  if (isError || !bus) return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-base-100 p-4 relative overflow-hidden transition-colors duration-300">
+      {/* Background decorative elements with DaisyUI theme colors */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-20 right-20 w-72 h-72 rounded-full blur-3xl animate-pulse" style={{ background: 'hsl(var(--s) / 0.1)' }} />
+        <div className="absolute bottom-40 left-10 w-96 h-96 rounded-full blur-3xl animate-pulse" style={{ background: 'hsl(var(--s) / 0.05)', animationDelay: '2s' }} />
+      </div>
+
+      {/* Content */}
+      <div className="relative z-10 w-full max-w-md mx-auto text-center">
+        {/* Icon */}
+        <div className="mb-8 flex justify-center">
+          <div className="relative">
+            <div className="w-24 h-24 rounded-2xl flex items-center justify-center shadow-lg" style={{ background: 'linear-gradient(to bottom right, hsl(var(--s)), hsl(var(--s) / 0.8))', boxShadow: '0 10px 25px hsla(var(--s) / 0.3)' }}>
+              <svg className="w-12 h-12" style={{ color: 'hsl(var(--sc))' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shadow-lg" style={{ background: 'hsl(var(--s))', color: 'hsl(var(--sc))' }}>!</div>
+          </div>
+        </div>
+
+        {/* Heading */}
+        <h2 className="text-3xl md:text-4xl font-bold text-base-content mb-3">
+          Bus Not Available
+        </h2>
+
+        {/* Message */}
+        <p className="text-base-content/70 text-base mb-2">
+          The bus you're looking for is no longer available.
+        </p>
+        <p className="text-base-content/60 text-sm mb-8">
+          This could be because the bus is fully booked, out of service, or the booking window has closed.
+        </p>
+
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <button
+            onClick={() => navigate('/bus-search')}
+            className="btn btn-primary px-6 gap-2 transform hover:scale-105 active:scale-95 transition-transform duration-200"
+            style={{
+              background: 'hsl(var(--p))',
+              color: 'hsl(var(--pc))',
+              boxShadow: '0 10px 20px hsla(var(--p) / 0.3)'
+            }}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            Search Again
+          </button>
+          <button
+            onClick={() => navigate(-1)}
+            className="btn btn-ghost px-6 transform hover:scale-105 active:scale-95 transition-transform duration-200"
+            style={{
+              background: 'hsl(var(--b2))',
+              color: 'hsl(var(--bc))'
+            }}
+          >
+            Go Back
+          </button>
+        </div>
+
+        {/* Helpful tips */}
+        <div className="mt-8 p-4 rounded-lg" style={{ background: 'hsl(var(--b2))', border: '1px solid hsl(var(--b3))' }}>
+          <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: 'hsl(var(--bc) / 0.7)' }}>💡 Helpful Tips</p>
+          <ul className="text-sm space-y-2 text-left" style={{ color: 'hsl(var(--bc) / 0.7))' }}>
+            <li>• Try different dates to find available buses</li>
+            <li>• Check alternative routes or nearby cities</li>
+            <li>• Look for buses departing at different times</li>
+          </ul>
+        </div>
+      </div>
     </div>
   )
 
   const passengerCount = passengerDetails.length
-  const basePrice = bus.price * passengerCount
+  const busPrice = bus?.price || 0
+  const basePrice = busPrice * passengerCount
   const taxes = Math.round(basePrice * 0.18)
   const totalAmount = basePrice + taxes
 
@@ -197,42 +228,7 @@ export default function BusBookingPage() {
     setStep(2)
   }
 
-  const handleSendOtp = async (e) => {
-    e.preventDefault()
-    if (!mobilePhone || mobilePhone.length < 10) {
-      setLoginError('Please enter a valid 10-digit mobile number')
-      return
-    }
-    setLoginError('')
-    try {
-      const res = await authService.sendMobileOtp(mobilePhone)
-      if (res && (res.data || res.message)) {
-        setOtpSent(true)
-      } else {
-        setLoginError('Failed to send OTP. Please try again.')
-      }
-    } catch (err) {
-      setLoginError(err.message || 'Failed to send OTP. Please try again.')
-    }
-  }
-
-  const handleVerifyOtp = async (e) => {
-    e.preventDefault()
-    if (!otpCode || otpCode.length < 6) {
-      setLoginError('Please enter a valid 6-digit OTP (e.g., 123456)')
-      return
-    }
-    setLoginError('')
-    try {
-      await verifyOtpLogin(mobilePhone, otpCode)
-      setShowLoginModal(false)
-      if (pendingStep) setStep(pendingStep)
-    } catch (err) {
-      setLoginError(err.message || 'Verification failed. Try 123456.')
-    }
-  }
-
-  const handleProceedToPayment = () => {
+      const handleProceedToPayment = () => {
     if (!user) {
       setPendingStep(3)
       setShowLoginModal(true)
@@ -257,95 +253,71 @@ export default function BusBookingPage() {
       return
     }
 
+    if (!bus) {
+      showToast('Bus details not found. Please go back and select a bus.', 'error')
+      return
+    }
+
     setPaymentLoading(true)
     try {
-      // Step 1: Create booking order on backend
-      const bookingPayload = {
-        bookingType: 'bus',
-        busId: bus.id,
-        passengers: passengerDetails.map(p => `${p.name}`),
-        totalAmount: totalAmount,
-        totalPrice: totalAmount,
-        contactEmail: contact.email,
-        contactPhone: contact.phone,
-        fromCity: bus?.from || bus?.source || '',
-        toCity: bus?.to || bus?.destination || '',
-        departureDate: searchDate || bus?.departure?.date || new Date().toISOString().split('T')[0],
-        returnDate: searchDate || bus?.departure?.date || new Date().toISOString().split('T')[0],
-        travellers: {
-          passengers: passengerDetails.length,
-          contact: contact
-        },
-        baseFare: Math.round(totalAmount * 0.8),
-        taxes: Math.round(totalAmount * 0.15),
-        convenience: Math.round(totalAmount * 0.05),
-        discount: 0,
-        gst: Math.round(totalAmount * 0.05),
-        paymentMethod: 'razorpay',
-        paymentStatus: 'pending',
-        transactionId: ''
+      // Check if user is authenticated
+      const token = localStorage.getItem('token')
+      if (!token) {
+        showToast('Please login to continue with payment', 'error')
+        setPaymentLoading(false)
+        return
       }
 
-      const response = await bookingService.createBusBooking(bookingPayload)
-      const booking = response.data
-
-      // Step 2: Initialize Razorpay payment
+      // Verify Razorpay is loaded
       if (!window.Razorpay) {
         showToast('Razorpay not loaded. Please refresh and try again.', 'error')
         setPaymentLoading(false)
         return
       }
 
-      const razorpayOptions = {
-        key: process.env.REACT_APP_RAZORPAY_KEY_ID || 'rzp_test_1234567890',
-        amount: totalAmount * 100, // Amount in paise
+      // Step 1: Create Razorpay order
+      console.log('Creating Razorpay order...')
+      const orderResponse = await api.post('/payment/create-order', {
+        amount: totalAmount,
         currency: 'INR',
+        notes: {
+          bookingType: 'bus',
+          busId: bus.id,
+          passengers: passengerDetails.length
+        }
+      })
+
+      if (!orderResponse.success) {
+        throw new Error(orderResponse.message || 'Failed to create payment order')
+      }
+
+      const { orderId, amount, currency } = orderResponse.data
+
+      // Step 2: Open Razorpay checkout
+      const razorpayOptions = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_Sqpk2eYSSYrvWf',
+        amount: amount,
+        currency: currency,
+        order_id: orderId,
         name: 'MakeMyTrip',
-        description: `Bus Booking - ${bus.operatorName} (${bus.from} → ${bus.to})`,
-        order_id: booking.id || `order_${Date.now()}`,
-        handler: async (response) => {
-          try {
-            // Step 3: Verify payment on backend
-            const verifyPayload = {
-              bookingId: booking.id,
-              razorpayPaymentId: response.razorpay_payment_id,
-              razorpayOrderId: response.razorpay_order_id,
-              razorpaySignature: response.razorpay_signature,
-              totalAmount: totalAmount,
-              paymentStatus: 'completed'
-            }
-
-            // Verify with backend
-            await bookingService.verifyBusPayment(verifyPayload)
-
-            // Update booking details and move to confirmation
-            setBookingDetails({
-              ...booking,
-              paymentStatus: 'completed',
-              transactionId: response.razorpay_payment_id
-            })
-
-            showToast('Payment successful! Your bus booking is confirmed.', 'success')
-            setStep(4)
-          } catch (verifyError) {
-            console.error('Payment verification failed:', verifyError)
-            showToast('Payment verification failed. Please contact support.', 'error')
-          } finally {
-            setPaymentLoading(false)
-          }
-        },
+        description: `Bus Booking - ${bus?.operatorName || 'Bus'} (${bus?.source || bus?.from} → ${bus?.destination || bus?.to})`,
+        image: `${window.location.origin}${photo('state-success', 400)}`,
         prefill: {
-          email: contact.email,
-          contact: contact.phone
+          name: passengerDetails[0]?.name || 'Passenger',
+          email: contact?.email || '',
+          contact: contact?.phone || ''
         },
-        theme: {
-          color: 'hsl(var(--p))'
+        handler: async (response) => {
+          await verifyBusPayment(response, orderId)
         },
         modal: {
           ondismiss: () => {
             setPaymentLoading(false)
             showToast('Payment cancelled', 'info')
           }
+        },
+        theme: {
+          color: '#003580'
         }
       }
 
@@ -353,7 +325,65 @@ export default function BusBookingPage() {
       razorpay.open()
     } catch (error) {
       console.error('Payment initiation failed:', error)
-      showToast(error.response?.data?.message || 'Payment failed. Please try again.', 'error')
+      const errorMsg = error.message || error.response?.data?.message || 'Payment failed. Please try again.'
+      showToast(errorMsg, 'error')
+      setPaymentLoading(false)
+    }
+  }
+
+  const verifyBusPayment = async (razorpayResponse, orderId) => {
+    try {
+      console.log('Verifying payment...')
+
+      // Prepare booking data
+      const bookingData = {
+        type: 'bus',
+        busId: bus.id,
+        busOperator: bus?.operatorName || bus?.operator || 'Bus Operator',
+        busType: bus?.type || 'AC',
+        fromCity: bus?.from || bus?.source || '',
+        toCity: bus?.to || bus?.destination || '',
+        departureDate: searchDate || bus?.departure?.date || new Date().toISOString().split('T')[0],
+        passengers: passengerDetails.map(p => ({ ...p })),
+        totalAmount,
+        baseFare: Math.round(totalAmount * 0.8),
+        taxes: Math.round(totalAmount * 0.15),
+        userEmail: contact?.email,
+        userName: passengerDetails[0]?.name,
+        paymentMethod: 'razorpay'
+      }
+
+      // Verify payment on backend
+      const verifyResponse = await api.post('/payment/verify', {
+        orderId: orderId,
+        paymentId: razorpayResponse.razorpay_payment_id,
+        signature: razorpayResponse.razorpay_signature,
+        bookingData: bookingData
+      })
+
+      // Only the backend issues booking references. A locally generated one
+      // would show the customer a confirmation that matches nothing in Firestore.
+      if (!verifyResponse.success || !verifyResponse.data?.booking?.bookingId) {
+        throw new Error(verifyResponse.message || 'Payment verification failed')
+      }
+
+      const booking = verifyResponse.data.booking
+
+      setBookingDetails({
+        ...booking,
+        id: booking.bookingId,
+        operatorName: booking.busOperator || bus?.operatorName || 'Bus Operator',
+        type: booking.busType || bus?.type || 'AC',
+        paymentStatus: 'completed',
+        transactionId: razorpayResponse.razorpay_payment_id,
+        paymentId: razorpayResponse.razorpay_payment_id
+      })
+
+      showToast('✅ Payment successful! Your bus booking is confirmed.', 'success')
+      setStep(4)
+    } catch (err) {
+      console.error('Payment verification error:', err)
+      showToast(err.message || 'Payment verification failed. Please contact support.', 'error')
       setPaymentLoading(false)
     }
   }
@@ -399,6 +429,12 @@ export default function BusBookingPage() {
         </div>
       </div>
     )
+  }
+
+
+  const handleOtpLoginSuccess = () => {
+    setShowLoginModal(false)
+    if (pendingStep) setStep(pendingStep)
   }
 
   return (
@@ -699,22 +735,14 @@ export default function BusBookingPage() {
                     }} />
                   </div>
 
-                  {/* QR Code */}
-                  <div style={{ background: 'white', padding: '1.5rem', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' }}>
-                    <svg viewBox="0 0 200 200" style={{ width: '200px', height: '200px' }}>
-                      <rect width="200" height="200" fill="white"/>
-                      <rect x="20" y="20" width="60" height="60" fill="black"/>
-                      <rect x="120" y="20" width="60" height="60" fill="black"/>
-                      <rect x="20" y="120" width="60" height="60" fill="black"/>
-                      <rect x="50" y="50" width="20" height="20" fill="white"/>
-                      <rect x="150" y="50" width="20" height="20" fill="white"/>
-                      <rect x="50" y="150" width="20" height="20" fill="white"/>
-                      {Array.from({ length: 9 }).map((_, i) => (
-                        <rect key={i} x={80 + i * 12} y={60 + (i % 3) * 12} width="8" height="8" fill={Math.random() > 0.5 ? 'black' : 'white'} />
-                      ))}
-                    </svg>
-                  </div>
-                  <p style={{ margin: 0, fontSize: '0.75rem', color: 'hsl(var(--nc))' }}>Scan this QR code to pay instantly with any UPI app.</p>
+                  {/* This previously rendered a decorative SVG built from
+                      Math.random() and captioned it "scan to pay". It encoded
+                      nothing, changed on every render, and would silently fail
+                      for any customer who tried to scan it. UPI is collected
+                      through Razorpay Checkout instead. */}
+                  <p style={{ margin: 0, fontSize: '0.8125rem', color: 'hsl(var(--nc))' }}>
+                    Enter your UPI ID above and continue — you will approve the payment request in your UPI app.
+                  </p>
                 </div>
               </div>
 
@@ -846,59 +874,11 @@ export default function BusBookingPage() {
         )}
       </div>
 
-      {showLoginModal && (
-        <div className="custom-modal-overlay">
-          <div className="custom-login-card">
-            <button className="custom-modal-close" onClick={() => setShowLoginModal(false)}>✕</button>
-            <div className="custom-login-header">
-              <span className="custom-login-icon">🔐</span>
-              <h3>Login to Continue</h3>
-              <p>Enter your mobile number to instantly login.</p>
-            </div>
-            {loginError && <div className="custom-login-error">{loginError}</div>}
-            {!otpSent ? (
-              <form onSubmit={handleSendOtp}>
-                <div className="custom-input-group">
-                  <label>MOBILE NUMBER</label>
-                  <div className="custom-phone-input">
-                    <span className="custom-country-code">+91</span>
-                    <input
-                      type="tel"
-                      placeholder="10-digit mobile number"
-                      value={mobilePhone}
-                      maxLength={10}
-                      onChange={(e) => setMobilePhone(e.target.value)}
-                      autoFocus
-                      required
-                    />
-                  </div>
-                </div>
-                <button type="submit" className="custom-login-btn">GET OTP</button>
-              </form>
-            ) : (
-              <form onSubmit={handleVerifyOtp}>
-                <div className="custom-input-group">
-                  <div className="custom-otp-header">
-                    <label>ENTER 6-DIGIT OTP</label>
-                    <button type="button" onClick={() => setOtpSent(false)}>Change Number</button>
-                  </div>
-                  <input
-                    type="text"
-                    maxLength="6"
-                    placeholder="Enter 6-digit OTP"
-                    value={otpCode}
-                    onChange={(e) => setOtpCode(e.target.value)}
-                    className="custom-otp-input"
-                    autoFocus
-                    required
-                  />
-                </div>
-                <button type="submit" className="custom-verify-btn">VERIFY & RESUME BOOKING</button>
-              </form>
-            )}
-          </div>
-        </div>
-      )}
+      <OtpLoginModal
+        open={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onSuccess={handleOtpLoginSuccess}
+      />
     </div>
   )
 }

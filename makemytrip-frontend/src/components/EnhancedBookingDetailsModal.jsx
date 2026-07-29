@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { downloadTicketPDF } from '../utils/pdfGenerator'
 
 export default function EnhancedBookingDetailsModal({ booking, onClose }) {
@@ -16,10 +16,10 @@ export default function EnhancedBookingDetailsModal({ booking, onClose }) {
   console.log('Full booking object:', booking)
 
   const isFlight = booking.type === 'flight'
-  const isHotel = booking.type === 'hotel'
-  const isTrain = booking.type === 'train'
-  const isBus = booking.type === 'bus'
-  const isCab = booking.type === 'cab'
+  const _isHotel = booking.type === 'hotel'
+  const _isTrain = booking.type === 'train'
+  const _isBus = booking.type === 'bus'
+  const _isCab = booking.type === 'cab'
 
   const handleDownloadPDF = async () => {
     setIsDownloading(true)
@@ -71,7 +71,7 @@ export default function EnhancedBookingDetailsModal({ booking, onClose }) {
 
     if (typeof booking.travellers === 'object') {
       const { adults, children, infants } = booking.travellers
-      const total = (adults || 0) + (children || 0) + (infants || 0)
+      const _total = (adults || 0) + (children || 0) + (infants || 0)
       return (
         <div style={{ fontSize: '14px', color: 'hsl(var(--bc))' }}>
           {adults || 0} Adult{adults !== 1 ? 's' : ''}{children ? `, ${children} Child${children !== 1 ? 'ren' : ''}` : ''}{infants ? `, ${infants} Infant${infants !== 1 ? 's' : ''}` : ''}

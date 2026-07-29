@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { cmsService } from '../../services/cmsService'
 import '../../styles/HomePage.css'
@@ -34,11 +34,7 @@ const FOOTER_COLS_FALLBACK = [
 
 export default function Footer() {
   const [sections, setSections] = useState(FOOTER_COLS_FALLBACK)
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    fetchFooter()
-  }, [])
+  const [_loading, setLoading] = useState(true)
 
   const fetchFooter = async () => {
     try {
@@ -53,6 +49,10 @@ export default function Footer() {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    fetchFooter()
+  }, [])
 
   const renderLink = (link) => {
     const title = typeof link === 'string' ? link : link.title

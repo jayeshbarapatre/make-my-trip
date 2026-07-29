@@ -1,16 +1,17 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { authService } from '../services/authService';
 import '../styles/HotelReviewPage.css';
+import OtpLoginModal from '../components/Auth/OtpLoginModal'
+import { photo } from '../utils/images'
 
 function HotelReviewPage() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, verifyOtpLogin } = useAuth();
+  const { user } = useAuth();
 
   // Retrieve state or fallback values
-  const defaultImage = "https://images.unsplash.com/photo-1542314831-c53cd4b85d05?auto=format&fit=crop&w=240&h=180&q=80";
+  const defaultImage = photo('hotel-luxury-exterior', 400);
   const hotel = location.state?.hotel || {
     id: "hotel-fallback",
     name: "Axiom Resort Luxury Cottages, Arambol",
@@ -25,8 +26,8 @@ function HotelReviewPage() {
 
   const getImageUrl = (h) => {
     if (h.image) return h.image;
-    if (h.images && h.images.length > 0) return h.images[0].includes('unsplash.com') ? h.images[0] : `https://images.unsplash.com/photo-${h.images[0]}?auto=format&fit=crop&w=240&h=180&q=80`;
-    if (h.seed && h.seed.length > 0) return h.seed[0].includes('unsplash.com') ? h.seed[0] : `https://images.unsplash.com/photo-${h.seed[0]}?auto=format&fit=crop&w=240&h=180&q=80`;
+    if (h.images && h.images.length > 0) return h.images[0];
+    if (h.seed && h.seed.length > 0) return h.seed[0];
     if (h.img) return h.img;
     return defaultImage;
   };
@@ -59,9 +60,6 @@ function HotelReviewPage() {
 
   // Auth & Booking submission state
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const [mobilePhone, setMobilePhone] = useState('');
-  const [otpCode, setOtpCode] = useState('');
-  const [otpSent, setOtpSent] = useState(false);
 
   // Custom Alert State
   const [alertConfig, setAlertConfig] = useState({
@@ -78,7 +76,6 @@ function HotelReviewPage() {
   const closeNotify = () => {
     setAlertConfig({ ...alertConfig, show: false });
   };
-  const [loginError, setLoginError] = useState('');
 
   const finalizeBooking = () => {
     const finalBilled = totalAmount - appliedDiscount;
@@ -106,40 +103,9 @@ function HotelReviewPage() {
     finalizeBooking();
   };
 
-  const handleSendOtp = async (e) => {
-    e.preventDefault();
-    if (!mobilePhone || mobilePhone.length < 10) {
-      setLoginError('Please enter a valid 10-digit mobile number');
-      return;
-    }
-    setLoginError('');
-    try {
-      const res = await authService.sendMobileOtp(mobilePhone);
-      if (res && (res.data || res.message)) {
-        setOtpSent(true);
-      } else {
-        setLoginError('Failed to send OTP. Please try again.');
-      }
-    } catch (err) {
-      setLoginError(err.message || 'Failed to send OTP. Please try again.');
-    }
-  };
+  ;
 
-  const handleVerifyOtp = async (e) => {
-    e.preventDefault();
-    if (!otpCode || otpCode.length < 6) {
-      setLoginError('Please enter a valid 6-digit OTP (e.g., 123456)');
-      return;
-    }
-    setLoginError('');
-    try {
-      await verifyOtpLogin(mobilePhone, otpCode);
-      setShowLoginModal(false);
-      finalizeBooking();
-    } catch (err) {
-      setLoginError(err.message || 'Verification failed. Try 123456.');
-    }
-  };
+  ;
 
   const handleApplyCoupon = () => {
     if (!couponCode) return;
@@ -150,6 +116,12 @@ function HotelReviewPage() {
       showNotify('Invalid Coupon', 'The coupon code you entered is invalid. Please try MMT500.', 'error');
     }
   };
+
+
+  const handleOtpLoginSuccess = () => {
+    setShowLoginModal(false)
+    finalizeBooking()
+  }
 
   return (
     <div className="review-wrapper">
@@ -329,46 +301,11 @@ function HotelReviewPage() {
       </div>
 
       {/* Simulated Auth Modal */}
-      {showLoginModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
-          <div style={{ background: '#fff', borderRadius: '16px', width: '90%', maxWidth: '420px', padding: '32px 28px', boxShadow: '0 24px 48px rgba(0,0,0,0.2)', position: 'relative', boxSizing: 'border-box' }}>
-            <button onClick={() => setShowLoginModal(false)} style={{ position: 'absolute', top: '20px', right: '20px', background: 'hsl(var(--b2))', border: 'none', width: '32px', height: '32px', borderRadius: '50%', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }}>✕</button>
-
-            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-              <span style={{ fontSize: '36px', display: 'block', marginBottom: '8px' }}>🔐</span>
-              <h3 style={{ margin: '0 0 8px', fontSize: '22px', fontWeight: 900, color: 'hsl(var(--bc) / 0.9)' }}>Login to Complete Booking</h3>
-              <p style={{ margin: 0, fontSize: '13px', color: 'hsl(var(--bc) / 0.6)' }}>MakeMyTrip requires verification before booking. Enter your mobile number to instantly login.</p>
-            </div>
-
-            {loginError && <div style={{ background: 'hsl(var(--er) / 0.08)', color: 'hsl(var(--er) / 0.7)', padding: '10px 14px', borderRadius: '8px', fontSize: '12px', marginBottom: '16px', textAlign: 'center', fontWeight: 600 }}>{loginError}</div>}
-
-            {!otpSent ? (
-              <form onSubmit={handleSendOtp}>
-                <div style={{ marginBottom: '20px' }}>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'hsl(var(--bc) / 0.65)', marginBottom: '6px' }}>MOBILE NUMBER</label>
-                  <div style={{ display: 'flex', gap: '10px' }}>
-                    <span style={{ background: 'hsl(var(--b2))', border: '1px solid hsl(var(--b3))', borderRadius: '8px', padding: '10px 14px', fontSize: '14px', fontWeight: 700, color: 'hsl(var(--bc) / 0.7)', display: 'flex', alignItems: 'center' }}>+91</span>
-                    <input type="tel" placeholder="10-digit mobile number" maxLength={10} value={mobilePhone} onChange={(e) => setMobilePhone(e.target.value)} style={{ flex: 1, border: '1px solid hsl(var(--b3))', borderRadius: '8px', padding: '10px 14px', fontSize: '14px', fontWeight: 600, outline: 'none', width: '100%', boxSizing: 'border-box' }} autoFocus required />
-                  </div>
-                </div>
-                <button type="submit" style={{ width: '100%', background: 'hsl(var(--er))', color: '#fff', border: 'none', borderRadius: '8px', padding: '14px', fontSize: '15px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(235,32,38,0.3)' }}>GET ONE TIME PASSWORD (OTP)</button>
-              </form>
-            ) : (
-              <form onSubmit={handleVerifyOtp}>
-                <div style={{ marginBottom: '20px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                    <label style={{ fontSize: '12px', fontWeight: 700, color: 'hsl(var(--bc) / 0.65)' }}>ENTER 6-DIGIT OTP</label>
-                    <button type="button" onClick={() => setOtpSent(false)} style={{ background: 'none', border: 'none', color: 'hsl(var(--er))', fontSize: '12px', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }}>Change Number</button>
-                  </div>
-                  <input type="text" maxLength="6" placeholder="e.g. 123456" value={otpCode} onChange={(e) => setOtpCode(e.target.value)} style={{ width: '100%', border: '2px solid hsl(var(--er))', borderRadius: '8px', padding: '12px 14px', fontSize: '18px', fontWeight: 800, letterSpacing: '4px', textAlign: 'center', outline: 'none', boxSizing: 'border-box' }} autoFocus required />
-                  <span style={{ display: 'block', textAlign: 'center', fontSize: '11px', color: 'hsl(var(--su))', marginTop: '8px', fontWeight: 600 }}>✓ Simulated OTP sent! (Use test OTP: 123456)</span>
-                </div>
-                <button type="submit" style={{ width: '100%', background: 'hsl(var(--su))', color: '#fff', border: 'none', borderRadius: '8px', padding: '14px', fontSize: '15px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(16,185,129,0.3)' }}>VERIFY &amp; CONFIRM BOOKING</button>
-              </form>
-            )}
-          </div>
-        </div>
-      )}
+      <OtpLoginModal
+        open={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onSuccess={handleOtpLoginSuccess}
+      />
 
       {/* ── Custom Alert Modal ── */}
       {alertConfig.show && (

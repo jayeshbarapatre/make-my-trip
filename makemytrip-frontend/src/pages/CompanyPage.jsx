@@ -1,15 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { cmsService } from '../services/cmsService';
 import './CompanyPage.css';
+import { photo } from '../utils/images'
 
 export default function CompanyPage() {
   const [page, setPage] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    fetchCompanyData();
-  }, []);
+  const [_error, setError] = useState('');
 
   const fetchCompanyData = async () => {
     try {
@@ -17,7 +14,7 @@ export default function CompanyPage() {
       const response = await cmsService.getPageBySlug('company');
       setPage(response.data?.data || null);
       setError('');
-    } catch (err) {
+    } catch (_err) {
       console.warn('CMS Page not found, rendering beautiful default fallback company data.');
       // Keep error empty so we render beautiful default data
       setError('');
@@ -25,6 +22,10 @@ export default function CompanyPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchCompanyData();
+  }, []);
 
   // Harmonized defaults (matching loaded seed data)
   const defaultTitle = 'About MakeMyTrip';
@@ -121,7 +122,7 @@ export default function CompanyPage() {
           </div>
           <div className="company-story-img" data-aos="fade-left">
             <img 
-              src="https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=800&q=80" 
+              src={photo('state-empty-trips')} loading="lazy" decoding="async" 
               alt="MakeMyTrip Story Journey"
               onError={(e) => {
                 e.target.src = '/assets/img/logo/logo.png';

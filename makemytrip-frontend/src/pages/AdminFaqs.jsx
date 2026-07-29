@@ -12,10 +12,6 @@ const AdminFaqs = () => {
   const [editingId, setEditingId] = useState(null)
   const [formData, setFormData] = useState({ question: '', answer: '', sortOrder: 0, status: 'active' })
 
-  useEffect(() => {
-    fetchFaqs()
-  }, [])
-
   const fetchFaqs = async () => {
     try {
       setLoading(true)
@@ -29,6 +25,10 @@ const AdminFaqs = () => {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    fetchFaqs()
+  }, [])
 
   const handleEdit = (faq) => {
     setFormData({ question: faq.question, answer: faq.answer, sortOrder: faq.sortOrder, status: faq.status })
@@ -61,7 +61,7 @@ const AdminFaqs = () => {
         await cmsService.deleteFaq(id)
         setFaqs(faqs.filter(f => f.id !== id))
         toast.success('FAQ deleted!')
-      } catch (err) {
+      } catch (_err) {
         toast.error('Failed to delete FAQ')
       }
     }

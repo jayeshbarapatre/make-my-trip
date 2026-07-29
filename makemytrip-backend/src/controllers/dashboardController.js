@@ -1,161 +1,176 @@
-import prisma from '../config/prismaClient.js'
+import { db } from '../config/firebase.js'
+
+// Migrated from Prisma/MongoDB to Firestore.
+//
+// Firestore has no aggregate/group-by, so these handlers read the relevant
+// collections once and fold them in memory. The collections are small enough
+// for that; if they grow, the right move is a maintained counters document
+// rather than paging the whole collection here.
+
+const CANCELLED = new Set(['cancelled', 'refunded'])
+
+const countOf = async (collection) => {
+  const snap = await db.collection(collection).count().get()
+  return snap.data().count
+}
+
+const activeDocs = (snap) => snap.docs.map((d) => ({ id: d.id, ...d.data() })).filter((x) => !x.isDeleted)
+
+// Booking timestamps are ISO strings on records written by the Firestore
+// controllers, and Timestamps on those written via FieldValue.serverTimestamp().
+const toDate = (value) => {
+  if (!value) return null
+  if (typeof value?.toDate === 'function') return value.toDate()
+  const d = new Date(value)
+  return Number.isNaN(d.getTime()) ? null : d
+}
 
 export const getDashboardStats = async (req, res) => {
   try {
-    const [
-      totalUsers,
-      totalFlights,
-      totalHotels,
-      totalBookings,
-      activeFlights,
-      activeHotels,
-      flightBookings,
-      hotelBookings,
-      busBookings,
-      cabBookings,
-      totalRevenue
-    ] = await Promise.all([
-      prisma.user.count(),
-      prisma.flight.count(),
-      prisma.hotel.count(),
-      prisma.booking.count(),
-      prisma.flight.count({ where: { isActive: true } }),
-      prisma.hotel.count({ where: { isActive: true } }),
-      prisma.booking.count({ where: { type: 'flight' } }),
-      prisma.booking.count({ where: { type: 'hotel' } }),
-      prisma.booking.count({ where: { type: 'bus' } }),
-      prisma.booking.count({ where: { type: 'cab' } }),
-      prisma.booking.aggregate({ _sum: { totalAmount: true } })
+    const [usersSnap, flightsSnap, hotelsSnap, bookingsSnap] = await Promise.all([
+      db.collection('users').get(),
+      db.collection('flights').get(),
+      db.collection('hotels').get(),
+      db.collection('bookings').get()
     ])
+
+    const flights = activeDocs(flightsSnap)
+    const hotels = activeDocs(hotelsSnap)
+    const bookings = activeDocs(bookingsSnap)
+
+    const activeFlights = flights.filter((f) => f.isActive !== false).length
+    const activeHotels = hotels.filter((h) => h.isActive !== false).length
+
+    const breakdown = { flight: 0, hotel: 0, bus: 0, cab: 0, train: 0 }
+    let totalRevenue = 0
+
+    for (const b of bookings) {
+      if (breakdown[b.type] !== undefined) breakdown[b.type] += 1
+      if (!CANCELLED.has(String(b.status ?? '').toLowerCase())) {
+        totalRevenue += Number(b.totalAmount) || 0
+      }
+    }
 
     res.json({
       data: {
         summary: {
-          totalUsers,
-          totalBookings,
-          totalFlights,
-          totalHotels,
-          totalRevenue: totalRevenue._sum.totalAmount || 0
+          totalUsers: usersSnap.size,
+          totalBookings: bookings.length,
+          totalFlights: flights.length,
+          totalHotels: hotels.length,
+          totalRevenue
         },
         active: {
           activeFlights,
-          inactiveFlights: totalFlights - activeFlights,
+          inactiveFlights: flights.length - activeFlights,
           activeHotels,
-          inactiveHotels: totalHotels - activeHotels
+          inactiveHotels: hotels.length - activeHotels
         },
-        bookingsBreakdown: {
-          flight: flightBookings,
-          hotel: hotelBookings,
-          bus: busBookings,
-          cab: cabBookings
-        }
+        bookingsBreakdown: breakdown
       }
     })
   } catch (err) {
-    res.status(500).json({ message: err.message })
+    console.error('Dashboard stats error:', err.message)
+    res.status(500).json({ message: 'Failed to load dashboard statistics' })
   }
 }
 
 export const getRevenueData = async (req, res) => {
   try {
-    const last12Months = []
-    const revenueMap = {}
+    const labels = []
+    const revenueMap = new Map()
 
     for (let i = 11; i >= 0; i--) {
       const date = new Date()
+      date.setDate(1) // avoid month-end rollover (e.g. 31 Mar minus 1 month)
       date.setMonth(date.getMonth() - i)
-      const monthName = date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
-      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
-      last12Months.push(monthName)
-      revenueMap[monthKey] = 0
+      labels.push(date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }))
+      revenueMap.set(`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`, 0)
     }
 
     const startDate = new Date()
-    startDate.setMonth(startDate.getMonth() - 11)
     startDate.setDate(1)
+    startDate.setMonth(startDate.getMonth() - 11)
     startDate.setHours(0, 0, 0, 0)
 
-    const aggregatedRevenue = await prisma.booking.aggregate({
-      where: {
-        createdAt: { gte: startDate },
-        status: { not: 'cancelled' }
-      },
-      _sum: { totalAmount: true },
-      _count: true
-    })
+    const snap = await db.collection('bookings').get()
 
-    const bookingsByMonth = await prisma.booking.findMany({
-      where: {
-        createdAt: { gte: startDate },
-        status: { not: 'cancelled' }
-      },
-      select: { createdAt: true, totalAmount: true }
-    })
+    let total = 0
+    let count = 0
 
-    bookingsByMonth.forEach(booking => {
-      const monthKey = `${booking.createdAt.getFullYear()}-${String(booking.createdAt.getMonth() + 1).padStart(2, '0')}`
-      if (revenueMap.hasOwnProperty(monthKey)) {
-        revenueMap[monthKey] += booking.totalAmount || 0
-      }
-    })
+    for (const doc of snap.docs) {
+      const b = doc.data()
+      if (b.isDeleted) continue
+      if (CANCELLED.has(String(b.status ?? '').toLowerCase())) continue
 
-    const revenues = Object.values(revenueMap)
+      const created = toDate(b.createdAt)
+      if (!created || created < startDate) continue
+
+      const amount = Number(b.totalAmount) || 0
+      const key = `${created.getFullYear()}-${String(created.getMonth() + 1).padStart(2, '0')}`
+
+      if (revenueMap.has(key)) revenueMap.set(key, revenueMap.get(key) + amount)
+
+      total += amount
+      count += 1
+    }
 
     res.json({
-      data: {
-        labels: last12Months,
-        revenues,
-        total: aggregatedRevenue._sum.totalAmount || 0,
-        count: aggregatedRevenue._count
-      }
+      data: { labels, revenues: [...revenueMap.values()], total, count }
     })
   } catch (err) {
-    console.error('Revenue data error:', err)
+    console.error('Revenue data error:', err.message)
     res.status(500).json({ message: 'Failed to fetch revenue data' })
   }
 }
 
 export const getRecentBookings = async (req, res) => {
   try {
-    const bookings = await prisma.booking.findMany({
-      take: 10,
-      orderBy: { createdAt: 'desc' },
-      include: { user: { select: { name: true, email: true } } }
-    })
+    // No orderBy on createdAt: the field is a string on some documents and a
+    // Timestamp on others, so Firestore would order them inconsistently. Sort
+    // in memory on a normalised date instead.
+    const snap = await db.collection('bookings').get()
 
-    res.json({
-      data: {
-        bookings: bookings.map(b => ({
-          id: b.id,
-          userName: b.user?.name || 'Unknown',
-          email: b.user?.email || 'N/A',
-          type: b.type,
-          amount: b.totalAmount,
-          status: b.status,
-          date: b.createdAt
-        }))
-      }
-    })
+    const bookings = snap.docs
+      .map((d) => ({ id: d.id, ...d.data() }))
+      .filter((b) => !b.isDeleted)
+      .sort((a, b) => (toDate(b.createdAt)?.getTime() ?? 0) - (toDate(a.createdAt)?.getTime() ?? 0))
+      .slice(0, 10)
+      .map((b) => ({
+        id: b.bookingId || b.id,
+        userName: b.userName || 'Unknown',
+        email: b.userEmail || 'N/A',
+        type: b.type,
+        amount: Number(b.totalAmount) || 0,
+        status: b.status || b.bookingStatus || 'unknown',
+        date: toDate(b.createdAt)?.toISOString() ?? null
+      }))
+
+    res.json({ data: { bookings } })
   } catch (err) {
-    res.status(500).json({ message: err.message })
+    console.error('Recent bookings error:', err.message)
+    res.status(500).json({ message: 'Failed to load recent bookings' })
   }
 }
 
 export const getAvailabilityStats = async (req, res) => {
   try {
-    const flights = await prisma.flight.aggregate({
-      _sum: { seatsAvailable: true, seats: true }
-    })
+    const snap = await db.collection('flights').get()
 
-    res.json({
-      data: {
-        flights: {
-          available: flights._sum?.seatsAvailable || 0,
-          total: flights._sum?.seats || 0
-        }
-      }
-    })
+    let available = 0
+    let total = 0
+
+    for (const doc of snap.docs) {
+      const f = doc.data()
+      if (f.isDeleted) continue
+      const seats = Number(f.seats) || 0
+      total += seats
+      available += f.seatsAvailable !== undefined ? Number(f.seatsAvailable) || 0 : seats
+    }
+
+    res.json({ data: { flights: { available, total } } })
   } catch (err) {
-    res.status(500).json({ message: err.message })
+    console.error('Availability stats error:', err.message)
+    res.status(500).json({ message: 'Failed to load availability' })
   }
 }

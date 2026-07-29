@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { cmsService } from '../services/cmsService';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
@@ -14,22 +14,22 @@ export default function FaqPage() {
   // Category state
   const [activeCategory, setActiveCategory] = useState('All');
 
-  useEffect(() => {
-    document.title = 'Frequently Asked Questions - MakeMyTrip';
-    fetchFaqs();
-  }, []);
-
   const fetchFaqs = async () => {
     try {
       const response = await cmsService.listFaqs();
       setFaqs(response.data?.data || []);
-    } catch (err) {
+    } catch (_err) {
       console.warn('Error fetching FAQs from database, loading dynamic fallbacks.');
       setFaqs([]);
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    document.title = 'Frequently Asked Questions - MakeMyTrip';
+    fetchFaqs();
+  }, []);
 
   // Pre-coded structured fallback FAQs mapped to categories
   const fallbackFaqs = [
@@ -133,7 +133,7 @@ export default function FaqPage() {
               <p>No questions matched your search criteria. Please try another term!</p>
             </div>
           ) : (
-            filteredFaqs.map((faq, idx) => (
+            filteredFaqs.map((faq, _idx) => (
               <div 
                 key={faq.id} 
                 className={`faq-accordion-item${expandedId === faq.id ? ' active' : ''}`}

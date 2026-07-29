@@ -1,142 +1,102 @@
-import prisma from '../config/prismaClient.js'
+import { createVendorCrud } from './factories/firestoreVendorCrud.js'
 
-export const getMyCabs = async (req, res) => {
-  try {
-    const cabs = await prisma.cab.findMany({
-      where: { vendorId: req.user.id },
-      orderBy: { createdAt: 'desc' }
-    })
-    res.json({ success: true, data: { cabs } })
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message })
-  }
+// Migrated from Prisma/MongoDB to Firestore.
+//
+// The previous version compared cab.vendorId against req.user.id — the user's
+// own id, not their tenant id. Ownership is now enforced in the factory against
+// req.vendorId, which is the value the rest of the platform scopes on.
+
+const num = (v, fallback = null) => {
+  if (v === undefined || v === null || v === '') return fallback
+  const n = Number(v)
+  return Number.isFinite(n) ? n : fallback
 }
 
-export const createCab = async (req, res) => {
-  try {
-    const { operatorName, cabNumber, type, baseFare, perKmRate, perMinuteRate, location, currentCity, cabs, image } = req.body
+const validate = (body, { partial = false } = {}) => {
+  const errors = {}
 
-    const existingCab = await prisma.cab.findUnique({ where: { cabNumber } })
-    if (existingCab) {
-      return res.status(400).json({ success: false, message: 'Cab number already exists' })
-    }
-
-    const cab = await prisma.cab.create({
-      data: {
-        vendorId: req.user.id,
-        operatorName,
-        cabNumber,
-        type,
-        baseFare: parseFloat(baseFare),
-        perKmRate: parseFloat(perKmRate),
-        perMinuteRate: parseFloat(perMinuteRate),
-        location,
-        currentCity,
-        cabs: parseInt(cabs) || 20,
-        cabsAvailable: parseInt(cabs) || 20,
-        image,
-        listingStatus: 'DRAFT',
-        isActive: false
-      }
-    })
-    res.status(201).json({ success: true, message: 'Cab created successfully', data: { cab } })
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message })
+  if (!partial) {
+    if (!(body.type ?? body.cabType)?.trim?.()) errors.type = 'Cab type is required'
+    if (!(body.vehicleNumber ?? body.cabNumber)?.trim?.()) errors.cabNumber = 'Vehicle number is required'
+    if (num(body.price ?? body.baseFare) === null) errors.baseFare = 'Base fare is required'
   }
+
+  const price = num(body.price ?? body.baseFare)
+  if (price !== null && price <= 0) errors.baseFare = 'Fare must be greater than zero'
+
+  const capacity = num(body.capacity ?? body.cabs)
+  if (capacity !== null && (capacity < 1 || capacity > 20)) errors.capacity = 'Capacity must be between 1 and 20'
+
+  for (const field of ['perKmRate', 'perMinuteRate']) {
+    const v = num(body[field])
+    if (v !== null && v < 0) errors[field] = 'Rate cannot be negative'
+  }
+
+  return errors
 }
 
-export const updateCab = async (req, res) => {
-  try {
-    const { id } = req.params
-    const cab = await prisma.cab.findUnique({ where: { id } })
+const toStorage = (body, { partial = false } = {}) => {
+  const out = {}
 
-    if (!cab) {
-      return res.status(404).json({ success: false, message: 'Cab not found' })
-    }
-
-    if (cab.vendorId !== req.user.id) {
-      return res.status(403).json({ success: false, message: 'Not authorized' })
-    }
-
-    const { operatorName, cabNumber, type, baseFare, perKmRate, perMinuteRate, location, currentCity, cabs, image } = req.body
-
-    const data = {}
-    if (operatorName !== undefined) data.operatorName = operatorName
-    if (cabNumber !== undefined) data.cabNumber = cabNumber
-    if (type !== undefined) data.type = type
-    if (baseFare !== undefined) data.baseFare = parseFloat(baseFare)
-    if (perKmRate !== undefined) data.perKmRate = parseFloat(perKmRate)
-    if (perMinuteRate !== undefined) data.perMinuteRate = parseFloat(perMinuteRate)
-    if (location !== undefined) data.location = location
-    if (currentCity !== undefined) data.currentCity = currentCity
-    if (cabs !== undefined) data.cabs = parseInt(cabs)
-    if (image !== undefined) data.image = image
-
-    // If a rejected cab is edited, move back to draft
-    if (cab.listingStatus === 'REJECTED') {
-      data.listingStatus = 'DRAFT'
-      data.rejectionReason = null
-    }
-
-    const updatedCab = await prisma.cab.update({
-      where: { id },
-      data
-    })
-
-    res.json({ success: true, message: 'Cab updated successfully', data: { cab: updatedCab } })
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message })
+  if (body.from !== undefined || body.currentCity !== undefined) {
+    out.from = String(body.from ?? body.currentCity).trim()
   }
+  if (body.to !== undefined) out.to = String(body.to).trim()
+  if (body.type !== undefined || body.cabType !== undefined) out.type = body.type ?? body.cabType
+  if (body.driver !== undefined || body.operatorName !== undefined) out.driver = body.driver ?? body.operatorName
+  if (body.operatorName !== undefined) out.operatorName = body.operatorName
+  if (body.vehicleNumber !== undefined || body.cabNumber !== undefined) {
+    out.vehicleNumber = String(body.vehicleNumber ?? body.cabNumber).trim().toUpperCase()
+  }
+  if (body.phone !== undefined) out.phone = body.phone
+  if (body.location !== undefined) out.location = body.location
+  if (body.currentCity !== undefined) out.currentCity = body.currentCity
+  if (body.estimatedTime !== undefined) out.estimatedTime = body.estimatedTime
+  if (body.image !== undefined) out.image = body.image
+
+  const price = num(body.price ?? body.baseFare)
+  if (price !== null) {
+    out.price = price
+    out.baseFare = price
+  }
+
+  const perKm = num(body.perKmRate)
+  if (perKm !== null) out.perKmRate = perKm
+  const perMin = num(body.perMinuteRate)
+  if (perMin !== null) out.perMinuteRate = perMin
+
+  const capacity = num(body.capacity ?? body.cabs)
+  if (capacity !== null) out.capacity = capacity
+
+  const rating = num(body.rating)
+  if (rating !== null) out.rating = rating
+
+  const available = num(body.available)
+  if (available !== null) out.available = available
+
+  if (!partial) {
+    out.capacity = out.capacity ?? 4
+    out.available = out.available ?? 1
+    out.rating = out.rating ?? 4.5
+    out.type = out.type ?? 'Sedan'
+  }
+
+  return out
 }
 
-export const deleteCab = async (req, res) => {
-  try {
-    const { id } = req.params
-    const cab = await prisma.cab.findUnique({ where: { id } })
+const crud = createVendorCrud({
+  collection: 'cabs',
+  label: 'Cab',
+  listKey: 'cabs',
+  uniqueField: 'vehicleNumber',
+  validate,
+  toStorage
+})
 
-    if (!cab) {
-      return res.status(404).json({ success: false, message: 'Cab not found' })
-    }
-
-    if (cab.vendorId !== req.user.id) {
-      return res.status(403).json({ success: false, message: 'Not authorized' })
-    }
-
-    await prisma.cab.delete({ where: { id } })
-    res.json({ success: true, message: 'Cab deleted successfully' })
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message })
-  }
-}
-
-export const submitCabForApproval = async (req, res) => {
-  try {
-    const { id } = req.params
-    const cab = await prisma.cab.findUnique({ where: { id } })
-
-    if (!cab) {
-      return res.status(404).json({ success: false, message: 'Cab not found' })
-    }
-
-    if (cab.vendorId !== req.user.id) {
-      return res.status(403).json({ success: false, message: 'Not authorized' })
-    }
-
-    if (cab.listingStatus === 'APPROVED' || cab.listingStatus === 'PENDING_APPROVAL') {
-      return res.status(400).json({ success: false, message: `Cab is already ${cab.listingStatus.toLowerCase()}` })
-    }
-
-    const updatedCab = await prisma.cab.update({
-      where: { id },
-      data: {
-        listingStatus: 'PENDING_APPROVAL',
-        submittedAt: new Date(),
-        rejectionReason: null
-      }
-    })
-
-    res.json({ success: true, message: 'Cab submitted for approval', data: { cab: updatedCab } })
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message })
-  }
-}
+export const getMyCabs = crud.list
+export const createCab = crud.create
+export const getMyCabById = crud.getById
+export const updateCab = crud.update
+export const deleteCab = crud.remove
+export const submitCabForApproval = crud.submitForApproval
+export const toggleCabStatus = crud.toggleStatus

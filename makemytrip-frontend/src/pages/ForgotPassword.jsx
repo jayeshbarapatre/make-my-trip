@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { authService } from '../services/authService'
 
 export default function ForgotPassword({ onBackToLogin }) {
@@ -9,7 +9,7 @@ export default function ForgotPassword({ onBackToLogin }) {
   const [confirmPassword, setConfirmPassword] = useState('')
   
   const [error, setError] = useState('')
-  const [message, setMessage] = useState('')
+  const [_message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
   const [simulatedCode, setSimulatedCode] = useState('')
 

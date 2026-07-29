@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import '../styles/FlightBookingFlow.css';
@@ -6,6 +6,13 @@ import '../styles/FlightBookingFlow.css';
 export default function FlightPaymentPage() {
   const location = useLocation();
   const navigate = useNavigate();
+
+  // Bookings must belong to an authenticated user
+  useEffect(() => {
+    if (!localStorage.getItem('token') || !localStorage.getItem('userId')) {
+      navigate('/login?returnTo=/flights', { replace: true });
+    }
+  }, [navigate]);
 
   const { flight, searchParams, passengers, contact, totalAmount, baseFare } = location.state || {
     flight: { id: '1', airline: "IndiGo", flightNumber: "6E-205", departure: { city: "Delhi", time: "06:00" }, arrival: { city: "Mumbai", time: "08:15" }, price: 4500, seatsAvailable: 120 },
@@ -16,25 +23,29 @@ export default function FlightPaymentPage() {
     baseFare: 4500
   };
 
-  const [selectedMethod, setSelectedMethod] = useState('UPI / Google Pay');
+  const [selectedMethod, _setSelectedMethod] = useState('UPI / Google Pay');
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState('');
 
   const handleProcessPayment = async (methodName) => {
+    if (isProcessing) {
+      console.warn('⚠️ Payment already processing, ignoring duplicate request');
+      return;
+    }
+
     const finalMethod = methodName || selectedMethod;
     setIsProcessing(true);
     setError('');
 
     try {
-      const userId = localStorage.getItem('userId') || 'usr_guest_' + Date.now();
-      const bookingId = 'FLIGHT-' + Date.now();
-      const pnr = 'PNR' + Math.random().toString(36).substring(2, 8).toUpperCase();
-
-      // Create booking object
+      const userId = localStorage.getItem('userId');
+      if (!userId) {
+        navigate('/login?returnTo=/flights', { replace: true });
+        return;
+      }
+      // The booking reference is issued by the backend. Nothing is treated as
+      // confirmed until Firestore has actually recorded it.
       const booking = {
-        id: bookingId,
-        bookingId,
-        pnr,
         status: 'confirmed',
         type: 'flight',
         flight,
@@ -48,51 +59,41 @@ export default function FlightPaymentPage() {
         userId
       };
 
-      // Try backend first, but fall back to localStorage
-      try {
-        const response = await api.post(
-          '/bookings/flights',
-          {
-            userId,
-            flightId: flight.id,
-            passengers: passengers.map(p => `${p.firstName} ${p.lastName}`),
-            fareClass: searchParams.cabinClass,
-            totalAmount,
-            travellers: {
-              passengers,
-              contact,
-              searchParams,
-              paymentMethod: finalMethod
-            }
-          },
-          {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
-            },
-            timeout: 5000
+      const response = await api.post(
+        '/bookings/flights',
+        {
+          userId,
+          userEmail: contact?.email || localStorage.getItem('userEmail') || '',
+          userName: passengers?.[0]?.firstName || 'Traveller',
+          flightId: flight.id,
+          passengers: passengers.map(p => `${p.firstName} ${p.lastName}`),
+          fareClass: searchParams.cabinClass,
+          totalAmount,
+          baseFare,
+          travellers: {
+            passengers,
+            contact,
+            searchParams,
+            paymentMethod: finalMethod
           }
-        );
+        },
+        { timeout: 20000 }
+      );
 
-        if (response.data.success) {
-          booking.bookingId = response.data.data.bookingId;
-          booking.pnr = response.data.data.pnr;
-          booking.status = response.data.data.status;
-        }
-      } catch (backendErr) {
-        console.warn('Backend unavailable, using local storage:', backendErr.message);
+      // api interceptor already unwraps res.data, so `response` is the body
+      if (!response?.success || !response.data?.bookingId) {
+        throw new Error(response?.message || 'The booking could not be confirmed.');
       }
 
-      // Always save to localStorage
-      console.log('📌 Saving booking to localStorage:', booking);
-      const existingBookings = JSON.parse(localStorage.getItem('mmt_bookings') || '[]');
-      existingBookings.push(booking);
-      localStorage.setItem('mmt_bookings', JSON.stringify(existingBookings));
-      console.log('✅ Booking saved! Total bookings in localStorage:', existingBookings.length);
+      booking.id = response.data.id || response.data.bookingId;
+      booking.bookingId = response.data.bookingId;
+      booking.pnr = response.data.pnr;
+      booking.status = response.data.status;
 
       navigate('/flights/success', { state: { booking, flight } });
     } catch (err) {
       console.error('Payment error:', err);
-      setError('Failed to process booking. Please try again.');
+      setError(err.message || 'Failed to process booking. Please try again.');
       setIsProcessing(false);
     }
   };

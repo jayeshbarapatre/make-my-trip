@@ -1,0 +1,161 @@
+.otp-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, .55);
+  backdrop-filter: blur(3px);
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  z-index: 10000;
+}
+
+.otp-modal {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  background: hsl(var(--b1, 0 0% 100%));
+  color: hsl(var(--bc, 220 13% 18%));
+  border-radius: 16px;
+  padding: 28px 26px 26px;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, .25);
+  animation: otp-pop .18s ease-out;
+}
+
+@keyframes otp-pop {
+  from { opacity: 0; transform: translateY(8px) scale(.98); }
+  to   { opacity: 1; transform: none; }
+}
+
+.otp-modal__close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  border: 0;
+  background: transparent;
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+  color: hsl(var(--bc, 220 13% 18%) / .45);
+}
+.otp-modal__close:hover { color: hsl(var(--bc, 220 13% 18%)); }
+
+.otp-modal__head { text-align: center; margin-bottom: 18px; }
+.otp-modal__icon { font-size: 30px; }
+.otp-modal__head h3 { margin: 8px 0 6px; font-size: 20px; font-weight: 700; }
+.otp-modal__head p { margin: 0; font-size: 13px; line-height: 1.6; color: hsl(var(--bc, 220 13% 18%) / .6); }
+
+.otp-banner {
+  border-radius: 8px;
+  padding: 10px 13px;
+  font-size: 13px;
+  line-height: 1.5;
+  margin-bottom: 16px;
+  border-left: 3px solid;
+}
+.otp-banner__sub { margin-top: 4px; font-size: 12px; opacity: .8; }
+.otp-banner--info    { background: #eff6ff; border-color: #3b82f6; color: #1e40af; }
+.otp-banner--success { background: #ecfdf5; border-color: #10b981; color: #065f46; }
+.otp-banner--warn    { background: #fffbeb; border-color: #f59e0b; color: #92400e; }
+.otp-banner--error   { background: #fef2f2; border-color: #ef4444; color: #991b1b; }
+
+.otp-field { margin-bottom: 16px; }
+.otp-field label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .6px;
+  color: hsl(var(--bc, 220 13% 18%) / .55);
+  margin-bottom: 7px;
+}
+.otp-field__head { display: flex; justify-content: space-between; align-items: baseline; }
+
+.otp-link {
+  border: 0;
+  background: none;
+  padding: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1a73e8;
+  cursor: pointer;
+}
+.otp-link:hover { text-decoration: underline; }
+
+.otp-phone {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid hsl(var(--bc, 220 13% 18%) / .18);
+  border-radius: 9px;
+  overflow: hidden;
+  transition: border-color .15s;
+}
+.otp-phone:focus-within { border-color: #1a73e8; }
+.otp-phone__cc {
+  padding: 12px 12px;
+  font-weight: 700;
+  font-size: 14px;
+  background: hsl(var(--bc, 220 13% 18%) / .05);
+  color: hsl(var(--bc, 220 13% 18%) / .75);
+}
+.otp-phone input {
+  flex: 1;
+  border: 0;
+  outline: none;
+  padding: 12px;
+  font-size: 15px;
+  background: transparent;
+  color: inherit;
+}
+
+.otp-code-input {
+  width: 100%;
+  border: 1.5px solid hsl(var(--bc, 220 13% 18%) / .18);
+  border-radius: 9px;
+  padding: 13px;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 10px;
+  text-align: center;
+  outline: none;
+  background: transparent;
+  color: inherit;
+  transition: border-color .15s;
+}
+.otp-code-input:focus { border-color: #1a73e8; }
+
+.otp-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 12px;
+  color: hsl(var(--bc, 220 13% 18%) / .55);
+}
+.otp-meta--warn { color: #b45309; font-weight: 600; }
+
+.otp-btn {
+  width: 100%;
+  border: 0;
+  border-radius: 9px;
+  padding: 13px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: .3px;
+  cursor: pointer;
+  transition: opacity .15s, background .15s;
+}
+.otp-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+.otp-btn--primary { background: #1a73e8; color: #fff; }
+.otp-btn--primary:not(:disabled):hover { background: #1557b0; }
+
+.otp-btn--ghost {
+  margin-top: 9px;
+  background: transparent;
+  color: #1a73e8;
+  border: 1.5px solid hsl(var(--bc, 220 13% 18%) / .15);
+}
+.otp-btn--ghost:not(:disabled):hover { background: hsl(var(--bc, 220 13% 18%) / .04); }
+
+@media (max-width: 600px) {
+  .otp-modal { padding: 24px 18px 20px; }
+  .otp-code-input { font-size: 20px; letter-spacing: 7px; }
+}

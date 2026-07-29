@@ -1,4 +1,3 @@
-import React from 'react'
 import SectionHeader from '../Atoms/SectionHeader'
 import ImageCard from '../Atoms/ImageCard'
 import { HOTEL_BRANDS } from '../../data/homepageData'

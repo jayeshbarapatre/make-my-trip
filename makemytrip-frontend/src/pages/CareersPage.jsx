@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { cmsService } from '../services/cmsService';
 import './CareersPage.css';
 
@@ -10,11 +10,6 @@ export default function CareersPage() {
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', resume: '', message: '' });
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    document.title = 'Careers - MakeMyTrip';
-    fetchJobs();
-  }, []);
-
   const fetchJobs = async () => {
     try {
       const response = await cmsService.listJobs();
@@ -25,6 +20,11 @@ export default function CareersPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    document.title = 'Careers - MakeMyTrip';
+    fetchJobs();
+  }, []);
 
   const handleApply = (job) => {
     setSelectedJob(job);

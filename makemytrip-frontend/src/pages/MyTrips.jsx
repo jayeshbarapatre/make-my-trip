@@ -1,13 +1,17 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { bookingService, paymentService, authService } from '../services/authService'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { bookingService, paymentService } from '../services/authService'
 import BookingCard from '../components/BookingCard'
 import EnhancedBookingDetailsModal from '../components/EnhancedBookingDetailsModal'
 import { useAuth } from '../context/AuthContext'
+import OtpLoginModal from '../components/Auth/OtpLoginModal'
+import Photo from '../components/Common/Photo'
 
 export default function MyTrips() {
   const navigate = useNavigate()
-  const { user, verifyOtpLogin } = useAuth()
+  const { user } = useAuth()
+  const queryClient = useQueryClient()
 
   // Auth guard
   useEffect(() => {
@@ -18,8 +22,6 @@ export default function MyTrips() {
 
   const [activeTab, setActiveTab] = useState('upcoming')
   const [typeFilter, setTypeFilter] = useState('all') // 'all', 'flight', 'hotel', 'bus', 'cab', 'train'
-  const [bookings, setBookings] = useState([])
-  const [loading, setLoading] = useState(true)
   const [selectedBooking, setSelectedBooking] = useState(null)
 
   // Search & Filter
@@ -44,92 +46,51 @@ export default function MyTrips() {
 
   // Mobile OTP Wallet Login Simulation State
   const [showOtpModal, setShowOtpModal] = useState(false)
-  const [mobilePhone, setMobilePhone] = useState('')
-  const [otpCode, setOtpCode] = useState('')
-  const [otpSent, setOtpSent] = useState(false)
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
   const [cancelBookingId, setCancelBookingId] = useState(null)
 
-  // Fetch Bookings
-  const fetchBookings = async () => {
-    setLoading(true)
-    try {
-      let backendBookings = []
-      let localBookings = []
-
-      // Try backend first
-      if (user?.id) {
-        try {
-          const response = await bookingService.getUserBookings(user.id)
-          // Make sure we got an array
-          if (Array.isArray(response)) {
-            backendBookings = response
-          } else if (Array.isArray(response?.data)) {
-            backendBookings = response.data
-          }
-          console.log('✅ Backend bookings:', backendBookings.length, backendBookings)
-        } catch (backendErr) {
-          console.warn("⚠️ Backend fetch failed:", backendErr.message)
-        }
-      }
-
-      // Always load localStorage as secondary source
-      try {
-        localBookings = JSON.parse(localStorage.getItem('mmt_bookings') || '[]')
-        if (localBookings.length > 0) {
-          console.log('💾 localStorage bookings:', localBookings.length, localBookings)
-        }
-      } catch (err) {
-        console.warn('Error reading localStorage:', err)
-      }
-
-      // 🔄 MERGE: Combine backend + localStorage (avoid duplicates)
-      const allBookings = [...backendBookings]
-      const backendIds = new Set(backendBookings.map(b => b.bookingId || b.id))
-
-      // Add localStorage bookings that aren't already in backend
-      for (const localBooking of localBookings) {
-        if (!backendIds.has(localBooking.bookingId) && !backendIds.has(localBooking.id)) {
-          allBookings.push(localBooking)
-        }
-      }
-
-      console.log('📊 Final merged bookings:', allBookings.length)
-      setBookings(allBookings || [])
-    } catch (err) {
-      console.error("Failed to load trips:", err)
-      // Last resort: just use localStorage
-      try {
-        const localBookings = JSON.parse(localStorage.getItem('mmt_bookings') || '[]')
-        console.log('📦 Fallback to localStorage only:', localBookings.length)
-        setBookings(localBookings)
-      } catch (e) {
-        setBookings([])
-      }
-    } finally {
-      setLoading(false)
+  // Firestore is the single source of truth for bookings. Reading from
+  // localStorage here previously surfaced stale and duplicate trips, and could
+  // show records the backend had already rejected or cancelled.
+  const {
+    data: bookings = [],
+    isPending,
+    error: loadError,
+    refetch: fetchBookings
+  } = useQuery({
+    queryKey: ['bookings', user?.id],
+    enabled: Boolean(user?.id),
+    queryFn: async () => {
+      const response = await bookingService.getUserBookings(user.id)
+      return Array.isArray(response)
+        ? response
+        : Array.isArray(response?.data)
+          ? response.data
+          : []
     }
-  }
+  })
 
-  useEffect(() => {
-    fetchBookings()
-  }, [user])
+  const loading = Boolean(user?.id) && isPending
 
   // Cancel trip handler
   const handleCancelBooking = async (id) => {
     try {
-      const target = bookings.find(b => b.id === id)
-      const baseAmt = target ? (target.totalAmount || target.amount || 5000) : 5000
-      const cancelFee = Math.round(baseAmt * 0.20)
-      const refundAmt = baseAmt - cancelFee
+      const res = await bookingService.cancelBooking(id)
+      // Refetch rather than patching local state: the server decides the final
+      // status and the refund amount, not the client.
+      await queryClient.invalidateQueries({ queryKey: ['bookings', user?.id] })
 
-      await bookingService.cancelBooking(id)
-      setBookings(prev => prev.map(b => b.id === id ? { ...b, status: 'cancelled' } : b))
-      showNotification(`Booking cancelled. Refund of ₹${refundAmt.toLocaleString()} after ₹${cancelFee.toLocaleString()} charges.`, 'success')
+      const refund = res?.refund
+      showNotification(
+        refund
+          ? `Booking cancelled. ₹${Number(refund.refundAmount).toLocaleString('en-IN')} will be refunded after a ₹${Number(refund.cancellationFee).toLocaleString('en-IN')} cancellation fee (${refund.policy}).`
+          : 'Booking cancelled. Any refund due will be processed to your original payment method.',
+        'success'
+      )
       setShowCancelConfirm(false)
       setCancelBookingId(null)
     } catch (err) {
-      showNotification('Failed to cancel booking', 'error')
+      showNotification(err.message || 'Failed to cancel booking', 'error')
     }
   }
 
@@ -141,54 +102,13 @@ export default function MyTrips() {
       setShowRazorpay(true)
       setPaymentSuccess(false)
     } catch (err) {
-      showNotification('Failed to initialize payment', 'error')
+      showNotification(err.message || 'Failed to initialize payment', 'error')
     }
   }
 
   // Mobile OTP Send Handler
-  const handleSendOtp = async (e) => {
-    e.preventDefault()
-    if (!mobilePhone || mobilePhone.length < 10) {
-      showNotification('Please enter a valid 10-digit mobile number', 'error')
-      return
-    }
-    try {
-      const res = await authService.sendMobileOtp(mobilePhone)
-      if (res && (res.data || res.message)) {
-        setOtpSent(true)
-        showNotification('OTP sent successfully', 'success')
-      } else {
-        showNotification('Failed to send OTP. Please try again', 'error')
-      }
-    } catch (err) {
-      showNotification('Failed to send OTP', 'error')
-    }
-  }
-
-  // Mobile OTP Verify Handler
-  const handleVerifyOtp = async (e) => {
-    e.preventDefault()
-    if (!otpCode) {
-      showNotification('Please enter the verification OTP', 'error')
-      return
-    }
-    try {
-      if (verifyOtpLogin) {
-        await verifyOtpLogin(mobilePhone, otpCode)
-      } else {
-        await authService.verifyMobileOtp(mobilePhone, otpCode)
-      }
-      showNotification('Authentication successful!', 'success')
-      setShowOtpModal(false)
-      setOtpSent(false)
-      setOtpCode('')
-      fetchBookings()
-    } catch (err) {
-      showNotification(err?.message || 'Invalid OTP code', 'error')
-    }
-  }
-
-  // Search & Filter Logic
+    // Mobile OTP Verify Handler
+    // Search & Filter Logic
   const searchBookings = (bookingsToSearch) => {
     if (!searchQuery) return bookingsToSearch
 
@@ -257,6 +177,13 @@ export default function MyTrips() {
     }
     return 0
   })
+
+
+  const handleOtpLoginSuccess = () => {
+    setShowOtpModal(false)
+    showNotification("Signed in successfully", "success")
+    fetchBookings()
+  }
 
   return (
     <div style={{ minHeight: '100vh', background: 'hsl(var(--b2))', padding: '50px 0 40px', }}>
@@ -515,9 +442,26 @@ export default function MyTrips() {
           <div style={{ padding: '60px 20px', textAlign: 'center', fontSize: '18px', color: 'hsl(var(--bc) / 0.55)', fontWeight: 600 }}>
             ⏳ Loading your trips...
           </div>
+        ) : loadError ? (
+          <div style={{ background: 'hsl(var(--b1))', borderRadius: '16px', padding: '48px 24px', textAlign: 'center', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', border: '1px solid hsl(var(--b3))' }}>
+            <h3 style={{ margin: '0 0 8px', fontSize: '22px', fontWeight: 800, color: 'hsl(var(--bc))' }}>We could not load your trips</h3>
+            <p style={{ margin: '0 0 20px', color: 'hsl(var(--bc) / 0.55)', fontSize: '15px' }}>{loadError.message || 'Please try again.'}</p>
+            <button
+              onClick={fetchBookings}
+              style={{ padding: '10px 24px', borderRadius: '8px', border: 'none', background: 'hsl(var(--p))', color: 'hsl(var(--pc))', fontWeight: 700, fontSize: '15px', cursor: 'pointer' }}
+            >
+              Retry
+            </button>
+          </div>
         ) : sortedBookings.length === 0 ? (
-          <div style={{ background: 'hsl(var(--b1))', borderRadius: '16px', padding: '80px 20px', textAlign: 'center', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', border: '1px solid hsl(var(--b3))' }}>
-            <div style={{ fontSize: '48px', marginBottom: '16px' }}>🧳</div>
+          <div style={{ background: 'hsl(var(--b1))', borderRadius: '16px', padding: '48px 20px 72px', textAlign: 'center', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', border: '1px solid hsl(var(--b3))' }}>
+            <div style={{ width: '100%', maxWidth: '460px', height: '210px', margin: '0 auto 28px', borderRadius: '14px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(10, 17, 40, 0.12)' }}>
+              <Photo
+                name="state-empty-trips"
+                sizes="(max-width: 520px) 90vw, 460px"
+                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+              />
+            </div>
             <h3 style={{ margin: '0 0 8px', fontSize: '22px', fontWeight: 800, color: 'hsl(var(--bc))' }}>No bookings found</h3>
             <p style={{ margin: 0, color: 'hsl(var(--bc) / 0.55)', fontSize: '15px' }}>{searchQuery || dateRangeStart ? 'Try adjusting your search filters or plan your next vacation from the MakeMyTrip homepage.' : 'Plan your next vacation or flight search from the MakeMyTrip homepage.'}</p>
           </div>
@@ -607,83 +551,12 @@ export default function MyTrips() {
       )}
 
       {/* ── Modal 3: Razorpay Style Mobile OTP Wallet Login ── */}
-      {showOtpModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1200, padding: '20px' }}>
-          <div style={{ background: 'hsl(var(--b1))', width: '100%', maxWidth: '440px', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 25px 50px rgba(0,0,0,0.3)' }}>
-
-            <div style={{ background: 'hsl(var(--b2))', borderBottom: '1px solid hsl(var(--b3))', padding: '28px 28px 20px', position: 'relative' }}>
-              <h2 style={{ margin: 0, fontSize: '24px', fontWeight: 800, color: 'hsl(var(--bc))' }}>Mobile OTP Login</h2>
-              <p style={{ margin: '4px 0 0', color: 'hsl(var(--bc) / 0.55)', fontSize: '14px' }}>Razorpay Wallet Style 6-digit secure authentication</p>
-              <button onClick={() => setShowOtpModal(false)} style={{ position: 'absolute', right: '20px', top: '24px', background: 'transparent', border: 'none', color: 'hsl(var(--bc))', fontSize: '22px', cursor: 'pointer' }}>✕</button>
-            </div>
-
-            <div style={{ padding: '28px' }}>
-              {!otpSent ? (
-                <form onSubmit={handleSendOtp} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: 'hsl(var(--bc) / 0.6)', marginBottom: '8px' }}>Enter 10-Digit Mobile Number</label>
-                    <div style={{ display: 'flex', borderRadius: '10px', overflow: 'hidden', border: '1px solid hsl(var(--b3))' }}>
-                      <span style={{ background: 'hsl(var(--b2))', padding: '14px 16px', color: 'hsl(var(--bc) / 0.55)', fontWeight: 700, borderRight: '1px solid hsl(var(--b3))' }}>+91</span>
-                      <input
-                        type="tel"
-                        maxLength="10"
-                        placeholder="9876543210"
-                        value={mobilePhone}
-                        onChange={(e) => setMobilePhone(e.target.value.replace(/\D/g, ''))}
-                        style={{ border: 'none', padding: '14px 16px', fontSize: '16px', fontWeight: 600, width: '100%', outline: 'none', background: 'hsl(var(--b1))', color: 'hsl(var(--bc))' }}
-                        autoFocus
-                      />
-                    </div>
-                  </div>
-
-                  <button
-                    type="submit"
-                    style={{ background: 'hsl(var(--p))', color: 'hsl(var(--pc))', border: 'none', padding: '16px', borderRadius: '10px', fontSize: '16px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px hsl(var(--p) / 0.3)' }}
-                  >
-                    Send One-Time Password (OTP)
-                  </button>
-                </form>
-              ) : (
-                <form onSubmit={handleVerifyOtp} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                  <div style={{ background: 'hsl(var(--b2))', padding: '16px', borderRadius: '10px', textAlign: 'center' }}>
-                    <div style={{ fontSize: '13px', color: 'hsl(var(--bc) / 0.55)' }}>Simulated SMS sent to</div>
-                    <div style={{ fontSize: '16px', fontWeight: 800, color: 'hsl(var(--bc))', marginTop: '2px' }}>+91 {mobilePhone}</div>
-                  </div>
-
-                  <div>
-                    <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: 'hsl(var(--bc) / 0.6)', marginBottom: '8px' }}>Enter 6-Digit OTP Code</label>
-                    <input
-                      type="text"
-                      maxLength="6"
-                      placeholder="••••••"
-                      value={otpCode}
-                      onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
-                      style={{ border: '1px solid hsl(var(--b3))', padding: '16px', borderRadius: '10px', fontSize: '24px', letterSpacing: '12px', textAlign: 'center', fontWeight: 800, width: '100%', outline: 'none', background: 'hsl(var(--b1))', color: 'hsl(var(--bc))' }}
-                      autoFocus
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    style={{ background: 'hsl(var(--su))', color: 'hsl(var(--b1))', border: 'none', padding: '16px', borderRadius: '10px', fontSize: '16px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px hsl(var(--su) / 0.3)' }}
-                  >
-                    Verify OTP & Log In
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setOtpSent(false)}
-                    style={{ background: 'transparent', border: 'none', color: 'hsl(var(--er))', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }}
-                  >
-                    ← Edit Mobile Number
-                  </button>
-                </form>
-              )}
-            </div>
-
-          </div>
-        </div>
-      )}
+      <OtpLoginModal
+        open={showOtpModal}
+        onClose={() => setShowOtpModal(false)}
+        onSuccess={handleOtpLoginSuccess}
+        title="Mobile OTP Login"
+      />
 
       {/* Notification Toast */}
       {notification.show && (

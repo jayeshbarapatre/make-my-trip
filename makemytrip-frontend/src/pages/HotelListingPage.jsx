@@ -1,11 +1,12 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { UDAIPUR_HOTELS, HOTEL_PINS } from '../data/udaipurHotelsData'
 import { useAuth } from '../context/AuthContext'
-import { authService } from '../services/authService'
 import CustomCalendarPicker from '../components/CustomCalendarPicker'
 import { searchHotels } from '../services/hotelService'
 import '../styles/UdaipurListing.css'
+import OtpLoginModal from '../components/Auth/OtpLoginModal'
+import { photo } from '../utils/images'
 
 /* ─────────── SVGs & Icons ─────────── */
 const I = {
@@ -348,25 +349,14 @@ function FilterSidebar({ filters, setFilter, pins, onOpenMap }) {
 const mapUdaipurSeed = (s) => {
   if (typeof s !== 'string') return s;
   
-  // If the image URL is from the down magnific.com service, map it to a valid Unsplash photo ID
+  // Legacy records may still carry a dead third-party URL; map them onto a local photograph.
   if (s.includes('magnific.com')) {
-    const fallbacks = [
-      '1542314831-c53cd4b85d05',
-      '1566073771259-6a8506099945',
-      '1582719478250-c89cae4dc85b',
-      '1512918728675-ed5a9ecdebfd',
-      '1520250497591-112f2f40a3f4',
-      '1540541338287-41700207dee6',
-      '1611892440504-42a792e24d32',
-      '1590050752117-238cb061271f',
-      '1578683010236-d716f9a3f461'
-    ];
+    const fallbacks = ['hotel-luxury-exterior', 'hotel-room', 'hotel-pool', 'hotel-lobby', 'hotel-restaurant', 'hotel-suite', 'hotel-room-2', 'hotel-reception', 'hotel-rooftop'];
     let hash = 0;
     for (let i = 0; i < s.length; i++) {
       hash = s.charCodeAt(i) + ((hash << 5) - hash);
     }
-    const idx = Math.abs(hash) % fallbacks.length;
-    return fallbacks[idx];
+    return photo(fallbacks[Math.abs(hash) % fallbacks.length]);
   }
   
   if (s.startsWith('http') || s.startsWith('/')) return s;
@@ -415,7 +405,7 @@ const mapUdaipurSeed = (s) => {
 };
 
 /* ─────────── PhotoCarousel Component ─────────── */
-function PhotoCarousel({ seeds, photos, hotelId }) {
+function PhotoCarousel({ seeds, photos, hotelId: _hotelId }) {
   const [idx, setIdx] = useState(0);
   const total = seeds.length;
   const go = (d, e) => { 
@@ -430,9 +420,11 @@ function PhotoCarousel({ seeds, photos, hotelId }) {
           const cleanSeed = mapUdaipurSeed(s);
           return (
             <div key={s} className="carousel-slide" style={{ minWidth: '100%', height: '100%', flexShrink: 0 }}>
-              {/* Beautiful hotel imagery placeholders styled with rich Unsplash images */}
+              {/* Hotel photography carousel — local optimised photographs */}
               <img 
-                src={typeof cleanSeed === 'string' && (cleanSeed.startsWith('http') || cleanSeed.startsWith('/')) ? cleanSeed : `https://images.unsplash.com/photo-${cleanSeed}?auto=format&fit=crop&w=600&h=420&q=80`} 
+                src={typeof cleanSeed === 'string' && (cleanSeed.startsWith('http') || cleanSeed.startsWith('/')) ? cleanSeed : photo('hotel-luxury-exterior')}
+                loading="lazy"
+                decoding="async" 
                 alt="Udaipur Luxury Stay" 
                 loading="lazy"
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
@@ -490,7 +482,7 @@ function HotelCard({ h, density, wishlist, toggleWishlist, onSelectHotel }) {
           <div className="hc-right">
             <div className="rating-pill">
               <div className="rp-label">{h.ratingLabel}</div>
-              <div className="rp-score">{h.rating.toFixed(1)}</div>
+              <div className="rp-score">{Number(h.rating || 0).toFixed(1)}</div>
               <div className="rp-reviews">({h.reviews} Ratings)</div>
             </div>
             {h.promo && <div className="promo-pill">{h.promo}</div>}
@@ -556,7 +548,7 @@ function SortTabs({ sort, setSort }) {
 }
 
 /* ─────────── Map Overlay ─────────── */
-function MapOverlay({ open, onClose, pins, hotels, wishlist, toggleWishlist }) {
+function MapOverlay({ open, onClose, pins, hotels, wishlist, toggleWishlist: _toggleWishlist }) {
   const [hover, setHover] = useState(null);
   if (!open) return null;
   return (
@@ -621,10 +613,10 @@ function MapOverlay({ open, onClose, pins, hotels, wishlist, toggleWishlist }) {
             if (!h || !p) return null;
             return (
               <div className="map-card" style={{left: `${p.x * 100}%`, top: `${p.y * 100}%`}}>
-                <img src={`https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=240&h=150&q=80&sig=${h.id}`} alt=""/>
+                <img src={h.img || photo('hotel-luxury-exterior', 400)} alt={h.name} loading="lazy" decoding="async"/>
                 <div className="mc-body">
                   <div className="mc-rating">
-                    <span className="mc-score">{h.rating.toFixed(1)}</span>
+                    <span className="mc-score">{Number(h.rating || 0).toFixed(1)}</span>
                     <span className="mc-label">{h.ratingLabel}</span>
                     <span className="mc-reviews">({h.reviews})</span>
                   </div>
@@ -698,7 +690,7 @@ function MobileApp({ hotels, wishlist, toggleWishlist, onOpenFilter, onSelectHot
         {hotels.map(h => (
           <article key={h.id} className="m-card" onClick={() => onSelectHotel && onSelectHotel(h)} style={{ cursor: 'pointer' }}>
             <div className="m-photo">
-              <img src={`https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=390&h=180&q=80&sig=${h.id}`} alt=""/>
+              <img src={h.img || photo('hotel-luxury-exterior', 800)} alt={h.name} loading="lazy" decoding="async"/>
               <button className={"m-wl" + (wishlist.has(h.id) ? " on" : "")} onClick={(e) => { e.stopPropagation(); toggleWishlist(h.id); }}>
                 {I.heart(wishlist.has(h.id))}
               </button>
@@ -707,7 +699,7 @@ function MobileApp({ hotels, wishlist, toggleWishlist, onOpenFilter, onSelectHot
             </div>
             <div className="m-body">
               <div className="m-rating-row">
-                <span className="m-rating">{h.rating.toFixed(1)}</span>
+                <span className="m-rating">{Number(h.rating || 0).toFixed(1)}</span>
                 <span className="m-rating-l">{h.ratingLabel}</span>
                 <span className="m-rev">({h.reviews})</span>
               </div>
@@ -742,14 +734,8 @@ function MobileApp({ hotels, wishlist, toggleWishlist, onOpenFilter, onSelectHot
 }
 
 /* ─────────── Main HotelListingPage ─────────── */
-const generateHotels = (cityName) => {
-  const imgUrls = [
-    'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&h=400&q=80',
-    'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=600&h=400&q=80',
-    'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=600&h=400&q=80',
-    'https://images.unsplash.com/photo-1540541338287-41700207dee6?auto=format&fit=crop&w=600&h=400&q=80',
-    'https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=600&h=400&q=80'
-  ]
+const _generateHotels = (cityName) => {
+  const _imgUrls = ['hotel-luxury-exterior', 'hotel-room', 'hotel-pool', 'hotel-lobby', 'hotel-restaurant'].map((k) => photo(k))
   const localities = ['Downtown', 'Near Beach Road', 'Lakeside View', 'City Center', 'Old Haveli Street']
   return Array.from({ length: 12 }).map((_, i) => ({
     id: `hotel-${cityName.toLowerCase().trim()}-${i}`,
@@ -767,9 +753,10 @@ const generateHotels = (cityName) => {
     amenities: ['Airport Transfer', 'Free WiFi', 'Swimming Pool'],
     review: "Stunning lake view from balcony, hosts were warm and the rooftop sunset is unreal.",
     longStay: ["Complimentary Breakfast", "Free Laundry"],
-    seed: [
-      "1542314831-c53cd4b85d05", "1566073771259-6a8506099945", "1582719478250-c89cae4dc85b", "1512918728675-ed5a9ecdebfd", "1520250497591-112f2f40a3f4", "1540541338287-41700207dee6", "1611892440504-42a792e24d32", "1590050752117-238cb061271f", "1578683010236-d716f9a3f461", "1551882547-ff40c0d589rx", "1535827841776-24afc1e255ac", "1445019980597-93fa8acb246c"
-    ].sort(() => Math.random() - 0.5).slice(0, 5),
+    seed: ['hotel-luxury-exterior', 'hotel-room', 'hotel-pool', 'hotel-lobby', 'hotel-restaurant', 'hotel-suite', 'hotel-room-2', 'hotel-reception', 'hotel-rooftop', 'hotel-pool-2', 'hotel-room-3', 'hotel-resort']
+      .map((k) => photo(k))
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 5),
     photos: 234,
     starHost: i % 4 === 0,
     coupleFriendly: true,
@@ -797,7 +784,7 @@ export default function HotelListingPage() {
         const res = await searchHotels({ city: cityQuery, checkIn, checkOut, guests });
 
         // Map backend response to match expected frontend structure if needed
-        const mapped = (res.data || []).map((h, i) => ({
+        const mapped = (res.data || []).map((h, _i) => ({
           ...h,
           id: h.id,
           locality: h.location || h.city,
@@ -811,11 +798,7 @@ export default function HotelListingPage() {
           longStay: [],
           seed: (h.images && h.images.length >= 3) ? h.images : [
             ...(h.images || []),
-            "1542314831-c53cd4b85d05",
-            "1566073771259-6a8506099945",
-            "1582719478250-c89cae4dc85b",
-            "1512918728675-ed5a9ecdebfd",
-            "1520250497591-112f2f40a3f4"
+            ...['hotel-luxury-exterior', 'hotel-room', 'hotel-pool', 'hotel-lobby', 'hotel-restaurant'].map((k) => photo(k))
           ].slice(0, 5),
           photos: 10,
           starHost: h.rating >= 4.5,
@@ -837,13 +820,9 @@ export default function HotelListingPage() {
   const DYNAMIC_HOTELS = useMemo(() => realHotels, [realHotels]);
 
 
-  const { user, verifyOtpLogin } = useAuth()
+  const { user } = useAuth()
   const [showLoginModal, setShowLoginModal] = useState(false)
-  const [mobilePhone, setMobilePhone] = useState('')
-  const [otpCode, setOtpCode] = useState('')
-  const [otpSent, setOtpSent] = useState(false)
   const [selectedHotel, setSelectedHotel] = useState(null)
-  const [loginError, setLoginError] = useState('')
   const [showCustomAlert, setShowCustomAlert] = useState(false)
   const [alertMsg, setAlertMsg] = useState('')
 
@@ -864,44 +843,7 @@ export default function HotelListingPage() {
     })
   }
 
-  const handleSendOtp = async (e) => {
-    e.preventDefault()
-    if (!mobilePhone || mobilePhone.length < 10) {
-      setLoginError('Please enter a valid 10-digit mobile number')
-      return
-    }
-    setLoginError('')
-    try {
-      const res = await authService.sendMobileOtp(mobilePhone)
-      if (res && (res.data || res.message)) {
-        setOtpSent(true)
-      } else {
-        setLoginError('Failed to send OTP. Please try again.')
-      }
-    } catch (err) {
-      setLoginError(err.message || 'Failed to send OTP. Please try again.')
-    }
-  }
-
-  const handleVerifyOtp = async (e) => {
-    e.preventDefault()
-    if (!otpCode || otpCode.length < 6) {
-      setLoginError('Please enter a valid 6-digit OTP (e.g., 123456)')
-      return
-    }
-    setLoginError('')
-    try {
-      await verifyOtpLogin(mobilePhone, otpCode)
-      setShowLoginModal(false)
-      if (selectedHotel) {
-        navigate(`/hotels/detail/${selectedHotel.id}`, { state: { hotel: selectedHotel, checkIn, checkOut, guests } })
-      }
-    } catch (err) {
-      setLoginError(err.message || 'Verification failed. Try 123456.')
-    }
-  }
-
-  // State configurations drive our premium layout density & viewport simulator
+      // State configurations drive our premium layout density & viewport simulator
   const [density, setDensity] = useState('comfortable'); // compact, comfortable, spacious
   const [view, setView] = useState('desktop'); // desktop, mobile
 
@@ -1034,6 +976,14 @@ export default function HotelListingPage() {
   }, [visible.length, filtered.length]);
 
   useEffect(() => { setPage(1); }, [filters, sort]);
+
+
+  const handleOtpLoginSuccess = () => {
+    setShowLoginModal(false)
+    if (selectedHotel) {
+      navigate(`/hotels/detail/${selectedHotel.id}`, { state: { hotel: selectedHotel, checkIn, checkOut, guests } })
+    }
+  }
 
   return (
     <div className="udaipur-page-wrapper">
@@ -1197,66 +1147,11 @@ export default function HotelListingPage() {
         toggleWishlist={toggleWishlist} 
       />
 
-      {showLoginModal && (
-        <div className="custom-modal-overlay">
-          <div className="custom-login-card">
-            <button className="custom-modal-close" onClick={() => setShowLoginModal(false)}>✕</button>
-
-            <div className="custom-login-header">
-              <span className="custom-login-icon">🔐</span>
-              <h3>Login to Continue</h3>
-              <p>MakeMyTrip requires verification before booking. Enter your mobile number to instantly login.</p>
-            </div>
-
-            {loginError && <div className="custom-login-error">{loginError}</div>}
-
-            {!otpSent ? (
-              <form onSubmit={handleSendOtp}>
-                <div className="custom-input-group">
-                  <label>MOBILE NUMBER</label>
-                  <div className="custom-phone-input">
-                    <span className="custom-country-code">+91</span>
-                    <input
-                      type="tel"
-                      placeholder="10-digit mobile number"
-                      value={mobilePhone}
-                      onChange={(e) => {
-                        const val = e.target.value.replace(/\D/g, '').slice(0, 10);
-                        setMobilePhone(val);
-                      }}
-                      maxLength="10"
-                      inputMode="numeric"
-                      autoFocus
-                      required
-                    />
-                  </div>
-                </div>
-                <button type="submit" className="custom-login-btn">GET ONE TIME PASSWORD (OTP)</button>
-              </form>
-            ) : (
-              <form onSubmit={handleVerifyOtp}>
-                <div className="custom-input-group">
-                  <div className="custom-otp-header">
-                    <label>ENTER 6-DIGIT OTP</label>
-                    <button type="button" onClick={() => setOtpSent(false)}>Change Number</button>
-                  </div>
-                  <input
-                    type="text"
-                    maxLength="6"
-                    placeholder="Enter 6-digit OTP"
-                    value={otpCode}
-                    onChange={(e) => setOtpCode(e.target.value)}
-                    className="custom-otp-input"
-                    autoFocus
-                    required
-                  />
-                </div>
-                <button type="submit" className="custom-verify-btn">VERIFY & RESUME BOOKING</button>
-              </form>
-            )}
-          </div>
-        </div>
-      )}
+      <OtpLoginModal
+        open={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onSuccess={handleOtpLoginSuccess}
+      />
 
       {showCustomAlert && (
         <div className="custom-modal-overlay" style={{ zIndex: 10000 }}>

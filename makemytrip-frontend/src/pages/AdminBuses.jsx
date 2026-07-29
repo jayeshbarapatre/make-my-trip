@@ -16,29 +16,29 @@ const AdminBuses = () => {
   const [editingId, setEditingId] = useState(null)
   const [editingBus, setEditingBus] = useState(null)
 
-  useEffect(() => {
-    fetchBuses()
-  }, [page, search])
-
   const fetchBuses = async () => {
     try {
       setLoading(true)
       const response = await adminBusesService.getAll({ page, limit: 10, search })
       setBuses(response.data.data?.buses || [])
       setPagination(response.data.data?.pagination || {})
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to load buses')
     } finally {
       setLoading(false)
     }
   }
 
+  useEffect(() => {
+    fetchBuses()
+  }, [page, search])
+
   const handleDelete = async (id) => {
     if (window.confirm('Delete this bus?')) {
       try {
         await adminBusesService.delete(id)
         setBuses(buses.filter(b => b.id !== id))
-      } catch (err) {
+      } catch (_err) {
         setError('Failed to delete bus')
       }
     }
@@ -48,7 +48,7 @@ const AdminBuses = () => {
     try {
       await adminBusesService.toggleStatus(id)
       setBuses(buses.map(b => b.id === id ? { ...b, isActive: !b.isActive } : b))
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to update status')
     }
   }
@@ -76,7 +76,7 @@ const AdminBuses = () => {
         setBuses([newBus, ...buses])
       }
       handleCloseForm()
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to save bus')
     }
   }

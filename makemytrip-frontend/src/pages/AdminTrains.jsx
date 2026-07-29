@@ -16,29 +16,29 @@ const AdminTrains = () => {
   const [editingId, setEditingId] = useState(null)
   const [editingTrain, setEditingTrain] = useState(null)
 
-  useEffect(() => {
-    fetchTraines()
-  }, [page, search])
-
   const fetchTraines = async () => {
     try {
       setLoading(true)
       const response = await adminTrainsService.getAll({ page, limit: 10, search })
       setTraines(response.data.data?.traines || response.data.data?.trains || [])
       setPagination(response.data.data?.pagination || {})
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to load trains')
     } finally {
       setLoading(false)
     }
   }
 
+  useEffect(() => {
+    fetchTraines()
+  }, [page, search])
+
   const handleDelete = async (id) => {
     if (window.confirm('Delete this train?')) {
       try {
         await adminTrainsService.delete(id)
         setTraines(trains.filter(b => b.id !== id))
-      } catch (err) {
+      } catch (_err) {
         setError('Failed to delete train')
       }
     }
@@ -48,7 +48,7 @@ const AdminTrains = () => {
     try {
       await adminTrainsService.toggleStatus(id)
       setTraines(trains.map(b => b.id === id ? { ...b, isActive: !b.isActive } : b))
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to update status')
     }
   }
@@ -76,7 +76,7 @@ const AdminTrains = () => {
         setTraines([newTrain, ...trains])
       }
       handleCloseForm()
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to save train')
     }
   }

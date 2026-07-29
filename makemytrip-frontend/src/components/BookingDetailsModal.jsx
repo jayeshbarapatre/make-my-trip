@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { downloadTicketPDF } from '../utils/pdfGenerator'
 
 export default function BookingDetailsModal({ booking, onClose }) {
@@ -7,9 +7,9 @@ export default function BookingDetailsModal({ booking, onClose }) {
 
   const isFlight = booking.type === 'flight'
   const isHotel = booking.type === 'hotel'
-  const isTrain = booking.type === 'train'
-  const isBus = booking.type === 'bus'
-  const isCab = booking.type === 'cab'
+  const _isTrain = booking.type === 'train'
+  const _isBus = booking.type === 'bus'
+  const _isCab = booking.type === 'cab'
 
   const handleDownloadPDF = async () => {
     setIsDownloading(true)

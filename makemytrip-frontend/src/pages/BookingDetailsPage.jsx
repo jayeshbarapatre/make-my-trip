@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { bookingService } from '../services/authService'
 import { useAuth } from '../context/AuthContext'
@@ -14,15 +14,6 @@ export default function BookingDetailsPage() {
   const [error, setError] = useState(null)
   const [isDownloading, setIsDownloading] = useState(false)
 
-  useEffect(() => {
-    if (!user) {
-      navigate('/login?returnTo=/booking/' + bookingId)
-      return
-    }
-
-    fetchBooking()
-  }, [bookingId, user])
-
   const fetchBooking = async () => {
     try {
       setLoading(true)
@@ -37,6 +28,15 @@ export default function BookingDetailsPage() {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    if (!user) {
+      navigate('/login?returnTo=/booking/' + bookingId)
+      return
+    }
+
+    fetchBooking()
+  }, [bookingId, user])
 
   const handleDownloadPDF = async () => {
     if (!booking) return
@@ -112,7 +112,7 @@ export default function BookingDetailsPage() {
   }
 
   const isFlight = booking.type === 'flight'
-  const isHotel = booking.type === 'hotel'
+  const _isHotel = booking.type === 'hotel'
 
   return (
     <div style={{ minHeight: '100vh', background: 'hsl(var(--b2))', padding: '40px 20px' }}>

@@ -24,7 +24,7 @@ import { getPendingHotels, approveHotel, rejectHotel } from '../controllers/admi
 import { getPendingBuses, approveBus, rejectBus } from '../controllers/adminBusApprovalController.js'
 import { getPendingCabs, approveCab, rejectCab } from '../controllers/adminCabApprovalController.js'
 import { getAllVendors, createVendor, deleteVendor, toggleVendorStatus, getVendorHotels } from '../controllers/adminVendorController.js'
-import { getAllBookings } from '../controllers/bookingController.js'
+import { getAllBookings } from '../controllers/firebaseBookingController.js'
 import { getAllUsers, deleteUser, getUserDetails } from '../controllers/adminUserController.js'
 import { getApiHealth, flushCache } from '../controllers/apiHealthController.js'
 import {
@@ -53,6 +53,12 @@ import {
 import {
   uploadMedia, listMedia, getMediaById, deleteMedia
 } from '../controllers/mediaController.js'
+import {
+  listTemplates, getTemplate, createTemplate, updateTemplate, toggleTemplate, deleteTemplate, previewTemplate
+} from '../controllers/emailTemplateAdminController.js'
+import {
+  listLogs, getLog, resendLog, getStats, cleanupOldLogs
+} from '../controllers/emailLogAdminController.js'
 
 const router = express.Router()
 
@@ -182,5 +188,21 @@ router.post('/media/upload', authenticateAdmin, adminOnly, upload.single('file')
 router.get('/media', authenticateAdmin, adminOnly, listMedia)
 router.get('/media/:id', authenticateAdmin, adminOnly, getMediaById)
 router.delete('/media/:id', authenticateAdmin, adminOnly, deleteMedia)
+
+// Email Template Routes
+router.get('/email-templates', authenticateAdmin, adminOnly, listTemplates)
+router.get('/email-templates/:key', authenticateAdmin, adminOnly, getTemplate)
+router.post('/email-templates', authenticateAdmin, adminOnly, createTemplate)
+router.put('/email-templates/:key', authenticateAdmin, adminOnly, updateTemplate)
+router.patch('/email-templates/:key/toggle', authenticateAdmin, adminOnly, toggleTemplate)
+router.delete('/email-templates/:key', authenticateAdmin, adminOnly, deleteTemplate)
+router.post('/email-templates/:key/preview', authenticateAdmin, adminOnly, previewTemplate)
+
+// Email Log Routes
+router.get('/email-logs', authenticateAdmin, adminOnly, listLogs)
+router.get('/email-logs/stats', authenticateAdmin, adminOnly, getStats)
+router.get('/email-logs/:id', authenticateAdmin, adminOnly, getLog)
+router.post('/email-logs/:id/resend', authenticateAdmin, adminOnly, resendLog)
+router.delete('/email-logs/cleanup', authenticateAdmin, adminOnly, cleanupOldLogs)
 
 export default router

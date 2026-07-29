@@ -514,7 +514,7 @@
   font-family: inherit;
   cursor: text;
 }
-.tr-field-input::placeholder { color: hsl(var(--bc) / 0.4); font-weight: 400; }
+.tr-field-input::placeholder { color: hsl(var(--bc) / 0.55); font-weight: 400; }
 .tr-city-dropdown {
   position: absolute;
   top: calc(100% + 8px);

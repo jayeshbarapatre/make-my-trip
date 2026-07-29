@@ -20,10 +20,6 @@ const VendorHotels = () => {
   const [showFormModal, setShowFormModal] = useState(false)
   const [editingHotelId, setEditingHotelId] = useState(null)
 
-  useEffect(() => {
-    fetchHotels()
-  }, [])
-
   const fetchHotels = async () => {
     try {
       setLoading(true)
@@ -37,6 +33,10 @@ const VendorHotels = () => {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    fetchHotels()
+  }, [])
 
   const handleSubmitForApproval = (id) => {
     setConfirmDialog({

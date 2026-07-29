@@ -5,6 +5,8 @@ import { authenticate } from '../middleware/auth.js'
 const router = Router()
 
 router.post('/create-order', authenticate, createRazorpayOrder)
-router.post('/verify', verifyPayment)
+// Verification attributes a payment (and any booking) to a user, so it must
+// never run unauthenticated.
+router.post('/verify', authenticate, verifyPayment)
 
 export default router

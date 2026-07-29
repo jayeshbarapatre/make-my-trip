@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { SERVICE_TABS } from '../data/homepageData'
 import { CITIES as AUTOCOMPLETE_CITIES } from '../data/cities'
@@ -8,17 +8,18 @@ import CustomCalendarPicker from '../components/CustomCalendarPicker'
 import TabIcon from '../components/TabIcon'
 import '../styles/Hero.css' // Navigation and topbar imports
 import '../styles/HomePage.css' // Dynamic style imports
+import { photo } from '../utils/images'
 
 // Generates highly realistic stays for any input city
 const generateHotelsForCity = (cityName) => {
   if (cityName.toLowerCase().trim() === 'udaipur') return UDAIPUR_HOTELS
   
   const imgUrls = [
-    'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&h=400&q=80',
-    'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=600&h=400&q=80',
-    'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=600&h=400&q=80',
-    'https://images.unsplash.com/photo-1540541338287-41700207dee6?auto=format&fit=crop&w=600&h=400&q=80',
-    'https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=600&h=400&q=80'
+    photo('hotel-luxury-exterior'),
+    photo('hotel-room'),
+    photo('hotel-pool'),
+    photo('hotel-lobby'),
+    photo('hotel-restaurant')
   ]
 
   const hotelNames = [
@@ -48,8 +49,10 @@ const generateHotelsForCity = (cityName) => {
 
 export default function HotelsPage() {
   const navigate = useNavigate()
-  const TODAY = new Date().toISOString().slice(0, 10)
-  const TOMORROW = new Date(Date.now() + 86400000).toISOString().slice(0, 10)
+  // Computed once per mount rather than on every render: reading the clock
+  // during render makes the value change between renders of the same screen.
+  const [TODAY] = useState(() => new Date().toISOString().slice(0, 10))
+  const [TOMORROW] = useState(() => new Date(Date.now() + 86400000).toISOString().slice(0, 10))
 
   const [activeTab, setActiveTab] = useState('hotels')
   const [activeChip, setActiveChip] = useState('Free cancellation')
@@ -72,9 +75,9 @@ export default function HotelsPage() {
   const [showGuestDropdown, setShowGuestDropdown] = useState(false)
 
   // Loading & Result States
-  const [loading, setLoading] = useState(false)
-  const [searched, setSearched] = useState(false)
-  const [hotels, setHotels] = useState([])
+  const [_loading, setLoading] = useState(false)
+  const [_searched, setSearched] = useState(false)
+  const [_hotels, setHotels] = useState([])
 
   const cityRef = useRef(null)
   const guestRef = useRef(null)
@@ -184,22 +187,21 @@ export default function HotelsPage() {
   const { weather } = useWeather('Goa')
 
   // Helper for verified travel imagery
-  const img = (id) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=600&h=400&q=80`
 
   const DEALS = [
-    { title: 'The Park Goa', meta: 'Calangute · 4.5 ★ · Beachfront', price: '3,499', old: '5,200', img: img('1507525428034-b723cf961d3e') },
-    { title: 'Taj Vivanta', meta: 'Bengaluru · 4.7 ★ · Premium', price: '6,199', old: '8,900', img: img('1582719478250-c89cae4dc85b') },
-    { title: 'Kumarakom Lake Resort', meta: 'Kerala · 4.8 ★ · Backwaters', price: '8,499', old: '11,200', img: img('1571896349842-33c89424de2d') },
-    { title: 'Jaipur Heritage Haveli', meta: 'Old City · 4.4 ★ · Heritage', price: '2,899', old: '4,100', img: img('1520250497591-112f2f40a3f4') }
+    { title: 'The Park Goa', meta: 'Calangute · 4.5 ★ · Beachfront', price: '3,499', old: '5,200', img: photo('hotel-resort') },
+    { title: 'Taj Vivanta', meta: 'Bengaluru · 4.7 ★ · Premium', price: '6,199', old: '8,900', img: photo('hotel-luxury-exterior') },
+    { title: 'Kumarakom Lake Resort', meta: 'Kerala · 4.8 ★ · Backwaters', price: '8,499', old: '11,200', img: photo('hotel-pool') },
+    { title: 'Jaipur Heritage Haveli', meta: 'Old City · 4.4 ★ · Heritage', price: '2,899', old: '4,100', img: photo('hotel-lobby') }
   ]
 
   const CITIES = [
-    { name: 'Goa', count: '3,420 hotels', img: img('1507525428034-b723cf961d3e') },
-    { name: 'Manali', count: '1,890 hotels', img: img('1464822759023-fed622ff2c3b') },
-    { name: 'Jaipur', count: '2,710 hotels', img: img('1590050752117-238cb061271f') },
-    { name: 'Kerala', count: '4,150 hotels', img: img('1571896349842-33c89424de2d') },
-    { name: 'Udaipur', count: '1,340 hotels', img: img('1543731068-7e0f5beff43a') },
-    { name: 'Ladakh', count: '620 hotels', img: img('1454496522488-7a8e488e8606') }
+    { name: 'Goa', count: '3,420 hotels', img: photo('dest-goa') },
+    { name: 'Manali', count: '1,890 hotels', img: photo('dest-manali') },
+    { name: 'Jaipur', count: '2,710 hotels', img: photo('dest-jaipur') },
+    { name: 'Kerala', count: '4,150 hotels', img: photo('dest-kerala') },
+    { name: 'Udaipur', count: '1,340 hotels', img: photo('dest-udaipur') },
+    { name: 'Ladakh', count: '620 hotels', img: photo('dest-ladakh') }
   ]
 
   const CATS = [

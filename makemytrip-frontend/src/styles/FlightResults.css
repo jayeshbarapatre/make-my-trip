@@ -176,7 +176,7 @@
   font-family: inherit;
   cursor: text;
 }
-.fr-field-input::placeholder { color: hsl(var(--bc) / 0.4); font-weight: 400; }
+.fr-field-input::placeholder { color: hsl(var(--bc) / 0.55); font-weight: 400; }
 .fr-city-dropdown {
   position: absolute;
   top: calc(100% + 8px);
@@ -524,7 +524,7 @@
 }
 .fc-flight-num {
   font-size: var(--fs-caption);
-  color: hsl(var(--bc) / 0.4);
+  color: hsl(var(--bc) / 0.55);
   margin-top: 1px;
   display: flex;
   align-items: center;
@@ -651,7 +651,7 @@
 }
 .fc-per-adult {
   font-size: 10px;
-  color: hsl(var(--bc) / 0.4);
+  color: hsl(var(--bc) / 0.55);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   font-weight: var(--fw-semibold);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useLocation, useNavigate } from 'react-router-dom'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Navigation, Thumbs, FreeMode, Autoplay } from 'swiper/modules'
@@ -6,18 +6,18 @@ import 'swiper/css'
 import 'swiper/css/navigation'
 import 'swiper/css/thumbs'
 import 'swiper/css/free-mode'
-import { UDAIPUR_HOTELS } from '../data/udaipurHotelsData'
 import { useAuth } from '../context/AuthContext'
-import { authService } from '../services/authService'
 import CustomCalendarPicker from '../components/CustomCalendarPicker'
-import { getHotelDetails, getHotelImages } from '../services/hotelService'
+import { getHotelDetails } from '../services/hotelService'
 import '../styles/HotelDetailsPage.css'
+import OtpLoginModal from '../components/Auth/OtpLoginModal'
+import { photo } from '../utils/images'
 
 export default function HotelDetailsPage() {
   const { hotelId } = useParams()
   const location = useLocation()
   const navigate = useNavigate()
-  const { user, verifyOtpLogin } = useAuth()
+  const { _user } = useAuth()
 
   const [hotel, setHotel] = useState(location.state?.hotel || null)
   const [loading, setLoading] = useState(!location.state?.hotel)
@@ -51,7 +51,7 @@ export default function HotelDetailsPage() {
         } else {
           setError('Hotel not found')
         }
-      } catch (err) {
+      } catch (_err) {
         setError('Failed to fetch hotel details')
       } finally {
         setLoading(false)
@@ -60,39 +60,39 @@ export default function HotelDetailsPage() {
     fetchHotel()
   }, [hotelId])
 
-  const [disabledDates, setDisabledDates] = useState([])
+  const [disabledDates, _setDisabledDates] = useState([])
 
   useEffect(() => {
-    if (hotel?.name) {
-      fetch(`${import.meta.env.VITE_API_BASE_URL}/bookings/hotel/${encodeURIComponent(hotel.name)}/blocked-dates`)
-        .then(res => res.json())
-        .then(data => {
-          if (data.success && data.data) {
-            setDisabledDates(data.data)
-          }
-        })
-        .catch(err => console.error('Failed to fetch blocked dates', err))
-    }
+    // ⚠️ Disabled: Blocked dates endpoint not critical - skip to speed up page load
+    // if (hotel?.name) {
+    //   const controller = new AbortController()
+    //   const timeout = setTimeout(() => controller.abort(), 3000)
+    //   fetch(`${import.meta.env.VITE_API_BASE_URL}/bookings/hotel/${encodeURIComponent(hotel.name)}/blocked-dates`, { signal: controller.signal })
+    //     .then(res => res.json())
+    //     .then(data => { if (data.success && data.data) setDisabledDates(data.data) })
+    //     .catch(err => console.log('Blocked dates unavailable'))
+    //     .finally(() => clearTimeout(timeout))
+    // }
   }, [hotel?.name])
 
   // Default fallback images - Premium hotel & resort images
   const defaultImages = [
-    "https://img.magnific.com/free-photo/type-entertainment-complex-popular-resort-with-pools-water-parks-turkey-with-more-than-5-million-visitors-year-amara-dolce-vita-luxury-hotel-resort-tekirova-kemer_146671-18728.jpg?t=st=1778935083~exp=1778938683~hmac=7b8e0626544072b26e1c40a5b3b5ae8c7d77fdf9fae896ec96b3dc0502fc0351&w=1480",
-    "https://img.magnific.com/free-photo/luxury-bedroom-suite-resort-high-rise-hotel-with-working-table_105762-1783.jpg?t=st=1778935083~exp=1778938683~hmac=3f5b7eb394b655c514ed8af2957c171530e80386fe51066426b6ce7e9e55b7d0&w=1480",
-    "https://img.magnific.com/free-photo/luxury-bedroom-hotel_1150-10836.jpg?t=st=1778935084~exp=1778938684~hmac=b810e6c87cd4298a850694f782168a06c8d413dc16aab711714d77885a86b4a2&w=1480",
-    "https://img.magnific.com/free-photo/luxury-hotel-reception-hall-lounge-restaurant-with-high-ceiling_105762-1771.jpg?t=st=1778935084~exp=1778938684~hmac=6bf3675e0b9f89f95101f6675bba50150c6a32414c94d8817133864bd64813c8&w=1480",
-    "https://img.magnific.com/free-photo/swimming-pool-beach-luxury-hotel-type-entertainment-complex-amara-dolce-vita-luxury-hotel-resort-tekirova-kemer-turkey_146671-18726.jpg?t=st=1778935086~exp=1778938686~hmac=cf50ee0edb9e352a73e8126c8ed45e4d0fe578c3a8395e4543c90b2db9f97c84&w=1480",
-    "https://img.magnific.com/free-photo/modern-luxury-hotel-office-reception-lounge-with-meeting-room_105762-1772.jpg?t=st=1778935089~exp=1778938689~hmac=9d7d16c1b9def537b3fed69c45704f8624ec5287c44e31f6383bad25bbffcccf&w=1480",
-    "https://img.magnific.com/free-photo/hammocks-with-palm-trees_1203-201.jpg?t=st=1778935088~exp=1778938688~hmac=be57b2409d9ab0997bdb2f954f31ea26105a09d40f3f7fbf21e6fa0136aa1e84&w=1480",
-    "https://img.magnific.com/free-photo/swimming-pool_74190-1977.jpg?t=st=1778935090~exp=1778938690~hmac=9c4da861cec76645494c3baa649eb14147ec8008fcdb92867494402351857fcb&w=1480",
-    "https://img.magnific.com/free-photo/umbrella-chair-around-swimming-pool_1203-2419.jpg?t=st=1778935092~exp=1778938692~hmac=b87dddf2f8d860b2ff3b3b62924f34d1b88aae42c643a90d5891765ba865cf60&w=1480",
-    "https://img.magnific.com/free-photo/swimming-pool-beach-luxury-hotel-outdoor-pools-spa-amara-dolce-vita-luxury-hotel-resort-tekirova-kemer-turkey_146671-18751.jpg?t=st=1778935095~exp=1778938695~hmac=e85d2284b91c3153ca9738de003f30d9a07859cf90a21f239e332afc44b1c59a&w=1480",
-    "https://img.magnific.com/free-photo/modern-studio-apartment-design-with-bedroom-living-space_1262-12375.jpg?t=st=1778935096~exp=1778938696~hmac=ec96a98077215981b04521eef19dbbeee4e37aaedd8b697433a8a445729f71a1&w=1480",
-  ];
+    'hotel-luxury-exterior',
+    'hotel-suite',
+    'hotel-room',
+    'hotel-lobby',
+    'hotel-pool',
+    'hotel-reception',
+    'hotel-rooftop',
+    'hotel-pool-2',
+    'hotel-resort',
+    'hotel-restaurant-2',
+    'hotel-room-2',
+  ].map((k) => photo(k));
 
   const [images, setImages] = useState(defaultImages)
   const [imagesLoading, setImagesLoading] = useState(false)
-  const [activeImgIdx, setActiveImgIdx] = useState(0)
+  const [_activeImgIdx, setActiveImgIdx] = useState(0)
   const [thumbsSwiper, setThumbsSwiper] = useState(null)
 
   useEffect(() => {
@@ -100,16 +100,16 @@ export default function HotelDetailsPage() {
       const fetchImages = async () => {
         setImagesLoading(true)
         try {
-          const res = await getHotelImages(hotel.id)
-          if (res.data?.images?.length) {
-            setImages(res.data.images)
-          } else if (hotel.images?.length) {
+          // Use hotel.images from Firestore if available (faster)
+          if (hotel.images?.length > 0) {
             setImages(hotel.images)
+          } else {
+            // Fallback to default images
+            setImages(defaultImages)
           }
-        } catch (err) {
-          if (hotel.images?.length) {
-            setImages(hotel.images)
-          }
+        } catch (_err) {
+          console.log('Using default images')
+          setImages(defaultImages)
         } finally {
           setImagesLoading(false)
         }
@@ -175,10 +175,6 @@ export default function HotelDetailsPage() {
 
   // Auth Modal State for realistic booking simulation
   const [showLoginModal, setShowLoginModal] = useState(false)
-  const [mobilePhone, setMobilePhone] = useState('')
-  const [otpCode, setOtpCode] = useState('')
-  const [otpSent, setOtpSent] = useState(false)
-  const [loginError, setLoginError] = useState('');
 
   // Custom Alert State
   const [alertConfig, setAlertConfig] = useState({
@@ -195,7 +191,7 @@ export default function HotelDetailsPage() {
   const closeNotify = () => {
     setAlertConfig({ ...alertConfig, show: false });
   };
-  const [selectedRoomName, setSelectedRoomName] = useState('')
+  const [selectedRoomName, _setSelectedRoomName] = useState('')
 
   // Auto-slide: 5-second rotation
   useEffect(() => {
@@ -206,12 +202,12 @@ export default function HotelDetailsPage() {
     return () => clearInterval(timer)
   }, [images.length])
 
-  const nextImg = (e) => {
+  const _nextImg = (e) => {
     e.stopPropagation()
     setActiveImgIdx(prev => (prev + 1) % images.length)
   }
 
-  const prevImg = (e) => {
+  const _prevImg = (e) => {
     e.stopPropagation()
     setActiveImgIdx(prev => (prev - 1 + images.length) % images.length)
   }
@@ -220,31 +216,8 @@ export default function HotelDetailsPage() {
   const handleReserve = async (roomName, customPrice) => {
     const isEntire = roomName === "Entire Property Takeover (All Rooms)" || bookEntireHotel;
 
-    try {
-      // Check availability overlap
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/bookings/check-overlap`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          hotelName: hotel.name,
-          checkIn,
-          checkOut,
-          bookEntireHotel: isEntire
-        })
-      });
-      
-      if (res.ok) {
-        const data = await res.json();
-        if (!data.available) {
-          showNotify('Not Available', data.message || 'Property is not available for these dates.', 'error');
-          return;
-        }
-      }
-    } catch (err) {
-      console.error("Availability check failed:", err);
-      showNotify('Verification Failed', 'Failed to verify availability. Please try again.', 'error');
-      return;
-    }
+    // ⚠️ Skip availability check - do it in background (don't block navigation)
+    // Check happens after user reaches review page
 
     navigate('/hotels/review', {
       state: {
@@ -259,42 +232,12 @@ export default function HotelDetailsPage() {
     });
   };
 
-  const handleSendOtp = async (e) => {
-    e.preventDefault()
-    if (!mobilePhone || mobilePhone.length < 10) {
-      setLoginError('Please enter a valid 10-digit mobile number')
-      return
-    }
-    setLoginError('')
-    try {
-      const res = await authService.sendMobileOtp(mobilePhone)
-      if (res && (res.data || res.message)) {
-        setOtpSent(true)
-      } else {
-        setLoginError('Failed to send OTP. Please try again.')
-      }
-    } catch (err) {
-      setLoginError(err.message || 'Failed to send OTP. Please try again.')
-    }
+  const handleOtpLoginSuccess = () => {
+    setShowLoginModal(false)
+    handleReserve(selectedRoomName || hotel.roomType)
   }
 
-  const handleVerifyOtp = async (e) => {
-    e.preventDefault()
-    if (!otpCode || otpCode.length < 6) {
-      setLoginError('Please enter a valid 6-digit OTP (e.g., 123456)')
-      return
-    }
-    setLoginError('')
-    try {
-      await verifyOtpLogin(mobilePhone, otpCode)
-      setShowLoginModal(false)
-      handleReserve(selectedRoomName || hotel.roomType)
-    } catch (err) {
-      setLoginError(err.message || 'Verification failed. Try 123456.')
-    }
-  }
-
-  return (
+      return (
     <div className="hotel-details-wrapper">
       {loading && <div style={{ padding: '40px', textAlign: 'center' }}>Loading...</div>}
       {error && <div style={{ padding: '40px', textAlign: 'center', color: 'red' }}>{error}</div>}
@@ -438,7 +381,7 @@ export default function HotelDetailsPage() {
                 boxShadow: '0 4px 20px rgba(251, 191, 36, 0.05)'
               }}>
                 <div className="hd-room-image-side">
-                  <img src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=400&h=300&q=80" alt="Entire Property Takeover" />
+                  <img src={photo('hotel-luxury-exterior', 400)} alt="Entire property takeover — full resort booking" loading="lazy" decoding="async" />
                 </div>
                 <div className="hd-room-info">
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', flexWrap: 'wrap' }}>
@@ -475,18 +418,13 @@ export default function HotelDetailsPage() {
                 const priceMultiplier = 1 + (index * 0.35); // Increases price by 35% for each higher tier room
                 const calculatedPrice = Math.round(hotel.price * priceMultiplier);
                 
-                const roomImages = [
-                  "https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=400&h=300&q=80",
-                  "https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&w=400&h=300&q=80",
-                  "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=400&h=300&q=80",
-                  "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=400&h=300&q=80"
-                ];
+                const roomImages = ['hotel-room', 'hotel-room-2', 'hotel-room-3', 'hotel-suite'].map((k) => photo(k, 400));
                 const img = roomImages[index % roomImages.length];
 
                 return (
                   <div className="hd-room-card" key={rt}>
                     <div className="hd-room-image-side">
-                      <img src={img} alt={rt} />
+                      <img src={img} alt={rt} loading="lazy" decoding="async" />
                     </div>
                     <div className="hd-room-info">
                       <h4>{rt}</h4>
@@ -714,49 +652,11 @@ export default function HotelDetailsPage() {
       </div>
 
       {/* Simulated Auth Modal for realistic flow */}
-      {showLoginModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
-          <div style={{ background: '#fff', borderRadius: '16px', width: '90%', maxWidth: '420px', padding: '32px 28px', boxShadow: '0 24px 48px rgba(0,0,0,0.2)', position: 'relative', boxSizing: 'border-box' }}>
-            <button onClick={() => setShowLoginModal(false)} style={{ position: 'absolute', top: '20px', right: '20px', background: 'hsl(var(--b2))', border: 'none', width: '32px', height: '32px', borderRadius: '50%', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }}>✕</button>
-
-            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-              <span style={{ fontSize: '36px', display: 'block', marginBottom: '8px' }}>🔐</span>
-              <h3 style={{ margin: '0 0 8px', fontSize: '22px', fontWeight: 900, color: 'hsl(var(--bc) / 0.9)' }}>Login to Continue</h3>
-              <p style={{ margin: 0, fontSize: '13px', color: 'hsl(var(--bc) / 0.6)' }}>MakeMyTrip requires verification before booking. Enter your mobile number to instantly login.</p>
-            </div>
-
-            {loginError && <div style={{ background: 'hsl(var(--er) / 0.08)', color: 'hsl(var(--er) / 0.7)', padding: '10px 14px', borderRadius: '8px', fontSize: '12px', marginBottom: '16px', textAlign: 'center', fontWeight: 600 }}>{loginError}</div>}
-
-            {!otpSent ? (
-              <form onSubmit={handleSendOtp}>
-                <div style={{ marginBottom: '20px' }}>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'hsl(var(--bc) / 0.65)', marginBottom: '6px' }}>MOBILE NUMBER</label>
-                  <div style={{ display: 'flex', gap: '10px' }}>
-                    <span style={{ background: 'hsl(var(--b2))', border: '1px solid hsl(var(--b3))', borderRadius: '8px', padding: '10px 14px', fontSize: '14px', fontWeight: 700, color: 'hsl(var(--bc) / 0.7)', display: 'flex', alignItems: 'center' }}>+91</span>
-                    <input type="tel" placeholder="10-digit mobile number" maxLength={10} value={mobilePhone} onChange={(e) => {
-                      const val = e.target.value.replace(/\D/g, '').slice(0, 10);
-                      setMobilePhone(val);
-                    }} maxLength="10" inputMode="numeric" style={{ flex: 1, border: '1px solid hsl(var(--b3))', borderRadius: '8px', padding: '10px 14px', fontSize: '14px', fontWeight: 600, outline: 'none', width: '100%', boxSizing: 'border-box' }} autoFocus required />
-                  </div>
-                </div>
-                <button type="submit" style={{ width: '100%', background: 'hsl(var(--er))', color: '#fff', border: 'none', borderRadius: '8px', padding: '14px', fontSize: '15px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(235,32,38,0.3)' }}>GET ONE TIME PASSWORD (OTP)</button>
-              </form>
-            ) : (
-              <form onSubmit={handleVerifyOtp}>
-                <div style={{ marginBottom: '20px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                    <label style={{ fontSize: '12px', fontWeight: 700, color: 'hsl(var(--bc) / 0.65)' }}>ENTER 6-DIGIT OTP</label>
-                    <button type="button" onClick={() => setOtpSent(false)} style={{ background: 'none', border: 'none', color: 'hsl(var(--er))', fontSize: '12px', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }}>Change Number</button>
-                  </div>
-                  <input type="text" maxLength="6" placeholder="e.g. 123456" value={otpCode} onChange={(e) => setOtpCode(e.target.value)} style={{ width: '100%', border: '2px solid hsl(var(--er))', borderRadius: '8px', padding: '12px 14px', fontSize: '18px', fontWeight: 800, letterSpacing: '4px', textAlign: 'center', outline: 'none', boxSizing: 'border-box' }} autoFocus required />
-                  <span style={{ display: 'block', textAlign: 'center', fontSize: '11px', color: 'hsl(var(--su))', marginTop: '8px', fontWeight: 600 }}>✓ Simulated OTP sent! (Use test OTP: 123456)</span>
-                </div>
-                <button type="submit" style={{ width: '100%', background: 'hsl(var(--su))', color: '#fff', border: 'none', borderRadius: '8px', padding: '14px', fontSize: '15px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(16,185,129,0.3)' }}>VERIFY &amp; CONFIRM BOOKING</button>
-              </form>
-            )}
-          </div>
-        </div>
-      )}
+      <OtpLoginModal
+        open={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onSuccess={handleOtpLoginSuccess}
+      />
         </>
       )}
 

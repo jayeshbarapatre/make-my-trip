@@ -6,23 +6,22 @@ const AdminContext = createContext()
 
 export const AdminProvider = ({ children }) => {
   const [admin, setAdmin] = useState(null)
-  const [token, setToken] = useState(localStorage.getItem('adminToken'))
-  const [loading, setLoading] = useState(false)
+  const [token, setToken] = useState(() => localStorage.getItem('adminToken'))
+  // Start in the loading state when a stored token still has to be verified.
+  // Starting at false meant the very first render looked unauthenticated, so
+  // ProtectedAdminRoute bounced to /admin/login, which then redirected to the
+  // dashboard once verification finished — every admin deep link and every
+  // page refresh silently landed on the dashboard instead of the requested page.
+  const [loading, setLoading] = useState(() => Boolean(localStorage.getItem('adminToken')))
   const [error, setError] = useState(null)
   const toast = useToastContext()
-
-  useEffect(() => {
-    if (token && !admin) {
-      verifyAdmin()
-    }
-  }, [token])
 
   const verifyAdmin = async () => {
     try {
       setLoading(true)
       const response = await adminAuthService.getProfile()
       setAdmin(response.data.data.admin)
-    } catch (err) {
+    } catch (_err) {
       localStorage.removeItem('adminToken')
       setToken(null)
       setAdmin(null)
@@ -30,6 +29,12 @@ export const AdminProvider = ({ children }) => {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    if (token && !admin) {
+      verifyAdmin()
+    }
+  }, [token])
 
   const login = async (email, password) => {
     try {

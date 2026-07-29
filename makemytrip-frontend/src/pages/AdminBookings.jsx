@@ -12,10 +12,6 @@ const AdminBookings = () => {
   const [filterType, setFilterType] = useState('all')
   const [filterDate, setFilterDate] = useState('')
 
-  useEffect(() => {
-    fetchBookings()
-  }, [])
-
   const fetchBookings = async () => {
     try {
       setLoading(true)
@@ -31,6 +27,10 @@ const AdminBookings = () => {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    fetchBookings()
+  }, [])
 
   const filteredBookings = bookings.filter(booking => {
     // 1. Text Search Filter

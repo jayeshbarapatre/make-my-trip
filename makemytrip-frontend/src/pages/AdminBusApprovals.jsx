@@ -12,10 +12,6 @@ const AdminBusApprovals = () => {
   const [processing, setProcessing] = useState(false)
   const [approvingId, setApprovingId] = useState(null)
 
-  useEffect(() => {
-    fetchPendingBuses()
-  }, [])
-
   const fetchPendingBuses = async () => {
     try {
       setLoading(true)
@@ -28,6 +24,10 @@ const AdminBusApprovals = () => {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    fetchPendingBuses()
+  }, [])
 
   const confirmApprove = async () => {
     if (!approvingId) return

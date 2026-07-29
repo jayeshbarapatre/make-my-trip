@@ -75,12 +75,12 @@ export const getAutocompleteSuggestions = (type, query) => {
       return airlines.filter(a => a.name.toLowerCase().includes(q) || a.code.toLowerCase().includes(q))
     case 'aircraft':
       return aircrafts.filter(a => a.name.toLowerCase().includes(q) || a.manufacturer.toLowerCase().includes(q))
-    case 'flightNumber':
-      const codes = airlines.map(a => a.code).join('|')
+    case 'flightNumber': {
       const num = query.replace(/[^\w]/g, '').toUpperCase()
       return airlines
         .filter(a => a.code.toUpperCase().includes(num) || a.name.toLowerCase().includes(q))
         .map(a => ({ ...a, sample: `${a.code} ${100 + Math.floor(Math.random() * 900)}` }))
+    }
     default:
       return []
   }

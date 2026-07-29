@@ -4,6 +4,7 @@ import Login from './Login'
 import Signup from './Signup'
 import ForgotPassword from './ForgotPassword'
 import '../styles/LoginPage.css'
+import { photo } from '../utils/images'
 
 /* ── Destination cards data ── */
 const DESTINATIONS = [
@@ -11,19 +12,19 @@ const DESTINATIONS = [
     name: 'Maldives',
     price: 'From ₹45,000',
     badge: 'HOT',
-    img: 'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?auto=format&fit=crop&w=400&h=300&q=80',
+    img: photo('dest-maldives'),
   },
   {
     name: 'Bali',
     price: 'From ₹28,000',
     badge: 'TRENDING',
-    img: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=400&h=300&q=80',
+    img: photo('dest-bali'),
   },
   {
     name: 'Dubai',
     price: 'From ₹22,000',
     badge: null,
-    img: 'https://images.unsplash.com/photo-1518684079-3c830dcef090?auto=format&fit=crop&w=400&h=300&q=80',
+    img: photo('dest-dubai'),
   },
 ]
 

@@ -1,181 +1,95 @@
-import prisma from '../config/prismaClient.js'
+import { createVendorCrud } from './factories/firestoreVendorCrud.js'
 
-export const getMyHotels = async (req, res) => {
-  try {
-    const hotels = await prisma.hotel.findMany({
-      where: { vendorId: req.vendorId },
-      include: { roomCategories: true },
-      orderBy: { createdAt: 'desc' }
-    })
-    res.json({ data: { hotels } })
-  } catch (err) {
-    res.status(500).json({ message: err.message })
-  }
+// Migrated from Prisma/MongoDB to Firestore.
+//
+// Tenant scoping now lives in the factory: every query is constrained to
+// req.vendorId, which vendorAuth reads from the stored user document rather
+// than from the request.
+
+const num = (v, fallback = null) => {
+  if (v === undefined || v === null || v === '') return fallback
+  const n = Number(v)
+  return Number.isFinite(n) ? n : fallback
 }
 
-export const createHotel = async (req, res) => {
-  try {
-    const { name, city, location, description, image, images, rating, reviews, price, pricePerNight, rooms, amenities, roomTypes, checkin, checkout } = req.body
+const validate = (body, { partial = false } = {}) => {
+  const errors = {}
 
-    if (!name || !city || !price || !pricePerNight) {
-      return res.status(400).json({ message: 'Missing required fields' })
-    }
-
-    const hotel = await prisma.hotel.create({
-      data: {
-        name,
-        city,
-        location,
-        description,
-        image,
-        images: images || [],
-        rating: rating || 4,
-        reviews: reviews || 0,
-        price,
-        pricePerNight,
-        rooms: rooms || 50,
-        roomsAvailable: rooms || 50,
-        amenities: amenities || [],
-        roomTypes: roomTypes || [],
-        checkin,
-        checkout,
-        vendorId: req.vendorId,
-        listingStatus: 'DRAFT',
-        isActive: false
-      }
-    })
-
-    res.status(201).json({ message: 'Hotel created successfully', data: { hotel } })
-  } catch (err) {
-    res.status(500).json({ message: err.message })
+  if (!partial) {
+    if (!body.name?.trim?.()) errors.name = 'Hotel name is required'
+    if (!body.city?.trim?.()) errors.city = 'City is required'
+    if (num(body.pricePerNight ?? body.price) === null) errors.pricePerNight = 'Price per night is required'
   }
+
+  const price = num(body.pricePerNight ?? body.price)
+  if (price !== null && price <= 0) errors.pricePerNight = 'Price must be greater than zero'
+
+  const rating = num(body.rating)
+  if (rating !== null && (rating < 0 || rating > 5)) errors.rating = 'Rating must be between 0 and 5'
+
+  const rooms = num(body.rooms)
+  if (rooms !== null && rooms < 0) errors.rooms = 'Rooms cannot be negative'
+
+  return errors
 }
 
-export const getMyHotelById = async (req, res) => {
-  try {
-    const hotel = await prisma.hotel.findUnique({
-      where: { id: req.params.id },
-      include: { roomCategories: true }
-    })
+const toStorage = (body, { partial = false } = {}) => {
+  const out = {}
 
-    if (!hotel) {
-      return res.status(404).json({ message: 'Hotel not found' })
-    }
+  if (body.name !== undefined) out.name = String(body.name).trim()
+  if (body.city !== undefined) out.city = String(body.city).trim()
+  if (body.location !== undefined) out.location = body.location
+  if (body.locality !== undefined) out.locality = body.locality
+  if (body.description !== undefined) out.description = body.description
+  if (body.image !== undefined) out.image = body.image
+  if (body.images !== undefined) out.images = Array.isArray(body.images) ? body.images : []
+  if (body.amenities !== undefined) out.amenities = Array.isArray(body.amenities) ? body.amenities : []
+  if (body.checkin !== undefined) out.checkin = body.checkin
+  if (body.checkout !== undefined) out.checkout = body.checkout
+  if (body.stars !== undefined) out.stars = num(body.stars, 3)
+  if (body.rating !== undefined) out.rating = num(body.rating, 4)
 
-    if (hotel.vendorId !== req.vendorId) {
-      return res.status(403).json({ message: 'Forbidden: You do not own this hotel' })
-    }
-
-    res.json({ data: { hotel } })
-  } catch (err) {
-    res.status(500).json({ message: err.message })
+  const price = num(body.pricePerNight ?? body.price)
+  if (price !== null) {
+    out.pricePerNight = price
+    out.price = price
   }
+
+  const rooms = num(body.rooms)
+  if (rooms !== null) {
+    out.rooms = rooms
+    if (body.roomsAvailable === undefined && !partial) out.roomsAvailable = rooms
+  }
+  if (body.roomsAvailable !== undefined) out.roomsAvailable = num(body.roomsAvailable, 0)
+
+  if (!partial) {
+    out.rooms = out.rooms ?? 20
+    out.roomsAvailable = out.roomsAvailable ?? out.rooms
+    out.rating = out.rating ?? 4
+    out.reviews = 0
+    out.images = out.images ?? []
+    out.amenities = out.amenities ?? []
+  }
+
+  return out
 }
 
-export const updateHotel = async (req, res) => {
-  try {
-    const hotel = await prisma.hotel.findUnique({ where: { id: req.params.id } })
+const crud = createVendorCrud({
+  collection: 'hotels',
+  label: 'Hotel',
+  listKey: 'hotels',
+  validate,
+  toStorage
+})
 
-    if (!hotel) {
-      return res.status(404).json({ message: 'Hotel not found' })
-    }
+export const getMyHotels = crud.list
+export const createHotel = crud.create
+export const getMyHotelById = crud.getById
+export const updateHotel = crud.update
+export const deleteHotel = crud.remove
+export const submitForApproval = crud.submitForApproval
+export const toggleHotelStatus = crud.toggleStatus
 
-    if (hotel.vendorId !== req.vendorId) {
-      return res.status(403).json({ message: 'Forbidden: You do not own this hotel' })
-    }
-
-    const { id, createdAt, updatedAt, _id, vendorId, listingStatus, isActive, ...updates } = req.body
-
-    if (updates.rooms !== undefined) {
-      updates.roomsAvailable = updates.rooms
-    }
-
-    const updatedHotel = await prisma.hotel.update({
-      where: { id: req.params.id },
-      data: updates
-    })
-
-    res.json({ message: 'Hotel updated successfully', data: { hotel: updatedHotel } })
-  } catch (err) {
-    res.status(500).json({ message: err.message })
-  }
-}
-
-export const deleteHotel = async (req, res) => {
-  try {
-    const hotel = await prisma.hotel.findUnique({ where: { id: req.params.id } })
-
-    if (!hotel) {
-      return res.status(404).json({ message: 'Hotel not found' })
-    }
-
-    if (hotel.vendorId !== req.vendorId) {
-      return res.status(403).json({ message: 'Forbidden: You do not own this hotel' })
-    }
-
-    if (!['DRAFT', 'REJECTED'].includes(hotel.listingStatus)) {
-      return res.status(400).json({ message: 'Can only delete hotels in DRAFT or REJECTED status' })
-    }
-
-    await prisma.hotel.delete({ where: { id: req.params.id } })
-    res.json({ message: 'Hotel deleted successfully' })
-  } catch (err) {
-    if (err.code === 'P2025') {
-      return res.status(404).json({ message: 'Hotel not found' })
-    }
-    res.status(500).json({ message: err.message })
-  }
-}
-
-export const submitForApproval = async (req, res) => {
-  try {
-    const hotel = await prisma.hotel.findUnique({ where: { id: req.params.id } })
-
-    if (!hotel) {
-      return res.status(404).json({ message: 'Hotel not found' })
-    }
-
-    if (hotel.vendorId !== req.vendorId) {
-      return res.status(403).json({ message: 'Forbidden: You do not own this hotel' })
-    }
-
-    if (hotel.listingStatus !== 'DRAFT' && hotel.listingStatus !== 'REJECTED') {
-      return res.status(400).json({ message: 'Only DRAFT or REJECTED hotels can be submitted for approval' })
-    }
-
-    const updatedHotel = await prisma.hotel.update({
-      where: { id: req.params.id },
-      data: {
-        listingStatus: 'PENDING_APPROVAL',
-        submittedAt: new Date()
-      }
-    })
-
-    res.json({ message: 'Hotel submitted for approval', data: { hotel: updatedHotel } })
-  } catch (err) {
-    res.status(500).json({ message: err.message })
-  }
-}
-
-export const toggleHotelStatus = async (req, res) => {
-  try {
-    const hotel = await prisma.hotel.findUnique({ where: { id: req.params.id } })
-
-    if (!hotel) {
-      return res.status(404).json({ message: 'Hotel not found' })
-    }
-
-    if (hotel.vendorId !== req.vendorId) {
-      return res.status(403).json({ message: 'Forbidden: You do not own this hotel' })
-    }
-
-    const updatedHotel = await prisma.hotel.update({
-      where: { id: req.params.id },
-      data: { isActive: !hotel.isActive }
-    })
-
-    res.json({ message: `Hotel ${updatedHotel.isActive ? 'activated' : 'deactivated'}`, data: { hotel: updatedHotel } })
-  } catch (err) {
-    res.status(500).json({ message: err.message })
-  }
-}
+// Exported so the room controller can verify hotel ownership before touching
+// a room that hangs off it.
+export const loadOwnedHotel = crud.loadOwned

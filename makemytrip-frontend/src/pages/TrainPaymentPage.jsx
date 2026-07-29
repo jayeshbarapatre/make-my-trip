@@ -1,93 +1,179 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import '../styles/TrainBookingFlow.css';
+import { photo } from '../utils/images'
 
 export default function TrainPaymentPage() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { train, selectedClass, searchParams, passengers, contact, totalAmount } = location.state || {
-    train: { name: "Rajdhani Express", number: "12952", depTime: "16:55", arrTime: "08:30" },
+  const { train, selectedClass, searchParams, passengers, contact, totalAmount, baseFare } = location.state || {
+    train: { id: '1', name: "Rajdhani Express", number: "12952", depTime: "16:55", arrTime: "08:30" },
     selectedClass: { code: "3A", name: "AC 3 Tier", price: 2125 },
     searchParams: { fromCity: "New Delhi", toCity: "Mumbai", travelDate: new Date().toISOString().split('T')[0], quota: "General" },
     passengers: [{ name: "Jayesh Sharma", age: 29, gender: "Male", berth: "Lower Berth" }],
     contact: { mobile: "9876543210", email: "jayesh@gmail.com" },
-    totalAmount: 2160
+    totalAmount: 2160,
+    baseFare: 2125
   };
 
   const [selectedMethod, setSelectedMethod] = useState('UPI / Google Pay');
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState('');
+  const [razorpayLoaded, setRazorpayLoaded] = useState(false);
 
-  const handleProcessPayment = async (methodName) => {
-    const finalMethod = methodName || selectedMethod;
-    setIsProcessing(true);
-    setError('');
+  // Bookings must belong to an authenticated user
+  useEffect(() => {
+    if (!localStorage.getItem('token') || !localStorage.getItem('userId')) {
+      navigate('/login?returnTo=/trains', { replace: true });
+    }
+  }, [navigate]);
+
+  // Load Razorpay script
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    script.onload = () => setRazorpayLoaded(true);
+    script.onerror = () => {
+      console.warn('Razorpay script failed to load - payment gateway unavailable');
+      setRazorpayLoaded(false);
+    };
+    document.body.appendChild(script);
+    return () => {
+      if (document.body.contains(script)) {
+        document.body.removeChild(script);
+      }
+    };
+  }, []);
+
+  const handleRazorpayPayment = async () => {
+    if (isProcessing) {
+      console.warn('⚠️ Payment already processing, ignoring duplicate request');
+      return;
+    }
 
     try {
-      const userId = localStorage.getItem('userId') || 'usr_guest_' + Date.now();
+      setIsProcessing(true);
+      setError('');
 
-      // Call backend to create train booking (server generates PNR and bookingId)
-      const response = await api.post(
-        '/bookings/trains',
-        {
-          userId,
-          trainId: train.id || 'train_' + Date.now(),
-          passengers: passengers.map(p => p.name),
-          class: selectedClass.code,
-          quota: searchParams.quota,
-          totalAmount,
-          fromCity: searchParams.fromCity,
-          toCity: searchParams.toCity,
-          departureDate: searchParams.travelDate,
-          returnDate: searchParams.travelDate,
-          travellers: {
-            passengers,
-            contact,
-            searchParams,
-            paymentMethod: finalMethod
-          },
-          // ✅ ENRICHED TRAIN FIELDS
-          baseFare: totalAmount * 0.8,
-          taxes: totalAmount * 0.15,
-          convenience: totalAmount * 0.05,
-          discount: 0,
-          gst: totalAmount * 0.05,
-          paymentMethod: 'credit_card',
-          paymentStatus: 'completed',
-          transactionId: ''
-        },
-        {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
-          }
-        }
-      );
-
-      if (response.data.success) {
-        // Server returns PNR and bookingId
-        const booking = {
-          bookingId: response.data.data.bookingId,
-          pnr: response.data.data.pnr,
-          status: response.data.data.status,
-          train,
-          selectedClass,
-          passengers,
-          contact,
-          totalAmount,
-          departureDate: searchParams.travelDate,
-          paymentMethod: finalMethod,
-          createdAt: new Date().toISOString()
-        };
-
-        navigate('/trains/success', { state: { booking, train, selectedClass, passengers, searchParams, totalAmount } });
+      // Check if user is authenticated
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Please login to continue with payment');
       }
+
+      // Step 1: Create order on backend
+      console.log('Creating payment order...');
+      const orderResponse = await api.post('/payment/create-order', {
+        amount: totalAmount,
+        currency: 'INR',
+        notes: {
+          bookingType: 'train',
+          trainId: train.id,
+          passengers: passengers.length
+        }
+      });
+
+      if (!orderResponse.success) {
+        throw new Error(orderResponse.message || 'Failed to create payment order');
+      }
+
+      const { orderId, amount, currency } = orderResponse.data;
+
+      // Step 2: Open Razorpay checkout
+      if (!window.Razorpay) {
+        throw new Error('Razorpay script not loaded');
+      }
+
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_Sqpk2eYSSYrvWf',
+        amount: amount,
+        currency: currency,
+        order_id: orderId,
+        name: 'MakeMyTrip',
+        description: `Train Booking - ${train.name} ${train.number}`,
+        image: `${window.location.origin}${photo('state-success', 400)}`,
+        prefill: {
+          name: passengers?.[0]?.name || '',
+          email: contact?.email || '',
+          contact: contact?.mobile || ''
+        },
+        handler: async (response) => {
+          await verifyPayment(response, orderId);
+        },
+        modal: {
+          ondismiss: () => {
+            setIsProcessing(false);
+            setError('Payment cancelled');
+          }
+        },
+        theme: {
+          color: '#003580'
+        }
+      };
+
+      const razorpayWindow = new window.Razorpay(options);
+      razorpayWindow.open();
     } catch (err) {
-      console.error('Payment error:', err);
-      setError(err.response?.data?.message || 'Failed to process booking. Please try again.');
+      console.error('Razorpay error:', err);
+      setError(err.message || 'Failed to initialize payment. Please try again.');
       setIsProcessing(false);
     }
+  };
+
+  const verifyPayment = async (razorpayResponse, orderId) => {
+    try {
+      console.log('Verifying payment...');
+
+      // Prepare booking data
+      const bookingData = {
+        type: 'train',
+        trainId: train.id,
+        fromCity: searchParams.fromCity,
+        toCity: searchParams.toCity,
+        departureDate: searchParams.travelDate,
+        passengers: passengers.map(p => ({ ...p, name: p.name })),
+        totalAmount,
+        baseFare: baseFare || totalAmount * 0.8,
+        taxes: Math.round(totalAmount * 0.15),
+        userEmail: contact?.email,
+        userName: passengers[0]?.name,
+        paymentMethod: 'razorpay'
+      };
+
+      // Verify payment on backend
+      const verifyResponse = await api.post('/payment/verify', {
+        orderId: orderId,
+        paymentId: razorpayResponse.razorpay_payment_id,
+        signature: razorpayResponse.razorpay_signature,
+        bookingData: bookingData
+      });
+
+      // The booking is whatever the backend recorded in Firestore. If it did
+      // not come back, the booking did not happen — do not fabricate one.
+      if (!verifyResponse.success || !verifyResponse.data?.booking?.bookingId) {
+        throw new Error(verifyResponse.message || 'Payment verification failed')
+      }
+
+      const booking = verifyResponse.data.booking;
+      navigate('/trains/success', { state: { booking, train, selectedClass, passengers, searchParams, totalAmount } });
+    } catch (err) {
+      console.error('Payment verification error:', err);
+      setError(err.message || 'Payment verification failed. Please contact support.');
+      setIsProcessing(false);
+    }
+  };
+
+  const handleProcessPayment = async (methodName) => {
+    if (!razorpayLoaded) {
+      setError('Payment gateway not loaded. Please refresh and try again.');
+      return;
+    }
+
+    setSelectedMethod(methodName);
+    await handleRazorpayPayment();
   };
 
   return (
@@ -151,7 +237,7 @@ export default function TrainPaymentPage() {
 
             {/* Payment Options Accordion List */}
             <div className="train-form-card" style={{ padding: '24px 32px' }}>
-              <h3 className="train-form-title" style={{ fontSize: '18px', marginBottom: '16px' }}>Select Payment Gateway</h3>
+              <h3 className="train-form-title" style={{ fontSize: '18px', marginBottom: '16px' }}>Select Payment Method</h3>
 
               {error && (
                 <div style={{ background: 'hsl(var(--er) / 0.08)', color: 'hsl(var(--er))', padding: '12px', borderRadius: '6px', marginBottom: '16px', fontSize: '13px' }}>
@@ -159,10 +245,16 @@ export default function TrainPaymentPage() {
                 </div>
               )}
 
+              {!razorpayLoaded && (
+                <div style={{ background: 'hsl(var(--wa) / 0.08)', color: 'hsl(var(--wa))', padding: '12px', borderRadius: '6px', marginBottom: '16px', fontSize: '13px' }}>
+                  ⏳ Loading payment gateway...
+                </div>
+              )}
+
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div
-                  onClick={() => !isProcessing && handleProcessPayment('UPI / Google Pay')}
-                  style={{ padding: '20px', border: '1px solid hsl(var(--bc) / 0.1)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: isProcessing ? 'not-allowed' : 'pointer', background: 'hsl(var(--b2))', transition: 'border-color 0.2s', opacity: isProcessing ? 0.5 : 1 }}
+                  onClick={() => !isProcessing && razorpayLoaded && handleProcessPayment('UPI / Google Pay')}
+                  style={{ padding: '20px', border: '1px solid hsl(var(--bc) / 0.1)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: isProcessing || !razorpayLoaded ? 'not-allowed' : 'pointer', background: 'hsl(var(--b2))', transition: 'border-color 0.2s', opacity: isProcessing || !razorpayLoaded ? 0.5 : 1 }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                     <span style={{ fontSize: '24px' }}>📱</span>
@@ -175,8 +267,8 @@ export default function TrainPaymentPage() {
                 </div>
 
                 <div
-                  onClick={() => !isProcessing && handleProcessPayment('Credit / Debit Card')}
-                  style={{ padding: '20px', border: '1px solid hsl(var(--bc) / 0.1)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: isProcessing ? 'not-allowed' : 'pointer', background: 'hsl(var(--b2))', transition: 'border-color 0.2s', opacity: isProcessing ? 0.5 : 1 }}
+                  onClick={() => !isProcessing && razorpayLoaded && handleProcessPayment('Credit / Debit Card')}
+                  style={{ padding: '20px', border: '1px solid hsl(var(--bc) / 0.1)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: isProcessing || !razorpayLoaded ? 'not-allowed' : 'pointer', background: 'hsl(var(--b2))', transition: 'border-color 0.2s', opacity: isProcessing || !razorpayLoaded ? 0.5 : 1 }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                     <span style={{ fontSize: '24px' }}>💳</span>
@@ -189,8 +281,8 @@ export default function TrainPaymentPage() {
                 </div>
 
                 <div
-                  onClick={() => !isProcessing && handleProcessPayment('Net Banking')}
-                  style={{ padding: '20px', border: '1px solid hsl(var(--bc) / 0.1)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: isProcessing ? 'not-allowed' : 'pointer', background: 'hsl(var(--b2))', transition: 'border-color 0.2s', opacity: isProcessing ? 0.5 : 1 }}
+                  onClick={() => !isProcessing && razorpayLoaded && handleProcessPayment('Net Banking')}
+                  style={{ padding: '20px', border: '1px solid hsl(var(--bc) / 0.1)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: isProcessing || !razorpayLoaded ? 'not-allowed' : 'pointer', background: 'hsl(var(--b2))', transition: 'border-color 0.2s', opacity: isProcessing || !razorpayLoaded ? 0.5 : 1 }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                     <span style={{ fontSize: '24px' }}>🏦</span>
@@ -229,12 +321,16 @@ export default function TrainPaymentPage() {
 
               <button
                 className="btn-primary"
-                onClick={() => handleProcessPayment()}
-                disabled={isProcessing}
-                style={{ width: '100%', padding: '16px', marginTop: '20px', opacity: isProcessing ? 0.6 : 1, cursor: isProcessing ? 'not-allowed' : 'pointer' }}
+                onClick={() => handleProcessPayment(selectedMethod)}
+                disabled={isProcessing || !razorpayLoaded}
+                style={{ width: '100%', padding: '16px', marginTop: '20px', opacity: isProcessing || !razorpayLoaded ? 0.6 : 1, cursor: isProcessing || !razorpayLoaded ? 'not-allowed' : 'pointer' }}
               >
-                {isProcessing ? 'Processing...' : `Pay ₹${totalAmount.toLocaleString("en-IN")} Now`}
+                {!razorpayLoaded ? 'Loading...' : isProcessing ? 'Processing...' : `Pay ₹${totalAmount.toLocaleString("en-IN")} Now`}
               </button>
+
+              <div style={{ fontSize: '11px', color: 'hsl(var(--bc) / 0.5)', marginTop: '12px', textAlign: 'center' }}>
+                💳 Secure payment powered by Razorpay
+              </div>
             </div>
           </div>
 

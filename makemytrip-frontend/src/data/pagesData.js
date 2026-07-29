@@ -1,6 +1,6 @@
 // ─── Image Helper ─────────────────────────────────────────────────────────────
-const img = (id, w = 800, h = 500) =>
-  `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&h=${h}&q=80`
+// Real photographs stored locally under public/images — see src/utils/images.js
+import { photo } from '../utils/images'
 
 // ─── Hotels Page Data ─────────────────────────────────────────────────────────
 export const HOTELS_OFFERS = [
@@ -9,47 +9,47 @@ export const HOTELS_OFFERS = [
     title: "For Your Summer Trips: Get Up to 50% OFF*",
     desc: 'on Flights, Stays, Packages & More.',
     cta: 'BOOK NOW',
-    img: img('1566073771259-1b7e4634a69b', 260, 200),
+    img: photo('hotel-luxury-exterior'),
   },
   {
     cat: 'HOTELS',
     title: 'Catch 6-9 PM Drop Hour Deals',
     desc: 'with Vacation Ka Occasion Sale',
     cta: 'BOOK NOW',
-    img: img('1582719478250-c89cae4dc85b', 260, 200),
+    img: photo('hotel-room'),
   },
   {
     cat: 'HOTELS',
     title: 'DISCOVER LUXURY STAYS',
     desc: 'Explore MMT Luxe Selections for curated stays with signature amenities.',
     cta: 'BOOK NOW',
-    img: img('1520250497591-112f2f40a3f4', 260, 200),
+    img: photo('hotel-pool'),
   },
   {
     cat: 'HOTELS',
     title: 'A FERNTASTIC STAY AWAITS YOU',
     desc: 'Book a stay at select hotels & get complimentary breakfast.',
     cta: 'BOOK NOW',
-    img: img('1542314831-068cd1dbfeeb', 260, 200),
+    img: photo('hotel-lobby'),
   },
   {
     cat: 'HOTELS',
     title: 'Grab EPIC Discounts',
     desc: 'with select* stays, airlines & other partners',
     cta: 'BOOK NOW',
-    img: img('1571896349842-33c89424de2d', 260, 200),
+    img: photo('hotel-restaurant'),
   },
 ]
 
 export const HOTELS_OFFER_TABS = ['Hotels', 'All Offers', 'Flights', 'Holidays', 'Trains', 'Cabs', 'Bank Offers']
 
 export const POPULAR_HOTEL_DESTINATIONS = [
-  { city: 'Goa', hotels: '1,543 Hotels', img: img('1507525428034-b723cf961d3e', 300, 200) },
-  { city: 'Mumbai', hotels: '2,120 Hotels', img: img('1529253355930-ddbe423a2ac7', 300, 200) },
-  { city: 'Delhi', hotels: '1,890 Hotels', img: img('1520250497591-112f2f40a3f4', 300, 200) },
-  { city: 'Jaipur', hotels: '987 Hotels', img: img('1581321825906-8b6d3e7e5c6a', 300, 200) },
-  { city: 'Manali', hotels: '456 Hotels', img: img('1464822759023-fed622ff2c3b', 300, 200) },
-  { city: 'Shimla', hotels: '312 Hotels', img: img('1506905925346-21bda4d32df4', 300, 200) },
+  { city: 'Goa', hotels: '1,543 Hotels', img: photo('dest-goa') },
+  { city: 'Mumbai', hotels: '2,120 Hotels', img: photo('dest-mumbai') },
+  { city: 'Delhi', hotels: '1,890 Hotels', img: photo('dest-delhi') },
+  { city: 'Jaipur', hotels: '987 Hotels', img: photo('dest-jaipur') },
+  { city: 'Manali', hotels: '456 Hotels', img: photo('dest-manali') },
+  { city: 'Shimla', hotels: '312 Hotels', img: photo('dest-shimla') },
 ]
 
 export const TOP_RATED_HOTELS = [
@@ -61,7 +61,7 @@ export const TOP_RATED_HOTELS = [
     price: '₹8,500',
     originalPrice: '₹14,000',
     discount: '39% off',
-    img: img('1542314831-068cd1dbfeeb', 400, 260),
+    img: photo('hotel-luxury-exterior'),
     amenities: ['Pool', 'Spa', 'Free Breakfast', 'Free WiFi'],
   },
   {
@@ -72,7 +72,7 @@ export const TOP_RATED_HOTELS = [
     price: '₹22,000',
     originalPrice: '₹38,000',
     discount: '42% off',
-    img: img('1571896349842-33c89424de2d', 400, 260),
+    img: photo('dest-udaipur'),
     amenities: ['Pool', 'Restaurant', 'Spa', 'Free Breakfast'],
   },
   {
@@ -83,7 +83,7 @@ export const TOP_RATED_HOTELS = [
     price: '₹12,000',
     originalPrice: '₹20,000',
     discount: '40% off',
-    img: img('1520250497591-112f2f40a3f4', 400, 260),
+    img: photo('hotel-lobby'),
     amenities: ['Pool', 'Gym', 'Bar', 'Free WiFi'],
   },
 ]
@@ -106,7 +106,7 @@ export const HOMESTAYS_FEATURED = [
     reviews: '342',
     price: '₹3,500',
     originalPrice: '₹5,000',
-    img: img('1501854140801-50d01698950b', 400, 260),
+    img: photo('dest-ooty'),
     tags: ['Pet Friendly', 'Pool'],
   },
   {
@@ -116,7 +116,7 @@ export const HOMESTAYS_FEATURED = [
     reviews: '218',
     price: '₹5,200',
     originalPrice: '₹7,500',
-    img: img('1507525428034-b723cf961d3e', 400, 260),
+    img: photo('dest-goa'),
     tags: ['Beach Access', 'Kitchen'],
   },
   {
@@ -126,7 +126,7 @@ export const HOMESTAYS_FEATURED = [
     reviews: '189',
     price: '₹2,800',
     originalPrice: '₹4,200',
-    img: img('1464822759023-fed622ff2c3b', 400, 260),
+    img: photo('dest-shimla'),
     tags: ['Organic Farm', 'Bonfire'],
   },
   {
@@ -136,7 +136,7 @@ export const HOMESTAYS_FEATURED = [
     reviews: '156',
     price: '₹4,500',
     originalPrice: '₹7,000',
-    img: img('1543731068-7e0f5beff43a', 400, 260),
+    img: photo('dest-jaipur'),
     tags: ['Heritage', 'Cultural Experience'],
   },
 ]
@@ -145,12 +145,12 @@ export const HOMESTAYS_FEATURED = [
 export const HOLIDAY_TABS = ['Search', 'Honeymoon', 'Visa Free Packages', 'Group Tour Packages', 'Disney Cruise', 'Last Minute Deals']
 
 export const HOLIDAY_THEMES = [
-  { label: 'Beach', icon: '🏖️', img: img('1507525428034-b723cf961d3e', 200, 160) },
-  { label: 'Hill Stations', icon: '⛰️', img: img('1464822759023-fed622ff2c3b', 200, 160) },
-  { label: 'Wildlife', icon: '🦁', img: img('1501854140801-50d01698950b', 200, 160) },
-  { label: 'Heritage', icon: '🏯', img: img('1543731068-7e0f5beff43a', 200, 160) },
-  { label: 'Adventure', icon: '🧗', img: img('1482862549707-f63cb32c5fd9', 200, 160) },
-  { label: 'Pilgrimage', icon: '🕌', img: img('1454496522488-7a8e488e8606', 200, 160) },
+  { label: 'Beach', icon: '🏖️', img: photo('dest-goa') },
+  { label: 'Hill Stations', icon: '⛰️', img: photo('dest-manali') },
+  { label: 'Wildlife', icon: '🦁', img: photo('dest-saputara') },
+  { label: 'Heritage', icon: '🏯', img: photo('dest-jaipur') },
+  { label: 'Adventure', icon: '🧗', img: photo('dest-ladakh') },
+  { label: 'Pilgrimage', icon: '🕌', img: photo('dest-rishikesh') },
 ]
 
 export const POPULAR_HOLIDAY_PACKAGES = [
@@ -161,7 +161,7 @@ export const POPULAR_HOLIDAY_PACKAGES = [
     price: '₹32,000',
     rating: '4.7',
     reviews: '1,234',
-    img: img('1507525428034-b723cf961d3e', 400, 260),
+    img: photo('dest-bali'),
     highlights: ['4-Star Hotel', 'Daily Breakfast', 'Airport Transfer'],
   },
   {
@@ -171,7 +171,7 @@ export const POPULAR_HOLIDAY_PACKAGES = [
     price: '₹65,000',
     rating: '4.9',
     reviews: '876',
-    img: img('1543731068-7e0f5beff43a', 400, 260),
+    img: photo('dest-maldives'),
     highlights: ['Water Villa', 'All Inclusive', 'Snorkeling'],
   },
   {
@@ -181,7 +181,7 @@ export const POPULAR_HOLIDAY_PACKAGES = [
     price: '₹18,500',
     rating: '4.6',
     reviews: '2,341',
-    img: img('1464822759023-fed622ff2c3b', 400, 260),
+    img: photo('dest-manali'),
     highlights: ['3-Star Hotel', 'Sightseeing', 'Snow Activities'],
   },
   {
@@ -191,7 +191,7 @@ export const POPULAR_HOLIDAY_PACKAGES = [
     price: '₹25,000',
     rating: '4.8',
     reviews: '1,567',
-    img: img('1529253355930-ddbe423a2ac7', 400, 260),
+    img: photo('dest-kerala'),
     highlights: ['Houseboat Stay', 'Spice Plantation Tour', 'Ayurvedic Spa'],
   },
 ]
@@ -215,7 +215,7 @@ export const TRAINS_OFFERS = [
     desc: 'on Trains.',
     code: 'MMTVACATION',
     cta: 'BOOK NOW',
-    img: img('1544620347-c4fd4a3d5957', 260, 200),
+    img: photo('train-modern'),
   },
   {
     cat: 'TRAINS',
@@ -223,7 +223,7 @@ export const TRAINS_OFFERS = [
     desc: 'on Trains.',
     code: 'DROPDEALS',
     cta: 'BOOK NOW',
-    img: img('1529070538774-1843cb3265df', 260, 200),
+    img: photo('train-coach-premium'),
   },
   {
     cat: 'TRAINS',
@@ -231,7 +231,7 @@ export const TRAINS_OFFERS = [
     desc: 'on stays, packages, buses, cabs, trains & flights.',
     code: '',
     cta: 'BOOK NOW',
-    img: img('1454496522488-7a8e488e8606', 260, 200),
+    img: photo('train-station-india'),
   },
   {
     cat: 'TRAINS',
@@ -239,7 +239,7 @@ export const TRAINS_OFFERS = [
     desc: 'on Train Bookings.',
     code: '',
     cta: 'BOOK NOW',
-    img: img('1482862549707-f63cb32c5fd9', 260, 200),
+    img: photo('train-platform'),
   },
 ]
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useLocation, useNavigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import AOS from 'aos'
 import 'aos/dist/aos.css'
@@ -60,6 +60,11 @@ import AdminVendors from './pages/AdminVendors'
 import AdminApiHealth from './pages/AdminApiHealth'
 import AdminProfile from './pages/AdminProfile'
 import AdminSettings from './pages/AdminSettings'
+import AdminReports from './pages/AdminReports'
+import AdminRefunds from './pages/AdminRefunds'
+import AdminCoupons from './pages/AdminCoupons'
+import AdminSupport from './pages/AdminSupport'
+import AdminVendorRequests from './pages/AdminVendorRequests'
 import AdminSecurity from './pages/AdminSecurity'
 import AdminHelp from './pages/AdminHelp'
 import ProtectedAdminRoute from './components/Admin/ProtectedAdminRoute'
@@ -86,95 +91,156 @@ import CompanyPage from './pages/CompanyPage'
 import { cmsService } from './services/cmsService'
 
 function NotFound() {
+  const [searchQuery, setSearchQuery] = useState('')
+  const navigate = useNavigate()
+
+  const handleSearch = (e) => {
+    e.preventDefault()
+    if (searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery)}`)
+    }
+  }
+
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-base-300 via-base-200 to-base-100 text-base-content p-6 relative overflow-hidden select-none dark:from-base-300 dark:via-base-200 dark:to-base-100">
-      {/* Background glowing gradients */}
-      <div className="absolute top-1/4 left-1/4 w-[350px] h-[350px] bg-primary/5 rounded-full blur-[100px] animate-pulse pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 w-[350px] h-[350px] bg-accent/5 rounded-full blur-[100px] animate-pulse pointer-events-none" style={{ animationDelay: '2s' }} />
+    <div className="min-h-screen flex flex-col items-center justify-center bg-base-100 text-base-content p-4 relative overflow-hidden transition-colors duration-300">
+      {/* Animated background elements with DaisyUI theme colors */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-20 right-20 w-72 h-72 rounded-full blur-3xl animate-pulse" style={{ background: 'hsl(var(--p) / 0.1)' }} />
+        <div className="absolute bottom-40 left-10 w-96 h-96 rounded-full blur-3xl animate-pulse" style={{ background: 'hsl(var(--p) / 0.05)', animationDelay: '2s' }} />
+        <div className="absolute top-1/2 left-1/3 w-80 h-80 rounded-full blur-3xl animate-pulse" style={{ background: 'hsl(var(--s) / 0.05)', animationDelay: '4s' }} />
+      </div>
 
       <style>{`
         @keyframes float {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-15px) rotate(1.5deg); }
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-20px); }
         }
-        @keyframes cloudFloat {
-          0%, 100% { transform: translateX(0px); }
-          50% { transform: translateX(10px); }
+        @keyframes wobble {
+          0%, 100% { transform: rotate(0deg); }
+          25% { transform: rotate(1deg); }
+          75% { transform: rotate(-1deg); }
         }
         .float-animation {
-          animation: float 4s ease-in-out infinite;
+          animation: float 3s ease-in-out infinite;
         }
-        .cloud-animation {
-          animation: cloudFloat 6s ease-in-out infinite;
+        .wobble-animation {
+          animation: wobble 2s ease-in-out infinite;
         }
       `}</style>
 
-      {/* Premium Creative Illustration */}
-      <div className="relative w-64 h-64 md:w-72 md:h-72 float-animation flex items-center justify-center mb-6">
-        {/* Glowing aura around illustration */}
-        <div className="absolute inset-0 bg-gradient-radial from-white/5 to-transparent rounded-full blur-xl pointer-events-none" />
-        
-        {/* Hot Air Balloon SVG */}
-        <svg viewBox="0 0 200 200" className="w-full h-full text-white" fill="none" xmlns="http://www.w3.org/2000/svg">
-          {/* Clouds in background */}
-          <path d="M20 150 C30 150 35 140 40 142 C45 144 50 150 65 150 Z" fill="rgba(255,255,255,0.06)" className="cloud-animation" />
-          <path d="M140 80 C148 80 152 75 156 76 C160 77 164 80 176 80 Z" fill="rgba(255,255,255,0.04)" className="cloud-animation" style={{ animationDelay: '1.5s' }} />
-          <path d="M110 160 C116 160 120 155 124 156 C128 157 132 160 142 160 Z" fill="rgba(255,255,255,0.08)" className="cloud-animation" style={{ animationDelay: '3s' }} />
+      {/* Main Content Container */}
+      <div className="relative z-10 w-full max-w-2xl mx-auto">
+        {/* Illustration */}
+        <div className="flex justify-center mb-8">
+          <div className="relative w-64 h-64 md:w-80 md:h-80">
+            {/* 404 Text with DaisyUI theme color gradient */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center">
+                <h1 className="text-9xl md:text-[150px] font-black leading-none" style={{
+                  backgroundImage: 'linear-gradient(to right, hsl(var(--p)), hsl(var(--p) / 0.8))',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  color: 'transparent'
+                }}>
+                  404
+                </h1>
+                <div className="text-2xl md:text-3xl font-bold text-base-content/70 mt-2">
+                  Oops!
+                </div>
+              </div>
+            </div>
 
-          {/* Balloon Envelope */}
-          <path d="M100 20 C60 20 40 50 40 85 C40 115 65 135 85 145 L115 145 C135 135 160 115 160 85 C160 50 140 20 100 20 Z" fill="url(#balloonGrad)" />
-          
-          {/* Stripes */}
-          <path d="M85 20.5 C68 35 60 60 62 85 C63 105 73 125 88 143.5" stroke="rgba(255,255,255,0.2)" strokeWidth="3" />
-          <path d="M115 20.5 C132 35 140 60 138 85 C137 105 127 125 112 143.5" stroke="rgba(255,255,255,0.2)" strokeWidth="3" />
-          <path d="M100 20 V145" stroke="rgba(255,255,255,0.15)" strokeWidth="2" />
+            {/* Floating elements with DaisyUI theme colors */}
+            <div className="absolute top-0 left-1/2 transform -translate-x-1/2 float-animation">
+              <div className="w-16 h-16 rounded-full blur-md opacity-60" style={{ background: 'linear-gradient(to bottom right, hsl(var(--s)), hsl(var(--s) / 0.7))' }} />
+            </div>
+            <div className="absolute bottom-8 left-4 wobble-animation">
+              <div className="w-12 h-12 rounded-lg blur-md opacity-50" style={{ background: 'linear-gradient(to bottom right, hsl(var(--p) / 0.6), hsl(var(--p)))' }} />
+            </div>
+            <div className="absolute bottom-12 right-4 float-animation" style={{ animationDelay: '1.5s' }}>
+              <div className="w-14 h-14 rounded-lg blur-md opacity-50" style={{ background: 'linear-gradient(to bottom right, hsl(var(--s) / 0.6), hsl(var(--s)))' }} />
+            </div>
+          </div>
+        </div>
 
-          {/* Ropes */}
-          <line x1="88" y1="145" x2="92" y2="160" stroke="rgba(255,255,255,0.3)" strokeWidth="1.2" />
-          <line x1="112" y1="145" x2="108" y2="160" stroke="rgba(255,255,255,0.3)" strokeWidth="1.2" />
-          <line x1="100" y1="145" x2="100" y2="160" stroke="rgba(255,255,255,0.2)" strokeWidth="1.2" />
+        {/* Text Content */}
+        <div className="text-center mb-10">
+          <h2 className="text-3xl md:text-4xl font-bold text-base-content mb-3">
+            Page Not Found
+          </h2>
+          <p className="text-base-content/70 text-base md:text-lg leading-relaxed mb-2">
+            The page you're looking for seems to have wandered off. Don't worry, we'll help you find your way back!
+          </p>
+          <p className="text-base-content/60 text-sm">
+            It might have been moved, deleted, or the URL might be incorrect.
+          </p>
+        </div>
 
-          {/* Basket */}
-          <rect x="91" y="160" width="18" height="12" rx="2" fill="hsl(var(--w))" />
-          <line x1="91" y1="166" x2="109" y2="166" stroke="hsl(var(--w) / 0.7)" strokeWidth="1" />
+        {/* Search Box */}
+        <form onSubmit={handleSearch} className="mb-12 max-w-md mx-auto">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search flights, hotels, buses..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="input input-bordered w-full px-6 py-3 pl-12 bg-base-100 border-2 border-base-300 focus:border-primary focus:outline-none focus:ring-0 transition-all duration-200 rounded-full shadow-lg"
+              style={{ color: 'hsl(var(--bc))' }}
+            />
+            <svg className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5" style={{ color: 'hsl(var(--bc) / 0.5)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+        </form>
 
-          {/* Gradients */}
-          <defs>
-            <linearGradient id="balloonGrad" x1="100" y1="20" x2="100" y2="145" gradientUnits="userSpaceOnUse">
-              <stop offset="0%" stopColor="#ff7c60" />
-              <stop offset="50%" stopColor="#ed4a29" />
-              <stop offset="100%" stopColor="#9a1c02" />
-            </linearGradient>
-          </defs>
-        </svg>
-      </div>
-
-      {/* Text Info */}
-      <div className="z-10 text-center max-w-md px-4">
-        <h1 className="text-7xl md:text-8xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-base-content to-base-content/60 mb-2">
-          404
-        </h1>
-        <h2 className="text-xl md:text-2xl font-bold text-base-content tracking-tight mb-2">
-          Lost in the Clouds
-        </h2>
-        <p className="text-base-content/70 text-sm md:text-base leading-relaxed mb-8">
-          The page you are looking for has flown off the radar. Let's get you back on track for your next adventure.
-        </p>
-
-        {/* Buttons */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
           <a
             href="/"
-            className="w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-primary to-primary/80 text-primary-content font-semibold rounded-full shadow-lg shadow-primary/20 hover:shadow-primary/35 hover:scale-105 active:scale-95 transition-all duration-200 text-center text-sm tracking-wide"
+            className="btn btn-primary px-8 gap-2 transform hover:scale-105 active:scale-95 transition-transform duration-200"
+            style={{
+              background: 'hsl(var(--p))',
+              color: 'hsl(var(--pc))',
+              boxShadow: '0 10px 20px hsla(var(--p) / 0.3)'
+            }}
           >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12a9 9 0 1 1 18 0 9 9 0 0 1-18 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 15l3-3 3 3" />
+            </svg>
             Take Me Home
           </a>
           <button
             onClick={() => window.history.back()}
-            className="w-full sm:w-auto px-8 py-3 bg-base-300/80 hover:bg-base-300 text-base-content font-semibold rounded-full border border-base-300 hover:scale-105 active:scale-95 transition-all duration-200 text-center text-sm tracking-wide"
+            className="btn btn-ghost px-8 transform hover:scale-105 active:scale-95 transition-transform duration-200"
+            style={{
+              background: 'hsl(var(--b2))',
+              color: 'hsl(var(--bc))'
+            }}
           >
             Go Back
           </button>
+        </div>
+
+        {/* Quick Links */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-lg mx-auto">
+          <a href="/flights" className="group p-4 bg-base-200 border border-base-300 hover:border-primary hover:bg-base-100 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 text-center">
+            <div className="text-xl mb-2">✈️</div>
+            <div className="text-sm font-semibold text-base-content group-hover:text-primary transition-colors">Flights</div>
+          </a>
+          <a href="/hotels" className="group p-4 bg-base-200 border border-base-300 hover:border-primary hover:bg-base-100 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 text-center">
+            <div className="text-xl mb-2">🏨</div>
+            <div className="text-sm font-semibold text-base-content group-hover:text-primary transition-colors">Hotels</div>
+          </a>
+          <a href="/bus-search" className="group p-4 bg-base-200 border border-base-300 hover:border-primary hover:bg-base-100 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 text-center">
+            <div className="text-xl mb-2">🚌</div>
+            <div className="text-sm font-semibold text-base-content group-hover:text-primary transition-colors">Buses</div>
+          </a>
+          <a href="/contact-us" className="group p-4 bg-base-200 border border-base-300 hover:border-primary hover:bg-base-100 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 text-center">
+            <div className="text-xl mb-2">💬</div>
+            <div className="text-sm font-semibold text-base-content group-hover:text-primary transition-colors">Support</div>
+          </a>
         </div>
       </div>
     </div>
@@ -346,6 +412,11 @@ function AppContent() {
         <Route path="/admin/api-health" element={<ProtectedAdminRoute><AdminApiHealth /></ProtectedAdminRoute>} />
         <Route path="/admin/profile" element={<ProtectedAdminRoute><AdminProfile /></ProtectedAdminRoute>} />
         <Route path="/admin/settings" element={<ProtectedAdminRoute><AdminSettings /></ProtectedAdminRoute>} />
+        <Route path="/admin/reports" element={<ProtectedAdminRoute><AdminReports /></ProtectedAdminRoute>} />
+        <Route path="/admin/refunds" element={<ProtectedAdminRoute><AdminRefunds /></ProtectedAdminRoute>} />
+        <Route path="/admin/coupons" element={<ProtectedAdminRoute><AdminCoupons /></ProtectedAdminRoute>} />
+        <Route path="/admin/support" element={<ProtectedAdminRoute><AdminSupport /></ProtectedAdminRoute>} />
+        <Route path="/admin/vendor-requests" element={<ProtectedAdminRoute><AdminVendorRequests /></ProtectedAdminRoute>} />
         <Route path="/admin/security" element={<ProtectedAdminRoute><AdminSecurity /></ProtectedAdminRoute>} />
         <Route path="/admin/help" element={<ProtectedAdminRoute><AdminHelp /></ProtectedAdminRoute>} />
 

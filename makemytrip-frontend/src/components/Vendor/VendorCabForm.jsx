@@ -22,10 +22,6 @@ const VendorCabForm = ({ cabId, onClose, onSuccess }) => {
     cabs: 20
   })
 
-  useEffect(() => {
-    if (isEditing) fetchCabDetails()
-  }, [cabId])
-
   const fetchCabDetails = async () => {
     try {
       setLoading(true)
@@ -46,13 +42,17 @@ const VendorCabForm = ({ cabId, onClose, onSuccess }) => {
         toast.error('Cab not found')
         onClose()
       }
-    } catch (err) {
+    } catch (_err) {
       toast.error('Failed to load cab details')
       onClose()
     } finally {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    if (isEditing) fetchCabDetails()
+  }, [cabId])
 
   const handleChange = (e) => {
     const { name, value, type } = e.target

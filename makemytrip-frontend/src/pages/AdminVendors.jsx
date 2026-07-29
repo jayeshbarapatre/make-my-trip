@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import AdminLayout from '../components/Admin/AdminLayout'
 import { AtmosphereModal } from '../components/Admin/VendorModals/AtmosphereModal'
@@ -6,8 +6,7 @@ import toast from 'react-hot-toast'
 import axios from 'axios'
 import {
   RiAddLine, RiEyeLine, RiDeleteBinLine, RiStoreLine,
-  RiSearchLine, RiCloseLine, RiMailLine,
-  RiPhoneLine, RiLockLine, RiShieldCheckLine
+  RiSearchLine, RiCloseLine, 
 } from 'react-icons/ri'
 import { useTheme } from '../context/ThemeContext'
 import TabIcon from '../components/TabIcon'
@@ -128,8 +127,6 @@ const AdminVendors = () => {
   const [deletingVendorId, setDeletingVendorId] = useState(null)
   const [isDeleting, setIsDeleting]         = useState(false)
 
-  useEffect(() => { fetchVendors() }, [])
-
   const fetchVendors = async () => {
     try {
       setLoading(true)
@@ -141,6 +138,8 @@ const AdminVendors = () => {
     } catch { toast.error('Failed to load vendors') }
     finally { setLoading(false) }
   }
+
+  useEffect(() => { fetchVendors() }, [])
 
   const handleChange = e => setFormData(p => ({ ...p, [e.target.name]: e.target.value }))
 
@@ -221,7 +220,7 @@ const AdminVendors = () => {
     v.email?.toLowerCase().includes(search.toLowerCase())
   )
 
-  const selectedType = VENDOR_TYPES[formData.vendorType]
+  const _selectedType = VENDOR_TYPES[formData.vendorType]
 
   return (
     <AdminLayout>

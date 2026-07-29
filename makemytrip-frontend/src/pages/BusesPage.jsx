@@ -1,10 +1,11 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { SERVICE_TABS } from '../data/homepageData'
 import { useWeather } from '../hooks/useWeather'
 import CustomCalendarPicker from '../components/CustomCalendarPicker'
 import TabIcon from '../components/TabIcon'
 import '../styles/Hero.css'
+import { photo } from '../utils/images'
 
 export default function BusesPage() {
   const navigate = useNavigate()
@@ -69,7 +70,6 @@ export default function BusesPage() {
   // Fetch live weather data for Bengaluru!
   const { weather } = useWeather('Bengaluru')
 
-  const img = (id) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=600&h=400&q=80`
 
   const BUS_OPERATORS = [
     {
@@ -83,7 +83,7 @@ export default function BusesPage() {
       seats: '14 Seats Left',
       rating: '4.8 (1,450 reviews)',
       features: '⚡ Charger · 🥛 Water ·  blankets · Live Tracking',
-      img: img('1544620347-c4fd4a3d5957')
+      img: photo('bus-luxury')
     },
     {
       name: 'Zingbus Premium',
@@ -96,7 +96,7 @@ export default function BusesPage() {
       seats: '22 Seats Left',
       rating: '4.7 (890 reviews)',
       features: '🥛 Water · 🛌 Pillow · Safe & sanitized ride',
-      img: img('1570125909232-eb9637b8826e')
+      img: photo('bus-volvo')
     },
     {
       name: 'KSRTC Ambaari Dream Class',
@@ -109,7 +109,7 @@ export default function BusesPage() {
       seats: '4 Seats Left',
       rating: '4.9 (3,210 reviews)',
       features: '🛌 Premium bedding · On-Time Guarantee',
-      img: img('1561361513-2d000a50f0db')
+      img: photo('bus-interior')
     }
   ]
 
@@ -369,7 +369,7 @@ export default function BusesPage() {
                   <span className="price">₹{bus.price}</span>
                   <small style={{ color: 'hsl(var(--er))' }}>{bus.seats}</small>
                 </div>
-                <button onClick={() => alert(`Initiating seat selection for ${bus.name}`)}>
+                <button onClick={handleSearchBuses}>
                   SELECT SEAT
                 </button>
               </div>

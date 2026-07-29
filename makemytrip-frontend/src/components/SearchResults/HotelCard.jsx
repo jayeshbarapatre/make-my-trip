@@ -1,5 +1,6 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import '../../styles/search-results.css'
+import { photo } from '../../utils/images'
 
 export default function HotelCard({ hotel, onSelect }) {
   const [imageError, setImageError] = useState(false)
@@ -26,7 +27,7 @@ export default function HotelCard({ hotel, onSelect }) {
   }
 
   const badge = getBadge(hotel.provider)
-  const img = hotel.image || (hotel.images?.length > 0 ? hotel.images[0] : `https://images.unsplash.com/photo-1445631867551-0dbf667ef51f?auto=format&fit=crop&w=500&h=350&q=80`)
+  const img = hotel.image || (hotel.images?.length > 0 ? hotel.images[0] : photo('hotel-luxury-exterior'))
 
   return (
     <div className="hotel-card">

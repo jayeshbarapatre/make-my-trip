@@ -1,4 +1,3 @@
-import React from 'react'
 import '../../styles/search-results.css'
 
 export default function BusCard({ bus, onSelect }) {

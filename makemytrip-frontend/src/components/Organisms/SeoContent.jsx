@@ -1,4 +1,3 @@
-import React from 'react'
 import { SEO_SECTIONS } from '../../data/homepageData'
 import '../../styles/Sections.css'
 

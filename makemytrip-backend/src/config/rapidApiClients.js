@@ -1,6 +1,26 @@
 import axios from 'axios'
 import NodeCache from 'node-cache'
 
+// Local hotel photographs used when the upstream provider returns no photo.
+// Served by the frontend from its own public/images folder.
+const HOTEL_FALLBACK_IMAGES = [
+  '/images/hotels/hotel-luxury-exterior-800.webp',
+  '/images/hotels/hotel-room-800.webp',
+  '/images/hotels/hotel-pool-800.webp',
+  '/images/hotels/hotel-lobby-800.webp',
+  '/images/hotels/hotel-restaurant-800.webp',
+  '/images/hotels/hotel-suite-800.webp',
+  '/images/hotels/hotel-room-2-800.webp',
+  '/images/hotels/hotel-reception-800.webp',
+  '/images/hotels/hotel-rooftop-800.webp',
+  '/images/hotels/hotel-pool-2-800.webp',
+  '/images/hotels/hotel-room-3-800.webp',
+  '/images/hotels/hotel-resort-800.webp',
+  '/images/hotels/hotel-restaurant-2-800.webp',
+  '/images/hotels/hotel-bathroom-800.webp',
+]
+
+
 const cache = new NodeCache({ stdTTL: 300 })
 
 const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY || ''
@@ -91,7 +111,7 @@ export async function searchHotelsRapidAPI(destination, checkinDate, checkoutDat
       currency: 'INR',
       rating: hotel.review_score || hotel.stars || 4,
       reviewCount: hotel.review_score_count || 0,
-      image: hotel.photoMainUrl || `https://images.unsplash.com/photo-${1445631867595 + idx}?auto=format&fit=crop&w=500&h=350&q=80`,
+      image: hotel.photoMainUrl || HOTEL_FALLBACK_IMAGES[idx % HOTEL_FALLBACK_IMAGES.length],
       amenities: hotel.facility_brief_list?.map(f => f.name).slice(0, 5) || ['WiFi', 'AC', 'Restaurant'],
       roomsLeft: Math.floor(Math.random() * 5) + 1,
       checkIn: checkinDate,

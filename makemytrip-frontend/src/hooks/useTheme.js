@@ -8,16 +8,25 @@ const DAISYUI_THEMES = [
   'acid', 'lemonade', 'night', 'coffee', 'winter', 'dim', 'nord', 'sunset'
 ]
 
-export const useTheme = () => {
-  const [currentTheme, setCurrentTheme] = useState('business')
-  const [mounted, setMounted] = useState(false)
+// Read persisted state during initialisation rather than in an effect: the
+// first paint then already uses the saved theme, instead of rendering the
+// default and immediately re-rendering over it.
+const readSavedTheme = () => {
+  try {
+    return localStorage.getItem('daisyui-theme') || 'business'
+  } catch {
+    return 'business'
+  }
+}
 
+export const useTheme = () => {
+  const [currentTheme, setCurrentTheme] = useState(readSavedTheme)
+
+  // `mounted` used to be returned here as an SSR hydration guard. Nothing
+  // consumed it, and this is a client-only Vite SPA, so it was dead state.
   useEffect(() => {
-    const savedTheme = localStorage.getItem('daisyui-theme') || 'business'
-    setCurrentTheme(savedTheme)
-    document.documentElement.setAttribute('data-theme', savedTheme)
-    setMounted(true)
-  }, [])
+    document.documentElement.setAttribute('data-theme', currentTheme)
+  }, [currentTheme])
 
   const changeTheme = (themeName) => {
     if (!DAISYUI_THEMES.includes(themeName)) {
@@ -32,7 +41,6 @@ export const useTheme = () => {
   return {
     currentTheme,
     changeTheme,
-    themes: DAISYUI_THEMES,
-    mounted
+    themes: DAISYUI_THEMES
   }
 }

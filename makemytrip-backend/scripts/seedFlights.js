@@ -21,7 +21,7 @@ const seedFlights = async () => {
         baggage: 15,
         stops: 0,
         aircraft: 'Airbus A320',
-        image: 'https://images.unsplash.com/photo-1540962614-1209b29b0a5a?auto=format&fit=crop&w=400&h=300&q=80',
+        image: '/images/flights/flight-airplane-800.webp',
         isActive: true
       },
       {
@@ -36,7 +36,7 @@ const seedFlights = async () => {
         baggage: 20,
         stops: 0,
         aircraft: 'Boeing 737',
-        image: 'https://images.unsplash.com/photo-1606701248241-5eaa0fc9c7d9?auto=format&fit=crop&w=400&h=300&q=80',
+        image: '/images/flights/flight-runway-800.webp',
         isActive: true
       },
       {
@@ -51,7 +51,7 @@ const seedFlights = async () => {
         baggage: 15,
         stops: 0,
         aircraft: 'Airbus A321',
-        image: 'https://images.unsplash.com/photo-1464207687429-7505649dae38?auto=format&fit=crop&w=400&h=300&q=80',
+        image: '/images/flights/flight-jetbridge-800.webp',
         isActive: true
       },
       {
@@ -66,7 +66,7 @@ const seedFlights = async () => {
         baggage: 15,
         stops: 0,
         aircraft: 'Boeing 737',
-        image: 'https://images.unsplash.com/photo-1540962614-1209b29b0a5a?auto=format&fit=crop&w=400&h=300&q=80',
+        image: '/images/flights/flight-cabin-800.webp',
         isActive: true
       },
       {
@@ -81,7 +81,7 @@ const seedFlights = async () => {
         baggage: 15,
         stops: 0,
         aircraft: 'Boeing 737 Max',
-        image: 'https://images.unsplash.com/photo-1606701248241-5eaa0fc9c7d9?auto=format&fit=crop&w=400&h=300&q=80',
+        image: '/images/flights/flight-terminal-800.webp',
         isActive: true
       },
       {
@@ -96,7 +96,7 @@ const seedFlights = async () => {
         baggage: 20,
         stops: 0,
         aircraft: 'Boeing 737',
-        image: 'https://images.unsplash.com/photo-1540962614-1209b29b0a5a?auto=format&fit=crop&w=400&h=300&q=80',
+        image: '/images/flights/flight-boarding-gate-800.webp',
         isActive: true
       },
       {
@@ -111,7 +111,7 @@ const seedFlights = async () => {
         baggage: 15,
         stops: 0,
         aircraft: 'Airbus A320',
-        image: 'https://images.unsplash.com/photo-1464207687429-7505649dae38?auto=format&fit=crop&w=400&h=300&q=80',
+        image: '/images/flights/flight-passenger-800.webp',
         isActive: true
       },
       {
@@ -126,7 +126,7 @@ const seedFlights = async () => {
         baggage: 15,
         stops: 0,
         aircraft: 'Airbus A320neo',
-        image: 'https://images.unsplash.com/photo-1540962614-1209b29b0a5a?auto=format&fit=crop&w=400&h=300&q=80',
+        image: '/images/flights/flight-terminal-window-800.webp',
         isActive: true
       },
       {
@@ -141,7 +141,7 @@ const seedFlights = async () => {
         baggage: 20,
         stops: 0,
         aircraft: 'Airbus A319',
-        image: 'https://images.unsplash.com/photo-1464207687429-7505649dae38?auto=format&fit=crop&w=400&h=300&q=80',
+        image: '/images/flights/flight-cabin-aisle-800.webp',
         isActive: true
       },
       {
@@ -156,7 +156,7 @@ const seedFlights = async () => {
         baggage: 15,
         stops: 0,
         aircraft: 'Boeing 737',
-        image: 'https://images.unsplash.com/photo-1540962614-1209b29b0a5a?auto=format&fit=crop&w=400&h=300&q=80',
+        image: '/images/flights/flight-airplane-800.webp',
         isActive: true
       },
       {
@@ -171,7 +171,7 @@ const seedFlights = async () => {
         baggage: 20,
         stops: 0,
         aircraft: 'Airbus A321',
-        image: 'https://images.unsplash.com/photo-1606701248241-5eaa0fc9c7d9?auto=format&fit=crop&w=400&h=300&q=80',
+        image: '/images/flights/flight-runway-800.webp',
         isActive: true
       },
       {
@@ -186,7 +186,7 @@ const seedFlights = async () => {
         baggage: 15,
         stops: 0,
         aircraft: 'Airbus A320',
-        image: 'https://images.unsplash.com/photo-1464207687429-7505649dae38?auto=format&fit=crop&w=400&h=300&q=80',
+        image: '/images/flights/flight-jetbridge-800.webp',
         isActive: true
       },
       {
@@ -201,7 +201,7 @@ const seedFlights = async () => {
         baggage: 15,
         stops: 0,
         aircraft: 'Boeing 737',
-        image: 'https://images.unsplash.com/photo-1540962614-1209b29b0a5a?auto=format&fit=crop&w=400&h=300&q=80',
+        image: '/images/flights/flight-cabin-800.webp',
         isActive: true
       },
       {
@@ -216,7 +216,7 @@ const seedFlights = async () => {
         baggage: 15,
         stops: 0,
         aircraft: 'Airbus A320',
-        image: 'https://images.unsplash.com/photo-1606701248241-5eaa0fc9c7d9?auto=format&fit=crop&w=400&h=300&q=80',
+        image: '/images/flights/flight-terminal-800.webp',
         isActive: true
       },
       {
@@ -231,7 +231,7 @@ const seedFlights = async () => {
         baggage: 15,
         stops: 0,
         aircraft: 'Boeing 737 Max',
-        image: 'https://images.unsplash.com/photo-1464207687429-7505649dae38?auto=format&fit=crop&w=400&h=300&q=80',
+        image: '/images/flights/flight-boarding-gate-800.webp',
         isActive: true
       },
       {
@@ -246,7 +246,7 @@ const seedFlights = async () => {
         baggage: 20,
         stops: 0,
         aircraft: 'Boeing 737',
-        image: 'https://images.unsplash.com/photo-1540962614-1209b29b0a5a?auto=format&fit=crop&w=400&h=300&q=80',
+        image: '/images/flights/flight-passenger-800.webp',
         isActive: true
       },
       {
@@ -261,7 +261,7 @@ const seedFlights = async () => {
         baggage: 15,
         stops: 0,
         aircraft: 'Airbus A320',
-        image: 'https://images.unsplash.com/photo-1464207687429-7505649dae38?auto=format&fit=crop&w=400&h=300&q=80',
+        image: '/images/flights/flight-terminal-window-800.webp',
         isActive: true
       },
       {
@@ -276,7 +276,7 @@ const seedFlights = async () => {
         baggage: 15,
         stops: 0,
         aircraft: 'Boeing 737',
-        image: 'https://images.unsplash.com/photo-1540962614-1209b29b0a5a?auto=format&fit=crop&w=400&h=300&q=80',
+        image: '/images/flights/flight-cabin-aisle-800.webp',
         isActive: true
       }
     ]

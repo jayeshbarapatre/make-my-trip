@@ -1,10 +1,11 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { SERVICE_TABS } from '../data/homepageData'
 import { useWeather } from '../hooks/useWeather'
 import CustomCalendarPicker from '../components/CustomCalendarPicker'
 import TabIcon from '../components/TabIcon'
 import '../styles/Hero.css'
+import { photo } from '../utils/images'
 
 export default function CruisePage() {
   const navigate = useNavigate()
@@ -34,7 +35,6 @@ export default function CruisePage() {
   // Fetch live weather data for Kochi!
   const { weather } = useWeather('Kochi')
 
-  const img = (id) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=600&h=400&q=80`
 
   const CRUISES = [
     {
@@ -45,7 +45,7 @@ export default function CruisePage() {
       oldPrice: '29,000',
       rating: '4.95 (1,210 ratings)',
       icon: '🚢',
-      img: img('1507525428034-b723cf961d3e')
+      img: photo('phero-cruise')
     },
     {
       name: 'Royal Caribbean: Singapore & Penang Getaway',
@@ -55,7 +55,7 @@ export default function CruisePage() {
       oldPrice: '45,000',
       rating: '4.98 (3,400 ratings)',
       icon: '👑',
-      img: img('1544735716-392fe2489ffa')
+      img: photo('dest-andaman')
     }
   ]
 

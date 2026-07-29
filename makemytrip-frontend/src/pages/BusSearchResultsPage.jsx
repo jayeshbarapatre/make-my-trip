@@ -3,10 +3,10 @@ import { useSearchParams, useNavigate, useLocation } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { busService } from '../services/busService'
 import { useAuth } from '../context/AuthContext'
-import { authService } from '../services/authService'
 import CustomCalendarPicker from '../components/CustomCalendarPicker'
 import { CITIES } from '../data/cities'
 import '../styles/TrainResults.css' // Reuse train results styling for consistency
+import OtpLoginModal from '../components/Auth/OtpLoginModal'
 
 const fmtTime = (val) => {
   if (!val) return 'N/A'
@@ -87,13 +87,9 @@ export default function BusSearchResultsPage() {
   const calRef = useRef(null)
   const travRef = useRef(null)
 
-  const { user, verifyOtpLogin } = useAuth()
+  const { user } = useAuth()
   const [showLoginModal, setShowLoginModal] = useState(false)
-  const [mobilePhone, setMobilePhone] = useState('')
-  const [otpCode, setOtpCode] = useState('')
-  const [otpSent, setOtpSent] = useState(false)
   const [selectedBus, setSelectedBus] = useState(null)
-  const [loginError, setLoginError] = useState('')
   const [showCustomAlert, setShowCustomAlert] = useState(false)
   const [alertMsg, setAlertMsg] = useState('')
 
@@ -106,13 +102,13 @@ export default function BusSearchResultsPage() {
 
   useEffect(() => {
     try {
-      const totalCount = parseInt(criteria.passengers, 10) || 1
+      const totalCount = parseInt(passengers, 10) || 1
       const savedTravellers = { count: totalCount }
       localStorage.setItem('travellers_bus', JSON.stringify(savedTravellers))
     } catch (e) {
       console.error(e)
     }
-  }, [criteria.passengers])
+  }, [passengers])
 
   const handleSelectBus = (bus) => {
     if (!user) {
@@ -124,44 +120,7 @@ export default function BusSearchResultsPage() {
     navigate(`/buses/booking/${bus.id}`, { state: { bus, searchDate: criteria.date } })
   }
 
-  const handleSendOtp = async (e) => {
-    e.preventDefault()
-    if (!mobilePhone || mobilePhone.length < 10) {
-      setLoginError('Please enter a valid 10-digit mobile number')
-      return
-    }
-    setLoginError('')
-    try {
-      const res = await authService.sendMobileOtp(mobilePhone)
-      if (res && (res.data || res.message)) {
-        setOtpSent(true)
-      } else {
-        setLoginError('Failed to send OTP. Please try again.')
-      }
-    } catch (err) {
-      setLoginError(err.message || 'Failed to send OTP. Please try again.')
-    }
-  }
-
-  const handleVerifyOtp = async (e) => {
-    e.preventDefault()
-    if (!otpCode || otpCode.length < 6) {
-      setLoginError('Please enter a valid 6-digit OTP (e.g., 123456)')
-      return
-    }
-    setLoginError('')
-    try {
-      await verifyOtpLogin(mobilePhone, otpCode)
-      setShowLoginModal(false)
-      if (selectedBus) {
-        navigate(`/buses/booking/${selectedBus.id}`, { state: { bus: selectedBus } })
-      }
-    } catch (err) {
-      setLoginError(err.message || 'Verification failed. Try 123456.')
-    }
-  }
-
-  const { data, isLoading } = useQuery({
+      const { data, isLoading } = useQuery({
     queryKey: ['buses', criteria.from, criteria.to, criteria.date],
     queryFn: () => {
       return busService.search({
@@ -243,19 +202,25 @@ export default function BusSearchResultsPage() {
     }
   })
 
-  const allBuses = parsedBuses.filter(b => {
-    const fromCityStr = (b?.departure?.city || b?.from || '').toLowerCase()
-    const toCityStr = (b?.arrival?.city || b?.to || '').toLowerCase()
-    return fromCityStr.includes((criteria.from || '').toLowerCase()) && 
-           toCityStr.includes((criteria.to || '').toLowerCase())
-  }).length > 0 ?
-    parsedBuses.filter(b => {
+  // Memoised so downstream useMemo dependencies stay referentially stable, and
+  // the route filter runs once instead of twice per render.
+  const allBuses = useMemo(() => {
+    const wantFrom = (fromVal || '').toLowerCase()
+    const wantTo = (toVal || '').toLowerCase()
+
+    const matchesRoute = (b) => {
       const fromCityStr = (b?.departure?.city || b?.from || '').toLowerCase()
       const toCityStr = (b?.arrival?.city || b?.to || '').toLowerCase()
-      return fromCityStr.includes((criteria.from || '').toLowerCase()) && 
-             toCityStr.includes((criteria.to || '').toLowerCase())
-    }) :
-    parsedBuses
+      return fromCityStr.includes(wantFrom) && toCityStr.includes(wantTo)
+    }
+
+    const onRoute = parsedBuses.filter(matchesRoute)
+    // Fall back to the unfiltered list rather than showing an empty page when
+    // nothing matches the requested route.
+    return onRoute.length > 0 ? onRoute : parsedBuses
+    // Depend on the primitives, not the `criteria` object — that is rebuilt on
+    // every render, so the memo could never be preserved.
+  }, [parsedBuses, fromVal, toVal])
 
   const filteredSorted = useMemo(() => {
     let r = [...allBuses]
@@ -472,9 +437,17 @@ export default function BusSearchResultsPage() {
     )
   }
 
-  const fromCode = getCode(criteria.from)
-  const toCode = getCode(criteria.to)
+  const _fromCode = getCode(criteria.from)
+  const _toCode = getCode(criteria.to)
   const hasFilters = filterBusTypes.length > 0 || filterDepartureWindow.length > 0
+
+
+  const handleOtpLoginSuccess = () => {
+    setShowLoginModal(false)
+    if (selectedBus) {
+      navigate(`/buses/booking/${selectedBus.id}`, { state: { bus: selectedBus } })
+    }
+  }
 
   return (
     <div className="tr-page">
@@ -683,8 +656,8 @@ export default function BusSearchResultsPage() {
                   <div className="tc-train-col">
                     <div className="tc-icon-box">🚌</div>
                     <div>
-                      <div className="tc-train-name">{bus.operator}</div>
-                      <div className="tc-train-num">{bus.type || 'AC'}</div>
+                      <div className="tc-train-name">{bus.operator || bus.busName || 'Bus Operator'}</div>
+                      <div className="tc-train-num">{bus.type || bus.busType || 'AC'}</div>
                     </div>
                   </div>
 
@@ -725,62 +698,11 @@ export default function BusSearchResultsPage() {
         </main>
       </div>
 
-      {showLoginModal && (
-        <div className="custom-modal-overlay">
-          <div className="custom-login-card">
-            <button className="custom-modal-close" onClick={() => setShowLoginModal(false)}>✕</button>
-
-            <div className="custom-login-header">
-              <span className="custom-login-icon">🔐</span>
-              <h3>Login to Continue</h3>
-              <p>Enter your mobile number to instantly login.</p>
-            </div>
-
-            {loginError && <div className="custom-login-error">{loginError}</div>}
-
-            {!otpSent ? (
-              <form onSubmit={handleSendOtp}>
-                <div className="custom-input-group">
-                  <label>MOBILE NUMBER</label>
-                  <div className="custom-phone-input">
-                    <span className="custom-country-code">+91</span>
-                    <input
-                      type="tel"
-                      placeholder="10-digit mobile number"
-                      value={mobilePhone}
-                      maxLength={10}
-                      onChange={(e) => setMobilePhone(e.target.value)}
-                      autoFocus
-                      required
-                    />
-                  </div>
-                </div>
-                <button type="submit" className="custom-login-btn">GET OTP</button>
-              </form>
-            ) : (
-              <form onSubmit={handleVerifyOtp}>
-                <div className="custom-input-group">
-                  <div className="custom-otp-header">
-                    <label>ENTER 6-DIGIT OTP</label>
-                    <button type="button" onClick={() => setOtpSent(false)}>Change Number</button>
-                  </div>
-                  <input
-                    type="text"
-                    maxLength="6"
-                    placeholder="Enter 6-digit OTP"
-                    value={otpCode}
-                    onChange={(e) => setOtpCode(e.target.value)}
-                    className="custom-otp-input"
-                    autoFocus
-                    required
-                  />
-                </div>
-                <button type="submit" className="custom-verify-btn">VERIFY & RESUME BOOKING</button>
-              </form>
-            )}
-          </div>
-        </div>
-      )}
+      <OtpLoginModal
+        open={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onSuccess={handleOtpLoginSuccess}
+      />
 
       {showCustomAlert && (
         <div className="custom-modal-overlay" style={{ zIndex: 10000 }}>

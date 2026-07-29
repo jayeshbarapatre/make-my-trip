@@ -1,13 +1,12 @@
 /* Icon Utility - Using react-icons with Font Awesome, Iconoir, and HugeIcons */
 
 // Font Awesome Icons
-import { FaHeart, FaStar, FaChevronLeft, FaChevronRight, FaChevronDown, FaSearch, FaCheck, FaClock, FaMapPin, FaCalendarAlt, FaUser, FaBell, FaSignOutAlt, FaShoppingCart, FaFilter, FaCreditCard, FaPhone, FaEnvelope, FaLock, FaEye, FaEyeSlash, FaHome, FaHotel, FaPlane, FaTrain, FaBus, FaTaxi, FaUmbrella, FaCompass, FaPassport, FaShip, FaShieldAlt, FaTheaterMasks, FaEdit, FaTrash, FaToggleOn, FaToggleOff, FaPlus, FaSave, FaTimes } from 'react-icons/fa'
+import { FaHeart, FaStar, FaChevronLeft, FaChevronRight, FaChevronDown, FaSearch, FaCheck, FaClock, FaMapPin, FaCalendarAlt, FaUser, FaSignOutAlt, FaShoppingCart, FaFilter, FaCreditCard, FaPhone, FaEnvelope, FaLock, FaEye, FaEyeSlash, FaHome, FaHotel, FaPlane, FaTrain, FaBus, FaTaxi, FaUmbrella, FaCompass, FaPassport, FaShip, FaShieldAlt, FaTheaterMasks, FaEdit, FaTrash, FaToggleOn, FaToggleOff, FaPlus, FaSave, FaTimes } from 'react-icons/fa'
 
 // Iconoir Icons
 import { CiHeart, CiStar, CiSearch, CiMapPin, CiCalendar, CiUser, CiLogout, CiShoppingCart, CiFilter, CiPhone, CiMail, CiLock } from 'react-icons/ci'
 
 // HugeIcons (if available)
-import { HiOutlineHeart, HiOutlineStar, HiOutlineChevronLeft, HiOutlineChevronRight, HiOutlineChevronDown } from 'react-icons/hi2'
 
 /**
  * Centralized icon component system

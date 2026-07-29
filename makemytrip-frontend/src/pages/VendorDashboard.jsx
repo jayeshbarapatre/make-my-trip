@@ -18,11 +18,6 @@ const VendorDashboard = () => {
   const [error, setError] = useState('')
   const [greetingTime, setGreetingTime] = useState('Morning')
 
-  useEffect(() => {
-    fetchHotels()
-    updateGreeting()
-  }, [])
-
   const updateGreeting = () => {
     const hour = new Date().getHours()
     if (hour < 12) setGreetingTime('Morning')
@@ -43,6 +38,11 @@ const VendorDashboard = () => {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    fetchHotels()
+    updateGreeting()
+  }, [])
 
   const getStatusStats = () => ({
     total: hotels.length,

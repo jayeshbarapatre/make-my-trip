@@ -20,11 +20,7 @@ const VendorBusForm = ({ busId, onClose, onSuccess }) => {
 
   const [loading, setLoading] = useState(isEditing)
   const [submitting, setSubmitting] = useState(false)
-  const [error, setError] = useState('')
-
-  useEffect(() => {
-    if (isEditing) loadBus()
-  }, [busId])
+  const [_error, _setError] = useState('')
 
   const loadBus = async () => {
     try {
@@ -37,13 +33,17 @@ const VendorBusForm = ({ busId, onClose, onSuccess }) => {
         toast.error('Bus not found')
         onClose()
       }
-    } catch (err) {
+    } catch (_err) {
       toast.error('Failed to load bus')
       onClose()
     } finally {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    if (isEditing) loadBus()
+  }, [busId])
 
   useEffect(() => {
     if (formData.departureTime && formData.arrivalTime) {

@@ -1,9 +1,7 @@
 import { useState, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import {
-  RiStoreLine, RiMailLine, RiPhoneLine, RiLockLine,
-  RiCloseLine, RiAddLine, RiShieldCheckLine, RiEyeLine,
-  RiEyeOffLine, RiGlobalLine, RiBuilding2Line
+  RiBuilding2Line
 } from 'react-icons/ri'
 import { useTheme } from '../../../context/ThemeContext'
 import TabIcon from '../../TabIcon'
@@ -175,12 +173,12 @@ const FloatingLabelInput = ({
   )
 }
 
-export function AtmosphereModal({ onClose, formData, onFormChange, onSubmit, submitting, selectedVendor, showPassword, setShowPassword }) {
+export function AtmosphereModal({ onClose, formData, onFormChange, onSubmit, submitting, _selectedVendor, showPassword, setShowPassword }) {
   const { theme } = useTheme()
   const accent = 'var(--accent)'
   const accentSoft = 'var(--accentSoft)'
   const ink = 'var(--text-primary)'
-  const bg = 'var(--bg-surface)'
+  const _bg = 'var(--bg-surface)'
 
   const filteredCats = Object.entries(VENDOR_TYPES).map(([k, v]) => ({ k, ...v }))
   const cats = filteredCats

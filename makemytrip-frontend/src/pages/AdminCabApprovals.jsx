@@ -12,10 +12,6 @@ const AdminCabApprovals = () => {
   const [processing, setProcessing] = useState(false)
   const [approvingId, setApprovingId] = useState(null)
 
-  useEffect(() => {
-    fetchPendingCabs()
-  }, [])
-
   const fetchPendingCabs = async () => {
     try {
       setLoading(true)
@@ -28,6 +24,10 @@ const AdminCabApprovals = () => {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    fetchPendingCabs()
+  }, [])
 
   const confirmApprove = async () => {
     if (!approvingId) return

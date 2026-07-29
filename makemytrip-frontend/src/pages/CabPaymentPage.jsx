@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
@@ -34,12 +34,17 @@ export default function CabPaymentPage() {
   const totalAmount = location.state?.totalAmount || 567;
   const baseFare = location.state?.baseFare || 450;
 
-  const [selectedMethod, setSelectedMethod] = useState('UPI');
+  const [_selectedMethod, _setSelectedMethod] = useState('UPI');
 
-  const handleProcessPayment = async (methodName) => {
+  const handleProcessPayment = async (_methodName) => {
     if (!user) {
       setToastMessage('Please login to continue booking');
       setTimeout(() => setToastMessage(''), 3500);
+      return;
+    }
+
+    if (isProcessing) {
+      console.warn('⚠️ Payment already processing, ignoring duplicate request');
       return;
     }
 
@@ -101,7 +106,10 @@ export default function CabPaymentPage() {
 
             const verifyResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/payment/verify`, {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+              },
               body: JSON.stringify({
                 orderId: response.razorpay_order_id,
                 paymentId: response.razorpay_payment_id,
@@ -122,7 +130,7 @@ export default function CabPaymentPage() {
             console.log('📝 Creating cab booking...');
 
             const bookingPayload = {
-              userId: user?.id || 'usr_1111-2222-3333-4444',
+              userId: user.id,
               type: 'cab',
               cabType: cab.type,
               pickupLocation,
@@ -156,13 +164,17 @@ export default function CabPaymentPage() {
               transactionId: response.razorpay_payment_id
             };
 
-            const bookingResponse = await api.post('/bookings', bookingPayload);
+            const bookingResponse = await api.post('/bookings/create', bookingPayload);
             console.log('✓ Cab booking created!', bookingResponse);
 
+            // api interceptor unwraps res.data — the created booking lives in .data
+            const createdBooking = bookingResponse?.data || bookingResponse;
+            if (!createdBooking?.bookingId) {
+              throw new Error('The booking could not be confirmed.');
+            }
+
             const bookingData = {
-              ...bookingResponse,
-              pnr: bookingResponse.pnr || 'CAB-' + Math.floor(100000 + Math.random() * 900000),
-              bookingId: bookingResponse.bookingId || 'MMT-CB-' + Math.floor(100000 + Math.random() * 900000),
+              ...createdBooking,
               paymentId: response.razorpay_payment_id
             };
 
@@ -226,130 +238,189 @@ export default function CabPaymentPage() {
   };
 
   return (
-    <div className="flight-flow-wrapper">
-      <div className="flight-flow-container">
+    <div style={{ background: 'hsl(var(--b2))', minHeight: '100vh', padding: '40px 0 80px', fontFamily: "'Space Grotesk', sans-serif", color: 'hsl(var(--bc))' }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px' }}>
 
         {/* Step Progress Bar */}
-        <div className="flight-steps-bar">
-          <div className="flight-step completed">
-            <div className="flight-step-num">✓</div>
+        <div style={{ width: '100%', boxSizing: 'border-box', background: 'hsl(var(--b1))', border: '1px solid hsl(var(--b2))', borderRadius: '12px', padding: '20px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px', overflow: 'auto' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontWeight: 700, color: 'hsl(var(--bc))', fontSize: '14px', whiteSpace: 'nowrap' }}>
+            <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'hsl(var(--su))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 800, color: 'white' }}>✓</div>
             <span>1. Search Cab</span>
           </div>
-          <div className="flight-step-sep">――――</div>
-          <div className="flight-step completed">
-            <div className="flight-step-num">✓</div>
+          <div style={{ color: 'hsl(var(--bc) / 0.2)', fontWeight: 900 }}>――――</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontWeight: 700, color: 'hsl(var(--bc))', fontSize: '14px', whiteSpace: 'nowrap' }}>
+            <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'hsl(var(--su))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 800, color: 'white' }}>✓</div>
             <span>2. Select Cab</span>
           </div>
-          <div className="flight-step-sep">――――</div>
-          <div className="flight-step active">
-            <div className="flight-step-num">3</div>
+          <div style={{ color: 'hsl(var(--bc) / 0.2)', fontWeight: 900 }}>――――</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontWeight: 700, color: 'hsl(var(--p))', fontSize: '14px', whiteSpace: 'nowrap' }}>
+            <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'hsl(var(--p))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 800, color: 'white' }}>3</div>
             <span>3. Payment</span>
           </div>
         </div>
 
-        <div className="flight-pass-grid">
+        {/* Main Payment Layout - 3 Column */}
+        <form onSubmit={(e) => { e.preventDefault(); handleProcessPayment(); }} style={{ display: 'grid', gridTemplateColumns: '320px 1fr 340px', gap: '2rem', marginBottom: '2rem' }}>
 
-          {/* Left Column: Review Summary & Payment Options */}
-          <div className="flight-left-col">
+          {/* Left Column: Payment Options */}
+          <div>
+            <h3 style={{ marginTop: 0, marginBottom: '1.5rem', fontSize: '0.95rem', fontWeight: 700, color: 'hsl(var(--bc))' }}>SELECT PAYMENT MODE</h3>
 
-            {/* Booking Summary Box */}
-            <div className="flight-form-card" style={{ padding: '24px 32px' }}>
-              <h3 className="flight-form-title" style={{ fontSize: '18px', marginBottom: '16px' }}>Booking Review</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <label style={{
+                padding: '1rem',
+                borderRadius: '0.5rem',
+                border: '2px solid hsl(var(--p))',
+                background: 'hsl(var(--b1))',
+                cursor: 'pointer',
+                display: 'flex',
+                gap: '0.75rem',
+                alignItems: 'center'
+              }}>
+                <input type="radio" name="payment" value="upi" defaultChecked style={{ cursor: 'pointer', width: '16px', height: '16px' }} />
+                <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>📱 UPI (GPay, PhonePe, BHIM)</span>
+              </label>
 
-              <div style={{ background: 'hsl(var(--b2))', padding: '20px', borderRadius: '8px', border: '1px solid hsl(var(--b3))', marginBottom: '20px' }}>
-                <div style={{ fontSize: '16px', fontWeight: 800, color: 'hsl(var(--bc))', marginBottom: '4px' }}>
-                  {cab.type} - {cab.model}
-                </div>
-                <div style={{ fontSize: '13px', color: 'hsl(var(--bc) / 0.55)' }}>
-                  📍 {pickupLocation} → {dropLocation}
-                </div>
-                <div style={{ fontSize: '13px', color: 'hsl(var(--bc) / 0.55)', marginTop: '8px' }}>
-                  📏 {distance} · ⏱️ {estimatedTime}
-                </div>
-              </div>
+              <label style={{
+                padding: '1rem',
+                borderRadius: '0.5rem',
+                border: '1px solid hsl(var(--b2))',
+                background: 'hsl(var(--b1))',
+                cursor: 'pointer',
+                display: 'flex',
+                gap: '0.75rem',
+                alignItems: 'center'
+              }}>
+                <input type="radio" name="payment" value="card" style={{ cursor: 'pointer', width: '16px', height: '16px' }} />
+                <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>💳 Credit / Debit Card</span>
+              </label>
 
-              <div style={{ fontSize: '14px', fontWeight: 800, color: 'hsl(var(--bc))', marginBottom: '12px' }}>
-                Driver Details
-              </div>
+              <label style={{
+                padding: '1rem',
+                borderRadius: '0.5rem',
+                border: '1px solid hsl(var(--b2))',
+                background: 'hsl(var(--b1))',
+                cursor: 'pointer',
+                display: 'flex',
+                gap: '0.75rem',
+                alignItems: 'center'
+              }}>
+                <input type="radio" name="payment" value="wallet" style={{ cursor: 'pointer', width: '16px', height: '16px' }} />
+                <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>👜 Wallets</span>
+              </label>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: 'hsl(var(--bc) / 0.65)', background: 'hsl(var(--b2))', padding: '10px 16px', borderRadius: '6px' }}>
-                  <span>👤 {cab.driver}</span>
-                  <strong>⭐ {cab.rating}</strong>
-                </div>
-              </div>
-            </div>
-
-            {/* Payment Options */}
-            <div className="flight-form-card" style={{ padding: '24px 32px' }}>
-              <h3 className="flight-form-title" style={{ fontSize: '18px', marginBottom: '16px' }}>Select Payment Method</h3>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <div
-                  onClick={() => !isProcessing && handleProcessPayment('UPI')}
-                  style={{ padding: '20px', border: '1px solid hsl(var(--bc) / 0.1)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: isProcessing ? 'not-allowed' : 'pointer', background: 'hsl(var(--b2))', opacity: isProcessing ? 0.5 : 1 }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    <span style={{ fontSize: '24px' }}>📱</span>
-                    <div>
-                      <div style={{ fontSize: '15px', fontWeight: 800, color: 'hsl(var(--bc))' }}>UPI / Google Pay</div>
-                      <div style={{ fontSize: '12px', color: 'hsl(var(--bc) / 0.55)' }}>Instant booking confirmation</div>
-                    </div>
-                  </div>
-                  <span style={{ fontWeight: 800, color: 'hsl(var(--p))' }}>Pay ₹{totalAmount.toLocaleString()} ›</span>
-                </div>
-
-                <div
-                  onClick={() => !isProcessing && handleProcessPayment('Card')}
-                  style={{ padding: '20px', border: '1px solid hsl(var(--bc) / 0.1)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: isProcessing ? 'not-allowed' : 'pointer', background: 'hsl(var(--b2))', opacity: isProcessing ? 0.5 : 1 }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    <span style={{ fontSize: '24px' }}>💳</span>
-                    <div>
-                      <div style={{ fontSize: '15px', fontWeight: 800, color: 'hsl(var(--bc))' }}>Credit & Debit Cards</div>
-                      <div style={{ fontSize: '12px', color: 'hsl(var(--bc) / 0.55)' }}>Visa, Mastercard, Amex</div>
-                    </div>
-                  </div>
-                  <span style={{ fontWeight: 800, color: 'hsl(var(--p))' }}>Pay ₹{totalAmount.toLocaleString()} ›</span>
-                </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '2rem' }}>
+                <button type="button" onClick={() => navigate(-1)} style={{
+                  padding: '0.75rem',
+                  borderRadius: '0.5rem',
+                  border: '1px solid hsl(var(--b2))',
+                  background: 'hsl(var(--b1))',
+                  color: 'hsl(var(--bc))',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  fontSize: '0.875rem'
+                }}>
+                  ← Back
+                </button>
               </div>
             </div>
           </div>
 
-          {/* Right Column: Total Due Sidebar */}
-          <div className="flight-right-col">
-            <div className="flight-fare-side">
-              <h3 className="flight-form-title" style={{ fontSize: '18px' }}>Total Due</h3>
+          {/* Center Column: Cab Details */}
+          <div style={{ background: 'hsl(var(--b1))', padding: '2rem', borderRadius: '0.75rem', border: '1px solid hsl(var(--b2))' }}>
+            <h3 style={{ marginTop: 0, marginBottom: '1.5rem', fontSize: '0.95rem', fontWeight: 700, color: 'hsl(var(--bc))' }}>CAB BOOKING DETAILS</h3>
 
-              <div className="flight-fare-row">
+            <div style={{ background: 'hsl(var(--b2))', padding: '1.5rem', borderRadius: '0.5rem', marginBottom: '1.5rem' }}>
+              <div style={{ fontWeight: 700, color: 'hsl(var(--bc))', marginBottom: '0.5rem', fontSize: '1rem' }}>
+                {cab.type} • {cab.model}
+              </div>
+              <div style={{ fontSize: '0.875rem', color: 'hsl(var(--nc))', marginBottom: '1rem' }}>
+                License: {cab.licensePlate}
+              </div>
+
+              <div style={{ display: 'grid', gap: '0.75rem', fontSize: '0.875rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: 'hsl(var(--nc))' }}>📍 Pickup</span>
+                  <span style={{ fontWeight: 600, color: 'hsl(var(--bc))' }}>{pickupLocation}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: 'hsl(var(--nc))' }}>📍 Drop-off</span>
+                  <span style={{ fontWeight: 600, color: 'hsl(var(--bc))' }}>{dropLocation}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: 'hsl(var(--nc))' }}>📏 Distance</span>
+                  <span style={{ fontWeight: 600, color: 'hsl(var(--bc))' }}>{distance}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: 'hsl(var(--nc))' }}>⏱️ Duration</span>
+                  <span style={{ fontWeight: 600, color: 'hsl(var(--bc))' }}>{estimatedTime}</span>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ background: 'hsl(var(--b2))', padding: '1.5rem', borderRadius: '0.5rem' }}>
+              <div style={{ fontWeight: 700, fontSize: '0.95rem', marginBottom: '1rem', color: 'hsl(var(--bc))' }}>DRIVER INFORMATION</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.95rem' }}>
+                <div>
+                  <div style={{ fontWeight: 600, color: 'hsl(var(--bc))' }}>👤 {cab.driver}</div>
+                  <div style={{ fontSize: '0.85rem', color: 'hsl(var(--nc))' }}>{cab.type} Driver</div>
+                </div>
+                <div style={{ fontWeight: 700, color: 'hsl(var(--su))', fontSize: '1.1rem' }}>⭐ {cab.rating}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Sidebar: Booking Summary */}
+          <div style={{ background: 'hsl(var(--b1))', padding: '1.5rem', borderRadius: '0.75rem', border: '1px solid hsl(var(--b2))', height: 'fit-content', position: 'sticky', top: '20px' }}>
+            <h3 style={{ marginTop: 0, marginBottom: '1.5rem', fontSize: '0.95rem', fontWeight: 700, color: 'hsl(var(--bc))' }}>BOOKING SUMMARY</h3>
+
+            {/* Price Breakdown */}
+            <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px solid hsl(var(--b2))' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.875rem', color: 'hsl(var(--nc))' }}>
                 <span>Base Fare</span>
                 <span>₹{baseFare.toLocaleString("en-IN")}</span>
               </div>
-
-              <div className="flight-fare-row">
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.875rem', color: 'hsl(var(--nc))' }}>
                 <span>Taxes & Fees</span>
                 <span>₹{(totalAmount - baseFare).toLocaleString("en-IN")}</span>
               </div>
-
-              <div className="flight-fare-total">
-                <span>Total Payable</span>
-                <span style={{ color: 'hsl(var(--er))' }}>₹{totalAmount.toLocaleString("en-IN")}</span>
-              </div>
-
-              <button
-                className="btn-primary"
-                onClick={() => handleProcessPayment()}
-                disabled={isProcessing}
-                style={{ width: '100%', padding: '16px', marginTop: '20px', opacity: isProcessing ? 0.6 : 1, cursor: isProcessing ? 'not-allowed' : 'pointer' }}
-              >
-                {isProcessing ? 'Processing...' : `Pay ₹${totalAmount.toLocaleString("en-IN")} Now`}
-              </button>
             </div>
+
+            {/* Total */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem', fontSize: '1.25rem', fontWeight: 700, color: 'hsl(var(--p))' }}>
+              <span>Payable Amt:</span>
+              <span>₹{totalAmount.toLocaleString("en-IN")}</span>
+            </div>
+
+            <button type="submit" disabled={isProcessing} style={{
+              width: '100%',
+              padding: '1rem',
+              borderRadius: '0.5rem',
+              border: 'none',
+              background: 'hsl(var(--p))',
+              color: 'white',
+              fontWeight: 700,
+              cursor: isProcessing ? 'not-allowed' : 'pointer',
+              fontSize: '0.95rem',
+              opacity: isProcessing ? 0.6 : 1
+            }}>
+              {isProcessing ? 'Processing...' : `PAY NOW ₹${totalAmount.toLocaleString("en-IN")}`}
+            </button>
           </div>
 
-        </div>
-
+        </form>
       </div>
+
+      {toastMessage && (
+        <div style={{
+          position: 'fixed', bottom: '24px', right: '24px', zIndex: 9999,
+          background: 'hsl(var(--n))', color: 'hsl(var(--nc))',
+          padding: '12px 20px', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
+          fontSize: '14px', fontWeight: 600, maxWidth: '340px'
+        }}>
+          {toastMessage}
+        </div>
+      )}
     </div>
   );
 }

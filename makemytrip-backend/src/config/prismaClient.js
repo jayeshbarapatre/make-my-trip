@@ -1,19 +1,23 @@
 import { PrismaClient } from '@prisma/client'
-import { createMockPrismaClient } from '../middleware/useMockData.js'
 
-let prisma
-if (process.env.USE_MOCK_DATA === 'true') {
-  console.log('🎭 MOCK DATA MODE ENABLED - Using in-memory mock database')
-  prisma = createMockPrismaClient()
-} else {
-  prisma = new PrismaClient({
-    errorFormat: 'pretty',
-  })
+// Prisma remains only for the legacy admin/vendor portal paths. All user-facing
+// data lives in Firestore — see CLAUDE.md.
 
-  // Test connection on startup (non-blocking)
+let prisma = null
+let initialized = false
+
+const initializePrisma = () => {
+  if (initialized) return prisma
+  initialized = true
+
+  prisma = new PrismaClient({ errorFormat: 'pretty' })
+
+  // Fire and forget: awaiting here would block server startup.
   prisma.$connect()
-    .then(() => console.log('✅ Database connected'))
-    .catch((err) => console.log('⚠️ Database connection error (will retry):', err.message))
+    .then(() => console.log('✅ Prisma connected to database'))
+    .catch((err) => console.warn('⚠️ Prisma connection failed (will retry):', err.message))
+
+  return prisma
 }
 
-export default prisma
+export default prisma || initializePrisma()

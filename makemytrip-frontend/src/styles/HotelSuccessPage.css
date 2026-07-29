@@ -23,8 +23,11 @@
 }
 
 .succ-premium-header {
-  background: linear-gradient(135deg, hsl(var(--b3)) 0%, hsl(var(--bc)) 100%);
-  color: hsl(var(--b1));
+  /* Real photograph of a traveller's passport and boarding pass, dimmed for contrast */
+  background:
+    linear-gradient(135deg, rgba(12, 22, 44, 0.88) 0%, rgba(6, 12, 26, 0.92) 100%),
+    url('/images/states/state-success-800.webp') center / cover no-repeat;
+  color: #ffffff;
   padding: 48px 32px;
   text-align: center;
 }

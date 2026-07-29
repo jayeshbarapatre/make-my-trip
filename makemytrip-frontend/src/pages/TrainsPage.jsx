@@ -1,10 +1,18 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { SERVICE_TABS } from '../data/homepageData'
 import { useWeather } from '../hooks/useWeather'
 import CustomCalendarPicker from '../components/CustomCalendarPicker'
 import TabIcon from '../components/TabIcon'
+import Photo from '../components/Common/Photo'
 import '../styles/Hero.css'
+
+const RAIL_GALLERY = [
+  { name: 'train-modern', caption: 'Modern rakes', copy: 'Vande Bharat, Rajdhani and Shatabdi services across the network.' },
+  { name: 'train-coach-premium', caption: 'Premium coaches', copy: 'AC 1A, 2A and 3A berths with bedding included.' },
+  { name: 'train-platform', caption: 'Station to seat', copy: 'Live platform numbers and coach position before you arrive.' },
+  { name: 'train-interior', caption: 'Comfortable interiors', copy: 'Reserved seating with charging points on select trains.' },
+]
 
 export default function TrainsPage() {
   const navigate = useNavigate()
@@ -502,6 +510,44 @@ export default function TrainsPage() {
               </div>
               <span className="arrow-icon">→</span>
             </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Travelling by rail — real photography of trains, coaches and platforms */}
+      <section className="inner-page-section" style={{ paddingTop: 0 }}>
+        <div className="inner-sec-header">
+          <div>
+            <h2 className="inner-sec-title">Travelling by rail</h2>
+            <p className="inner-sec-subtitle">What your journey looks like, end to end</p>
+          </div>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px' }}>
+          {RAIL_GALLERY.map((item, idx) => (
+            <figure
+              key={item.name}
+              data-aos="fade-up"
+              data-aos-delay={idx * 100}
+              style={{
+                margin: 0,
+                borderRadius: '14px',
+                overflow: 'hidden',
+                background: 'hsl(var(--b2))',
+                border: '1px solid hsl(var(--b3))',
+                boxShadow: '0 6px 20px rgba(10, 17, 40, 0.06)',
+              }}
+            >
+              <Photo
+                name={item.name}
+                sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 320px"
+                style={{ width: '100%', height: '180px', objectFit: 'cover', display: 'block' }}
+              />
+              <figcaption style={{ padding: '14px 16px 18px' }}>
+                <div style={{ fontSize: '15px', fontWeight: 800, marginBottom: '4px' }}>{item.caption}</div>
+                <div style={{ fontSize: '13px', color: 'hsl(var(--bc) / 0.65)', lineHeight: 1.5 }}>{item.copy}</div>
+              </figcaption>
+            </figure>
           ))}
         </div>
       </section>

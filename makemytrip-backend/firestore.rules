@@ -1,0 +1,118 @@
+rules_version = '2';
+
+// Production security rules for the MakeMyTrip-style booking platform.
+//
+// NOTE: In the current architecture ALL reads/writes go through the Express
+// backend using the Firebase Admin SDK (which bypasses these rules). These
+// rules therefore lock the database down for any direct client access:
+// public catalog data is readable, everything else is owner-scoped or denied.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function ownsResource() {
+      return signedIn() && request.auth.uid == resource.data.userId;
+    }
+
+    // ── Public catalog collections (read-only for clients) ──
+    match /flights/{id} {
+      allow read: if true;
+      allow write: if false; // admin SDK only
+    }
+    match /hotels/{id} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /buses/{id} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /trains/{id} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /cabs/{id} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // ── User profiles: owner-only ──
+    match /users/{email} {
+      allow read, update: if signedIn() && request.auth.uid == resource.data.id;
+      allow create, delete: if false; // account lifecycle handled server-side
+    }
+
+    // ── Bookings: strict per-user isolation ──
+    match /bookings/{id} {
+      allow read: if ownsResource();
+      allow create: if signedIn() && request.auth.uid == request.resource.data.userId;
+      allow update: if ownsResource()
+        && request.resource.data.userId == resource.data.userId; // cannot reassign owner
+      allow delete: if false; // cancellations are status updates, not deletes
+    }
+
+    // ── OTPs, email logs, payments: server-side only ──
+    match /otps/{id} {
+      allow read, write: if false;
+    }
+    match /payments/{id} {
+      allow read: if ownsResource();
+      allow write: if false; // written only by the verified-payment path
+    }
+
+    // ── Audit trail: append-only, and only from the backend. No client may
+    //    read it (it carries other actors' IPs and emails) or write to it
+    //    (a forgeable audit log is worse than none). ──
+    match /audit_logs/{id} {
+      allow read, write: if false;
+    }
+
+    // ── Refunds: the owner may watch progress; only the backend may change
+    //    the amount or the status. ──
+    match /refunds/{id} {
+      allow read: if ownsResource();
+      allow write: if false;
+    }
+
+    // ── Reviews: published ratings are public, but writes go through the API
+    //    so a review can only be attached to a booking the author really made. ──
+    match /reviews/{id} {
+      allow read: if resource.data.status == 'published' && resource.data.isDeleted == false;
+      allow write: if false;
+    }
+
+    // ── Wishlists: strictly private to their owner. ──
+    match /wishlists/{id} {
+      allow read: if ownsResource();
+      allow write: if false;
+    }
+
+    // ── Support tickets: owner may read their own thread; all writes go
+    //    through the API so status transitions stay guarded. ──
+    match /support_tickets/{id} {
+      allow read: if ownsResource();
+      allow write: if false;
+    }
+
+    // ── Coupons: never client-readable. Exposing the collection would let
+    //    anyone enumerate unlisted codes and their limits. Validation is an
+    //    authenticated API call. ──
+    match /coupons/{id} {
+      allow read, write: if false;
+    }
+
+    // ── Vendor onboarding requests: applicant-visible, admin-decided. ──
+    match /vendor_requests/{id} {
+      allow read: if signedIn() && request.auth.uid == resource.data.userId;
+      allow write: if false;
+    }
+
+    // ── Default: deny everything else ──
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
