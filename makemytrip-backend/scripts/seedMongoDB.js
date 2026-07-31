@@ -21,12 +21,14 @@ const addMin = (isoStr, minutes) =>
 // ─── Flight Data ─────────────────────────────────────────────────────────────
 
 const airlines = [
-  { name: 'IndiGo',           code: '6E', logo: 'https://logos.makemytrip.com/airline-logos/6E.png' },
-  { name: 'Air India',        code: 'AI', logo: 'https://logos.makemytrip.com/airline-logos/AI.png' },
-  { name: 'SpiceJet',         code: 'SG', logo: 'https://logos.makemytrip.com/airline-logos/SG.png' },
-  { name: 'Vistara',          code: 'UK', logo: 'https://logos.makemytrip.com/airline-logos/UK.png' },
-  { name: 'Akasa Air',        code: 'QP', logo: 'https://logos.makemytrip.com/airline-logos/QP.png' },
-  { name: 'Air India Express',code: 'IX', logo: 'https://logos.makemytrip.com/airline-logos/IX.png' },
+  // No logo asset is bundled: airline marks are trademarks we do not have a licence to
+  // redistribute, and the UI renders the airline code badge instead.
+  { name: 'IndiGo',           code: '6E', logo: null },
+  { name: 'Air India',        code: 'AI', logo: null },
+  { name: 'SpiceJet',         code: 'SG', logo: null },
+  { name: 'Vistara',          code: 'UK', logo: null },
+  { name: 'Akasa Air',        code: 'QP', logo: null },
+  { name: 'Air India Express',code: 'IX', logo: null },
 ]
 
 // [source, destination, durationMin, basePrice]
