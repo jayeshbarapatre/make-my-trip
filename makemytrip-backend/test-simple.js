@@ -1,5 +1,0 @@
-console.log('Starting test...')
-console.log('Node version:', process.version)
-console.log('Current directory:', process.cwd())
-console.log('Test complete')
-process.exit(0)

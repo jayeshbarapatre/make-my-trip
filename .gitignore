@@ -10,3 +10,16 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .DS_Store
+
+# Environment files — never commit real credentials.
+#
+# makemytrip-backend/.env.production was previously tracked and leaked live
+# Supabase, SMTP, Razorpay and RapidAPI credentials to a public repository.
+# Backend env files hold secrets and are ignored outright; the frontend's
+# .env.production is intentionally tracked because Vite only exposes VITE_*
+# values, which ship in the client bundle and are public by definition.
+makemytrip-backend/.env
+makemytrip-backend/.env.*
+!makemytrip-backend/.env.example
+serviceAccountKey.json
+*.log

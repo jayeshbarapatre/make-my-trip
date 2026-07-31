@@ -1,5 +1,0 @@
-[2026-07-27T12:43:02.589Z] Script started
-[2026-07-27T12:43:02.658Z] About to import dotenv
-[2026-07-27T12:43:02.736Z] Async flow initiated
-[2026-07-27T12:43:02.823Z] ✅ Dotenv imported
-[2026-07-27T12:43:02.898Z] About to import express (THIS MIGHT HANG)
