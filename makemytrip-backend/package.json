@@ -7,21 +7,40 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
+    "test": "node --test tests/regression.test.mjs tests/auth.test.mjs tests/audit.test.mjs tests/infra.test.mjs tests/search.test.mjs tests/availability.test.mjs",
+    "test:security": "node --test tests/security.test.mjs",
+    "test:buses": "node --experimental-test-module-mocks --test tests/busSearch.test.mjs",
+    "test:all": "node --test tests/regression.test.mjs tests/auth.test.mjs tests/audit.test.mjs tests/infra.test.mjs tests/search.test.mjs tests/security.test.mjs",
     "test:email": "node scripts/testEmailAndOtp.js",
     "seed": "node scripts/seed.js",
-    "seed:flights": "node scripts/seedFlights.js",
-    "seed:trains": "node scripts/seedTrains.js",
+    "seed:trains": "node scripts/seedTrainsFirebase.js",
+    "seed:firestore": "node scripts/seedFirestore.js",
+    "seed:buses": "node scripts/seedBusesFirestore.js",
+    "seed:cabs": "node scripts/seedCabsFirestore.js",
     "seed:email-templates": "node scripts/seedEmailTemplates.js",
     "preview:email": "node scripts/previewEmails.js",
     "test:otp": "node scripts/testOtpNumbers.js",
     "migrate:roles": "node scripts/backfillUserRoles.js",
-    "admin:create": "node scripts/createAdmin.js"
+    "migrate:emails": "node scripts/normalizeUserEmails.js",
+    "purge:sessions": "node scripts/purgeExpiredSessions.js",
+    "admin:create": "node scripts/createAdmin.js",
+    "seed:hotels": "node scripts/seedHotelsFirebase.js",
+    "seed:cms": "node scripts/seedCmsPages.js",
+    "migrate:timestamps": "node scripts/normalizeTimestamps.js",
+    "migrate:route-index": "node scripts/backfillRouteIndex.js",
+    "migrate:dated-availability": "node scripts/backfillDatedAvailability.js",
+    "rollback:dated-availability": "node scripts/rollbackDatedAvailability.js",
+    "verify:dated-availability": "node scripts/verifyDatedAvailability.js",
+    "seed:coverage": "node scripts/seedRouteCoverage.js",
+    "verify:search": "node scripts/verifySearch.js",
+    "verify:booking": "node scripts/verifyBookingFlow.js",
+    "verify:all": "npm run verify:search && npm run verify:booking",
+    "bootstrap": "node scripts/bootstrapInventory.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@prisma/client": "^5.11.0",
     "axios": "^1.16.1",
     "bcryptjs": "^2.4.3",
     "bullmq": "^5.10.4",
@@ -34,7 +53,6 @@
     "handlebars": "^4.7.8",
     "ioredis": "^5.3.8",
     "jsonwebtoken": "^9.0.0",
-    "mongoose": "^9.6.2",
     "multer": "^2.1.1",
     "node-cache": "^5.1.2",
     "nodemailer": "^8.0.7",
@@ -42,7 +60,7 @@
     "razorpay": "^2.9.6",
     "winston": "^3.14.2"
   },
-  "devDependencies": {
-    "prisma": "^5.11.0"
+  "engines": {
+    "node": ">=22"
   }
 }

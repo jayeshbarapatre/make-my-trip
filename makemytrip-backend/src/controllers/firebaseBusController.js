@@ -1,4 +1,19 @@
 import { db } from '../config/firebase.js'
+import { cityMatches } from '../utils/cities.js'
+import { fetchRouteCandidates, applySearchPipeline } from '../services/inventorySearch.js'
+import { availabilityForItems } from '../services/availability.js'
+import { parseSearchDate } from '../utils/searchDate.js'
+
+// Sort orders the results page offers. Applied after the indexed route query,
+// over a candidate set small enough that in-memory sorting is free.
+const SORTERS = {
+  price: (a, b) => (a.price ?? 0) - (b.price ?? 0),
+  price_desc: (a, b) => (b.price ?? 0) - (a.price ?? 0),
+  duration: (a, b) => (a.durationMinutes ?? 0) - (b.durationMinutes ?? 0),
+  departure: (a, b) => String(a.departureTime ?? '').localeCompare(String(b.departureTime ?? '')),
+  rating: (a, b) => (b.rating ?? 0) - (a.rating ?? 0),
+  seats: (a, b) => (b.seatsAvailable ?? 0) - (a.seatsAvailable ?? 0)
+}
 import {
   validateCity,
   validateDateRange,
@@ -8,7 +23,7 @@ import {
 
 export const searchBuses = async (req, res) => {
   try {
-    const { from, to, date, passengers, page = 1, limit = 20 } = req.query
+    const { from, to, date, passengers, page = 1, limit = 20, minPrice, maxPrice, busType, operator, sortBy } = req.query
 
     console.log(`🚌 Firebase Bus Search: from=${from}, to=${to}, date=${date}, passengers=${passengers}`)
 
@@ -23,66 +38,70 @@ export const searchBuses = async (req, res) => {
     const pageNum = validatePageNumber(page)
     const pageSize = validatePageSize(limit)
 
-    // Fetch all active buses from Firestore
-    let query = db.collection('buses').where('isActive', '==', true)
-    const snapshot = await query.get()
+    const passengerCount = parseInt(passengers) || 1
 
-    let buses = []
-    snapshot.forEach(doc => {
-      buses.push({
-        id: doc.id,
-        ...doc.data()
-      })
+    // Indexed route query — reads only the buses on this route, not all 245.
+    const { docs, indexed, read } = await fetchRouteCandidates('buses', { from, to })
+
+    const routeFiltered = indexed
+      ? docs
+      : docs.filter((b) => cityMatches(b.from, from) && cityMatches(b.to, to))
+
+    const { rows, pagination } = applySearchPipeline(routeFiltered, {
+      filters: [
+        (b) => (b.seatsAvailable ?? 0) >= passengerCount,
+        minPrice ? (b) => (b.price ?? 0) >= Number(minPrice) : null,
+        maxPrice ? (b) => (b.price ?? 0) <= Number(maxPrice) : null,
+        busType ? (b) => String(b.busType ?? b.type ?? '').toLowerCase().includes(String(busType).toLowerCase()) : null,
+        operator ? (b) => String(b.operatorName ?? b.operator ?? '').toLowerCase().includes(String(operator).toLowerCase()) : null
+      ].filter(Boolean),
+      sortBy: SORTERS[sortBy] ?? SORTERS.price,
+      page: pageNum,
+      limit: pageSize
     })
 
-    console.log(`📊 Found ${buses.length} total active buses in Firestore`)
+    // Seats are held per travel date. A bus is a recurring service, so the same
+    // document sells on many days; without this the seats sold for one date were
+    // reported as gone on every other date.
+    const travelDate = parseSearchDate(date)
+    const freeByBus = travelDate
+      ? await availabilityForItems(db.collection('buses'), rows, 'bus', [travelDate])
+      : {}
 
-    // Filter by from and to cities
-    if (from || to) {
-      buses = buses.filter(bus => {
-        const fromMatch = !from || bus.from?.toLowerCase().includes(from.toLowerCase())
-        const toMatch = !to || bus.to?.toLowerCase().includes(to.toLowerCase())
-        return fromMatch && toMatch
-      })
-      console.log(`🚌 After route filter: ${buses.length} buses`)
-    }
+    const enrichedBuses = rows.map(bus => {
+      const dated = travelDate && bus.id in freeByBus
+      const seats = dated ? freeByBus[bus.id] : (bus.seatsAvailable ?? 0)
 
-    // Check availability
-    const passengerCount = parseInt(passengers) || 1
-    buses = buses.filter(bus => bus.seatsAvailable >= passengerCount)
-    console.log(`💺 After seat availability: ${buses.length} buses`)
-
-    // Sort by price
-    buses.sort((a, b) => (a.price || 0) - (b.price || 0))
-
-    // Paginate
-    const total = buses.length
-    const start = (pageNum - 1) * pageSize
-    const paginatedBuses = buses.slice(start, start + pageSize)
-
-    // Enrich with availability info
-    const enrichedBuses = paginatedBuses.map(bus => ({
-      ...bus,
-      passengers: passengerCount,
-      totalPrice: (bus.price || 0) * passengerCount,
-      isAvailable: bus.seatsAvailable >= passengerCount,
-      availableSeats: bus.seatsAvailable || 0
-    }))
-
-    console.log(`✅ Returning ${enrichedBuses.length} buses (page ${pageNum})`)
-
-    res.json({
-      data: enrichedBuses,
-      pagination: {
-        page: pageNum,
-        limit: pageSize,
-        total,
-        pages: Math.ceil(total / pageSize)
+      return {
+        ...bus,
+        passengers: passengerCount,
+        totalPrice: (bus.price || 0) * passengerCount,
+        isAvailable: seats >= passengerCount,
+        availableSeats: seats,
+        travelDate: travelDate ?? null,
+        availabilityBasis: dated ? 'dates' : 'legacy'
       }
     })
+
+    console.log(`🚌 Buses ${from ?? '*'} → ${to ?? '*'}: read ${read}, matched ${pagination.total} (indexed: ${indexed})`)
+
+    res.json({ data: enrichedBuses, pagination })
   } catch (err) {
     console.error('Firebase Bus Search error:', err.message)
-    res.status(500).json({ message: err.message })
+
+    // A failed search must not be reported as "no buses". Both used to reach the
+    // results page as an empty list, so a datastore outage rendered as
+    // "Showing 0 of 0 buses" — indistinguishable from a route with no service,
+    // and the reason a real inventory problem went undiagnosed for so long.
+    // Firestore's RESOURCE_EXHAUSTED (gRPC code 8) is the read-quota case.
+    if (err.code === 8) {
+      return res.status(503).json({
+        code: 'SEARCH_UNAVAILABLE',
+        message: 'Bus search is temporarily unavailable — the datastore read quota is exhausted. Please try again later.'
+      })
+    }
+
+    res.status(500).json({ code: 'SEARCH_FAILED', message: err.message })
   }
 }
 

@@ -1,11 +1,17 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
+import { RESULTS_PER_REQUEST } from '../config/search.config'
 import { useSearchParams, useNavigate, useLocation } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { busService } from '../services/busService'
 import { useAuth } from '../context/AuthContext'
 import CustomCalendarPicker from '../components/CustomCalendarPicker'
 import { CITIES } from '../data/cities'
+import { todayLocal } from '../utils/date'
 import '../styles/TrainResults.css' // Reuse train results styling for consistency
+// The login prompt and its overlay (.custom-modal-overlay, .custom-alert-*) are
+// defined only here. Without it the modal still mounts but renders unstyled at
+// the foot of the page, so "Book Now" looked like it did nothing.
+import '../styles/BusResults.css'
 import OtpLoginModal from '../components/Auth/OtpLoginModal'
 
 const fmtTime = (val) => {
@@ -48,6 +54,32 @@ const fmtDateDisplay = (dateStr) => {
   return { formatted, weekday }
 }
 
+/**
+ * The filter bucket a bus belongs to: 'AC' | 'Non-AC' | 'Sleeper' | 'Luxury'.
+ *
+ * The chips used to compare against `bus.type` directly, but inventory stores a
+ * descriptive label there ("AC Sleeper (2+1)", "Volvo B11R Multi-Axle"), so
+ * every chip matched zero buses and every count rendered 0. Classifying from the
+ * label keeps older inventory working alongside newer documents that carry an
+ * explicit `category`.
+ */
+const busCategory = (bus = {}) => {
+  const explicit = bus.category
+  if (explicit === 'AC' || explicit === 'Non-AC' || explicit === 'Sleeper' || explicit === 'Luxury') {
+    return explicit
+  }
+
+  const label = `${bus.busType || ''} ${bus.type || ''}`.toLowerCase()
+
+  if (/volvo|scania|mercedes|luxury|multi-axle/.test(label)) return 'Luxury'
+  if (/sleeper/.test(label)) return 'Sleeper'
+  if (/non[-\s]?ac/.test(label)) return 'Non-AC'
+  if (bus.isAc === false) return 'Non-AC'
+  return 'AC'
+}
+
+const BUS_CATEGORIES = ['AC', 'Non-AC', 'Sleeper', 'Luxury']
+
 const getCode = (city = '') => {
   const IATA = {
     'new delhi': 'DEL', 'delhi': 'DEL', 'bengaluru': 'BLR', 'bangalore': 'BLR',
@@ -74,9 +106,7 @@ export default function BusSearchResultsPage() {
     if (location.state?.travelDate) return location.state.travelDate
     const fromUrl = params.get('date')
     if (fromUrl) return fromUrl
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    return today.toISOString().split('T')[0]
+    return todayLocal()
   })
   const [showCal, setShowCal] = useState(false)
   const [passengers, setPassengers] = useState(parseInt(params.get('passengers') || '1', 10))
@@ -120,13 +150,18 @@ export default function BusSearchResultsPage() {
     navigate(`/buses/booking/${bus.id}`, { state: { bus, searchDate: criteria.date } })
   }
 
-      const { data, isLoading } = useQuery({
+      const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['buses', criteria.from, criteria.to, criteria.date],
     queryFn: () => {
       return busService.search({
         from: criteria.from,
         to: criteria.to,
-        date: criteria.date
+        date: criteria.date,
+        // Availability filter — excludes buses that cannot seat the party.
+        passengers: criteria.passengers,
+        // See SearchResultsPage: client-side filtering needs the whole route,
+        // not the server's default first page.
+        limit: RESULTS_PER_REQUEST
       })
     },
   })
@@ -136,57 +171,11 @@ export default function BusSearchResultsPage() {
   if (!Array.isArray(apiBuses)) {
     apiBuses = []
   }
-  
-  if (apiBuses.length === 0) {
-    // Inject predefined fallback buses if none from API
-    apiBuses = [
-      {
-        id: 'b1',
-        operator: 'SRS Travels',
-        type: 'AC Sleeper (2+1)',
-        departureTime: '21:30',
-        arrivalTime: '06:00',
-        durationMinutes: 510,
-        price: 1250,
-        seatsAvailable: 15,
-        amenities: ['Water Bottle', 'Blanket', 'Charging Point'],
-        departure: { city: criteria.from || 'Chennai' },
-        arrival: { city: criteria.to || 'Bengaluru' },
-        from: criteria.from || 'Chennai',
-        to: criteria.to || 'Bengaluru'
-      },
-      {
-        id: 'b2',
-        operator: 'VRL Travels',
-        type: 'Volvo Multi-Axle I-Shift A/C Semi Sleeper',
-        departureTime: '22:45',
-        arrivalTime: '05:30',
-        durationMinutes: 405,
-        price: 950,
-        seatsAvailable: 4,
-        amenities: ['Reading Light', 'Charging Point'],
-        departure: { city: criteria.from || 'Chennai' },
-        arrival: { city: criteria.to || 'Bengaluru' },
-        from: criteria.from || 'Chennai',
-        to: criteria.to || 'Bengaluru'
-      },
-      {
-        id: 'b3',
-        operator: 'KSRTC (Airavat)',
-        type: 'AC',
-        departureTime: '10:00',
-        arrivalTime: '17:30',
-        durationMinutes: 450,
-        price: 780,
-        seatsAvailable: 32,
-        amenities: ['Live Tracking', 'Water Bottle'],
-        departure: { city: criteria.from || 'Chennai' },
-        arrival: { city: criteria.to || 'Bengaluru' },
-        from: criteria.from || 'Chennai',
-        to: criteria.to || 'Bengaluru'
-      }
-    ]
-  }
+
+  // NOTE: do NOT inject hardcoded fallback buses here. Earlier revisions added
+  // fake buses with ids "b1"/"b2"/"b3" that do not exist in Firestore, so the
+  // booking page could never price them and payment always failed. When the API
+  // returns no buses, the empty-state UI below is shown instead.
 
   const parsedBuses = apiBuses.map(b => {
     try {
@@ -226,7 +215,7 @@ export default function BusSearchResultsPage() {
     let r = [...allBuses]
 
     if (filterBusTypes.length) {
-      r = r.filter(b => filterBusTypes.includes(b.type || 'AC'))
+      r = r.filter(b => filterBusTypes.includes(busCategory(b)))
     }
 
     if (filterPriceRange.min > 0 || filterPriceRange.max < 5000) {
@@ -445,7 +434,10 @@ export default function BusSearchResultsPage() {
   const handleOtpLoginSuccess = () => {
     setShowLoginModal(false)
     if (selectedBus) {
-      navigate(`/buses/booking/${selectedBus.id}`, { state: { bus: selectedBus } })
+      // searchDate has to travel with the bus: BusBookingPage falls back to
+      // today when it is absent, which would book the wrong travel date for
+      // anyone who logged in from this prompt.
+      navigate(`/buses/booking/${selectedBus.id}`, { state: { bus: selectedBus, searchDate: criteria.date } })
     }
   }
 
@@ -580,8 +572,8 @@ export default function BusSearchResultsPage() {
           <div className="tr-filter-section">
             <div className="tr-filter-title">Bus Type</div>
             <div className="tr-filter-body">
-              {['AC', 'Non-AC', 'Sleeper', 'Luxury'].map(type => {
-                const count = allBuses.filter(b => (b.type || 'AC') === type).length
+              {BUS_CATEGORIES.map(type => {
+                const count = allBuses.filter(b => busCategory(b) === type).length
                 if (!count) return null
                 return (
                   <label key={type} className="tr-checkbox-item">
@@ -646,18 +638,48 @@ export default function BusSearchResultsPage() {
           <div className="tr-trains-list">
             {filteredSorted.length === 0 ? (
               <div className="tr-no-trains">
-                No buses match your current filters.
-                <br />
-                <button onClick={clearFilters} style={{ background: 'hsl(var(--p))', color: 'hsl(var(--pc))', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer', marginTop: '10px' }}>Clear All Filters</button>
+                {isError ? (
+                  // A failed request is not the same as a route with no service.
+                  // Reporting it as "no buses" hid a real backend outage behind
+                  // an empty results page.
+                  <>
+                    {error?.response?.data?.message ||
+                      'We could not load buses right now. Please try again.'}
+                    <br />
+                    <button
+                      onClick={() => refetch()}
+                      style={{ background: 'hsl(var(--p))', color: 'hsl(var(--pc))', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer', marginTop: '10px' }}
+                    >
+                      Retry
+                    </button>
+                  </>
+                ) : allBuses.length === 0 ? (
+                  <>
+                    No buses found for this route on the selected date.
+                    <br />
+                    Try a different date or a nearby city.
+                  </>
+                ) : (
+                  <>
+                    No buses match your current filters.
+                    <br />
+                    <button onClick={clearFilters} style={{ background: 'hsl(var(--p))', color: 'hsl(var(--pc))', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer', marginTop: '10px' }}>Clear All Filters</button>
+                  </>
+                )}
               </div>
             ) : filteredSorted.map((bus) => (
-              <div key={bus.id} className="tc-card" onClick={() => handleSelectBus(bus)}>
+              <div
+                key={bus.id}
+                className="tc-card"
+                onClick={() => bus.isAvailable !== false && handleSelectBus(bus)}
+                style={bus.isAvailable === false ? { opacity: 0.6, cursor: 'not-allowed' } : undefined}
+              >
                 <div className="tc-main-row">
                   <div className="tc-train-col">
                     <div className="tc-icon-box">🚌</div>
                     <div>
                       <div className="tc-train-name">{bus.operator || bus.busName || 'Bus Operator'}</div>
-                      <div className="tc-train-num">{bus.type || bus.busType || 'AC'}</div>
+                      <div className="tc-train-num">{bus.busType || bus.type || 'AC'}</div>
                     </div>
                   </div>
 
@@ -684,12 +706,24 @@ export default function BusSearchResultsPage() {
 
                 <div className="tc-action-row">
                   <div className="tc-action-info">
-                    {bus.seatsAvailable && bus.seatsAvailable <= 10 ? <strong style={{color: 'hsl(var(--wa))'}}>{bus.seatsAvailable} Seats left!</strong> : <strong>{bus.seatsAvailable || 30} Seats available</strong>}
+                    {/* availableSeats is the count free on the chosen travel
+                        date. A bus runs daily, so seats sold for one date must
+                        not read as gone on another. */}
+                    {bus.isAvailable === false
+                      ? <strong style={{ color: 'hsl(var(--er))' }}>Sold out for {bus.travelDate || 'this date'}</strong>
+                      : (bus.availableSeats ?? bus.seatsAvailable) <= 10
+                        ? <strong style={{ color: 'hsl(var(--wa))' }}>{bus.availableSeats ?? bus.seatsAvailable} Seats left!</strong>
+                        : <strong>{bus.availableSeats ?? bus.seatsAvailable ?? 30} Seats available</strong>}
                     <br />
                     <span style={{fontSize: '18px', fontWeight: 'bold', color: 'hsl(var(--p))', marginTop: '8px', display: 'inline-block'}}>{fmtPrice(bus.price)}</span>
                   </div>
-                  <button className="tc-book-btn" onClick={(e) => { e.stopPropagation(); handleSelectBus(bus) }}>
-                    Book Now
+                  <button
+                    className="tc-book-btn"
+                    disabled={bus.isAvailable === false}
+                    style={bus.isAvailable === false ? { background: 'hsl(var(--bc) / 0.25)', cursor: 'not-allowed' } : undefined}
+                    onClick={(e) => { e.stopPropagation(); if (bus.isAvailable === false) return; handleSelectBus(bus) }}
+                  >
+                    {bus.isAvailable === false ? 'Unavailable' : 'Book Now'}
                   </button>
                 </div>
               </div>

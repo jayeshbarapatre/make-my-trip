@@ -3,13 +3,14 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { busService } from '../services/busService'
 import { useAuth } from '../context/AuthContext'
-import api from '../services/api'
+import { requestQuote, payAndBook } from '../services/checkout'
+import { todayLocal } from '../utils/date'
 import showToast from '../utils/toast'
-import jsPDF from 'jspdf'
-import html2canvas from 'html2canvas'
+import ConfirmationTicket from '../components/ConfirmationTicket'
+import downloadElementAsPdf from '../utils/pdfDownload'
+import '../styles/ConfirmationTicket.css'
 import '../styles/BusBookingFlow.css'
 import OtpLoginModal from '../components/Auth/OtpLoginModal'
-import { photo } from '../utils/images'
 
 const fmtTime = (val) => {
   if (!val) return 'N/A'
@@ -30,7 +31,7 @@ const fmtDuration = (m) => {
   return `${mins}m`
 }
 
-const fmtPrice = (p) => '₹' + Number(p).toLocaleString('en-IN')
+const fmtPrice = (p) => (p === null || p === undefined || p === '') ? '—' : '₹' + Number(p).toLocaleString('en-IN')
 
 const fmtDate = (dateStr) => {
   if (!dateStr) return 'N/A'
@@ -74,6 +75,8 @@ export default function BusBookingPage() {
   const [errors, setErrors] = useState({})
   const [paymentLoading, setPaymentLoading] = useState(false)
   const [bookingDetails, setBookingDetails] = useState(null)
+  const [quote, setQuote] = useState(null)
+  const [quoteError, setQuoteError] = useState('')
 
   // Use bus from navigation state if available (no API call needed)
   const hasBusInState = !!location.state?.bus
@@ -105,6 +108,22 @@ export default function BusBookingPage() {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }, [step])
+
+  // Ask the server what this journey costs whenever the bus or the party size
+  // changes, so the displayed fare is always the one that will be charged.
+  const quotableBusId = bus?.id
+  const partySize = passengerDetails.length
+
+  useEffect(() => {
+    if (!quotableBusId || !partySize) return
+
+    let active = true
+    requestQuote({ type: 'bus', itemId: quotableBusId, quantity: partySize })
+      .then((q) => { if (active) { setQuote(q); setQuoteError('') } })
+      .catch((err) => { if (active) { setQuote(null); setQuoteError(err.message) } })
+
+    return () => { active = false }
+  }, [quotableBusId, partySize])
 
   if (isLoading && !bus) return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-base-100 transition-colors duration-300">
@@ -156,7 +175,7 @@ export default function BusBookingPage() {
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <button
-            onClick={() => navigate('/bus-search')}
+            onClick={() => navigate('/buses')}
             className="btn btn-primary px-6 gap-2 transform hover:scale-105 active:scale-95 transition-transform duration-200"
             style={{
               background: 'hsl(var(--p))',
@@ -196,9 +215,23 @@ export default function BusBookingPage() {
 
   const passengerCount = passengerDetails.length
   const busPrice = bus?.price || 0
-  const basePrice = busPrice * passengerCount
-  const taxes = Math.round(basePrice * 0.18)
-  const totalAmount = basePrice + taxes
+
+  // Pricing MUST come from the server's quote. The amount charged is always
+  // the gateway's, which re-prices from the signed quote — so anything we show
+  // here must match it.
+  //
+  // Earlier this fell back to `totalAmount = quote?.totalAmount ?? 0`, so when
+  // the quote failed (e.g. an item that doesn't exist in Firestore) the page
+  // rendered Base ₹780 / Payable ₹0 — an impossible state that let a user
+  // attempt a ₹0 booking. We now keep basePrice/taxes/totalAmount tied to the
+  // quote, and only fall back to the bus price as a DISPLAY estimate, never as
+  // the payable total.
+  const basePrice = quote?.baseFare ?? busPrice * passengerCount
+  const taxes = quote?.taxes ?? 0
+  // Never fabricate a payable ₹0 while a base fare is present. If the quote is
+  // missing we treat the total as "pending" and block payment below.
+  const totalAmount = quote?.totalAmount ?? null
+  const quoteReady = Boolean(quote)
 
   const validatePassengersForm = () => {
     const errs = {}
@@ -268,142 +301,53 @@ export default function BusBookingPage() {
         return
       }
 
-      // Verify Razorpay is loaded
-      if (!window.Razorpay) {
-        showToast('Razorpay not loaded. Please refresh and try again.', 'error')
+      if (!quote) {
+        showToast(quoteError || 'The fare is still loading. Please wait a moment.', 'error')
         setPaymentLoading(false)
         return
       }
 
-      // Step 1: Create Razorpay order
-      console.log('Creating Razorpay order...')
-      const orderResponse = await api.post('/payment/create-order', {
-        amount: totalAmount,
-        currency: 'INR',
-        notes: {
-          bookingType: 'bus',
-          busId: bus.id,
-          passengers: passengerDetails.length
-        }
-      })
-
-      if (!orderResponse.success) {
-        throw new Error(orderResponse.message || 'Failed to create payment order')
-      }
-
-      const { orderId, amount, currency } = orderResponse.data
-
-      // Step 2: Open Razorpay checkout
-      const razorpayOptions = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_Sqpk2eYSSYrvWf',
-        amount: amount,
-        currency: currency,
-        order_id: orderId,
-        name: 'MakeMyTrip',
+      // One shared checkout: order → gateway → verify → booking. The amount is
+      // the server's, and the booking is created from what the gateway captured.
+      const booking = await payAndBook({
+        quote,
         description: `Bus Booking - ${bus?.operatorName || 'Bus'} (${bus?.source || bus?.from} → ${bus?.destination || bus?.to})`,
-        image: `${window.location.origin}${photo('state-success', 400)}`,
         prefill: {
           name: passengerDetails[0]?.name || 'Passenger',
           email: contact?.email || '',
           contact: contact?.phone || ''
         },
-        handler: async (response) => {
-          await verifyBusPayment(response, orderId)
-        },
-        modal: {
-          ondismiss: () => {
-            setPaymentLoading(false)
-            showToast('Payment cancelled', 'info')
-          }
-        },
-        theme: {
-          color: '#003580'
+        bookingData: {
+          type: 'bus',
+          busId: bus.id,
+          busOperator: bus?.operatorName || bus?.operator || 'Bus Operator',
+          busType: bus?.busType || bus?.type || 'AC',
+          fromCity: bus?.from || bus?.source || '',
+          toCity: bus?.to || bus?.destination || '',
+          departureDate: searchDate || bus?.departure?.date || todayLocal(),
+          passengers: passengerDetails.map(p => ({ ...p })),
+          userEmail: contact?.email,
+          userName: passengerDetails[0]?.name
         }
-      }
-
-      const razorpay = new window.Razorpay(razorpayOptions)
-      razorpay.open()
-    } catch (error) {
-      console.error('Payment initiation failed:', error)
-      const errorMsg = error.message || error.response?.data?.message || 'Payment failed. Please try again.'
-      showToast(errorMsg, 'error')
-      setPaymentLoading(false)
-    }
-  }
-
-  const verifyBusPayment = async (razorpayResponse, orderId) => {
-    try {
-      console.log('Verifying payment...')
-
-      // Prepare booking data
-      const bookingData = {
-        type: 'bus',
-        busId: bus.id,
-        busOperator: bus?.operatorName || bus?.operator || 'Bus Operator',
-        busType: bus?.type || 'AC',
-        fromCity: bus?.from || bus?.source || '',
-        toCity: bus?.to || bus?.destination || '',
-        departureDate: searchDate || bus?.departure?.date || new Date().toISOString().split('T')[0],
-        passengers: passengerDetails.map(p => ({ ...p })),
-        totalAmount,
-        baseFare: Math.round(totalAmount * 0.8),
-        taxes: Math.round(totalAmount * 0.15),
-        userEmail: contact?.email,
-        userName: passengerDetails[0]?.name,
-        paymentMethod: 'razorpay'
-      }
-
-      // Verify payment on backend
-      const verifyResponse = await api.post('/payment/verify', {
-        orderId: orderId,
-        paymentId: razorpayResponse.razorpay_payment_id,
-        signature: razorpayResponse.razorpay_signature,
-        bookingData: bookingData
       })
-
-      // Only the backend issues booking references. A locally generated one
-      // would show the customer a confirmation that matches nothing in Firestore.
-      if (!verifyResponse.success || !verifyResponse.data?.booking?.bookingId) {
-        throw new Error(verifyResponse.message || 'Payment verification failed')
-      }
-
-      const booking = verifyResponse.data.booking
 
       setBookingDetails({
         ...booking,
         id: booking.bookingId,
         operatorName: booking.busOperator || bus?.operatorName || 'Bus Operator',
-        type: booking.busType || bus?.type || 'AC',
-        paymentStatus: 'completed',
-        transactionId: razorpayResponse.razorpay_payment_id,
-        paymentId: razorpayResponse.razorpay_payment_id
+        type: booking.busType || bus?.type || 'AC'
       })
 
       showToast('✅ Payment successful! Your bus booking is confirmed.', 'success')
       setStep(4)
-    } catch (err) {
-      console.error('Payment verification error:', err)
-      showToast(err.message || 'Payment verification failed. Please contact support.', 'error')
+    } catch (error) {
+      showToast(error.message || 'Payment failed. Please try again.', 'error')
       setPaymentLoading(false)
     }
   }
 
-  const downloadTicket = async () => {
-    const ticketElement = document.getElementById('ticket-content')
-    if (!ticketElement) return
-
-    try {
-      const canvas = await html2canvas(ticketElement, { scale: 2 })
-      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
-      const imgData = canvas.toDataURL('image/png')
-      const imgWidth = 190
-      const imgHeight = (canvas.height * imgWidth) / canvas.width
-      pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight)
-      pdf.save(`bus-ticket-${bookingDetails.id}.pdf`)
-    } catch (error) {
-      console.error('PDF generation failed:', error)
-    }
-  }
+  const downloadTicket = () =>
+    downloadElementAsPdf('ticket-content', `bus-ticket-${bookingDetails.id}.pdf`)
 
   // Guard: Show loading state if data is loading
   if (isLoading && !bus) {
@@ -770,6 +714,19 @@ export default function BusBookingPage() {
                   </div>
                 </div>
 
+                {/* Quote status — surfaces a load failure instead of hiding it as ₹0 */}
+                {!quoteReady && (
+                  <div style={{
+                    marginBottom: '1rem', padding: '0.75rem 1rem', borderRadius: '0.5rem',
+                    background: 'hsl(var(--er) / 0.08)', border: '1px solid hsl(var(--er) / 0.3)',
+                    color: 'hsl(var(--er))', fontSize: '0.8125rem'
+                  }}>
+                    {quoteError
+                      ? `Could not price this trip: ${quoteError}. Please go back and pick another bus.`
+                      : 'Fetching the final fare… the payable amount will appear here once loaded.'}
+                  </div>
+                )}
+
                 {/* Total */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem', fontSize: '1.25rem', fontWeight: 700, color: 'hsl(var(--p))' }}>
                   <span>Payable Amt:</span>
@@ -787,8 +744,8 @@ export default function BusBookingPage() {
                   </div>
                 </div>
 
-                {/* Pay Button */}
-                <button type="submit" disabled={paymentLoading} style={{
+                {/* Pay Button — disabled until a valid quote exists so a ₹0 booking can never be attempted */}
+                <button type="submit" disabled={paymentLoading || !quoteReady} style={{
                   width: '100%',
                   padding: '1rem',
                   borderRadius: '0.5rem',
@@ -796,9 +753,9 @@ export default function BusBookingPage() {
                   background: 'hsl(var(--p))',
                   color: 'white',
                   fontWeight: 700,
-                  cursor: paymentLoading ? 'not-allowed' : 'pointer',
+                  cursor: (paymentLoading || !quoteReady) ? 'not-allowed' : 'pointer',
                   fontSize: '0.95rem',
-                  opacity: paymentLoading ? 0.6 : 1
+                  opacity: (paymentLoading || !quoteReady) ? 0.6 : 1
                 }}>
                   {paymentLoading ? 'Processing...' : `PAY NOW ${fmtPrice(totalAmount)}`}
                 </button>
@@ -809,68 +766,42 @@ export default function BusBookingPage() {
         )}
 
         {step === 4 && bookingDetails && (
-          <div style={{ background: 'hsl(var(--b1))', borderRadius: '0.5rem', padding: '2rem' }}>
-            <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>✓</div>
-              <h2 style={{ margin: '0 0 0.5rem', color: 'hsl(var(--su))', fontSize: '1.875rem' }}>Booking Confirmed!</h2>
-              <p style={{ margin: '0.5rem 0 0', color: 'hsl(var(--nc))' }}>Your bus ticket has been booked successfully</p>
-            </div>
-
-            <div id="ticket-content" style={{ padding: '2rem', background: 'hsl(var(--b2))', borderRadius: '0.5rem', marginBottom: '2rem' }}>
-              <div style={{ marginBottom: '1.5rem', borderBottom: '1px solid hsl(var(--b2))', paddingBottom: '1rem' }}>
-                <h3 style={{ margin: '0 0 0.5rem', fontSize: '1.125rem' }}>Booking Confirmation</h3>
-                <p style={{ margin: 0, color: 'hsl(var(--nc))', fontSize: '0.875rem' }}>Booking ID: <strong>{bookingDetails.id}</strong></p>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
-                <div>
-                  <p style={{ margin: '0 0 0.5rem', fontSize: '0.75rem', color: 'hsl(var(--nc))', fontWeight: 600, textTransform: 'uppercase' }}>OPERATOR</p>
-                  <p style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>{bus.operatorName}</p>
-                </div>
-                <div>
-                  <p style={{ margin: '0 0 0.5rem', fontSize: '0.75rem', color: 'hsl(var(--nc))', fontWeight: 600, textTransform: 'uppercase' }}>BUS TYPE</p>
-                  <p style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>{bus.type || 'AC'}</p>
-                </div>
-                <div>
-                  <p style={{ margin: '0 0 0.5rem', fontSize: '0.75rem', color: 'hsl(var(--nc))', fontWeight: 600, textTransform: 'uppercase' }}>FROM</p>
-                  <p style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>{bus.from} - {fmtTime(bus.departure?.time)}</p>
-                </div>
-                <div>
-                  <p style={{ margin: '0 0 0.5rem', fontSize: '0.75rem', color: 'hsl(var(--nc))', fontWeight: 600, textTransform: 'uppercase' }}>TO</p>
-                  <p style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>{bus.to} - {fmtTime(bus.arrival?.time)}</p>
-                </div>
-                <div>
-                  <p style={{ margin: '0 0 0.5rem', fontSize: '0.75rem', color: 'hsl(var(--nc))', fontWeight: 600, textTransform: 'uppercase' }}>PASSENGERS</p>
-                  <p style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>{passengerCount}</p>
-                </div>
-                <div>
-                  <p style={{ margin: '0 0 0.5rem', fontSize: '0.75rem', color: 'hsl(var(--nc))', fontWeight: 600, textTransform: 'uppercase' }}>TOTAL AMOUNT</p>
-                  <p style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>{fmtPrice(totalAmount)}</p>
+          <ConfirmationTicket
+            title="Bus Ticket Confirmed!"
+            subtitle={<>Your bus from <strong>{bus.from || bookingDetails.fromCity}</strong> to <strong>{bus.to || bookingDetails.toCity}</strong> is confirmed.</>}
+            referenceLabel="TICKET NO"
+            referenceValue={bookingDetails.id}
+            bookingId={bookingDetails.id}
+            printableId="ticket-content"
+            totalAmount={bookingDetails.totalAmount ?? totalAmount}
+            footnote={'* Please carry a valid government-issued ID. Report to the boarding point 15 minutes before departure.\nSupport: 1800 102 8747'}
+            downloadLabel="📥 DOWNLOAD PDF TICKET"
+            onDownloadPDF={downloadTicket}
+            onMyTrips={() => navigate('/my-trips')}
+            onHome={() => navigate('/')}
+            journeyCard={
+              <div className="ct-info-card">
+                <div className="ct-info-headline">{bus.operatorName || bookingDetails.operatorName || 'Bus Operator'}</div>
+                <div className="ct-info-route">{bus.type || bookingDetails.type || 'AC'} · {bus.from || bookingDetails.fromCity} → {bus.to || bookingDetails.toCity}</div>
+                <div className="ct-times">
+                  <div>
+                    <div className="ct-time-lbl">Departure</div>
+                    <div className="ct-time-val">{fmtTime(bus.departure?.time || bookingDetails.departureTime)}</div>
+                    <div className="ct-time-sub">{searchDate || bookingDetails.departureDate || ''}</div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div className="ct-time-lbl">Arrival</div>
+                    <div className="ct-time-val">{fmtTime(bus.arrival?.time || bookingDetails.arrivalTime)}</div>
+                    <div className="ct-time-sub">{bookingDetails.busType || ''}</div>
+                  </div>
                 </div>
               </div>
-
-              <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid hsl(var(--b2))' }}>
-                <h4 style={{ marginTop: 0, marginBottom: '0.75rem', fontSize: '0.875rem', fontWeight: 600 }}>PASSENGERS</h4>
-                <div style={{ display: 'grid', gap: '0.5rem', fontSize: '0.875rem' }}>
-                  {passengerDetails.map((p, i) => (
-                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span>{i + 1}. {p.name} (Age: {p.age})</span>
-                      <span>Seat {p.seat}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
-              <button className="btn btn-outline" onClick={downloadTicket}>
-                <i className="fas fa-download"></i> Download Ticket
-              </button>
-              <button className="btn btn-primary" onClick={() => navigate('/')}>
-                Back to Home
-              </button>
-            </div>
-          </div>
+            }
+            passengers={passengerDetails.map((p) => ({
+              name: p.name,
+              meta: [`Age: ${p.age}`, p.seat && `Seat ${p.seat}`, p.gender].filter(Boolean).join(' · '),
+            }))}
+          />
         )}
       </div>
 
