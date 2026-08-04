@@ -1,60 +1,86 @@
+/**
+ * Publishes the built-in email templates into Firestore so they become editable
+ * in the admin panel.
+ *
+ * Ported from Prisma/Postgres. The previous version wrote to `prisma.emailTemplate`
+ * while `templateService` reads the `email_templates` collection in Firestore —
+ * so running the documented `npm run seed:email-templates` appeared to succeed
+ * and produced nothing the application could see.
+ *
+ * Seeding is optional: `templateService` already falls back to DEFAULT_TEMPLATES
+ * for any key with no stored document. The point of this script is to make the
+ * defaults visible and editable, not to make email work.
+ *
+ * Customised templates are preserved by default, so re-running never silently
+ * reverts an edit an operator made in the admin panel. --force resets them.
+ *
+ * Run from makemytrip-backend:
+ *   npm run seed:email-templates             # create missing templates only
+ *   npm run seed:email-templates -- --force  # reset customised templates
+ */
+
 import 'dotenv/config'
-import prisma from '../src/config/prismaClient.js'
+import { FieldValue } from 'firebase-admin/firestore'
+import { db } from '../src/config/firebase.js'
 import { DEFAULT_TEMPLATES } from '../src/config/defaultEmailTemplates.js'
+import assertNotProduction from './lib/prodGuard.js'
 
-async function seedTemplates() {
-  try {
-    console.log('🌱 Seeding email templates...')
+const COLLECTION = 'email_templates'
+const banner = (t) => console.log('\n' + '='.repeat(60) + '\n' + t + '\n' + '='.repeat(60))
 
-    let createdCount = 0
-    let updatedCount = 0
+const main = async () => {
+  const force = process.argv.includes('--force')
 
-    for (const [key, template] of Object.entries(DEFAULT_TEMPLATES)) {
-      const existing = await prisma.emailTemplate.findUnique({ where: { key } })
+  // --force overwrites operator-authored template copy.
+  assertNotProduction('This script writes email templates and can overwrite edits.')
 
-      if (existing) {
-        // Update existing template to ensure latest defaults
-        await prisma.emailTemplate.update({
-          where: { key },
-          data: {
-            name: template.name,
-            module: template.module,
-            subject: template.subject,
-            htmlBody: template.htmlBody,
-            variables: template.variables,
-            isActive: true
-          }
-        })
-        updatedCount++
-        console.log(`✅ Updated template: ${key}`)
-      } else {
-        // Create new template
-        await prisma.emailTemplate.create({
-          data: {
-            key,
-            name: template.name,
-            module: template.module,
-            subject: template.subject,
-            htmlBody: template.htmlBody,
-            variables: template.variables,
-            isActive: true
-          }
-        })
-        createdCount++
-        console.log(`✨ Created template: ${key}`)
-      }
+  banner(force ? 'EMAIL TEMPLATE SEED (FORCE RESET)' : 'EMAIL TEMPLATE SEED')
+
+  let created = 0
+  let reset = 0
+  let preserved = 0
+
+  for (const [key, template] of Object.entries(DEFAULT_TEMPLATES)) {
+    const ref = db.collection(COLLECTION).doc(key)
+    const existing = await ref.get()
+
+    if (existing.exists && !force) {
+      preserved++
+      continue
     }
 
-    console.log(`\n✅ Seeding complete!`)
-    console.log(`   Created: ${createdCount}`)
-    console.log(`   Updated: ${updatedCount}`)
-    console.log(`   Total: ${createdCount + updatedCount}`)
-  } catch (error) {
-    console.error('❌ Seeding error:', error)
-    process.exit(1)
-  } finally {
-    await prisma.$disconnect()
+    await ref.set({
+      key,
+      name: template.name,
+      module: template.module,
+      subject: template.subject,
+      htmlBody: template.htmlBody,
+      variables: template.variables ?? [],
+      isActive: true,
+      updatedAt: FieldValue.serverTimestamp(),
+      isDeleted: false,
+      ...(existing.exists ? {} : { createdAt: FieldValue.serverTimestamp() })
+    }, { merge: true })
+
+    if (existing.exists) {
+      reset++
+      console.log(`  reset   ${key}`)
+    } else {
+      created++
+      console.log(`  created ${key}`)
+    }
+  }
+
+  banner('EMAIL TEMPLATE SEED COMPLETE')
+  console.log(`  ${created} created, ${reset} reset, ${preserved} left customised`)
+  if (preserved && !force) {
+    console.log('  Re-run with --force to reset customised templates to their defaults.')
   }
 }
 
-seedTemplates()
+main()
+  .then(() => process.exit(0))
+  .catch((err) => {
+    console.error('Email template seed failed:', err)
+    process.exit(1)
+  })

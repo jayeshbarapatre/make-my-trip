@@ -1,14 +1,10 @@
 import 'dotenv/config'
-import { initializeApp, cert, getApps } from 'firebase-admin/app'
-import { getFirestore } from 'firebase-admin/firestore'
-import { createRequire } from 'module'
-import { resolve } from 'path'
-
-const require = createRequire(import.meta.url)
-const serviceAccount = require(resolve(process.cwd(), 'serviceAccountKey.json'))
-
-if (!getApps().length) initializeApp({ credential: cert(serviceAccount) })
-const db = getFirestore()
+// Uses the shared Firebase bootstrap rather than initialising its own. The
+// hand-rolled version here `require`d serviceAccountKey.json unconditionally,
+// so `npm run seed` crashed outright on any deployment configured through
+// FIREBASE_* environment variables instead of a key file.
+import { db } from '../src/config/firebase.js'
+import assertNotProduction from './lib/prodGuard.js'
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -74,59 +70,72 @@ const flights = []
 let flightCounter = 1000
 
 routes.forEach(([src, dst, dur, base]) => {
-  // 4 flights per route across today and next 7 days spread over time slots
-  timeSlots.slice(0, 6).forEach((slot, idx) => {
-    const airline = airlines[idx % airlines.length]
-    const offsetDay = idx % 4           // spread across 4 days
-    const depDate = d(offsetDay)
-    const departure = toISO(depDate, slot)
-    const arrival = addMin(departure, dur)
+  // Daily departures across the booking horizon. Flights are date-specific
+  // inventory (not a recurring daily service like buses), so the search filters
+  // by calendar day: if a route has no departure on the requested date it
+  // returns nothing. Real airlines fly a route every day, so we seed one flight
+  // per route per day, cycling airlines and time-of-day slots so a given date
+  // offers several options at different times and price points.
+  const HORIZON_DAYS = 14
+  for (let day = 0; day < HORIZON_DAYS; day++) {
+    // 3 departures per route per day: morning, afternoon, evening.
+    timeSlots.slice(0, 6).filter((_, i) => i % 2 === 0).forEach((slot, slotIdx) => {
+      const airline = airlines[(day + slotIdx) % airlines.length]
+      const depDate = d(day)
+      const departure = toISO(depDate, slot)
+      const arrival = addMin(departure, dur)
 
-    // Price variance ±20%
-    const variance = 1 + (Math.random() * 0.4 - 0.2)
-    const price = Math.round((base * variance) / 100) * 100
+      // Price variance ±20%
+      const variance = 1 + (Math.random() * 0.4 - 0.2)
+      const price = Math.round((base * variance) / 100) * 100
 
-    const stops = idx % 5 === 4 ? 1 : 0  // one in five has a stop
+      const stops = slotIdx === 2 ? 1 : 0  // the evening departure has a stop
 
-    flights.push({
-      airline: airline.name,
-      airlineCode: airline.code,
-      airlineLogo: airline.logo,
-      flightNumber: `${airline.code}${flightCounter++}`,
-      source: src,
-      destination: dst,
-      departure,
-      arrival,
-      duration: dur,
-      price,
-      seats: 60 + Math.floor(Math.random() * 100),
-      stops,
-      class: 'Economy',
-      baggage: '15 kg check-in + 7 kg cabin',
-      refundable: idx % 3 !== 0,
-      createdAt: new Date().toISOString(),
+      flights.push({
+        airline: airline.name,
+        airlineCode: airline.code,
+        airlineLogo: airline.logo,
+        flightNumber: `${airline.code}${flightCounter++}`,
+        source: src,
+        destination: dst,
+        departure,
+        arrival,
+        duration: dur,
+        price,
+        seats: 60 + Math.floor(Math.random() * 100),
+        stops,
+        class: 'Economy',
+        baggage: '15 kg check-in + 7 kg cabin',
+        refundable: slotIdx % 3 !== 0,
+        createdAt: new Date().toISOString(),
+      })
     })
-  })
+  }
 })
 
 // ─── Hotels ──────────────────────────────────────────────────────────────────
 
+// Each hotel carries roomsAvailable because the search filter
+// (firebaseHotelController) requires it: a hotel without the field scores 0 and
+// is dropped from every results page even though it exists in Firestore.
+const hotelAvailability = (stars) => (stars >= 5 ? 25 : 40)
+
 const hotels = [
-  { name: 'The Oberoi New Delhi',      city: 'Delhi',     stars: 5, pricePerNight: 18000, rating: 4.8, reviews: 2341 },
-  { name: 'Taj Mahal Palace',          city: 'Mumbai',    stars: 5, pricePerNight: 22000, rating: 4.9, reviews: 4120 },
-  { name: 'ITC Windsor',               city: 'Bangalore', stars: 5, pricePerNight: 14000, rating: 4.7, reviews: 1893 },
-  { name: 'Leela Palace Chennai',      city: 'Chennai',   stars: 5, pricePerNight: 15000, rating: 4.8, reviews: 1560 },
-  { name: 'Taj Bengal',                city: 'Kolkata',   stars: 5, pricePerNight: 12000, rating: 4.7, reviews: 2100 },
-  { name: 'Park Hyatt Hyderabad',      city: 'Hyderabad', stars: 5, pricePerNight: 13000, rating: 4.6, reviews: 1780 },
-  { name: 'W Goa',                     city: 'Goa',       stars: 5, pricePerNight: 20000, rating: 4.9, reviews: 3100 },
-  { name: 'Rambagh Palace Jaipur',     city: 'Jaipur',    stars: 5, pricePerNight: 25000, rating: 4.9, reviews: 2900 },
-  { name: 'Radisson Blu Delhi',        city: 'Delhi',     stars: 4, pricePerNight: 6500,  rating: 4.3, reviews: 5620 },
-  { name: 'Novotel Mumbai',            city: 'Mumbai',    stars: 4, pricePerNight: 7200,  rating: 4.4, reviews: 4200 },
-  { name: 'Marriott Bangalore',        city: 'Bangalore', stars: 4, pricePerNight: 8000,  rating: 4.5, reviews: 3780 },
-  { name: 'OYO Townhouse Pune',        city: 'Pune',      stars: 3, pricePerNight: 2200,  rating: 4.1, reviews: 8100 },
-  { name: 'Ibis Styles Goa',           city: 'Goa',       stars: 3, pricePerNight: 4500,  rating: 4.2, reviews: 6400 },
-  { name: 'FabHotel Jaipur Central',   city: 'Jaipur',    stars: 3, pricePerNight: 1800,  rating: 3.9, reviews: 3200 },
-  { name: 'Lemon Tree Chennai',        city: 'Chennai',   stars: 4, pricePerNight: 5500,  rating: 4.3, reviews: 2900 },
+  { name: 'The Oberoi New Delhi',      city: 'Delhi',     stars: 5, pricePerNight: 18000, rating: 4.8, reviews: 2341, roomsAvailable: hotelAvailability(5), amenities: ['Free WiFi','Pool','Spa','Gym','Restaurant','Bar','Parking','Airport Shuttle'], address: 'Dr. Zakir Hussain Marg, New Delhi', images: [] },
+  { name: 'Taj Mahal Palace',          city: 'Mumbai',    stars: 5, pricePerNight: 22000, rating: 4.9, reviews: 4120, roomsAvailable: hotelAvailability(5), amenities: ['Free WiFi','Pool','Spa','Gym','Restaurant','Bar','Parking','Airport Shuttle'], address: 'Apollo Bunder, Colaba, Mumbai', images: [] },
+  { name: 'ITC Windsor',               city: 'Bangalore', stars: 5, pricePerNight: 14000, rating: 4.7, reviews: 1893, roomsAvailable: hotelAvailability(5), amenities: ['Free WiFi','Pool','Spa','Gym','Restaurant','Bar','Parking'], address: '25 Windsor Square, Bengaluru', images: [] },
+  { name: 'Leela Palace Chennai',      city: 'Chennai',   stars: 5, pricePerNight: 15000, rating: 4.8, reviews: 1560, roomsAvailable: hotelAvailability(5), amenities: ['Free WiFi','Pool','Spa','Gym','Restaurant','Bar','Parking','Airport Shuttle'], address: 'Adyar Seaface, MRC Nagar, Chennai', images: [] },
+  { name: 'Taj Bengal',                city: 'Kolkata',   stars: 5, pricePerNight: 12000, rating: 4.7, reviews: 2100, roomsAvailable: hotelAvailability(5), amenities: ['Free WiFi','Pool','Spa','Gym','Restaurant','Bar','Parking'], address: '34B Belvedere Road, Alipore, Kolkata', images: [] },
+  { name: 'Park Hyatt Hyderabad',      city: 'Hyderabad', stars: 5, pricePerNight: 13000, rating: 4.6, reviews: 1780, roomsAvailable: hotelAvailability(5), amenities: ['Free WiFi','Pool','Spa','Gym','Restaurant','Bar','Parking','Airport Shuttle'], address: 'Road No 2, Banjara Hills, Hyderabad', images: [] },
+  { name: 'W Goa',                     city: 'Goa',       stars: 5, pricePerNight: 20000, rating: 4.9, reviews: 3100, roomsAvailable: hotelAvailability(5), amenities: ['Free WiFi','Pool','Spa','Gym','Restaurant','Bar','Beach Access','Parking'], address: 'Vagator Beach, North Goa', images: [] },
+  { name: 'Rambagh Palace Jaipur',     city: 'Jaipur',    stars: 5, pricePerNight: 25000, rating: 4.9, reviews: 2900, roomsAvailable: hotelAvailability(5), amenities: ['Free WiFi','Pool','Spa','Gym','Restaurant','Bar','Parking'], address: 'Bhawani Singh Road, Jaipur', images: [] },
+  { name: 'Radisson Blu Delhi',        city: 'Delhi',     stars: 4, pricePerNight: 6500,  rating: 4.3, reviews: 5620, roomsAvailable: hotelAvailability(4), amenities: ['Free WiFi','Pool','Gym','Restaurant','Parking','Airport Shuttle'], address: 'Plot No 8, Sector 13, Dwarka, New Delhi', images: [] },
+  { name: 'Novotel Mumbai',            city: 'Mumbai',    stars: 4, pricePerNight: 7200,  rating: 4.4, reviews: 4200, roomsAvailable: hotelAvailability(4), amenities: ['Free WiFi','Pool','Gym','Restaurant','Bar','Parking'], address: 'Saki Vihar Road, Andheri East, Mumbai', images: [] },
+  { name: 'Marriott Bangalore',        city: 'Bangalore', stars: 4, pricePerNight: 8000,  rating: 4.5, reviews: 3780, roomsAvailable: hotelAvailability(4), amenities: ['Free WiFi','Pool','Gym','Restaurant','Bar','Parking'], address: 'Outer Ring Road, Whitefield, Bengaluru', images: [] },
+  { name: 'OYO Townhouse Pune',        city: 'Pune',      stars: 3, pricePerNight: 2200,  rating: 4.1, reviews: 8100, roomsAvailable: hotelAvailability(3), amenities: ['Free WiFi','Restaurant','Parking'], address: 'Baner Road, Pune', images: [] },
+  { name: 'Ibis Styles Goa',           city: 'Goa',       stars: 3, pricePerNight: 4500,  rating: 4.2, reviews: 6400, roomsAvailable: hotelAvailability(3), amenities: ['Free WiFi','Pool','Restaurant','Parking','Bar'], address: 'Candolim, North Goa', images: [] },
+  { name: 'FabHotel Jaipur Central',   city: 'Jaipur',    stars: 3, pricePerNight: 1800,  rating: 3.9, reviews: 3200, roomsAvailable: hotelAvailability(3), amenities: ['Free WiFi','Restaurant','Parking'], address: 'MI Road, Jaipur', images: [] },
+  { name: 'Lemon Tree Chennai',        city: 'Chennai',   stars: 4, pricePerNight: 5500,  rating: 4.3, reviews: 2900, roomsAvailable: hotelAvailability(4), amenities: ['Free WiFi','Pool','Gym','Restaurant','Bar','Parking'], address: 'Sadras Road, Kalaignar Karunanidhi Nagar, Chennai', images: [] },
 ]
 
 // ─── Seed Functions ──────────────────────────────────────────────────────────
@@ -164,6 +173,9 @@ async function seedHotels() {
 }
 
 async function main() {
+  // clearCollection() wipes flights and hotels wholesale.
+  assertNotProduction('This seed deletes and replaces all flights and hotels.')
+
   console.log('Starting seed...')
   await seedFlights()
   await seedHotels()

@@ -1,7 +1,21 @@
-import 'dotenv/config'
-import { PrismaClient } from '@prisma/client'
+/**
+ * Publishes the built-in CMS pages into Firestore.
+ *
+ * Ported from Prisma/Postgres. The previous version wrote to `prisma.cmsPage`
+ * while `cmsController` reads `contentStore('cms_pages')` in Firestore — so this
+ * page copy existed only in a database the application never queries, and
+ * /api/v1/cms/pages/:slug returned nothing for every one of these slugs.
+ *
+ * De-duplicated on slug, so re-running never creates a second copy of a page
+ * and never overwrites edits made in the admin panel.
+ *
+ * Run from makemytrip-backend:
+ *   npm run seed:cms
+ */
 
-const prisma = new PrismaClient()
+import 'dotenv/config'
+import { contentStore } from '../src/services/contentStore.js'
+import assertNotProduction from './lib/prodGuard.js'
 
 const cmsPages = [
   {
@@ -440,33 +454,39 @@ const cmsPages = [
   },
 ]
 
-async function seedCmsPages() {
-  try {
-    console.log('🌱 Seeding CMS pages...')
+const main = async () => {
+  assertNotProduction('This script writes CMS page content.')
 
-    for (const page of cmsPages) {
-      const existing = await prisma.cmsPage.findUnique({
-        where: { slug: page.slug },
-      })
+  const store = contentStore('cms_pages')
 
-      if (existing) {
-        console.log(`✓ CMS page "${page.slug}" already exists, skipping`)
-        continue
-      }
+  console.log(`\nSeeding ${cmsPages.length} CMS page(s) into Firestore...`)
 
-      const created = await prisma.cmsPage.create({
-        data: page,
-      })
-      console.log(`✓ Created CMS page: "${created.slug}"`)
+  let created = 0
+  let skipped = 0
+
+  for (const page of cmsPages) {
+    // Slug is the public lookup key used by GET /cms/pages/:slug, so it is what
+    // de-duplication has to run on.
+    const existing = await store.findOneBy('slug', page.slug)
+
+    if (existing) {
+      skipped++
+      console.log(`  skip    ${page.slug} (already published)`)
+      continue
     }
 
-    console.log('✅ CMS pages seeding complete!')
-  } catch (error) {
-    console.error('❌ Error seeding CMS pages:', error)
-    process.exit(1)
-  } finally {
-    await prisma.$disconnect()
+    await store.create(page)
+    created++
+    console.log(`  created ${page.slug}`)
   }
+
+  console.log(`\n${created} created, ${skipped} already present.`)
+  console.log('Verify: GET /api/v1/cms/pages/company')
 }
 
-seedCmsPages()
+main()
+  .then(() => process.exit(0))
+  .catch((err) => {
+    console.error('CMS page seed failed:', err)
+    process.exit(1)
+  })

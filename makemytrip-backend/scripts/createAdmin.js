@@ -13,6 +13,8 @@ import 'dotenv/config'
 import bcrypt from 'bcryptjs'
 import { db } from '../src/config/firebase.js'
 import { Role, AccountStatus } from '../src/config/roles.js'
+import { describePasswordWeakness } from '../src/utils/validation.js'
+import { normalizeEmail, findUserByEmail } from '../src/utils/identity.js'
 
 const arg = (name) => {
   const i = process.argv.indexOf(`--${name}`)
@@ -20,7 +22,9 @@ const arg = (name) => {
 }
 const flag = (name) => process.argv.includes(`--${name}`)
 
-const email = arg('email')
+// Canonicalised so `--email Ops@Co.com` promotes the existing account rather
+// than creating a second admin the owner can never log into.
+const email = normalizeEmail(arg('email'))
 const password = arg('password')
 const name = arg('name') ?? 'Administrator'
 const role = flag('super') ? Role.SUPER_ADMIN : Role.ADMIN
@@ -33,10 +37,10 @@ const fail = (msg) => {
 const run = async () => {
   if (!email) fail('--email is required')
 
-  const ref = db.collection('users').doc(email)
-  const snap = await ref.get()
+  const existing = await findUserByEmail(db, email)
+  const ref = existing?.ref ?? db.collection('users').doc(email)
 
-  if (snap.exists) {
+  if (existing) {
     if (!flag('promote') && !password) {
       fail(`${email} already exists. Pass --promote to grant it the ${role} role, or --password to also reset the password.`)
     }
@@ -48,7 +52,8 @@ const run = async () => {
       updatedAt: new Date().toISOString()
     }
     if (password) {
-      if (password.length < 8) fail('Password must be at least 8 characters')
+      const weakness = describePasswordWeakness(password, { strict: true })
+      if (weakness) fail(weakness)
       patch.password = await bcrypt.hash(password, 10)
     }
 
@@ -58,7 +63,11 @@ const run = async () => {
   }
 
   if (!password) fail('--password is required when creating a new admin')
-  if (password.length < 8) fail('Password must be at least 8 characters')
+
+  // Same strict policy the API enforces — the bootstrap script must not be a
+  // weaker door into the same privilege level.
+  const newWeakness = describePasswordWeakness(password, { strict: true })
+  if (newWeakness) fail(newWeakness)
 
   await ref.set({
     id: `admin_${Date.now()}`,
