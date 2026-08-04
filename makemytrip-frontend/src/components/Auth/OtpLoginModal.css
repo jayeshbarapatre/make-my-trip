@@ -122,6 +122,20 @@
 }
 .otp-code-input:focus { border-color: #1a73e8; }
 
+/* Name / email / password fields in the email sign-in view. */
+.otp-input {
+  width: 100%;
+  border: 1.5px solid hsl(var(--bc, 220 13% 18%) / .18);
+  border-radius: 9px;
+  padding: 12px;
+  font-size: 15px;
+  outline: none;
+  background: transparent;
+  color: inherit;
+  transition: border-color .15s;
+}
+.otp-input:focus { border-color: #1a73e8; }
+
 .otp-meta {
   display: flex;
   justify-content: space-between;
