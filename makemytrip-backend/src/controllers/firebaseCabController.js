@@ -1,4 +1,13 @@
 import { db } from '../config/firebase.js'
+import { cityMatches } from '../utils/cities.js'
+import { fetchRouteCandidates, applySearchPipeline } from '../services/inventorySearch.js'
+
+const SORTERS = {
+  price: (a, b) => (a.price ?? 0) - (b.price ?? 0),
+  price_desc: (a, b) => (b.price ?? 0) - (a.price ?? 0),
+  rating: (a, b) => Number(b.rating ?? 0) - Number(a.rating ?? 0),
+  capacity: (a, b) => (b.capacity ?? 0) - (a.capacity ?? 0)
+}
 import {
   validateCity,
   validatePageNumber,
@@ -7,7 +16,7 @@ import {
 
 export const searchCabs = async (req, res) => {
   try {
-    const { from, to, rideType, page = 1, limit = 20 } = req.query
+    const { from, to, rideType, page = 1, limit = 20, minPrice, maxPrice, capacity, sortBy } = req.query
 
     console.log(`🚖 Firebase Cab Search: from=${from}, to=${to}, rideType=${rideType}`)
 
@@ -22,71 +31,40 @@ export const searchCabs = async (req, res) => {
     const pageNum = validatePageNumber(page)
     const pageSize = validatePageSize(limit)
 
-    // Fetch all active cabs from Firestore
-    let query = db.collection('cabs').where('isActive', '==', true)
-    const snapshot = await query.get()
+    // Indexed route query — reads only the cabs on this route, not all 250.
+    const { docs, indexed, read } = await fetchRouteCandidates('cabs', { from, to })
 
-    let cabs = []
-    snapshot.forEach(doc => {
-      cabs.push({
-        id: doc.id,
-        ...doc.data()
-      })
+    const routeFiltered = indexed
+      ? docs
+      : docs.filter((c) => cityMatches(c.from, from) && cityMatches(c.to, to))
+
+    const { rows, pagination } = applySearchPipeline(routeFiltered, {
+      filters: [
+        // Availability tolerates both the current boolean contract and the
+        // legacy numeric form, so cabs created before the fix stay searchable.
+        (c) => (typeof c.available === 'number' ? c.available > 0 : c.available !== false),
+        rideType ? (c) => String(c.type ?? '').toLowerCase().includes(String(rideType).toLowerCase()) : null,
+        minPrice ? (c) => (c.price ?? 0) >= Number(minPrice) : null,
+        maxPrice ? (c) => (c.price ?? 0) <= Number(maxPrice) : null,
+        capacity ? (c) => (c.capacity ?? 0) >= Number(capacity) : null
+      ].filter(Boolean),
+      sortBy: SORTERS[sortBy] ?? SORTERS.price,
+      page: pageNum,
+      limit: pageSize
     })
 
-    console.log(`📊 Found ${cabs.length} total active cabs in Firestore`)
-
-    // Filter by from and to cities
-    if (from || to) {
-      cabs = cabs.filter(cab => {
-        const fromMatch = !from || cab.from?.toLowerCase().includes(from.toLowerCase())
-        const toMatch = !to || cab.to?.toLowerCase().includes(to.toLowerCase())
-        return fromMatch && toMatch
-      })
-      console.log(`🚖 After route filter: ${cabs.length} cabs`)
-    }
-
-    // Filter by ride type if provided
-    if (rideType) {
-      cabs = cabs.filter(cab =>
-        cab.type?.toLowerCase().includes(rideType.toLowerCase())
-      )
-      console.log(`🚗 After type filter: ${cabs.length} cabs`)
-    }
-
-    // Check availability
-    cabs = cabs.filter(cab => cab.available === true)
-    console.log(`✅ After availability: ${cabs.length} cabs`)
-
-    // Sort by price
-    cabs.sort((a, b) => (a.price || 0) - (b.price || 0))
-
-    // Paginate
-    const total = cabs.length
-    const start = (pageNum - 1) * pageSize
-    const paginatedCabs = cabs.slice(start, start + pageSize)
-
-    // Enrich with additional info
-    const enrichedCabs = paginatedCabs.map(cab => ({
+    const enrichedCabs = rows.map(cab => ({
       ...cab,
       isAvailable: cab.available,
       estimatedTime: cab.estimatedTime || '5-10 mins'
     }))
 
-    console.log(`✅ Returning ${enrichedCabs.length} cabs (page ${pageNum})`)
+    console.log(`🚖 Cabs ${from ?? '*'} → ${to ?? '*'}: read ${read}, matched ${pagination.total} (indexed: ${indexed})`)
 
-    res.json({
-      data: enrichedCabs,
-      pagination: {
-        page: pageNum,
-        limit: pageSize,
-        total,
-        pages: Math.ceil(total / pageSize)
-      }
-    })
+    res.json({ data: enrichedCabs, pagination })
   } catch (err) {
     console.error('Firebase Cab Search error:', err.message)
-    res.status(500).json({ message: err.message })
+    res.status(500).json({ message: 'Cab search is unavailable right now. Please try again.' })
   }
 }
 
@@ -113,43 +91,6 @@ export const getCabDetails = async (req, res) => {
     res.json({ data: cab })
   } catch (err) {
     console.error('Get cab details error:', err.message)
-    res.status(500).json({ message: err.message })
-  }
-}
-
-export const getCabAvailability = async (req, res) => {
-  try {
-    const { id, from, to } = req.query
-
-    const cabDoc = await db.collection('cabs').doc(id).get()
-
-    if (!cabDoc.exists) {
-      return res.status(404).json({ message: 'Cab not found' })
-    }
-
-    const cab = cabDoc.data()
-    const basePrice = cab.price || 0
-    const estimatedDistance = 10 // km (default)
-    const totalPrice = basePrice * estimatedDistance
-    const tax = Math.round(totalPrice * 0.12)
-    const grandTotal = totalPrice + tax
-
-    res.json({
-      data: {
-        cabId: id,
-        cabType: cab.type,
-        capacity: cab.capacity,
-        pricePerKm: cab.price,
-        estimatedDistance,
-        subtotal: totalPrice,
-        tax,
-        grandTotal,
-        isAvailable: cab.available,
-        estimatedTime: cab.estimatedTime || '5-10 mins'
-      }
-    })
-  } catch (err) {
-    console.error('Get availability error:', err.message)
-    res.status(500).json({ message: err.message })
+    res.status(500).json({ message: 'Could not load this cab. Please try again.' })
   }
 }

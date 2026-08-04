@@ -99,6 +99,19 @@ export const redeemCoupon = async ({ code, userId, bookingId }) => {
       throw Object.assign(new Error('This code has reached its usage limit'), { code: 'EXHAUSTED' })
     }
 
+    // The per-user cap was checked only in `evaluateCoupon`, which runs at
+    // preview time outside any transaction. A "one per customer" code could
+    // therefore be redeemed repeatedly by booking concurrently — every request
+    // read a usage count of zero before any of them wrote. Enforcing it inside
+    // the transaction makes the limit real.
+    const perUser = Number(coupon.maxPerUser ?? 0)
+    if (perUser > 0) {
+      const used = Number(coupon.redemptionsByUser?.[userId] ?? 0)
+      if (used >= perUser) {
+        throw Object.assign(new Error('You have already used this code'), { code: 'PER_USER_LIMIT' })
+      }
+    }
+
     tx.update(ref, {
       redemptionCount: FieldValue.increment(1),
       [`redemptionsByUser.${userId}`]: FieldValue.increment(1),

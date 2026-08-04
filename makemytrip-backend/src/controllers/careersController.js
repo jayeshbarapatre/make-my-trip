@@ -1,185 +1,156 @@
-import { PrismaClient } from '@prisma/client'
+import { contentStore } from '../services/contentStore.js'
+import { sanitizeText } from '../utils/sanitize.js'
 
-const prisma = new PrismaClient()
+// Migrated from Prisma/MongoDB to Firestore. listJobs is public and used to
+// hang for ~15s against an unreachable MongoDB.
 
-export const listJobs = async (req, res) => {
+const jobs = contentStore('job_positions')
+const applications = contentStore('job_applications')
+
+const JOB_FIELDS = ['department', 'location', 'type', 'experience', 'description', 'requirements', 'salaryRange']
+
+const pickJobFields = (body) =>
+  Object.fromEntries(JOB_FIELDS.filter((f) => body[f] !== undefined).map((f) => [f, body[f]]))
+
+const isEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value ?? ''))
+
+export const listJobs = async (_req, res) => {
   try {
-    const jobs = await prisma.jobPosition.findMany({
-      where: { status: 'active' },
-      orderBy: { createdAt: 'desc' },
-    })
-
-    res.json({ message: 'Jobs fetched', data: jobs })
+    res.json({ message: 'Jobs fetched', data: await jobs.list({ activeOnly: true }) })
   } catch (error) {
-    console.error('Error fetching jobs:', error)
+    console.error('Error fetching jobs:', error.message)
     res.status(500).json({ message: 'Failed to fetch jobs' })
   }
 }
 
 export const getJob = async (req, res) => {
   try {
-    const { id } = req.params
-    const job = await prisma.jobPosition.findUnique({
-      where: { id },
-      include: { applications: true },
-    })
+    const job = await jobs.getById(req.params.id)
+    if (!job) return res.status(404).json({ message: 'Job not found' })
 
-    if (!job) {
-      return res.status(404).json({ message: 'Job not found' })
-    }
+    // Applicant details are not public; only expose the count on this route.
+    const jobApplications = await applications.list({ where: { field: 'jobId', value: req.params.id } })
 
-    res.json({ message: 'Job fetched', data: job })
+    res.json({ message: 'Job fetched', data: { ...job, applicationCount: jobApplications.length } })
   } catch (error) {
-    console.error('Error fetching job:', error)
+    console.error('Error fetching job:', error.message)
     res.status(500).json({ message: 'Failed to fetch job' })
   }
 }
 
 export const applyJob = async (req, res) => {
   try {
-    const { id } = req.params
-    const { name, email, phone, resume, message } = req.body
+    const name = sanitizeText(req.body?.name, 120)
+    const email = sanitizeText(req.body?.email, 200)
 
     if (!name || !email) {
       return res.status(400).json({ message: 'Name and email are required' })
     }
+    if (!isEmail(email)) {
+      return res.status(400).json({ message: 'A valid email address is required' })
+    }
 
-    const job = await prisma.jobPosition.findUnique({ where: { id } })
-    if (!job) {
+    const job = await jobs.getById(req.params.id)
+    if (!job || job.status !== 'active') {
       return res.status(404).json({ message: 'Job not found' })
     }
 
-    const application = await prisma.jobApplication.create({
-      data: {
-        jobId: id,
-        name,
-        email,
-        phone: phone || null,
-        resume: resume || null,
-        message: message || null,
-        status: 'pending',
-      },
+    const application = await applications.create({
+      jobId: req.params.id,
+      jobTitle: job.title ?? null,
+      name,
+      email,
+      phone: sanitizeText(req.body?.phone, 20) || null,
+      resume: sanitizeText(req.body?.resume, 500) || null,
+      message: sanitizeText(req.body?.message, 4000) || null,
+      status: 'pending'
     })
 
     res.status(201).json({ message: 'Application submitted', data: application })
   } catch (error) {
-    console.error('Error applying to job:', error)
+    console.error('Error applying to job:', error.message)
     res.status(500).json({ message: 'Failed to apply to job' })
   }
 }
 
-export const listAllJobs = async (req, res) => {
-  try {
-    const jobs = await prisma.jobPosition.findMany({
-      orderBy: { createdAt: 'desc' },
-      include: { applications: true },
-    })
+// ── Admin ──
 
-    res.json({ message: 'Jobs fetched', data: jobs })
+export const listAllJobs = async (_req, res) => {
+  try {
+    res.json({ message: 'Jobs fetched', data: await jobs.list() })
   } catch (error) {
-    console.error('Error fetching jobs:', error)
+    console.error('Error fetching jobs:', error.message)
     res.status(500).json({ message: 'Failed to fetch jobs' })
   }
 }
 
 export const createJob = async (req, res) => {
   try {
-    const { title, department, location, experience, description, status } = req.body
+    const title = sanitizeText(req.body?.title, 200)
+    if (!title) return res.status(400).json({ message: 'Title is required' })
 
-    if (!title || !department || !location || !experience || !description) {
-      return res.status(400).json({ message: 'All fields are required' })
-    }
-
-    const job = await prisma.jobPosition.create({
-      data: {
-        title,
-        department,
-        location,
-        experience,
-        description,
-        status: status || 'active',
-      },
-    })
+    const job = await jobs.create({
+      title,
+      status: req.body.status === 'inactive' ? 'inactive' : 'active',
+      ...pickJobFields(req.body)
+    }, req.adminId)
 
     res.status(201).json({ message: 'Job created', data: job })
   } catch (error) {
-    console.error('Error creating job:', error)
+    console.error('Error creating job:', error.message)
     res.status(500).json({ message: 'Failed to create job' })
   }
 }
 
 export const updateJob = async (req, res) => {
   try {
-    const { id } = req.params
-    const { title, department, location, experience, description, status } = req.body
+    const job = await jobs.update(req.params.id, {
+      title: req.body.title !== undefined ? sanitizeText(req.body.title, 200) : undefined,
+      status: req.body.status,
+      ...pickJobFields(req.body)
+    }, req.adminId)
 
-    const job = await prisma.jobPosition.update({
-      where: { id },
-      data: { title, department, location, experience, description, status },
-    })
+    if (!job) return res.status(404).json({ message: 'Job not found' })
 
     res.json({ message: 'Job updated', data: job })
   } catch (error) {
-    if (error.code === 'P2025') {
-      return res.status(404).json({ message: 'Job not found' })
-    }
-    console.error('Error updating job:', error)
+    console.error('Error updating job:', error.message)
     res.status(500).json({ message: 'Failed to update job' })
   }
 }
 
 export const deleteJob = async (req, res) => {
   try {
-    const { id } = req.params
-
-    await prisma.jobPosition.delete({ where: { id } })
-
+    const ok = await jobs.remove(req.params.id, req.adminId)
+    if (!ok) return res.status(404).json({ message: 'Job not found' })
     res.json({ message: 'Job deleted' })
   } catch (error) {
-    if (error.code === 'P2025') {
-      return res.status(404).json({ message: 'Job not found' })
-    }
-    console.error('Error deleting job:', error)
+    console.error('Error deleting job:', error.message)
     res.status(500).json({ message: 'Failed to delete job' })
   }
 }
 
 export const listApplications = async (req, res) => {
   try {
-    const { jobId } = req.params
-
-    const applications = await prisma.jobApplication.findMany({
-      where: { jobId },
-      orderBy: { createdAt: 'desc' },
-    })
-
-    res.json({ message: 'Applications fetched', data: applications })
+    const rows = await applications.list({ where: { field: 'jobId', value: req.params.jobId } })
+    res.json({ message: 'Applications fetched', data: rows })
   } catch (error) {
-    console.error('Error fetching applications:', error)
+    console.error('Error fetching applications:', error.message)
     res.status(500).json({ message: 'Failed to fetch applications' })
   }
 }
 
 export const updateApplicationStatus = async (req, res) => {
   try {
-    const { id } = req.params
-    const { status } = req.body
+    const status = sanitizeText(req.body?.status, 40)
+    if (!status) return res.status(400).json({ message: 'Status is required' })
 
-    if (!status) {
-      return res.status(400).json({ message: 'Status is required' })
-    }
-
-    const application = await prisma.jobApplication.update({
-      where: { id },
-      data: { status },
-    })
+    const application = await applications.update(req.params.id, { status }, req.adminId)
+    if (!application) return res.status(404).json({ message: 'Application not found' })
 
     res.json({ message: 'Application status updated', data: application })
   } catch (error) {
-    if (error.code === 'P2025') {
-      return res.status(404).json({ message: 'Application not found' })
-    }
-    console.error('Error updating application:', error)
+    console.error('Error updating application:', error.message)
     res.status(500).json({ message: 'Failed to update application' })
   }
 }

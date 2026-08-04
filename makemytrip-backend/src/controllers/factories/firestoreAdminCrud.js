@@ -1,5 +1,7 @@
 import { FieldValue } from 'firebase-admin/firestore'
+import { routeIndexFields } from '../../services/inventorySearch.js'
 import { db } from '../../config/firebase.js'
+import { now, toDate } from '../../utils/time.js'
 import { writeAuditLog, AuditAction } from '../../services/auditLog.js'
 
 // Shared admin CRUD over a Firestore collection.
@@ -13,12 +15,6 @@ import { writeAuditLog, AuditAction } from '../../services/auditLog.js'
 // collections, so anything created here must be written in the shape search
 // expects or it simply will not appear on the site.
 
-const toDate = (value) => {
-  if (!value) return null
-  if (typeof value?.toDate === 'function') return value.toDate()
-  const d = new Date(value)
-  return Number.isNaN(d.getTime()) ? null : d
-}
 
 /**
  * @param {object} config
@@ -65,9 +61,13 @@ export const createAdminCrud = ({
       const ref = db.collection(collection).doc()
       const doc = {
         ...payload,
+        // Denormalised canonical route/city, so inventory created here is
+        // reachable by the indexed search immediately rather than only after
+        // the next backfill run.
+        ...routeIndexFields(collection, payload),
         isActive: payload.isActive !== false,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        createdAt: now(),
+        updatedAt: now(),
         createdBy: req.adminId ?? null,
         updatedBy: req.adminId ?? null,
         isDeleted: false
@@ -139,6 +139,10 @@ export const createAdminCrud = ({
       // Never let the client rewrite identity or audit fields.
       const { id: _id, createdAt: _c, updatedAt: _u, createdBy: _cb, isDeleted: _d, ...rest } = req.body
       const payload = toStorage(rest, { partial: true })
+      // Re-derive the canonical route when an edit changes from/to/city.
+      // Merged over the stored document so a partial update that touches only
+      // `to` still recomputes both fields from consistent values.
+      Object.assign(payload, routeIndexFields(collection, { ...snap.data(), ...payload }))
 
       if (uniqueField && payload[uniqueField]) {
         const clash = await findUnique(payload[uniqueField], req.params.id)
@@ -149,7 +153,7 @@ export const createAdminCrud = ({
 
       await ref.update({
         ...payload,
-        updatedAt: new Date().toISOString(),
+        updatedAt: now(),
         updatedBy: req.adminId ?? null
       })
 
@@ -214,7 +218,7 @@ export const createAdminCrud = ({
       const nextActive = snap.data().isActive === false
       await ref.update({
         isActive: nextActive,
-        updatedAt: new Date().toISOString(),
+        updatedAt: now(),
         updatedBy: req.adminId ?? null
       })
 

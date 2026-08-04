@@ -1,4 +1,5 @@
 import { db } from '../../config/firebase.js'
+import { now, toDate } from '../../utils/time.js'
 import { ListingStatus } from './firestoreVendorCrud.js'
 import { writeAuditLog, AuditAction } from '../../services/auditLog.js'
 
@@ -8,12 +9,6 @@ import { writeAuditLog, AuditAction } from '../../services/auditLog.js'
 // is the boundary worth guarding: only PENDING_APPROVAL rows can be decided,
 // and a rejection must carry a reason the vendor will read.
 
-const toDate = (value) => {
-  if (!value) return null
-  if (typeof value?.toDate === 'function') return value.toDate()
-  const d = new Date(value)
-  return Number.isNaN(d.getTime()) ? null : d
-}
 
 // Vendors live in `users`; attach a light profile so the queue shows who
 // submitted each listing without an N+1 lookup.
@@ -84,7 +79,7 @@ export const createApprovalController = ({ collection, label, listKey }) => {
             listingStatus: ListingStatus.APPROVED,
             // Approval publishes it — this is what makes it visible in search.
             isActive: true,
-            approvedAt: new Date().toISOString(),
+            approvedAt: now(),
             approvedBy: req.adminId ?? null,
             rejectionReason: null
           }
@@ -96,7 +91,7 @@ export const createApprovalController = ({ collection, label, listKey }) => {
             approvedBy: null
           }
 
-      await ref.update({ ...patch, updatedAt: new Date().toISOString(), updatedBy: req.adminId ?? null })
+      await ref.update({ ...patch, updatedAt: now(), updatedBy: req.adminId ?? null })
 
       writeAuditLog({
         req,

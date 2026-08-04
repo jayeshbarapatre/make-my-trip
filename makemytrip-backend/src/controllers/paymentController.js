@@ -3,61 +3,82 @@ import { FieldValue } from 'firebase-admin/firestore'
 import { db } from '../config/firebase.js'
 import { razorpay, razorpayKeySecret as KEY_SECRET, paiseToRupees } from '../config/razorpay.js'
 import { sendBookingConfirmationEmail } from '../services/emailService.js'
-import { generateBookingId, generatePNR } from '../utils/idGenerator.js'
 import { writeAuditLog, AuditAction } from '../services/auditLog.js'
+import { createBookingForPayment } from '../services/bookingService.js'
+import { quoteTrip, redeemQuote, signQuote } from '../services/pricingService.js'
 
 const gatewayUnavailable = (res) =>
   res.status(503).json({ success: false, message: 'Payment gateway is not configured' })
 
-const BOOKING_TYPES = new Set(['flight', 'hotel', 'bus', 'train', 'cab'])
-
 /**
- * A client-supplied fare breakdown is only trustworthy if it reconciles with the
- * amount the gateway actually captured. If it doesn't, we keep the authoritative
- * total and drop the breakdown rather than invent one.
+ * Returns the authoritative price for a trip, plus a short-lived signed quote
+ * the order endpoint will re-price from. The frontend displays this breakdown so
+ * the figure shown and the figure charged cannot diverge.
  */
-const reconcileBreakdown = (bookingData, authoritativeTotal) => {
-  const num = (v) => (Number.isFinite(Number(v)) ? Number(v) : 0)
-  const hasBreakdown = ['baseFare', 'taxes', 'convenience', 'gst', 'discount']
-    .some((k) => bookingData?.[k] !== undefined && bookingData?.[k] !== null)
+export const getQuote = async (req, res) => {
+  const userId = req.user?.id || req.userId
 
-  if (!hasBreakdown) return null
+  try {
+    const { type, itemId, quantity, nights, distance, couponCode } = req.body
 
-  const baseFare = num(bookingData.baseFare)
-  const taxes = num(bookingData.taxes)
-  const convenience = num(bookingData.convenience)
-  const gst = num(bookingData.gst)
-  const discount = num(bookingData.discount)
-  const sum = baseFare + taxes + convenience + gst - discount
+    // `couponCode` and `userId` were not forwarded, so `quoteTrip` always
+    // priced with couponCode=null and the discount was always zero — while
+    // `createBookingForPayment` still redeemed the code against the booking.
+    // The customer paid full price AND burned a single-use coupon.
+    //
+    // The code travels inside the signed quote token, so `redeemQuote` re-prices
+    // with the same coupon and a tampered code cannot survive to create-order.
+    const quote = await quoteTrip({ type, itemId, quantity, nights, distance, couponCode, userId })
 
-  // Allow a rupee of slack for rounding differences between client and gateway.
-  if (Math.abs(sum - authoritativeTotal) > 1) return null
-
-  return { baseFare, taxes, convenience, gst, discount }
+    res.json({
+      success: true,
+      data: { ...quote, quoteToken: signQuote(quote, userId) }
+    })
+  } catch (err) {
+    if (err.status) {
+      return res.status(err.status).json({ success: false, code: err.code, message: err.message })
+    }
+    console.error('Quote failed:', err.message)
+    res.status(500).json({ success: false, message: 'Could not price this trip' })
+  }
 }
 
 export const createRazorpayOrder = async (req, res) => {
   if (!razorpay) return gatewayUnavailable(res)
 
-  try {
-    const { amount, currency = 'INR', notes = {} } = req.body
-    const numericAmount = Number(amount)
+  const userId = req.user?.id || req.userId
 
-    if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
-      return res.status(400).json({ success: false, message: 'A positive amount is required.' })
+  try {
+    const { quoteToken, currency = 'INR', notes = {} } = req.body
+
+    // The amount is never taken from the request. It is re-derived from stored
+    // inventory via the signed quote, so a tampered client cannot choose its own
+    // price. Callers that still send a bare `amount` are refused outright.
+    if (!quoteToken) {
+      return res.status(400).json({
+        success: false,
+        code: 'QUOTE_REQUIRED',
+        message: 'A price quote is required. Request one from /payment/quote first.'
+      })
     }
 
-    const userId = req.user?.id || req.userId
+    const quote = await redeemQuote(quoteToken, userId)
 
     const order = await razorpay.orders.create({
-      amount: Math.round(numericAmount * 100),
+      amount: Math.round(quote.totalAmount * 100),
       currency,
       receipt: `rcpt_${Date.now()}_${userId ?? 'anon'}`.slice(0, 40),
-      notes: { ...notes, userId: userId ?? null }
+      notes: {
+        ...notes,
+        userId: userId ?? null,
+        type: quote.type,
+        itemId: quote.itemId
+      }
     })
 
-    // Record the intent so an order can never be verified against a user who
-    // did not create it.
+    // Record the intent, together with the priced breakdown, so an order can
+    // never be verified against a user who did not create it and the booking can
+    // be written from the server's own figures.
     await db.collection('payments').doc(order.id).set({
       orderId: order.id,
       userId: userId ?? null,
@@ -65,6 +86,18 @@ export const createRazorpayOrder = async (req, res) => {
       currency: order.currency,
       status: 'created',
       provider: 'razorpay',
+      quote: {
+        type: quote.type,
+        itemId: quote.itemId,
+        quantity: quote.quantity,
+        nights: quote.nights,
+        baseFare: quote.baseFare,
+        taxes: quote.taxes,
+        gst: quote.gst,
+        convenience: quote.convenience,
+        discount: quote.discount,
+        totalAmount: quote.totalAmount
+      },
       createdAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp(),
       createdBy: userId ?? null,
@@ -86,10 +119,20 @@ export const createRazorpayOrder = async (req, res) => {
         orderId: order.id,
         amount: order.amount,
         currency: order.currency,
-        receipt: order.receipt
+        receipt: order.receipt,
+        breakdown: {
+          baseFare: quote.baseFare,
+          taxes: quote.taxes,
+          convenience: quote.convenience,
+          discount: quote.discount,
+          totalAmount: quote.totalAmount
+        }
       }
     })
   } catch (err) {
+    if (err.status) {
+      return res.status(err.status).json({ success: false, code: err.code, message: err.message })
+    }
     console.error('Razorpay order creation error:', err)
     res.status(500).json({ success: false, message: 'Failed to create payment order' })
   }
@@ -211,80 +254,35 @@ export const verifyPayment = async (req, res) => {
     let booking = null
 
     if (bookingData) {
-      const type = BOOKING_TYPES.has(bookingData.type) ? bookingData.type : 'flight'
-
       // Bookings written by earlier revisions were keyed only by transactionId.
       const legacy = await db.collection('bookings').where('transactionId', '==', paymentId).limit(1).get()
 
       if (!legacy.empty) {
         booking = { id: legacy.docs[0].id, ...legacy.docs[0].data() }
       } else {
-        const {
-          type: _type,
-          totalAmount: _clientTotal,
-          userId: _clientUserId,
-          baseFare: _bf,
-          taxes: _tx,
-          convenience: _cv,
-          gst: _gst,
-          discount: _dc,
-          status: _st,
-          paymentStatus: _ps,
-          transactionId: _ti,
-          userEmail,
-          userName,
-          ...rest
-        } = bookingData
-
-        const breakdown = reconcileBreakdown(bookingData, authoritativeTotal)
-
-        // Deterministic id keyed on the gateway payment: two concurrent verify
-        // calls for the same payment resolve to the same document, so the
-        // transaction below makes duplicate booking creation impossible.
-        const bookingRef = db.collection('bookings').doc(`pay_${paymentId}`)
-
-        const created = await db.runTransaction(async (tx) => {
-          const existing = await tx.get(bookingRef)
-          if (existing.exists) return { id: existing.id, ...existing.data() }
-
-          const doc = {
-            ...rest,
-            bookingId: generateBookingId(type),
-            pnr: generatePNR(type),
-            userId,
-            type,
-            bookingType: type,
-            totalAmount: authoritativeTotal,
-            ...(breakdown ?? {}),
-            fareBreakdownVerified: breakdown !== null,
-            status: 'confirmed',
-            bookingStatus: 'confirmed',
-            paymentStatus: 'completed',
-            paymentId,
+        // One shared creation path with POST /bookings/*: the amount comes from
+        // the gateway, and every server-owned field is stripped from the payload.
+        const result = await createBookingForPayment({
+          payload: bookingData,
+          authority: {
             orderId,
-            transactionId: paymentId,
-            paymentMethod: payment.method ?? 'razorpay',
-            userEmail: userEmail ?? null,
-            userName: userName ?? null,
-            createdAt: FieldValue.serverTimestamp(),
-            updatedAt: FieldValue.serverTimestamp(),
-            createdBy: userId,
-            updatedBy: userId,
-            isDeleted: false
-          }
-
-          tx.set(bookingRef, doc)
-          return { id: bookingRef.id, ...doc }
+            paymentId,
+            amount: authoritativeTotal,
+            method: payment.method ?? 'razorpay'
+          },
+          userId,
+          userEmail: bookingData.userEmail ?? req.user?.email ?? null,
+          userName: bookingData.userName ?? null
         })
 
-        booking = created
+        booking = result.booking
 
         writeAuditLog({
           req,
           action: AuditAction.BOOKING_CREATED,
           entity: 'bookings',
           entityId: booking.bookingId,
-          newValue: { type, totalAmount: authoritativeTotal, paymentId }
+          newValue: { type: booking.type || bookingData.type, totalAmount: authoritativeTotal, paymentId }
         })
       }
 

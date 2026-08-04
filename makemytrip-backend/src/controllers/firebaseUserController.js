@@ -1,4 +1,5 @@
 import { db } from '../config/firebase.js'
+import { now } from '../utils/time.js'
 
 // Users are stored in the `users` collection keyed by email, with an `id` field holding the UID.
 const findUserDocById = async (userId) => {
@@ -32,7 +33,7 @@ export const updateProfile = async (req, res) => {
     const updates = {
       ...(name && { name }),
       ...(phone && { phone }),
-      updatedAt: new Date().toISOString()
+      updatedAt: now()
     }
 
     await userDoc.ref.update(updates)

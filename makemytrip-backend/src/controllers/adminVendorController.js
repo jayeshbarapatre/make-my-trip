@@ -1,18 +1,15 @@
 import bcrypt from 'bcryptjs'
 import { db } from '../config/firebase.js'
+import { now, toDate } from '../utils/time.js'
 import { Role, AccountStatus, resolveRole, resolveAccountStatus } from '../config/roles.js'
 import { writeAuditLog, AuditAction } from '../services/auditLog.js'
+import { normalizeEmail, findUserByEmail } from '../utils/identity.js'
+import { revokeAllSessions } from '../services/tokenService.js'
 
 // Migrated from Prisma/MongoDB to Firestore. Vendors are `users` documents with
 // role=vendor and a vendorId; inventory is scoped by that vendorId, not by the
 // user's own id.
 
-const toDate = (value) => {
-  if (!value) return null
-  if (typeof value?.toDate === 'function') return value.toDate()
-  const d = new Date(value)
-  return Number.isNaN(d.getTime()) ? null : d
-}
 
 const publicVendor = (u, hotelCount = 0) => ({
   id: u.id,
@@ -112,7 +109,8 @@ export const getVendorHotels = async (req, res) => {
 
 export const createVendor = async (req, res) => {
   try {
-    const { name, email, password, phone, vendorType = 'hotel', vendorName } = req.body
+    const { name, password, phone, vendorType = 'hotel', vendorName } = req.body
+    const email = normalizeEmail(req.body.email)
 
     if (!name || !email || !password) {
       return res.status(400).json({ message: 'Name, email, and password are required' })
@@ -122,7 +120,7 @@ export const createVendor = async (req, res) => {
     }
 
     const ref = db.collection('users').doc(email)
-    if ((await ref.get()).exists) {
+    if (await findUserByEmail(db, email)) {
       return res.status(409).json({ message: 'Email already registered' })
     }
 
@@ -142,8 +140,8 @@ export const createVendor = async (req, res) => {
       vendorId,
       vendorType,
       vendorName: vendorName ?? name,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: now(),
+      updatedAt: now(),
       createdBy: req.adminId ?? null,
       updatedBy: req.adminId ?? null,
       isDeleted: false
@@ -181,9 +179,13 @@ export const deleteVendor = async (req, res) => {
     await found.ref.update({
       isDeleted: true,
       accountStatus: AccountStatus.DISABLED,
-      updatedAt: new Date().toISOString(),
+      updatedAt: now(),
       updatedBy: req.adminId ?? null
     })
+
+    // End their live sessions, or a disabled vendor keeps operating on a
+    // still-valid token until it expires.
+    await revokeAllSessions(found.ref)
 
     writeAuditLog({
       req,
@@ -213,7 +215,7 @@ export const toggleVendorStatus = async (req, res) => {
 
     await found.ref.update({
       accountStatus: nextStatus,
-      updatedAt: new Date().toISOString(),
+      updatedAt: now(),
       updatedBy: req.adminId ?? null
     })
 

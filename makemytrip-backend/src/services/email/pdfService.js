@@ -75,7 +75,7 @@ export const generateTicketPDF = async (booking) => {
       doc.on('error', reject)
 
       // Header
-      addHeader(doc, `${booking.type.toUpperCase()} TICKET`)
+      addHeader(doc, `${String(booking.type ?? "booking").toUpperCase()} TICKET`)
 
       // Booking Details
       doc.fontSize(14).fillColor(BRAND_COLOR).text('Booking Details')
@@ -123,14 +123,75 @@ export const generateTicketPDF = async (booking) => {
         doc.moveDown(0.5)
 
         const hotelRows = [
-          ['Hotel:', booking.fromCity],
-          ['Location:', booking.toCity],
-          ['Check-in:', formatDate(booking.departureDate)],
-          ['Check-out:', formatDate(booking.returnDate)],
-          ['Nights:', booking.numBags || 1]
+          ['Hotel:', booking.hotelName || booking.fromCity || 'N/A'],
+          ['Location:', booking.hotelLocality || booking.hotelAddress || booking.toCity || 'N/A'],
+          ['Check-in:', formatDate(booking.checkIn || booking.departureDate)],
+          ['Check-out:', formatDate(booking.checkOut || booking.returnDate)],
+          ['Rooms:', booking.rooms || 1],
+          ['Nights:', booking.nights || booking.numBags || 1]
         ]
 
         hotelRows.forEach(([label, value]) => {
+          doc.fontSize(10).fillColor('black')
+          doc.text(label, 50, undefined, { width: 150 })
+          doc.text(value, 200, doc.y - 15, { width: 300 })
+          doc.moveDown(0.8)
+        })
+      } else if (booking.type === 'train') {
+        doc.fontSize(14).fillColor(BRAND_COLOR).text('Train Details')
+        doc.moveDown(0.5)
+
+        const trainRows = [
+          ['Train:', booking.trainName || 'N/A'],
+          ['Train Number:', booking.trainNumber || 'N/A'],
+          ['From:', booking.fromCity || booking.from || 'N/A'],
+          ['To:', booking.toCity || booking.to || 'N/A'],
+          ['Date:', formatDate(booking.travelDate || booking.departureDate)],
+          ['Class:', booking.travelClass || booking.coachClass || 'N/A'],
+          ['Passengers:', booking.paxCount || 1]
+        ]
+
+        trainRows.forEach(([label, value]) => {
+          doc.fontSize(10).fillColor('black')
+          doc.text(label, 50, undefined, { width: 150 })
+          doc.text(value, 200, doc.y - 15, { width: 300 })
+          doc.moveDown(0.8)
+        })
+      } else if (booking.type === 'bus') {
+        doc.fontSize(14).fillColor(BRAND_COLOR).text('Bus Details')
+        doc.moveDown(0.5)
+
+        const busRows = [
+          ['Operator:', booking.busOperator || 'N/A'],
+          ['Bus Type:', booking.busType || 'N/A'],
+          ['From:', booking.fromCity || booking.from || 'N/A'],
+          ['To:', booking.toCity || booking.to || 'N/A'],
+          ['Date:', formatDate(booking.travelDate || booking.departureDate)],
+          ['Boarding Point:', booking.boardingPoint || 'N/A'],
+          ['Dropping Point:', booking.droppingPoint || 'N/A'],
+          ['Passengers:', booking.paxCount || 1]
+        ]
+
+        busRows.forEach(([label, value]) => {
+          doc.fontSize(10).fillColor('black')
+          doc.text(label, 50, undefined, { width: 150 })
+          doc.text(value, 200, doc.y - 15, { width: 300 })
+          doc.moveDown(0.8)
+        })
+      } else if (booking.type === 'cab') {
+        doc.fontSize(14).fillColor(BRAND_COLOR).text('Cab Details')
+        doc.moveDown(0.5)
+
+        const cabRows = [
+          ['Cab Type:', booking.cabType || 'N/A'],
+          ['Pickup Location:', booking.pickupLocation || booking.from || 'N/A'],
+          ['Drop Location:', booking.dropLocation || booking.to || 'N/A'],
+          ['Date:', formatDate(booking.travelDate || booking.departureDate)],
+          ['Distance:', booking.distance || 'N/A'],
+          ['Driver:', booking.driverName || 'Will be allocated shortly']
+        ]
+
+        cabRows.forEach(([label, value]) => {
           doc.fontSize(10).fillColor('black')
           doc.text(label, 50, undefined, { width: 150 })
           doc.text(value, 200, doc.y - 15, { width: 300 })
@@ -227,7 +288,7 @@ export const generateInvoicePDF = async (booking, invoiceNumber) => {
 
       // Items
       const items = [
-        [`${booking.type.toUpperCase()} Booking (${booking.bookingId})`, '1', formatCurrency(booking.baseFare || 0)]
+        [`${String(booking.type ?? "Booking").toUpperCase()} Booking (${booking.bookingId ?? "—"})`, '1', formatCurrency(booking.baseFare || 0)]
       ]
 
       items.forEach(([desc, qty, amount]) => {

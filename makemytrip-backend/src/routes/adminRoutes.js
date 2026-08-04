@@ -20,6 +20,9 @@ import {
   getDashboardStats, getRevenueData, getRecentBookings, getAvailabilityStats
 } from '../controllers/dashboardController.js'
 import { authenticateAdmin, adminOnly } from '../middleware/adminAuth.js'
+import { requireRole } from '../middleware/rbac.js'
+import { Role } from '../config/roles.js'
+import { authLimiter, generalLimiter, uploadLimiter } from '../middleware/rateLimiter.js'
 import { getPendingHotels, approveHotel, rejectHotel } from '../controllers/adminHotelApprovalController.js'
 import { getPendingBuses, approveBus, rejectBus } from '../controllers/adminBusApprovalController.js'
 import { getPendingCabs, approveCab, rejectCab } from '../controllers/adminCabApprovalController.js'
@@ -62,11 +65,21 @@ import {
 
 const router = express.Router()
 
-router.post('/register', adminRegister)
-router.post('/login', adminLogin)
+// Admin creation is an escalation path, not a signup form: only an
+// authenticated super admin may reach it. The first admin is bootstrapped
+// server-side via `npm run admin:create`.
+// Credential operations carry the auth policy: creating an admin and changing a
+// password are as sensitive as signing in.
+router.post('/register', authLimiter, authenticateAdmin, requireRole(Role.SUPER_ADMIN), adminRegister)
+router.post('/login', authLimiter, adminLogin)
 router.get('/profile', authenticateAdmin, getAdminProfile)
 router.post('/logout', authenticateAdmin, adminLogout)
-router.put('/change-password', authenticateAdmin, changePassword)
+router.put('/change-password', authLimiter, authenticateAdmin, changePassword)
+
+// Everything below inherits the general policy. Registered here rather than at
+// the top of the file so the credential routes above keep the auth policy alone
+// and are not also consuming a general-purpose budget.
+router.use(generalLimiter)
 
 router.get('/dashboard/stats', authenticateAdmin, adminOnly, getDashboardStats)
 router.get('/dashboard/revenue', authenticateAdmin, adminOnly, getRevenueData)
@@ -184,7 +197,9 @@ router.get('/settings', authenticateAdmin, adminOnly, getSettings)
 router.put('/settings', authenticateAdmin, adminOnly, updateSettings)
 
 // Media Routes
-router.post('/media/upload', authenticateAdmin, adminOnly, upload.single('file'), uploadMedia)
+// uploadLimiter runs before multer so a flood is rejected before 10 MB of body
+// is streamed to disk.
+router.post('/media/upload', uploadLimiter, authenticateAdmin, adminOnly, upload.single('file'), uploadMedia)
 router.get('/media', authenticateAdmin, adminOnly, listMedia)
 router.get('/media/:id', authenticateAdmin, adminOnly, getMediaById)
 router.delete('/media/:id', authenticateAdmin, adminOnly, deleteMedia)

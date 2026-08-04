@@ -13,14 +13,20 @@ import {
   getMyCabs, createCab, updateCab, deleteCab, submitCabForApproval
 } from '../controllers/vendorCabController.js'
 import { authenticateVendor, vendorOnly } from '../middleware/vendorAuth.js'
+import { authLimiter, generalLimiter } from '../middleware/rateLimiter.js'
 
 const router = express.Router()
 
-router.post('/register', vendorRegister)
-router.post('/login', vendorLogin)
+// Vendor sign-up and sign-in are unauthenticated credential endpoints, so they
+// take the auth policy and are bucketed by address.
+router.post('/register', authLimiter, vendorRegister)
+router.post('/login', authLimiter, vendorLogin)
 router.get('/profile', authenticateVendor, getVendorProfile)
 router.post('/logout', authenticateVendor, vendorLogout)
-router.put('/change-password', authenticateVendor, changePassword)
+router.put('/change-password', authLimiter, authenticateVendor, changePassword)
+
+// All vendor inventory management below inherits the general policy.
+router.use(generalLimiter)
 
 router.post('/hotels', authenticateVendor, vendorOnly, createHotel)
 router.get('/hotels', authenticateVendor, vendorOnly, getMyHotels)

@@ -1,174 +1,96 @@
 import { db } from '../config/firebase.js'
+import { now, byNewest } from '../utils/time.js'
 import { writeAuditLog, AuditAction } from '../services/auditLog.js'
-import { generateBookingId, generatePNR } from '../utils/idGenerator.js'
 import { openRefund } from '../services/refundService.js'
 import { sendBookingConfirmationEmail } from '../services/emailService.js'
+import {
+  BOOKING_TYPES,
+  bookedQuantity,
+  createBookingForPayment,
+  loadPaymentAuthority,
+  releaseAvailability,
+  resolveItemId
+} from '../services/bookingService.js'
 
-const RESOURCE_COLLECTIONS = {
-  flight: 'flights',
-  hotel: 'hotels',
-  bus: 'buses',
-  train: 'trains'
-}
-
-// Atomically decrement seat/room availability inside a transaction.
-// Skips silently when the booked item is not a Firestore document (e.g. live API results).
-const decrementAvailability = async (type, itemId, quantity) => {
-  const collection = RESOURCE_COLLECTIONS[type]
-  if (!collection || !itemId || typeof itemId !== 'string') return { applied: false }
-
-  const ref = db.collection(collection).doc(itemId)
-
-  return db.runTransaction(async (tx) => {
-    const doc = await tx.get(ref)
-    if (!doc.exists) return { applied: false }
-
-    const data = doc.data()
-    const field = type === 'hotel'
-      ? (data.roomsAvailable !== undefined ? 'roomsAvailable' : 'rooms')
-      : (data.seatsAvailable !== undefined ? 'seatsAvailable' : 'seats')
-
-    const available = data[field]
-    if (typeof available !== 'number') return { applied: false }
-
-    if (available < quantity) {
-      const err = new Error(type === 'hotel'
-        ? `Only ${available} room(s) left for this hotel`
-        : `Only ${available} seat(s) left`)
-      err.code = 'INSUFFICIENT_AVAILABILITY'
-      throw err
-    }
-
-    tx.update(ref, { [field]: available - quantity, updatedAt: new Date().toISOString() })
-    return { applied: true, field, remaining: available - quantity }
-  })
-}
-
-const bookedQuantity = (type, body) => {
-  if (type === 'hotel') return parseInt(body.rooms) || 1
-  if (Array.isArray(body.passengers)) return body.passengers.length
-  if (body.travellers && Array.isArray(body.travellers.passengers)) return body.travellers.passengers.length
-  return parseInt(body.passengerCount) || 1
-}
-
+/**
+ * Creates a booking against a payment the gateway has already confirmed.
+ *
+ * The amount is read from the payment record, never from the request: this
+ * endpoint used to accept a client-supplied `totalAmount` and spread the raw
+ * request body over the stored document, so a caller could book a ₹1 (or
+ * negative, or entirely unpaid) trip and even assign it to another user's id.
+ */
 export const createBooking = async (req, res) => {
+  const userId = req.userId || req.user?.id
+
+  if (!userId) {
+    return res.status(401).json({ message: 'Authentication required to create booking' })
+  }
+
+  const { type = 'flight', orderId, paymentId, transactionId, userEmail, userName } = req.body
+
+  if (!BOOKING_TYPES.has(type)) {
+    return res.status(400).json({ message: `Unsupported booking type: ${type}` })
+  }
+
   try {
-    const userId = req.userId || req.user?.id
+    // transactionId is what older clients sent for the gateway payment id.
+    const authority = await loadPaymentAuthority({
+      orderId,
+      paymentId: paymentId ?? transactionId,
+      userId
+    })
 
-    if (!userId) {
-      console.error('❌ Booking: No userId found')
-      return res.status(401).json({ message: 'Authentication required to create booking' })
-    }
-
-    console.log(`✅ Booking: Creating booking for user ${userId}, type: ${req.body.type || 'unknown'}`)
-
-    const {
-      type = 'flight',
-      totalAmount,
-      userEmail,
-      userName,
-      transactionId,
-      paymentMethod = 'credit_card',
-      paymentStatus = 'completed',
-      // Booking details
-      ...bookingDetails
-    } = req.body
-
-    if (!type || !totalAmount) {
-      return res.status(400).json({ message: 'Booking type and totalAmount are required' })
-    }
-
-    const bookingId = generateBookingId(type)
-    const pnr = generatePNR(type)
-
-    // ✅ IDEMPOTENCY CHECK: Use transactionId to prevent duplicate bookings
-    if (transactionId) {
-      const existingBookings = await db.collection('bookings')
-        .where('userId', '==', userId)
-        .where('transactionId', '==', transactionId)
-        .where('type', '==', type)
-        .limit(1)
-        .get()
-
-      if (!existingBookings.empty) {
-        console.log(`✓ Idempotent: Booking already exists for transaction ${transactionId}`)
-        const existingBooking = existingBookings.docs[0].data()
-        return res.status(200).json({
-          success: true,
-          data: existingBooking,
-          message: 'Booking already created (idempotent)'
-        })
-      }
-    }
-
-    // Atomic availability check + decrement (no overbooking)
-    const itemId = bookingDetails.flightId || bookingDetails.hotelId || bookingDetails.busId ||
-      bookingDetails.trainId || bookingDetails.itemId
-    const quantity = bookedQuantity(type, req.body)
-
-    try {
-      await decrementAvailability(type, itemId, quantity)
-    } catch (availErr) {
-      if (availErr.code === 'INSUFFICIENT_AVAILABILITY') {
-        return res.status(400).json({ message: availErr.message })
-      }
-      console.warn(`⚠️ Availability update skipped: ${availErr.message}`)
-    }
-
-    // Create booking object
-    const newBooking = {
-      bookingId,
-      pnr,
+    const { booking, created } = await createBookingForPayment({
+      payload: req.body,
+      authority,
       userId,
-      type,
-      totalAmount,
-      userEmail: userEmail || null,
-      userName: userName || null,
-      paymentMethod,
-      paymentStatus,
-      transactionId: transactionId || null,
-      status: 'confirmed',
-      bookingStatus: 'confirmed',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      createdBy: userId,
-      updatedBy: userId,
-      isDeleted: false,
-      ...bookingDetails
+      userEmail: userEmail ?? req.user?.email ?? null,
+      userName: userName ?? null
+    })
+
+    if (!created) {
+      return res.status(200).json({
+        success: true,
+        data: booking,
+        message: 'Booking already created for this payment'
+      })
     }
-
-    console.log(`💾 Saving booking to Firestore: ${bookingId}`)
-
-    // Save to Firestore
-    const bookingDocId = `${userId}_${Date.now()}`
-    await db.collection('bookings').doc(bookingDocId).set(newBooking)
-
-    console.log(`✅ Booking created: ${bookingId} (Document: ${bookingDocId})`)
 
     writeAuditLog({
       req,
       action: AuditAction.BOOKING_CREATED,
       entity: 'bookings',
-      entityId: bookingId,
-      newValue: { type, totalAmount, transactionId: transactionId || null }
+      entityId: booking.bookingId,
+      newValue: { type, totalAmount: authority.amount, paymentId: authority.paymentId }
     })
 
-    // Fire-and-forget confirmation email — never blocks or fails the booking
-    if (userEmail) {
-      sendBookingConfirmationEmail(newBooking)
-        .then(r => r?.success !== false && console.log(`📧 Confirmation email sent for ${bookingId}`))
-        .catch(e => console.warn(`⚠️ Confirmation email failed (non-critical): ${e.message}`))
+    const recipient = userEmail ?? req.user?.email
+    if (recipient) {
+      sendBookingConfirmationEmail({ ...booking, userEmail: recipient, userName })
+        .catch((e) => console.warn(`⚠️ Confirmation email failed (non-critical): ${e.message}`))
     }
 
     res.status(201).json({
       success: true,
-      data: { id: bookingDocId, ...newBooking },
+      data: booking,
       message: 'Booking created successfully'
     })
   } catch (err) {
-    console.error('Firebase Booking error:', err.message)
-    console.error('Stack:', err.stack)
-    res.status(500).json({ message: `Booking failed: ${err.message}` })
+    if (err.status) {
+      writeAuditLog({
+        req,
+        action: AuditAction.BOOKING_CREATED,
+        entity: 'bookings',
+        entityId: null,
+        newValue: { reason: err.code, type },
+        status: 'failure'
+      })
+      return res.status(err.status).json({ success: false, code: err.code, message: err.message })
+    }
+
+    console.error('Booking creation failed:', err.message)
+    res.status(500).json({ success: false, message: 'Booking could not be created' })
   }
 }
 
@@ -180,37 +102,65 @@ export const getUserBookings = async (req, res) => {
       return res.status(401).json({ message: 'Authentication required' })
     }
 
-    console.log(`📋 Fetching bookings for user ${userId}`)
+    // Ownership guard: the :userId param in the URL must match the authenticated
+    // caller. This prevents a user from substituting another user's ID in the
+    // URL to attempt enumeration, even though the query is already scoped to
+    // the token's id. An admin (privileged role) may query any user's bookings.
+    const paramUserId = req.params?.userId
+    const isAdmin = req.principal?.role === 'admin' || req.principal?.role === 'super_admin'
+    if (paramUserId && paramUserId !== userId && !isAdmin) {
+      return res.status(403).json({ message: 'Forbidden: You can only view your own bookings' })
+    }
+
+    // Always query using the authenticated user's id from the token (or the
+    // admin's requested userId), never the raw URL param.
+    const queryUserId = (isAdmin && paramUserId) ? paramUserId : userId
+
+    console.log(`📋 Fetching bookings for user ${queryUserId}`)
 
     // Get all bookings for this user.
     // No orderBy in the query — a where+orderBy combination requires a composite index;
     // sorting in memory keeps the query index-free for any Firestore project.
     const bookingsSnapshot = await db.collection('bookings')
-      .where('userId', '==', userId)
+      .where('userId', '==', queryUserId)
       .get()
 
+    // `new Date(x)` is Invalid Date for a Firestore Timestamp, and 19 of the
+    // stored bookings carry one — so this comparator returned NaN and left My
+    // Trips in an undefined order for exactly the newest bookings.
     const bookings = bookingsSnapshot.docs
       .map(doc => ({ id: doc.id, ...doc.data() }))
-      .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+      .sort(byNewest('createdAt'))
 
-    console.log(`✅ Found ${bookings.length} bookings for user ${userId}`)
+    console.log(`✅ Found ${bookings.length} bookings for user ${queryUserId}`)
 
     res.json({ success: true, data: bookings })
   } catch (err) {
     console.error('Get bookings error:', err.message)
-    res.status(500).json({ message: err.message })
+    res.status(500).json({ message: 'Could not load your bookings. Please try again.' })
   }
 }
 
 // Admin: list all bookings across users (route is protected by admin middleware)
 export const getAllBookings = async (_req, res) => {
   try {
-    const snapshot = await db.collection('bookings').orderBy('createdAt', 'desc').limit(500).get()
-    const bookings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+    // Firestore orders by type before value, and `createdAt` is an ISO string
+    // on some booking documents and a Timestamp on others — so an indexed
+    // orderBy grouped every string ahead of every Timestamp and listed the
+    // newest bookings last. Sorting in memory on a normalised value is correct
+    // for both shapes.
+    //
+    // Once `npm run migrate:timestamps` has run everywhere, this can go back to
+    // an indexed `.orderBy('createdAt', 'desc')` using the composite index
+    // declared in firestore.indexes.json.
+    const snapshot = await db.collection('bookings').limit(500).get()
+    const bookings = snapshot.docs
+      .map(doc => ({ id: doc.id, ...doc.data() }))
+      .sort(byNewest('createdAt'))
     res.json({ success: true, data: bookings })
   } catch (err) {
     console.error('Get all bookings error:', err.message)
-    res.status(500).json({ message: err.message })
+    res.status(500).json({ message: 'Could not load bookings. Please try again.' })
   }
 }
 
@@ -239,7 +189,7 @@ export const getBooking = async (req, res) => {
     res.json({ success: true, data: { id, ...booking } })
   } catch (err) {
     console.error('Get booking error:', err.message)
-    res.status(500).json({ message: err.message })
+    res.status(500).json({ message: 'Could not load this booking. Please try again.' })
   }
 }
 
@@ -252,31 +202,81 @@ export const cancelBooking = async (req, res) => {
       return res.status(401).json({ message: 'Authentication required' })
     }
 
-    const bookingDoc = await db.collection('bookings').doc(id).get()
+    const bookingRef = db.collection('bookings').doc(id)
 
-    if (!bookingDoc.exists) {
-      return res.status(404).json({ message: 'Booking not found' })
+    // Read, ownership-check and flip to cancelled inside one transaction.
+    //
+    // Split across separate reads and writes, two concurrent cancellations (a
+    // double-click, or a retry racing the original) both observed status
+    // !== 'cancelled', both wrote the cancellation, and both went on to call
+    // releaseAvailability — returning the same seats to the pool twice and
+    // inventing inventory that was never sold back.
+    //
+    // `alreadyCancelled` tells the caller apart from the winner, so only the
+    // transaction that actually performed the flip releases inventory.
+    let booking
+    let alreadyCancelled = false
+
+    try {
+      booking = await db.runTransaction(async (tx) => {
+        const snap = await tx.get(bookingRef)
+        if (!snap.exists) {
+          const err = new Error('Booking not found')
+          err.status = 404
+          throw err
+        }
+
+        const data = snap.data()
+
+        if (data.userId !== userId) {
+          const err = new Error('Forbidden: You can only cancel your own bookings')
+          err.status = 403
+          throw err
+        }
+
+        if (data.status === 'cancelled') {
+          alreadyCancelled = true
+          return data
+        }
+
+        tx.update(bookingRef, {
+          status: 'cancelled',
+          bookingStatus: 'cancelled',
+          cancelledAt: now(),
+          updatedAt: now(),
+          updatedBy: userId
+        })
+
+        return data
+      })
+    } catch (err) {
+      if (err.status) return res.status(err.status).json({ message: err.message })
+      throw err
     }
 
-    const booking = bookingDoc.data()
-
-    // Verify user owns this booking
-    if (booking.userId !== userId) {
-      return res.status(403).json({ message: 'Forbidden: You can only cancel your own bookings' })
-    }
-
-    if (booking.status === 'cancelled') {
+    if (alreadyCancelled) {
       return res.status(400).json({ message: 'Booking is already cancelled' })
     }
 
-    // Update booking status
-    await db.collection('bookings').doc(id).update({
-      status: 'cancelled',
-      bookingStatus: 'cancelled',
-      cancelledAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      updatedBy: userId
-    })
+    // Put the seats/rooms back on sale. Cancellations previously left inventory
+    // permanently decremented, so a fully-cancelled flight still showed sold out.
+    try {
+      // The stored booking is passed through so dated inventory is credited
+      // back to the exact nights it was taken from.
+      const restored = await releaseAvailability(
+        booking.type,
+        resolveItemId(booking),
+        bookedQuantity(booking.type, booking),
+        booking
+      )
+      if (restored.applied) {
+        console.log(restored.dated
+          ? `♻️ Released ${restored.restored} on ${restored.dates.join(', ')} for ${booking.bookingId}`
+          : `♻️ Released ${restored.restored} ${restored.field} for ${booking.bookingId}`)
+      }
+    } catch (releaseErr) {
+      console.error(`⚠️ Could not release inventory for ${id}:`, releaseErr.message)
+    }
 
     writeAuditLog({
       req,
@@ -337,6 +337,6 @@ export const cancelBooking = async (req, res) => {
     })
   } catch (err) {
     console.error('Cancel booking error:', err.message)
-    res.status(500).json({ message: err.message })
+    res.status(500).json({ message: 'Could not cancel this booking. Please try again.' })
   }
 }

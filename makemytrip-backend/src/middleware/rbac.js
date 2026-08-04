@@ -8,6 +8,8 @@ import {
   resolveRole,
   roleHasPermission
 } from '../config/roles.js'
+import { findUserByEmail } from '../utils/identity.js'
+import { assertSessionLive } from '../services/tokenService.js'
 
 // `authenticate` establishes *who* the caller is from the JWT. These guards
 // establish what they may do. They are deliberately separate so a route can
@@ -33,11 +35,19 @@ export const loadPrincipal = async (req, res, next) => {
     if (!byId.empty) doc = byId.docs[0].data()
 
     if (!doc && req.user?.email) {
-      const byEmail = await db.collection('users').doc(req.user.email).get()
-      if (byEmail.exists) doc = byEmail.data()
+      const byEmail = await findUserByEmail(db, req.user.email)
+      if (byEmail) doc = byEmail.data
     }
 
     if (!doc) return res.status(401).json({ success: false, message: 'Account no longer exists' })
+
+    // Revocation is checked here rather than in `authenticate` because the user
+    // document is already in hand — a logout, password reset or suspension
+    // takes effect on the very next request at no extra read.
+    const live = assertSessionLive(req.user, doc)
+    if (!live.valid) {
+      return res.status(401).json({ success: false, code: live.code, message: live.message })
+    }
 
     const role = resolveRole(doc)
     const accountStatus = resolveAccountStatus(doc)

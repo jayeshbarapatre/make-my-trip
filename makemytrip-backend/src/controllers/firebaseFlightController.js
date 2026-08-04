@@ -1,4 +1,16 @@
 import { db } from '../config/firebase.js'
+import { parseSearchDate, istDayRangeUtc } from '../utils/searchDate.js'
+import { validatePageNumber, validatePageSize } from '../utils/validation.js'
+import { cityMatches } from '../utils/cities.js'
+import { fetchRouteCandidates, applySearchPipeline } from '../services/inventorySearch.js'
+
+const SORTERS = {
+  price: (a, b) => (a.price ?? 0) - (b.price ?? 0),
+  price_desc: (a, b) => (b.price ?? 0) - (a.price ?? 0),
+  duration: (a, b) => (a.durationMinutes ?? 0) - (b.durationMinutes ?? 0),
+  departure: (a, b) => new Date(a.departure?.time ?? 0) - new Date(b.departure?.time ?? 0),
+  stops: (a, b) => (a.stops ?? 0) - (b.stops ?? 0)
+}
 
 // Schedule times are wall-clock values stored as UTC (see flightAdminController).
 // Formatting in server-local time would shift every departure by the host's
@@ -38,47 +50,77 @@ const normalizeFlight = (id, f) => ({
 
 export const searchFlights = async (req, res) => {
   try {
-    const { from, to, passengers, page = 1, limit = 20, minPrice, maxPrice, airline } = req.query
+    const { from, to, date, passengers, page = 1, limit = 20, minPrice, maxPrice, airline, stops, cabinClass, sortBy } = req.query
 
-    console.log(`✈️ Firebase Flight Search: from=${from}, to=${to}`)
-
-    const snapshot = await db.collection('flights').get()
-
-    let flights = []
-    snapshot.forEach(doc => {
-      const f = normalizeFlight(doc.id, doc.data())
-      if (f.isActive) flights.push(f)
-    })
-
-    if (from) {
-      flights = flights.filter(f => f.departure.city?.toLowerCase().includes(from.toLowerCase()))
+    // The travel date was accepted by the search form, shown back to the
+    // customer, and then dropped here — so picking one day returned departures
+    // from every day in the catalogue and a traveller could book the wrong one.
+    //
+    // The window is applied in the in-memory pipeline rather than pushed into
+    // Firestore on purpose: the route query above is equality-only so that it
+    // needs no composite index, and adding a range filter on `departure`
+    // alongside those equalities would require one per combination. After the
+    // route filter the candidate set is a single route's departures, so the
+    // date test is cheap here.
+    let departureWindow = null
+    if (date !== undefined && String(date).trim() !== '') {
+      const parsedDate = parseSearchDate(date)
+      if (!parsedDate) {
+        return res.status(400).json({
+          success: false,
+          code: 'INVALID_DATE',
+          message: 'Provide the travel date as YYYY-MM-DD.'
+        })
+      }
+      departureWindow = istDayRangeUtc(parsedDate)
     }
-    if (to) {
-      flights = flights.filter(f => f.arrival.city?.toLowerCase().includes(to.toLowerCase()))
-    }
-    if (airline) {
-      flights = flights.filter(f => f.airline?.toLowerCase().includes(airline.toLowerCase()))
-    }
-    if (minPrice) flights = flights.filter(f => f.price >= parseFloat(minPrice))
-    if (maxPrice) flights = flights.filter(f => f.price <= parseFloat(maxPrice))
+
+    console.log(`✈️ Firebase Flight Search: from=${from}, to=${to}, date=${departureWindow ? date : 'any'}`)
 
     const passengerCount = parseInt(passengers) || 1
-    flights = flights.filter(f => f.seatsAvailable >= passengerCount)
+    // Shared validators, so every vertical honours the same page-size ceiling.
+    // Flights alone capped at 50 while the others allowed 100, so a results page
+    // asking for a whole route silently got a truncated one here.
+    const pageNum = validatePageNumber(page)
+    const pageSize = validatePageSize(limit)
 
-    flights.sort((a, b) => (a.price || 0) - (b.price || 0))
+    // Indexed route query — reads only the flights on this route, not all 162.
+    const { docs, indexed, read } = await fetchRouteCandidates('flights', { from, to })
 
-    const pageNum = Math.max(1, parseInt(page) || 1)
-    const pageSize = Math.min(50, parseInt(limit) || 20)
-    const total = flights.length
-    const start = (pageNum - 1) * pageSize
-    const paged = flights.slice(start, start + pageSize)
+    let flights = docs.map((d) => normalizeFlight(d.id, d)).filter((f) => f.isActive)
 
-    console.log(`✅ Returning ${paged.length} of ${total} flights`)
+    // The fallback path still needs alias-aware matching; the indexed path has
+    // already constrained the route.
+    if (!indexed) {
+      if (from) flights = flights.filter((f) => cityMatches(f.departure.city, from))
+      if (to) flights = flights.filter((f) => cityMatches(f.arrival.city, to))
+    }
 
-    res.json({
-      data: paged,
-      pagination: { page: pageNum, limit: pageSize, total, pages: Math.ceil(total / pageSize) }
+    const { rows: paged, pagination } = applySearchPipeline(flights, {
+      filters: [
+        (f) => (f.seatsAvailable ?? 0) >= passengerCount,
+        // `departure.date` carries the raw stored ISO instant; `departure.time`
+        // is a display string and must not be compared against.
+        departureWindow
+          ? (f) => {
+            const iso = f.departure?.date
+            return typeof iso === 'string' && iso >= departureWindow.startIso && iso <= departureWindow.endIso
+          }
+          : null,
+        airline ? (f) => String(f.airline ?? '').toLowerCase().includes(String(airline).toLowerCase()) : null,
+        minPrice ? (f) => f.price >= parseFloat(minPrice) : null,
+        maxPrice ? (f) => f.price <= parseFloat(maxPrice) : null,
+        stops !== undefined && stops !== '' ? (f) => (f.stops ?? 0) <= Number(stops) : null,
+        cabinClass ? (f) => String(f.cabinClass ?? '').toLowerCase() === String(cabinClass).toLowerCase() : null
+      ].filter(Boolean),
+      sortBy: SORTERS[sortBy] ?? SORTERS.price,
+      page: pageNum,
+      limit: pageSize
     })
+
+    console.log(`✈️ Flights ${from ?? '*'} → ${to ?? '*'}: read ${read}, matched ${pagination.total} (indexed: ${indexed})`)
+
+    res.json({ data: paged, pagination })
   } catch (err) {
     console.error('Firebase Flight Search error:', err.message)
     res.status(500).json({ message: 'Failed to search flights', error: err.message })

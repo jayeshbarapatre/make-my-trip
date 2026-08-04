@@ -1,4 +1,5 @@
 import { db } from '../config/firebase.js'
+import { now } from '../utils/time.js'
 import { createAdminCrud } from './factories/firestoreAdminCrud.js'
 import { writeAuditLog, AuditAction } from '../services/auditLog.js'
 
@@ -127,7 +128,7 @@ export const updateHotelImages = async (req, res) => {
 
     const patch = {
       images: imageUrls,
-      updatedAt: new Date().toISOString(),
+      updatedAt: now(),
       updatedBy: req.adminId ?? null
     }
 

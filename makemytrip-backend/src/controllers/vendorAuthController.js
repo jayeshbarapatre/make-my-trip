@@ -1,8 +1,11 @@
 import jwt from 'jsonwebtoken'
+import { now } from '../utils/time.js'
 import bcrypt from 'bcryptjs'
 import { db } from '../config/firebase.js'
 import { Role, AccountStatus, resolveRole, resolveAccountStatus } from '../config/roles.js'
 import { writeAuditLog, AuditAction } from '../services/auditLog.js'
+import { normalizeEmail, findUserByEmail } from '../utils/identity.js'
+import { currentTokenVersion } from '../services/tokenService.js'
 
 // Migrated from Prisma/MongoDB to Firestore, mirroring the admin migration.
 //
@@ -21,9 +24,17 @@ if (!process.env.JWT_SECRET) {
 
 const JWT_SECRET = process.env.JWT_SECRET
 
+// `tv` must be present and current — see the matching note in
+// adminAuthController. authenticateVendor enforces revocation against it.
 const signToken = (user) =>
   jwt.sign(
-    { id: user.id, email: user.email, role: resolveRole(user), accountStatus: resolveAccountStatus(user) },
+    {
+      id: user.id,
+      email: user.email,
+      role: resolveRole(user),
+      accountStatus: resolveAccountStatus(user),
+      tv: currentTokenVersion(user)
+    },
     JWT_SECRET,
     { expiresIn: '8h' }
   )
@@ -48,7 +59,8 @@ const findUserById = async (id) => {
 
 export const vendorRegister = async (req, res) => {
   try {
-    const { name, email, password, businessName } = req.body
+    const { name, password, businessName } = req.body
+    const email = normalizeEmail(req.body.email)
 
     if (!name || !email || !password) {
       return res.status(400).json({ message: 'Name, email, and password are required' })
@@ -58,7 +70,7 @@ export const vendorRegister = async (req, res) => {
     }
 
     const ref = db.collection('users').doc(email)
-    if ((await ref.get()).exists) {
+    if (await findUserByEmail(db, email)) {
       return res.status(409).json({ message: 'Email already registered' })
     }
 
@@ -74,8 +86,8 @@ export const vendorRegister = async (req, res) => {
       role: Role.CUSTOMER,
       accountStatus: AccountStatus.ACTIVE,
       vendorType: req.body.vendorType ?? 'hotel',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: now(),
+      updatedAt: now(),
       isDeleted: false
     }
 
@@ -93,8 +105,8 @@ export const vendorRegister = async (req, res) => {
       rejectionReason: null,
       changeRequestNote: null,
       history: [{ status: 'pending', at: new Date().toISOString(), by: id, note: 'Submitted via vendor signup' }],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: now(),
+      updatedAt: now(),
       createdBy: id,
       updatedBy: id,
       isDeleted: false
@@ -130,8 +142,8 @@ export const vendorLogin = async (req, res) => {
       return res.status(400).json({ message: 'Email and password are required' })
     }
 
-    const snap = await db.collection('users').doc(email).get()
-    const user = snap.exists ? snap.data() : null
+    const found = await findUserByEmail(db, email)
+    const user = found?.data ?? null
 
     // One message for every failure mode so this cannot be used to enumerate
     // which addresses exist or which of them are vendors.
@@ -232,7 +244,7 @@ export const changePassword = async (req, res) => {
 
     await found.ref.update({
       password: await bcrypt.hash(newPassword, 10),
-      updatedAt: new Date().toISOString(),
+      updatedAt: now(),
       updatedBy: req.principal?.uid
     })
 

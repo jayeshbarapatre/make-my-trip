@@ -1,7 +1,13 @@
 import express from 'express'
 import unifiedSearchService from '../services/unifiedSearchService.js'
+import { searchLimiter } from '../middleware/rateLimiter.js'
 
 const router = express.Router()
+
+// These routes proxy to metered third-party APIs on the platform's own key, so
+// an unthrottled caller spends real money. Public and unauthenticated, which
+// makes this the most abusable surface in the service.
+router.use(searchLimiter)
 
 // Search Flights
 router.get('/flights', async (req, res) => {

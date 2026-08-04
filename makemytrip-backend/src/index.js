@@ -7,41 +7,106 @@ import cors from 'cors'
 const app = express()
 const PORT = process.env.PORT || 5000
 
-const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173').split(',').map(o => o.trim())
+const isProduction = process.env.NODE_ENV === 'production'
+const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173').split(',').map(o => o.trim()).filter(Boolean)
 
-// Setup middleware immediately
+// Origins are matched against the explicit allowlist only.
+//
+// This previously allowed any `*.vercel.app` host with credentials enabled,
+// which let anyone deploy a site to Vercel and call this API as a trusted
+// origin. Localhost is still allowed outside production for local development.
+const isAllowedOrigin = (origin) => {
+  if (allowedOrigins.includes(origin)) return true
+  if (!isProduction && /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) return true
+  return false
+}
+
 app.use(cors({
   origin: (origin, callback) => {
+    // No Origin header: same-origin, curl, or a server-to-server call.
     if (!origin) return callback(null, true)
-    if (origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1')) return callback(null, true)
-    if (allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) return callback(null, true)
+    if (isAllowedOrigin(origin)) return callback(null, true)
     callback(new Error('Not allowed by CORS'))
   },
   credentials: true
 }))
-app.use(express.json())
-app.use('/uploads', express.static('public/uploads'))
+
+// Security headers. Set explicitly rather than via helmet to avoid adding a
+// dependency for six headers, and because the API serves JSON plus uploaded
+// images only — it has no inline scripts to whitelist.
+app.use((_req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff')
+  res.setHeader('X-Frame-Options', 'DENY')
+  res.setHeader('Referrer-Policy', 'no-referrer')
+  res.setHeader('Cross-Origin-Resource-Policy', 'same-site')
+  res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()')
+  if (isProduction) {
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
+  }
+  next()
+})
+
+// Bounded body size: an unbounded JSON parser lets one request exhaust memory.
+app.use(express.json({ limit: '256kb' }))
+app.use(express.urlencoded({ extended: true, limit: '256kb' }))
+// Uploaded files are user-supplied. uploadMiddleware pins the stored extension
+// to the declared type so nothing executable can be written here, and these
+// headers are the second line of defence if that ever regresses:
+//
+//   nosniff                  stops the browser guessing a type
+//   CSP sandbox              neuters script/plugins even if HTML is served
+//   Content-Disposition      makes anything unexpected download, not render
+//
+// Serving user uploads from the API origin at all is the underlying weakness —
+// a separate asset host or bucket is the durable fix (roadmap M28).
+app.use('/uploads', express.static('public/uploads', {
+  index: false,
+  dotfiles: 'deny',
+  setHeaders: (res, filePath) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff')
+    res.setHeader('Content-Security-Policy', "default-src 'none'; sandbox")
+    if (!/\.(jpg|jpeg|png|gif|webp)$/i.test(filePath)) {
+      res.setHeader('Content-Disposition', 'attachment')
+    }
+  }
+}))
 
 // Health check - always available
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok' })
 })
 
-// Start server FIRST
-const server = app.listen(PORT, () => {
-  console.log(`✅ Server listening on http://localhost:${PORT}`)
-  console.log(`📦 Loading application modules...`)
-
-  // THEN load all modules asynchronously (non-blocking)
-  initializeApp()
-})
+// Routes are registered before the port is opened. Listening first left a
+// window in which every real request fell through to the 404 handler, which
+// during a redeploy surfaces as sporadic "Route not found" errors to users.
+let server
 
 async function initializeApp() {
   try {
+    // Validate every secret before anything else imports one. The per-module
+    // guards that used to do this fired on first import, so a compromised or
+    // missing credential surfaced at the first customer request instead of at
+    // boot. Throws ESECRETS, which the catch below turns into a clean exit.
+    const { assertSecrets } = await import('./config/secrets.js')
+    assertSecrets({ isProduction })
+
+    // Resolve req.ip before any rate limiter can read it. Express defaults to
+    // treating the TCP peer as the client, so behind a proxy every caller
+    // collapsed into one bucket and per-IP limits protected nobody.
+    // Throws ETRUSTPROXY on an unsafe or unparseable value.
+    const { applyTrustProxy } = await import('./config/proxy.js')
+    applyTrustProxy(app, { isProduction })
+
     // Import all modules
-    const { connectDB } = await import('./config/db.js')
     const { getRedis } = await import('./config/redis.js')
     const { verifyConnection } = await import('./services/emailService.js')
+
+    // Global flood ceiling, ahead of every route. Per-route policies sit after
+    // their auth middleware so they can bucket by account; that leaves requests
+    // rejected at 401 unmetered, which this layer covers. Mounted after
+    // trust-proxy resolution so it buckets on the real client address.
+    const { baselineLimiter } = await import('./middleware/rateLimiter.js')
+    app.use(baselineLimiter)
 
     // Import routes
     const authRoutes = (await import('./routes/auth.js')).default
@@ -63,9 +128,11 @@ async function initializeApp() {
     const reportRoutes = (await import('./routes/reports.js')).default
     const { supportRouter, couponRouter } = await import('./routes/support.js')
     const vendorRequestRoutes = (await import('./routes/vendorRequests.js')).default
+    const documentRoutes = (await import('./routes/documents.js')).default
 
-    // Initialize database (non-blocking)
-    connectDB()
+    // Firestore is the only database and initialises itself on first import of
+    // config/firebase.js. The `connectDB()` call that stood here was a no-op
+    // left over from the Mongoose era.
 
     // Register all routes
     app.use('/api/auth', authRoutes)
@@ -113,9 +180,32 @@ async function initializeApp() {
     app.use('/api/v1/coupons', couponRouter)
     app.use('/api/vendor-requests', vendorRequestRoutes)
     app.use('/api/v1/vendor-requests', vendorRequestRoutes)
+    app.use('/api/documents', documentRoutes)
+    app.use('/api/v1/documents', documentRoutes)
 
     // 404 handler
     app.use((_req, res) => res.status(404).json({ message: 'Route not found' }))
+
+    // Central error handler. Without one, Express's default handler replies with
+    // the raw stack trace, and any route that threw returned an HTML error page
+    // to an API client. Internal detail is logged, never sent.
+    app.use((err, req, res, _next) => {
+      if (err?.message === 'Not allowed by CORS') {
+        return res.status(403).json({ success: false, message: 'Origin not allowed' })
+      }
+      if (err?.type === 'entity.too.large') {
+        return res.status(413).json({ success: false, message: 'Request body is too large' })
+      }
+      if (err?.type === 'entity.parse.failed') {
+        return res.status(400).json({ success: false, message: 'Malformed JSON body' })
+      }
+
+      console.error(`💥 Unhandled error on ${req.method} ${req.originalUrl}:`, err?.stack || err)
+      res.status(err?.status || 500).json({
+        success: false,
+        message: 'An unexpected error occurred. Please try again.'
+      })
+    })
 
     console.log('✅ All modules loaded successfully')
 
@@ -142,15 +232,35 @@ async function initializeApp() {
       ? `📲 SMS ready — provider: ${sms.provider}`
       : `⚠️ SMS NOT READY — provider "${sms.provider}"${sms.configured ? ' (console driver: codes print to this terminal, nothing is delivered)' : ' is not configured; mobile OTP will return 503'}`)
   } catch (err) {
-    console.error('❌ Failed to initialize app:', err.message)
-    console.error(err.stack)
+    // A failed secret or trust-proxy check has already printed an itemised,
+    // actionable report; a stack trace on top only buries what must be fixed.
+    if (err?.code === 'ETRUSTPROXY') {
+      console.error(`\n❌ Startup aborted — invalid TRUST_PROXY configuration:\n\n   • ${err.message}\n`)
+    } else if (err?.code !== 'ESECRETS') {
+      console.error('❌ Failed to initialize app:', err.message)
+      console.error(err.stack)
+    }
+    // A half-registered app serves 404s for real endpoints. Fail loudly instead
+    // of pretending to be healthy.
+    throw err
   }
 }
 
-// Error handlers
-server.on('error', (err) => {
-  console.error('❌ Server error:', err.message)
-})
+initializeApp()
+  .then(() => {
+    server = app.listen(PORT, () => {
+      console.log(`✅ Server listening on http://localhost:${PORT}`)
+    })
+
+    server.on('error', (err) => {
+      console.error('❌ Server error:', err.message)
+      process.exit(1)
+    })
+  })
+  .catch(() => {
+    console.error('❌ Startup aborted — not accepting traffic')
+    process.exit(1)
+  })
 
 process.on('uncaughtException', (err) => {
   console.error('💥 Uncaught Exception:', err.message)
@@ -163,5 +273,5 @@ process.on('unhandledRejection', (reason) => {
 
 process.on('SIGTERM', () => {
   console.log('Shutting down gracefully...')
-  server.close()
+  server?.close(() => process.exit(0))
 })

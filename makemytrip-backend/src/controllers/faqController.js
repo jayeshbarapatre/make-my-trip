@@ -1,90 +1,77 @@
-import { PrismaClient } from '@prisma/client'
+import { contentStore } from '../services/contentStore.js'
+import { sanitizeText } from '../utils/sanitize.js'
 
-const prisma = new PrismaClient()
+// Migrated from Prisma/MongoDB to Firestore. listFaqs is public and used to
+// hang for ~15s against an unreachable MongoDB.
 
-export const listFaqs = async (req, res) => {
+const store = contentStore('faqs', { sortField: 'sortOrder', sortDir: 'asc' })
+
+export const listFaqs = async (_req, res) => {
   try {
-    const faqs = await prisma.faq.findMany({
-      where: { status: 'active' },
-      orderBy: { sortOrder: 'asc' },
-    })
-
-    res.json({ message: 'FAQs fetched', data: faqs })
+    res.json({ message: 'FAQs fetched', data: await store.list({ activeOnly: true }) })
   } catch (error) {
-    console.error('Error fetching FAQs:', error)
+    console.error('Error fetching FAQs:', error.message)
     res.status(500).json({ message: 'Failed to fetch FAQs' })
   }
 }
 
-export const listAllFaqs = async (req, res) => {
+export const listAllFaqs = async (_req, res) => {
   try {
-    const faqs = await prisma.faq.findMany({
-      orderBy: { sortOrder: 'asc' },
-    })
-
-    res.json({ message: 'FAQs fetched', data: faqs })
+    res.json({ message: 'FAQs fetched', data: await store.list() })
   } catch (error) {
-    console.error('Error fetching FAQs:', error)
+    console.error('Error fetching FAQs:', error.message)
     res.status(500).json({ message: 'Failed to fetch FAQs' })
   }
 }
 
 export const createFaq = async (req, res) => {
   try {
-    const { question, answer, sortOrder, status } = req.body
+    const question = sanitizeText(req.body?.question, 300)
+    const answer = sanitizeText(req.body?.answer, 4000)
 
     if (!question || !answer) {
       return res.status(400).json({ message: 'Question and answer are required' })
     }
 
-    const faq = await prisma.faq.create({
-      data: {
-        question,
-        answer,
-        sortOrder: sortOrder || 0,
-        status: status || 'active',
-      },
-    })
+    const faq = await store.create({
+      question,
+      answer,
+      sortOrder: Number(req.body.sortOrder) || 0,
+      status: req.body.status === 'inactive' ? 'inactive' : 'active'
+    }, req.adminId)
 
     res.status(201).json({ message: 'FAQ created', data: faq })
   } catch (error) {
-    console.error('Error creating FAQ:', error)
+    console.error('Error creating FAQ:', error.message)
     res.status(500).json({ message: 'Failed to create FAQ' })
   }
 }
 
 export const updateFaq = async (req, res) => {
   try {
-    const { id } = req.params
-    const { question, answer, sortOrder, status } = req.body
+    const faq = await store.update(req.params.id, {
+      question: req.body.question !== undefined ? sanitizeText(req.body.question, 300) : undefined,
+      answer: req.body.answer !== undefined ? sanitizeText(req.body.answer, 4000) : undefined,
+      sortOrder: req.body.sortOrder !== undefined ? Number(req.body.sortOrder) || 0 : undefined,
+      status: req.body.status
+    }, req.adminId)
 
-    const faq = await prisma.faq.update({
-      where: { id },
-      data: { question, answer, sortOrder, status },
-    })
+    if (!faq) return res.status(404).json({ message: 'FAQ not found' })
 
     res.json({ message: 'FAQ updated', data: faq })
   } catch (error) {
-    if (error.code === 'P2025') {
-      return res.status(404).json({ message: 'FAQ not found' })
-    }
-    console.error('Error updating FAQ:', error)
+    console.error('Error updating FAQ:', error.message)
     res.status(500).json({ message: 'Failed to update FAQ' })
   }
 }
 
 export const deleteFaq = async (req, res) => {
   try {
-    const { id } = req.params
-
-    await prisma.faq.delete({ where: { id } })
-
+    const ok = await store.remove(req.params.id, req.adminId)
+    if (!ok) return res.status(404).json({ message: 'FAQ not found' })
     res.json({ message: 'FAQ deleted' })
   } catch (error) {
-    if (error.code === 'P2025') {
-      return res.status(404).json({ message: 'FAQ not found' })
-    }
-    console.error('Error deleting FAQ:', error)
+    console.error('Error deleting FAQ:', error.message)
     res.status(500).json({ message: 'Failed to delete FAQ' })
   }
 }

@@ -1,4 +1,6 @@
 import { FieldValue } from 'firebase-admin/firestore'
+import { routeIndexFields } from '../../services/inventorySearch.js'
+import { now, toDate } from '../../utils/time.js'
 import { db } from '../../config/firebase.js'
 import { writeAuditLog, AuditAction } from '../../services/auditLog.js'
 
@@ -19,12 +21,6 @@ export const ListingStatus = {
   REJECTED: 'REJECTED'
 }
 
-const toDate = (value) => {
-  if (!value) return null
-  if (typeof value?.toDate === 'function') return value.toDate()
-  const d = new Date(value)
-  return Number.isNaN(d.getTime()) ? null : d
-}
 
 export const createVendorCrud = ({
   collection,
@@ -93,14 +89,15 @@ export const createVendorCrud = ({
       const ref = db.collection(collection).doc()
       const doc = {
         ...payload,
+        ...routeIndexFields(collection, payload),
         vendorId: req.vendorId,
         // New inventory starts as a draft and is invisible to customers until
         // an admin approves it.
         listingStatus: ListingStatus.DRAFT,
         rejectionReason: null,
         isActive: false,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        createdAt: now(),
+        updatedAt: now(),
         createdBy: req.principal?.uid ?? null,
         updatedBy: req.principal?.uid ?? null,
         isDeleted: false
@@ -162,7 +159,7 @@ export const createVendorCrud = ({
 
       const patch = {
         ...payload,
-        updatedAt: new Date().toISOString(),
+        updatedAt: now(),
         updatedBy: req.principal?.uid ?? null
       }
 
@@ -242,9 +239,9 @@ export const createVendorCrud = ({
 
       await found.ref.update({
         listingStatus: ListingStatus.PENDING_APPROVAL,
-        submittedAt: new Date().toISOString(),
+        submittedAt: now(),
         rejectionReason: null,
-        updatedAt: new Date().toISOString(),
+        updatedAt: now(),
         updatedBy: req.principal?.uid ?? null
       })
 
@@ -286,7 +283,7 @@ export const createVendorCrud = ({
       const nextActive = found.data.isActive === false
       await found.ref.update({
         isActive: nextActive,
-        updatedAt: new Date().toISOString(),
+        updatedAt: now(),
         updatedBy: req.principal?.uid ?? null
       })
 

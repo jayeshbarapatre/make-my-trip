@@ -1,4 +1,14 @@
 import { db } from '../config/firebase.js'
+import { cityMatches } from '../utils/cities.js'
+import { fetchRouteCandidates, applySearchPipeline } from '../services/inventorySearch.js'
+import { stayNights, availabilityForItems } from '../services/availability.js'
+
+const SORTERS = {
+  rating: (a, b) => (b.rating ?? 0) - (a.rating ?? 0),
+  price: (a, b) => (a.pricePerNight ?? a.price ?? 0) - (b.pricePerNight ?? b.price ?? 0),
+  price_desc: (a, b) => (b.pricePerNight ?? b.price ?? 0) - (a.pricePerNight ?? a.price ?? 0),
+  stars: (a, b) => (b.stars ?? 0) - (a.stars ?? 0)
+}
 import {
   validateCity,
   validateDateRange,
@@ -9,7 +19,7 @@ import {
 
 export const searchHotels = async (req, res) => {
   try {
-    const { city, checkIn, checkOut, guests, page = 1, limit = 20 } = req.query
+    const { city, checkIn, checkOut, guests, rooms, page = 1, limit = 20, minPrice, maxPrice, stars, amenity, sortBy } = req.query
 
     console.log(`🔍 Firebase Hotel Search: city=${city}, checkIn=${checkIn}, checkOut=${checkOut}`)
 
@@ -26,68 +36,81 @@ export const searchHotels = async (req, res) => {
     const pageNum = validatePageNumber(page)
     const pageSize = validatePageSize(limit)
 
-    // Fetch all active hotels from Firestore
-    let query = db.collection('hotels').where('isActive', '==', true)
-    const snapshot = await query.get()
+    // Indexed city query — reads only that city's hotels, not all 430.
+    const { docs, indexed, read } = await fetchRouteCandidates('hotels', { city })
 
-    let hotels = []
-    snapshot.forEach(doc => {
-      hotels.push({
-        id: doc.id,
-        ...doc.data()
-      })
-    })
+    // Name and location stay a substring match: those are free text where a
+    // literal match is what the user means.
+    const cityFiltered = indexed
+      ? docs
+      : docs.filter((h) =>
+          cityMatches(h.city, city) ||
+          h.name?.toLowerCase().includes(String(city ?? '').toLowerCase()) ||
+          h.location?.toLowerCase().includes(String(city ?? '').toLowerCase()))
 
-    console.log(`📊 Found ${hotels.length} total active hotels in Firestore`)
-
-    // Filter by city (client-side since Firestore doesn't support case-insensitive contains)
-    if (city) {
-      hotels = hotels.filter(hotel => {
-        const cityLower = city.toLowerCase()
-        return (
-          hotel.city?.toLowerCase().includes(cityLower) ||
-          hotel.name?.toLowerCase().includes(cityLower) ||
-          hotel.location?.toLowerCase().includes(cityLower)
-        )
-      })
-      console.log(`🏨 After city filter: ${hotels.length} hotels`)
-    }
-
-    // Sort by rating
-    hotels.sort((a, b) => (b.rating || 0) - (a.rating || 0))
-
-    // Calculate nights count
     let nightsCount = 0
     if (checkIn && checkOut) {
-      const checkInDate = new Date(checkIn)
-      const checkOutDate = new Date(checkOut)
-      nightsCount = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24))
+      nightsCount = Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24))
     }
 
-    // Paginate
-    const total = hotels.length
-    const start = (pageNum - 1) * pageSize
-    const paginatedHotels = hotels.slice(start, start + pageSize)
+    const roomsWanted = Math.max(1, parseInt(rooms, 10) || 1)
 
-    // Enrich with availability info
-    const enrichedHotels = paginatedHotels.map(hotel => ({
-      ...hotel,
-      nightsCount: nightsCount || 1,
-      isAvailable: hotel.roomsAvailable > 0,
-      availableRooms: hotel.roomsAvailable || 0
-    }))
+    const { rows, pagination } = applySearchPipeline(cityFiltered, {
+      filters: [
+        (h) => (h.roomsAvailable ?? 0) >= roomsWanted,
+        minPrice ? (h) => (h.pricePerNight ?? h.price ?? 0) >= Number(minPrice) : null,
+        maxPrice ? (h) => (h.pricePerNight ?? h.price ?? 0) <= Number(maxPrice) : null,
+        stars ? (h) => (h.stars ?? 0) >= Number(stars) : null,
+        amenity ? (h) => (h.amenities ?? []).some((a) => String(a).toLowerCase().includes(String(amenity).toLowerCase())) : null
+      ].filter(Boolean),
+      sortBy: SORTERS[sortBy] ?? SORTERS.rating,
+      page: pageNum,
+      limit: pageSize
+    })
 
-    console.log(`✅ Returning ${enrichedHotels.length} hotels (page ${pageNum})`)
+    // True availability for the requested nights.
+    //
+    // The pre-pagination filter above uses the legacy counter, which cannot know
+    // about dates. Without this a guest was shown "available", chose the hotel,
+    // filled in traveller details and only discovered the night was sold out
+    // when the payment transaction refused it.
+    //
+    // Sold-out results are marked rather than dropped: removing them here would
+    // make the page count disagree with the totals reported above, and "sold out
+    // for your dates" is more useful than a silently shorter list.
+    let nights = []
+    if (checkIn && checkOut) {
+      try {
+        nights = stayNights(checkIn, checkOut)
+      } catch {
+        // validateDateRange above already rejected genuinely bad input; anything
+        // reaching here just means no dated lookup for this request.
+        nights = []
+      }
+    }
 
-    res.json({
-      data: enrichedHotels,
-      pagination: {
-        page: pageNum,
-        limit: pageSize,
-        total,
-        pages: Math.ceil(total / pageSize)
+    const freeByHotel = nights.length
+      ? await availabilityForItems(db.collection('hotels'), rows, 'hotel', nights)
+      : {}
+
+    const enrichedHotels = rows.map(hotel => {
+      const dated = nights.length && hotel.id in freeByHotel
+      const available = dated ? freeByHotel[hotel.id] : (hotel.roomsAvailable ?? 0)
+
+      return {
+        ...hotel,
+        nightsCount: nights.length || nightsCount || 1,
+        isAvailable: available >= roomsWanted,
+        availableRooms: available,
+        // Lets the results page say "sold out for these dates" rather than
+        // "sold out", which are different messages to a shopper.
+        availabilityBasis: dated ? 'dates' : 'legacy'
       }
     })
+
+    console.log(`🏨 Hotels in ${city ?? '*'}: read ${read}, matched ${pagination.total} (indexed: ${indexed})`)
+
+    res.json({ data: enrichedHotels, pagination })
   } catch (err) {
     console.error('Firebase Hotel Search error:', err.message)
     res.status(500).json({ message: err.message })

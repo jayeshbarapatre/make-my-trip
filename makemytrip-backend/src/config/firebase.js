@@ -42,8 +42,9 @@ if (!getApps().length) {
       privateKey = privateKey.replace(/\\n/g, '\n')
     }
 
-    console.log('🔐 Private key length:', privateKey.length)
-
+    // The key's length is not logged: it is a property of the secret itself and
+    // narrows an offline guess. A failed cert() below already reports a
+    // malformed key without needing it.
     try {
       initializeApp({
         credential: cert({

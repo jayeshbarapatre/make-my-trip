@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken'
 import { db } from '../config/firebase.js'
 import { Role, AccountStatus, resolveRole, resolveAccountStatus, permissionsForRole } from '../config/roles.js'
+import { assertSessionLive } from '../services/tokenService.js'
 
 // Migrated from Prisma to Firestore.
 //
@@ -43,6 +44,13 @@ export const authenticateVendor = async (req, res, next) => {
     }
 
     const user = snap.docs[0].data()
+
+    // Revocation, on the document already fetched — see tokenService.
+    const live = assertSessionLive(decoded, user)
+    if (!live.valid) {
+      return res.status(401).json({ code: live.code, message: live.message })
+    }
+
     const role = resolveRole(user)
 
     if (role !== Role.VENDOR) {

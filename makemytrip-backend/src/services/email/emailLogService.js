@@ -1,4 +1,5 @@
 import { db } from '../../config/firebase.js'
+import { now } from '../../utils/time.js'
 
 const COLLECTION = 'emailLogs'
 
@@ -21,8 +22,8 @@ export const createLog = async (data) => {
     providerMessageId: null,
     smtpResponse: null,
     sentAt: null,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    createdAt: now(),
+    updatedAt: now()
   }
   await ref.set(record)
   return { id: ref.id, ...record }
@@ -31,7 +32,7 @@ export const createLog = async (data) => {
 const patch = async (logId, fields) => {
   if (!logId) return null
   try {
-    await db.collection(COLLECTION).doc(logId).update({ ...fields, updatedAt: new Date().toISOString() })
+    await db.collection(COLLECTION).doc(logId).update({ ...fields, updatedAt: now() })
   } catch (err) {
     console.warn(`⚠️ Could not update email log ${logId}: ${err.message}`)
   }

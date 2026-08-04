@@ -1,6 +1,5 @@
 import * as templateService from '../services/email/templateService.js'
 import { renderTemplate } from '../services/email/templateEngine.js'
-import prisma from '../config/prismaClient.js'
 
 // List all templates
 export const listTemplates = async (req, res) => {

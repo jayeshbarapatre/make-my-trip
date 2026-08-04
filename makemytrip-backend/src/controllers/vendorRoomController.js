@@ -1,4 +1,5 @@
 import { FieldValue } from 'firebase-admin/firestore'
+import { now, toDate } from '../utils/time.js'
 import { db } from '../config/firebase.js'
 import { writeAuditLog, AuditAction } from '../services/auditLog.js'
 
@@ -17,12 +18,6 @@ const num = (v, fallback = null) => {
   return Number.isFinite(n) ? n : fallback
 }
 
-const toDate = (value) => {
-  if (!value) return null
-  if (typeof value?.toDate === 'function') return value.toDate()
-  const d = new Date(value)
-  return Number.isNaN(d.getTime()) ? null : d
-}
 
 /** Resolves the parent hotel, or null if it is missing or not this vendor's. */
 const loadOwnedHotel = async (req) => {
@@ -99,8 +94,8 @@ export const createRoom = async (req, res) => {
       amenities: Array.isArray(amenities) ? amenities : [],
       images: Array.isArray(images) ? images : [],
       isActive: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: now(),
+      updatedAt: now(),
       createdBy: req.principal?.uid ?? null,
       updatedBy: req.principal?.uid ?? null,
       isDeleted: false
@@ -140,7 +135,7 @@ export const updateRoom = async (req, res) => {
       return res.status(400).json({ message: 'Validation failed', errors })
     }
 
-    const patch = { updatedAt: new Date().toISOString(), updatedBy: req.principal?.uid ?? null }
+    const patch = { updatedAt: now(), updatedBy: req.principal?.uid ?? null }
 
     if (categoryName !== undefined) patch.categoryName = String(categoryName).trim()
     if (description !== undefined) patch.description = description
@@ -213,7 +208,7 @@ export const toggleRoomStatus = async (req, res) => {
     const nextActive = room.data.isActive === false
     await room.ref.update({
       isActive: nextActive,
-      updatedAt: new Date().toISOString(),
+      updatedAt: now(),
       updatedBy: req.principal?.uid ?? null
     })
 

@@ -1,4 +1,5 @@
 import { db } from '../config/firebase.js'
+import { toDate } from '../utils/time.js'
 
 // Migrated from Prisma/MongoDB to Firestore.
 //
@@ -18,12 +19,6 @@ const activeDocs = (snap) => snap.docs.map((d) => ({ id: d.id, ...d.data() })).f
 
 // Booking timestamps are ISO strings on records written by the Firestore
 // controllers, and Timestamps on those written via FieldValue.serverTimestamp().
-const toDate = (value) => {
-  if (!value) return null
-  if (typeof value?.toDate === 'function') return value.toDate()
-  const d = new Date(value)
-  return Number.isNaN(d.getTime()) ? null : d
-}
 
 export const getDashboardStats = async (req, res) => {
   try {

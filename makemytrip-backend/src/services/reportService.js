@@ -1,16 +1,11 @@
 import { db } from '../config/firebase.js'
+import { toDate } from '../utils/time.js'
 import { Role, isPrivileged } from '../config/roles.js'
 
 // Reports read across users, so scoping is not optional. Every query here is
 // built from the caller's principal — a vendor's query is narrowed to their own
 // vendorId before it ever reaches Firestore, rather than filtered afterwards.
 
-const toDate = (value) => {
-  if (!value) return null
-  if (typeof value?.toDate === 'function') return value.toDate()
-  const d = new Date(value)
-  return Number.isNaN(d.getTime()) ? null : d
-}
 
 const withinRange = (value, from, to) => {
   const d = toDate(value)

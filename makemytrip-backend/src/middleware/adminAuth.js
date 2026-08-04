@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken'
 import { db } from '../config/firebase.js'
 import { AccountStatus, isPrivileged, resolveRole, resolveAccountStatus, permissionsForRole } from '../config/roles.js'
+import { assertSessionLive } from '../services/tokenService.js'
 
 // Migrated from Prisma to Firestore so the admin panel shares one identity
 // store with the rest of the platform. Role and status are re-read on every
@@ -39,6 +40,15 @@ export const authenticateAdmin = async (req, res, next) => {
     }
 
     const user = snap.docs[0].data()
+
+    // Same revocation signal as the customer guard, on the document this
+    // handler already fetched. An admin whose access is pulled loses it on the
+    // next request, not when their token happens to expire.
+    const live = assertSessionLive(decoded, user)
+    if (!live.valid) {
+      return res.status(401).json({ code: live.code, message: live.message })
+    }
+
     const role = resolveRole(user)
 
     if (!isPrivileged(role)) {

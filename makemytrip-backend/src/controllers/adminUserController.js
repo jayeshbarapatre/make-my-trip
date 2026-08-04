@@ -1,6 +1,8 @@
 import { db } from '../config/firebase.js'
+import { now, toDate } from '../utils/time.js'
 import { Role, resolveRole } from '../config/roles.js'
 import { writeAuditLog, AuditAction } from '../services/auditLog.js'
+import { revokeAllSessions } from '../services/tokenService.js'
 
 // Migrated from Prisma/MongoDB to Firestore.
 //
@@ -8,12 +10,6 @@ import { writeAuditLog, AuditAction } from '../services/auditLog.js'
 // pagination cheaply, so search and paging are applied in memory over the
 // customer set. That is the same trade-off the rest of the admin surface makes.
 
-const toDate = (value) => {
-  if (!value) return null
-  if (typeof value?.toDate === 'function') return value.toDate()
-  const d = new Date(value)
-  return Number.isNaN(d.getTime()) ? null : d
-}
 
 const publicUser = (u, bookingCount) => ({
   id: u.id,
@@ -101,9 +97,14 @@ export const deleteUser = async (req, res) => {
     await found.ref.update({
       isDeleted: true,
       accountStatus: 'disabled',
-      updatedAt: new Date().toISOString(),
+      updatedAt: now(),
       updatedBy: req.adminId ?? null
     })
+
+    // Disabling an account has to end its live sessions. Without this the user
+    // keeps a working token until it expires, so "delete user" left the account
+    // fully operational for up to a week.
+    await revokeAllSessions(found.ref)
 
     writeAuditLog({
       req,

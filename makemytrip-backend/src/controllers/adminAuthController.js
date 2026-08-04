@@ -1,8 +1,12 @@
 import jwt from 'jsonwebtoken'
+import { now } from '../utils/time.js'
 import bcrypt from 'bcryptjs'
 import { db } from '../config/firebase.js'
 import { Role, AccountStatus, resolveRole, resolveAccountStatus, isPrivileged } from '../config/roles.js'
 import { writeAuditLog, AuditAction } from '../services/auditLog.js'
+import { describePasswordWeakness, validateEmail } from '../utils/validation.js'
+import { normalizeEmail, findUserByEmail } from '../utils/identity.js'
+import { currentTokenVersion } from '../services/tokenService.js'
 
 // Migrated from Prisma/MongoDB to Firestore.
 //
@@ -20,9 +24,19 @@ if (!process.env.JWT_SECRET) {
 const JWT_SECRET = process.env.JWT_SECRET
 
 // Shorter than the 7-day customer token: an admin session is higher value.
+// `tv` must be present and current. authenticateAdmin compares it against the
+// stored tokenVersion to enforce revocation; a token minted without the claim
+// reads as version 1, so an admin whose sessions had ever been revoked could
+// not sign back in.
 const signToken = (user) =>
   jwt.sign(
-    { id: user.id, email: user.email, role: resolveRole(user), accountStatus: resolveAccountStatus(user) },
+    {
+      id: user.id,
+      email: user.email,
+      role: resolveRole(user),
+      accountStatus: resolveAccountStatus(user),
+      tv: currentTokenVersion(user)
+    },
     JWT_SECRET,
     { expiresIn: '8h' }
   )
@@ -42,20 +56,49 @@ const findUserById = async (id) => {
   return snap.empty ? null : { ref: snap.docs[0].ref, data: snap.docs[0].data() }
 }
 
+// Creating an administrator is a privilege-escalation operation, so it is only
+// ever reachable by an already-authenticated super admin. The very first admin
+// is provisioned out-of-band with `npm run admin:create`, which runs on the
+// server with the service account and needs no HTTP surface at all.
+//
+// This endpoint was previously unauthenticated: any anonymous caller could POST
+// here and receive a working admin token, which meant full read/write access to
+// every user, booking and refund on the platform.
 export const adminRegister = async (req, res) => {
   try {
-    const { name, email, password } = req.body
+    const actorRole = req.principal?.role
+    if (actorRole !== Role.SUPER_ADMIN) {
+      writeAuditLog({
+        req,
+        action: 'admin_register_denied',
+        entity: 'users',
+        entityId: req.body?.email ?? null,
+        newValue: { attemptedBy: req.principal?.uid ?? 'anonymous', actorRole: actorRole ?? null },
+        status: 'failure'
+      })
+      return res.status(403).json({
+        message: 'Only a super admin may create administrator accounts'
+      })
+    }
+
+    const { name, password } = req.body
+    const email = normalizeEmail(req.body.email)
 
     if (!name || !email || !password) {
       return res.status(400).json({ message: 'Name, email, and password are required' })
     }
-    if (password.length < 8) {
-      return res.status(400).json({ message: 'Password must be at least 8 characters long' })
+
+    const passwordProblem = describePasswordWeakness(password, { strict: true })
+    if (passwordProblem) {
+      return res.status(400).json({ message: passwordProblem })
+    }
+
+    if (!validateEmail(email)) {
+      return res.status(400).json({ message: 'A valid email address is required' })
     }
 
     const ref = db.collection('users').doc(email)
-    const existing = await ref.get()
-    if (existing.exists) {
+    if (await findUserByEmail(db, email)) {
       return res.status(409).json({ message: 'Email already registered' })
     }
 
@@ -71,10 +114,10 @@ export const adminRegister = async (req, res) => {
       role: Role.ADMIN,
       accountStatus: AccountStatus.ACTIVE,
       is_admin: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      createdBy: req.user?.id ?? null,
-      updatedBy: req.user?.id ?? null,
+      createdAt: now(),
+      updatedAt: now(),
+      createdBy: req.principal.uid,
+      updatedBy: req.principal.uid,
       isDeleted: false
     }
 
@@ -85,12 +128,15 @@ export const adminRegister = async (req, res) => {
       action: 'admin_registered',
       entity: 'users',
       entityId: id,
-      newValue: { email, role: Role.ADMIN }
+      newValue: { email, role: Role.ADMIN, createdBy: req.principal.uid }
     })
 
+    // Deliberately no token: the new admin authenticates with their own
+    // credentials. Handing the creator a session for someone else's account
+    // would make every admin action ambiguous in the audit trail.
     res.status(201).json({
       message: 'Admin created successfully',
-      data: { admin: publicAdmin(doc), token: signToken(doc) }
+      data: { admin: publicAdmin(doc) }
     })
   } catch (err) {
     console.error('Admin register error:', err.message)
@@ -106,8 +152,8 @@ export const adminLogin = async (req, res) => {
       return res.status(400).json({ message: 'Email and password are required' })
     }
 
-    const snap = await db.collection('users').doc(email).get()
-    const user = snap.exists ? snap.data() : null
+    const found = await findUserByEmail(db, email)
+    const user = found?.data ?? null
 
     // One message for every failure mode, so this cannot be used to discover
     // which addresses are registered or which of them are admins.
@@ -191,7 +237,7 @@ export const changePassword = async (req, res) => {
 
     await found.ref.update({
       password: await bcrypt.hash(newPassword, 10),
-      updatedAt: new Date().toISOString(),
+      updatedAt: now(),
       updatedBy: req.adminId
     })
 

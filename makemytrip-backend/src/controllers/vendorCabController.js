@@ -71,12 +71,19 @@ const toStorage = (body, { partial = false } = {}) => {
   const rating = num(body.rating)
   if (rating !== null) out.rating = rating
 
-  const available = num(body.available)
-  if (available !== null) out.available = available
+  // `available` is a boolean flag: the public cab search filters on
+  // `available === true`, so a numeric value here makes the cab invisible.
+  // A numeric count (e.g. fleet size) is preserved separately.
+  const availableNum = num(body.available)
+  if (availableNum !== null) {
+    out.availableCount = availableNum
+    out.available = availableNum > 0
+  }
 
   if (!partial) {
     out.capacity = out.capacity ?? 4
-    out.available = out.available ?? 1
+    out.available = out.available ?? true
+    out.availableCount = out.availableCount ?? null
     out.rating = out.rating ?? 4.5
     out.type = out.type ?? 'Sedan'
   }

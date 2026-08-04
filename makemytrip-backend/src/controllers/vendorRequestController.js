@@ -1,4 +1,5 @@
 import { FieldValue } from 'firebase-admin/firestore'
+import { now } from '../utils/time.js'
 import { db } from '../config/firebase.js'
 import { Role, AccountStatus } from '../config/roles.js'
 import { sanitizeText } from '../utils/sanitize.js'
@@ -186,7 +187,7 @@ export const decideVendorRequest = async (req, res) => {
           role: Role.VENDOR,
           vendorId,
           accountStatus: AccountStatus.ACTIVE,
-          updatedAt: new Date().toISOString(),
+          updatedAt: now(),
           updatedBy: req.principal.uid
         })
       }
