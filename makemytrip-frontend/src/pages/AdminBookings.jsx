@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import AdminLayout from '../components/Admin/AdminLayout'
 import { adminBookingsService } from '../services/adminService'
 import Icons from '../utils/icons'
+import { toLocalDateStr } from '../utils/date'
 import './AdminFlights.css'
 
 const AdminBookings = () => {
@@ -46,7 +47,7 @@ const AdminBookings = () => {
     // 3. Date Picker Filter
     let matchesDate = true
     if (filterDate) {
-      const bDate = new Date(booking.createdAt).toISOString().split('T')[0]
+      const bDate = toLocalDateStr(booking.createdAt)
       matchesDate = bDate === filterDate
     }
 

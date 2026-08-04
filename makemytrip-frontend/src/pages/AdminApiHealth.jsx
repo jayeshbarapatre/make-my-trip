@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { API_BASE_URL } from '../config/api.config';
 
+// Both calls below hardcoded http://localhost:5000, so this page reported
+// "Unable to load API health metrics" in every deployment that was not a
+// developer's own machine — and the cache flush silently targeted nothing.
 export default function AdminApiHealth() {
   const [cacheStats, setCacheStats] = useState(null);
   const [bookingLogs, setBookingLogs] = useState([]);
@@ -11,7 +15,7 @@ export default function AdminApiHealth() {
   const fetchApiHealth = async () => {
     try {
       const response = await axios.get(
-        'http://localhost:5000/api/v1/admin/api-health',
+        `${API_BASE_URL}/admin/api-health`,
         {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('adminToken') || ''}`
@@ -42,7 +46,7 @@ export default function AdminApiHealth() {
     setFlushing(true);
     try {
       await axios.post(
-        'http://localhost:5000/api/v1/admin/cache/flush',
+        `${API_BASE_URL}/admin/cache/flush`,
         {},
         {
           headers: {

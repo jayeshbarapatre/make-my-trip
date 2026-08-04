@@ -3,7 +3,8 @@ import { useParams, useNavigate, useSearchParams, useLocation } from 'react-rout
 import { useQuery } from '@tanstack/react-query'
 import { flightService } from '../services/flightService'
 import { useAuth } from '../context/AuthContext'
-import { bookingService } from '../services/authService'
+import { requestQuote, payAndBook } from '../services/checkout'
+import { toLocalDateStr } from '../utils/date'
 import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
 import OtpLoginModal from '../components/Auth/OtpLoginModal'
@@ -25,7 +26,7 @@ const fmtDuration = (m) => {
   if (hours > 0) return `${hours}h`
   return `${mins}m`
 }
-const fmtPrice = (p) => '₹' + Number(p).toLocaleString('en-IN')
+const fmtPrice = (p) => (p === null || p === undefined || p === '') ? '—' : '₹' + Number(p).toLocaleString('en-IN')
 const fmtDate = (dateStr) => {
   if (!dateStr) return 'N/A'
   const [year, month, day] = dateStr.split('-')
@@ -127,6 +128,8 @@ export default function BookingPage() {
 
   // Confirmation data state
   const [bookingDetails, setBookingDetails] = useState(null)
+  const [quote, setQuote] = useState(null)
+  const [quoteError, setQuoteError] = useState('')
 
 
   const { data, isLoading } = useQuery({
@@ -155,7 +158,7 @@ export default function BookingPage() {
         // Flight crosses midnight
         const date = new Date(dateToUse)
         date.setDate(date.getDate() + 1)
-        arrivalDate = date.toISOString().split('T')[0]
+        arrivalDate = toLocalDateStr(date)
       }
     }
 
@@ -184,7 +187,7 @@ export default function BookingPage() {
       if (arrMinutes < depMinutes) {
         const date = new Date(dateToUse)
         date.setDate(date.getDate() + 1)
-        arrivalDate = date.toISOString().split('T')[0]
+        arrivalDate = toLocalDateStr(date)
       }
     }
 
@@ -201,6 +204,24 @@ export default function BookingPage() {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }, [step])
+
+  // Ask the server what this itinerary costs whenever the flight or the party
+  // size changes, so the displayed fare is the one that will be charged. Placed
+  // above the loading/error returns below so the hook order stays stable.
+  const quotableFlightId = flight?.id
+  const seatsToPrice = travellerDetails.filter(t => t.type !== 'Infant').length || travellerDetails.length
+
+  useEffect(() => {
+    if (!quotableFlightId || !seatsToPrice) return
+
+    let active = true
+    requestQuote({ type: 'flight', itemId: quotableFlightId, quantity: seatsToPrice })
+      .then((q) => { if (active) { setQuote(q); setQuoteError('') } })
+      .catch((err) => { if (active) { setQuote(null); setQuoteError(err.message) } })
+
+    return () => { active = false }
+  }, [quotableFlightId, seatsToPrice])
+
 
   if (isLoading && !flight) return (
     <div style={s.statusWrap}><p style={s.statusText}>Loading flight details…</p></div>
@@ -228,11 +249,16 @@ export default function BookingPage() {
   }, 0)
 
   const totalPassengers = adultsCount + childrenCount + infantsCount
-  const _multiplier = isRoundTrip ? 2 : 1
-  const returnPrice = returnFlight ? returnFlight.price : (isRoundTrip ? flight.price : 0)
-  const basePrice = (flight.price + returnPrice) * (adultsCount + childrenCount) + Math.round((flight.price + returnPrice) * 0.4 * infantsCount)
-  const taxes = Math.round(basePrice * 0.18)
-  const totalAmount = basePrice + taxes + seatFees
+
+  // Displayed from the server's quote. The local 18%-plus-seat-fees arithmetic
+  // was sent to the payment endpoint as the amount to charge, which meant the
+  // client decided the price of the ticket.
+  const basePrice = quote?.baseFare ?? 0
+  const taxes = quote?.taxes ?? 0
+  // Never fabricate a payable ₹0 while waiting for/missing a quote — that
+  // rendered "Base ₹X / Payable ₹0" earlier. null shows "—" and blocks payment.
+  const totalAmount = quote?.totalAmount ?? null
+  const quoteReady = Boolean(quote)
 
   // Form inputs validation handler
   const validateTravellersForm = () => {
@@ -304,224 +330,62 @@ export default function BookingPage() {
       return
     }
 
+    if (!quote) {
+      showToastMsg(quoteError || 'The fare is still loading. Please wait a moment.', 'error')
+      return
+    }
+
     setPaymentLoading(true)
-    setLoadingMessage('Creating payment order...')
+    setLoadingMessage('Opening secure payment...')
 
     try {
-      // Step 1: Create order on backend
-      console.log('📋 Creating Razorpay order...')
-      const orderResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/payment/create-order`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          amount: totalAmount,
-          currency: 'INR',
-          notes: {
-            bookingType: 'flight',
-            flightId: flight.id,
-            totalPassengers: totalPassengers
-          }
-        })
-      })
-
-      if (!orderResponse.ok) {
-        throw new Error('Failed to create payment order')
-      }
-
-      const orderData = await orderResponse.json()
-      console.log('✓ Order created:', orderData.data)
-
-      if (!orderData.success || !orderData.data?.orderId) {
-        throw new Error('Invalid order response')
-      }
-
-      // Step 2: Check if Razorpay script is loaded
-      if (!window.Razorpay) {
-        throw new Error('Razorpay SDK not loaded. Please refresh the page.')
-      }
-
-      setLoadingMessage('Opening Razorpay checkout...')
-
-      // Step 3: Open Razorpay checkout
-      const razorpayOptions = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-        order_id: orderData.data.orderId,
-        amount: orderData.data.amount,
-        currency: orderData.data.currency,
-        name: 'MakeMyTrip',
-        description: `Flight booking for ${totalPassengers} passenger(s)`,
-
-        handler: async (response) => {
-          console.log('✓ Payment successful!', response)
-          console.log('💳 Payment ID:', response.razorpay_payment_id)
-          console.log('📋 Order ID:', response.razorpay_order_id)
-          console.log('🔐 Signature:', response.razorpay_signature)
-
-          try {
-            // Step 4: Verify payment on backend
-            setLoadingMessage('Verifying payment...')
-
-            const verifyResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/payment/verify`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-              },
-              body: JSON.stringify({
-                orderId: response.razorpay_order_id,
-                paymentId: response.razorpay_payment_id,
-                signature: response.razorpay_signature
-              })
-            })
-
-            if (!verifyResponse.ok) {
-              throw new Error('Payment verification failed')
-            }
-
-            const verifyData = await verifyResponse.json()
-            console.log('✓ Payment verified!', verifyData)
-
-            if (!verifyData.success) {
-              throw new Error(verifyData.message || 'Payment verification failed')
-            }
-
-            // Step 5: Create booking after successful payment
-            setLoadingMessage('Creating booking...')
-
-            const departureObj = typeof flight.departure === 'object' ? flight.departure : { date: '2026-05-20' }
-            const arrivalObj = typeof flight.arrival === 'object' ? flight.arrival : {}
-
-            // Extract enriched flight data
-            const baseFare = totalAmount * 0.8
-            const taxes = totalAmount * 0.15
-            const convenience = totalAmount * 0.05
-            const discount = 0
-            const gst = totalAmount * 0.05
-
-            const bookingPayload = {
-              type: 'flight',
-              flightId: flight.id,
-              fromCity: flight.source || (typeof flight.departure === 'object' ? flight.departure.city : ''),
-              toCity: flight.destination || (typeof flight.arrival === 'object' ? flight.arrival.city : ''),
-              departureDate: departureObj.date || '2026-05-20',
-              returnDate: arrivalObj.date,
-              travellers: travellerDetails,
-              passengers: travellerDetails,
-              totalAmount: totalAmount,
-              paymentId: response.razorpay_payment_id,
-              orderId: response.razorpay_order_id,
-              contact: passenger,
-              userEmail: passenger?.email,
-              userName: user?.name,
-              // Enriched flight details
-              airlineName: flight.airline || 'Unknown Airline',
-              airlineCode: flight.airlineCode || flight.code,
-              flightNumber: flight.flightNumber || flight.number || 'N/A',
-              departureTime: departureObj.time || '00:00',
-              arrivalTime: arrivalObj.time || '00:00',
-              departureAirport: departureObj.airport || flight.source,
-              arrivalAirport: arrivalObj.airport || flight.destination,
-              boardingTime: departureObj.time || '00:00',
-              stops: flight.stops || 0,
-              cabinClass: 'Economy',
-              numBags: 1,
-              travelInsurance: false,
-              // Fare breakdown
-              baseFare: baseFare,
-              taxes: taxes,
-              convenience: convenience,
-              discount: discount,
-              gst: gst,
-              // Payment details
-              paymentMethod: 'credit_card',
-              paymentStatus: 'completed',
-              transactionId: response.razorpay_payment_id
-            }
-
-            console.log('📝 Creating booking with payment details...')
-            console.log('🔍 FLIGHT OBJECT PROPERTIES:')
-            console.log('  airline:', flight.airline)
-            console.log('  flightNumber:', flight.flightNumber)
-            console.log('  source:', flight.source)
-            console.log('  destination:', flight.destination)
-            console.log('  Full flight object:', flight)
-
-            // The booking is only confirmed once the backend has written it to
-            // Firestore and returned its reference. Previously a failure here
-            // still advanced to the confirmation screen with an invented
-            // booking id and PNR, so the customer saw a confirmation for a
-            // booking that did not exist.
-            try {
-              const res = await bookingService.createBooking(bookingPayload)
-              const confirmedData = res?.data || res || {}
-
-              if (!confirmedData.bookingId) {
-                throw new Error('The booking could not be confirmed.')
-              }
-
-              setPaymentLoading(false)
-              setBookingDetails({
-                bookingId: confirmedData.bookingId,
-                pnr: confirmedData.pnr,
-                flight,
-                travellers: travellerDetails,
-                contact: passenger,
-                amount: totalAmount,
-                paymentId: response.razorpay_payment_id,
-                date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
-              })
-              setStep(4)
-              showToastMsg('🎉 Booking confirmed! Your ticket has been sent to your email.', 'success')
-            } catch (_bookingErr) {
-              setPaymentLoading(false)
-              showToastMsg(
-                'Your payment went through but we could not confirm the booking. Our team has been notified — please check My Trips before retrying. Reference: ' + response.razorpay_payment_id,
-                'error'
-              )
-            }
-          } catch (err) {
-            console.error('Payment verification error:', err)
-            setPaymentLoading(false)
-            showToastMsg('Payment verified but booking failed: ' + err.message, 'error')
-          }
-        },
-
+      // One shared checkout: order -> gateway -> verify -> booking. The server
+      // prices the itinerary and writes the booking from the captured amount,
+      // so nothing here can influence what the customer is charged.
+      const confirmed = await payAndBook({
+        quote,
+        description: 'Flight ' + flight.airline + ' ' + flight.flightNumber,
         prefill: {
-          name: travellerDetails[0]?.firstName + ' ' + travellerDetails[0]?.lastName,
+          name: [travellerDetails[0]?.firstName, travellerDetails[0]?.lastName].filter(Boolean).join(' '),
           email: passenger.email,
           contact: passenger.phone
         },
-
-        notes: {
-          bookingType: 'flight',
-          passengers: totalPassengers,
-          flightId: flight.id
-        },
-
-        theme: {
-          color: '#003580'
-        },
-
-        modal: {
-          ondismiss: () => {
-            console.log('❌ Payment cancelled by user')
-            setPaymentLoading(false)
-            showToastMsg('Payment cancelled. Please try again.', 'info')
-          }
+        bookingData: {
+          type: 'flight',
+          flightId: flight.id,
+          airline: flight.airline,
+          flightNumber: flight.flightNumber,
+          fromCity: flight.source || flight.departure?.city,
+          toCity: flight.destination || flight.arrival?.city,
+          departureDate: flight.departure?.date || searchDate,
+          isRoundTrip,
+          returnFlightId: returnFlight?.id ?? null,
+          passengers: travellerDetails.map(t => [t.firstName, t.lastName].filter(Boolean).join(' ')),
+          // Infants travel on an adult's lap and are not charged a seat, so the
+          // number of seats to reserve excludes them (matches seatsToPrice).
+          seatCount: travellerDetails.filter(t => t.type !== 'Infant').length,
+          travellers: { passengers: travellerDetails, contact: passenger },
+          userEmail: passenger.email,
+          userName: travellerDetails[0]?.firstName || 'Traveller'
         }
-      }
+      })
 
-      console.log('🔓 Opening Razorpay checkout with options:', razorpayOptions)
-      const razorpay = new window.Razorpay(razorpayOptions)
-      razorpay.open()
-
-    } catch (err) {
-      console.error('❌ Payment error:', err)
       setPaymentLoading(false)
-      showToastMsg('Payment failed: ' + err.message, 'error')
+      setBookingDetails({
+        bookingId: confirmed.bookingId,
+        pnr: confirmed.pnr,
+        flight,
+        travellers: travellerDetails,
+        contact: passenger,
+        amount: confirmed.totalAmount,
+        paymentId: confirmed.paymentId,
+        date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+      })
+      setStep(4)
+      showToastMsg('🎉 Booking confirmed! Your ticket has been sent to your email.', 'success')
+    } catch (err) {
+      setPaymentLoading(false)
+      showToastMsg(err.message || 'The payment could not be completed.', 'error')
     }
   }
 
@@ -1185,7 +1049,7 @@ export default function BookingPage() {
                           </div>
                         )}
 
-                        <button type="submit" className="btn-primary" style={{ width: '100%', marginTop: '24px' }}>
+                        <button type="submit" className="btn-primary" disabled={!quoteReady} style={{ width: '100%', marginTop: '24px', opacity: quoteReady ? 1 : 0.6, cursor: quoteReady ? 'pointer' : 'not-allowed' }}>
                           PAY NOW {fmtPrice(totalAmount)}
                         </button>
                       </form>

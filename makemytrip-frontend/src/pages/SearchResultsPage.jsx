@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
+import { RESULTS_PER_REQUEST } from '../config/search.config'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { flightService } from '../services/flightService'
@@ -6,6 +7,7 @@ import FlightLoader from '../components/Atoms/FlightLoader'
 import { useAuth } from '../context/AuthContext'
 import CustomCalendarPicker from '../components/CustomCalendarPicker'
 import { CITIES } from '../data/cities'
+import { todayLocal } from '../utils/date'
 import '../styles/FlightResults.css'
 import OtpLoginModal from '../components/Auth/OtpLoginModal'
 
@@ -105,9 +107,7 @@ export default function SearchResultsPage() {
   const [dateVal,      setDateVal]      = useState(() => {
     const fromUrl = params.get('date')
     if (fromUrl) return fromUrl
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    return today.toISOString().split('T')[0]
+    return todayLocal()
   })
   const [returnDate,   setReturnDate]   = useState(params.get('returnDate') || '')
   const [showCal,      setShowCal]      = useState(false)
@@ -202,7 +202,15 @@ export default function SearchResultsPage() {
       const outboundRes = await flightService.search({
         from: criteria.from,
         to: criteria.to,
-        date: criteria.date
+        date: criteria.date,
+        // Availability filter, not a display filter: the server drops flights
+        // that cannot seat the party. Without it a 4-passenger search listed
+        // flights with 1 seat left, which then failed at booking.
+        passengers: criteria.passengers,
+        // Request the whole route. The filters and sort below run in the
+        // browser, so on the server's default page of 20 they only ever saw a
+        // window of the route and could hide the genuinely cheapest flight.
+        limit: RESULTS_PER_REQUEST
       })
       
       let returnRes = null
@@ -211,7 +219,9 @@ export default function SearchResultsPage() {
           returnRes = await flightService.search({
             from: criteria.to,
             to: criteria.from,
-            date: returnDate
+            date: returnDate,
+            passengers: criteria.passengers,
+            limit: RESULTS_PER_REQUEST
           })
         } catch (e) {
           console.error("Failed to fetch return flights", e)

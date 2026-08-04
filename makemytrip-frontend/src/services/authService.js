@@ -1,4 +1,4 @@
-﻿import api from './api'
+import api from './api'
 
 export const authService = {
   login: (credentials) => api.post('/auth/login', credentials),
@@ -8,6 +8,9 @@ export const authService = {
   resetPassword: (email, otp, password) => api.post('/auth/reset-password', { email, otp, password }),
   getProfile: () => api.get('/auth/profile'),
   logout: () => api.post('/auth/logout'),
+  // Ends every session for the account, for "sign out of all devices".
+  logoutEverywhere: () => api.post('/auth/logout', { everywhere: true }),
+  listSessions: () => api.get('/auth/sessions'),
 
   // Mobile OTP
   sendMobileOtp: (phone) => api.post('/auth/send-otp', { phone }),
@@ -63,36 +66,19 @@ export const bookingService = {
   previewRefund: (bookingId) => api.get(`/refunds/preview/${bookingId}`),
   listMyRefunds: () => api.get('/refunds/mine'),
   verifyBusPayment: async (paymentData) => {
-    try {
-      const res = await api.post('/payment/verify', paymentData)
-      return res?.data || res
-    } catch (e) {
-      console.error("Payment verification failed:", e)
-      // Fallback: accept payment if network issue
-      console.warn("Using offline fallback for payment verification")
-      return {
-        bookingId: paymentData.bookingId,
-        paymentStatus: 'completed',
-        verified: true
-      }
-    }
+    // Payment verification must never silently succeed on network failure.
+    // A failed verification means the booking must NOT be created.
+    const res = await api.post('/payment/verify', paymentData)
+    return res?.data || res
   }
 }
 
 export const paymentService = {
   createOrder: async (amount) => {
-    try {
-      const res = await api.post('/payment/create-order', { amount })
-      return res?.data || res
-    } catch (e) {
-      console.warn("Using offline fallback payment order:", e)
-      return {
-        id: "order_rzp_" + Date.now() + "_" + Math.floor(Math.random() * 1000),
-        amount: Math.round(amount * 100),
-        currency: "INR",
-        status: "created"
-      }
-    }
+    // Payment order creation must never silently use a fake order on failure.
+    // If the server is unavailable, the user must be shown an error.
+    const res = await api.post('/payment/create-order', { amount })
+    return res?.data || res
   }
 }
 

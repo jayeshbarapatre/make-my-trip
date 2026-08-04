@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import api from '../services/api';
+import { requestQuote, payAndBook } from '../services/checkout';
 import '../styles/HotelPaymentPage.css';
 
 export default function CabPaymentPage() {
@@ -17,24 +17,45 @@ export default function CabPaymentPage() {
     }
   }, [user, navigate, location.pathname]);
 
-  const cab = location.state?.cab || {
-    id: "cab-fallback",
-    type: "Sedan",
-    model: "Maruti Swift",
-    licensePlate: "MH01AB1234",
-    rating: 4.8,
-    driver: "Rajesh Kumar",
-    price: 450,
-  };
+  // Checkout state lives in router state, which a refresh or a deep link
+  // discards. This used to fall back to a fabricated cab (`id: "cab-fallback"`,
+  // a made-up driver and a ₹450 price) on a route the customer never chose:
+  // pricing correctly refused the unknown id, so the page showed a real-looking
+  // cab with a broken quote and no way forward. Send them back to pick again.
+  const cab = location.state?.cab ?? null;
+  const pickupLocation = location.state?.pickupLocation ?? '';
+  const dropLocation = location.state?.dropLocation ?? '';
+  const distance = location.state?.distance ?? '';
+  const estimatedTime = location.state?.estimatedTime ?? '';
 
-  const pickupLocation = location.state?.pickupLocation || "Delhi Airport";
-  const dropLocation = location.state?.dropLocation || "Connaught Place";
-  const distance = location.state?.distance || "25 km";
-  const estimatedTime = location.state?.estimatedTime || "45 mins";
-  const totalAmount = location.state?.totalAmount || 567;
-  const baseFare = location.state?.baseFare || 450;
-
+  useEffect(() => {
+    if (user && !cab?.id) {
+      navigate('/cabs', { replace: true });
+    }
+  }, [user, cab, navigate]);
   const [_selectedMethod, _setSelectedMethod] = useState('UPI');
+
+  // The ride is priced by the server from stored cab rates, replacing the
+  // router-state total (which defaulted to a hardcoded ₹567).
+  const [quote, setQuote] = useState(null);
+  const [quoteError, setQuoteError] = useState('');
+
+  useEffect(() => {
+    if (!cab?.id) return;
+
+    let active = true;
+    // Distance drives the per-km portion of the fare; the server re-parses it
+    // and carries it in the signed quote so it cannot be lowered before payment.
+    requestQuote({ type: 'cab', itemId: cab.id, quantity: 1, distance })
+      .then((q) => { if (active) { setQuote(q); setQuoteError(''); } })
+      .catch((err) => { if (active) { setQuote(null); setQuoteError(err.message); } });
+
+    return () => { active = false; };
+  }, [cab?.id, distance]);
+
+  const totalAmount = quote?.totalAmount ?? null;
+  const quoteReady = Boolean(quote);
+  const baseFare = quote?.baseFare ?? null;
 
   const handleProcessPayment = async (_methodName) => {
     if (!user) {
@@ -52,190 +73,65 @@ export default function CabPaymentPage() {
     console.log('🚖 Starting cab booking payment process...');
 
     try {
-      // Step 1: Create Razorpay order
-      console.log('📋 Creating Razorpay order for amount:', totalAmount);
-
-      const orderResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/payment/create-order`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          amount: totalAmount,
-          currency: 'INR',
-          notes: {
-            bookingType: 'cab',
-            cabId: cab.id,
-            distance: distance,
-          }
-        })
-      });
-
-      if (!orderResponse.ok) {
-        throw new Error('Failed to create payment order');
+      if (!quote) {
+        setToastMessage(quoteError || 'The fare is still loading. Please wait a moment.');
+        setTimeout(() => setToastMessage(''), 3500);
+        setIsProcessing(false);
+        return;
       }
 
-      const orderData = await orderResponse.json();
-      console.log('✓ Order created:', orderData.data);
-
-      if (!orderData.success || !orderData.data?.orderId) {
-        throw new Error('Invalid order response from server');
-      }
-
-      // Step 2: Check Razorpay SDK
-      if (!window.Razorpay) {
-        throw new Error('Razorpay SDK not loaded. Please refresh the page.');
-      }
-
-      // Step 3: Open Razorpay checkout
-      const razorpayOptions = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-        order_id: orderData.data.orderId,
-        amount: orderData.data.amount,
-        currency: orderData.data.currency,
-        name: 'MakeMyTrip',
-        description: `${cab.type} - ${pickupLocation} to ${dropLocation}`,
-
-        handler: async (response) => {
-          console.log('✓ Payment successful!', response);
-
-          try {
-            // Step 4: Verify payment
-            console.log('🔐 Verifying payment...');
-
-            const verifyResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/payment/verify`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-              },
-              body: JSON.stringify({
-                orderId: response.razorpay_order_id,
-                paymentId: response.razorpay_payment_id,
-                signature: response.razorpay_signature
-              })
-            });
-
-            if (!verifyResponse.ok) throw new Error('Payment verification failed');
-
-            const verifyData = await verifyResponse.json();
-            console.log('✓ Payment verified!', verifyData);
-
-            if (!verifyData.success) {
-              throw new Error(verifyData.message || 'Payment verification failed');
-            }
-
-            // Step 5: Create booking
-            console.log('📝 Creating cab booking...');
-
-            const bookingPayload = {
-              userId: user.id,
-              type: 'cab',
-              cabType: cab.type,
-              pickupLocation,
-              dropLocation,
-              distance,
-              estimatedTime,
-              totalAmount,
-              paymentId: response.razorpay_payment_id,
-              orderId: response.razorpay_order_id,
-              driverName: cab.driver,
-              cabModel: cab.model,
-              licensePlate: cab.licensePlate,
-              userEmail: user?.email,
-              userName: user?.name,
-              // ✅ ENRICHED CAB FIELDS
-              fromCity: pickupLocation,
-              toCity: dropLocation,
-              departureDate: new Date().toISOString().split('T')[0],
-              returnDate: new Date().toISOString().split('T')[0],
-              travellers: {
-                passengers: 1,
-                type: cab.type
-              },
-              baseFare: totalAmount * 0.8,
-              taxes: totalAmount * 0.15,
-              convenience: totalAmount * 0.05,
-              discount: 0,
-              gst: totalAmount * 0.05,
-              paymentMethod: 'credit_card',
-              paymentStatus: 'completed',
-              transactionId: response.razorpay_payment_id
-            };
-
-            const bookingResponse = await api.post('/bookings/create', bookingPayload);
-            console.log('✓ Cab booking created!', bookingResponse);
-
-            // api interceptor unwraps res.data — the created booking lives in .data
-            const createdBooking = bookingResponse?.data || bookingResponse;
-            if (!createdBooking?.bookingId) {
-              throw new Error('The booking could not be confirmed.');
-            }
-
-            const bookingData = {
-              ...createdBooking,
-              paymentId: response.razorpay_payment_id
-            };
-
-            navigate('/cab/success', {
-              state: {
-                booking: bookingData,
-                cab,
-                pickupLocation,
-                dropLocation,
-                distance,
-                estimatedTime,
-                totalAmount,
-                baseFare
-              }
-            });
-
-            setToastMessage('✓ Booking confirmed! Check your email for details.');
-            setTimeout(() => setToastMessage(''), 3500);
-
-          } catch (err) {
-            console.error('❌ Payment verification/booking error:', err);
-            setToastMessage('Payment verified but booking failed: ' + err.message);
-            setTimeout(() => setToastMessage(''), 5000);
-            setIsProcessing(false);
-          }
-        },
-
+      // One shared checkout: the server prices the ride and creates the booking
+      // from the amount the gateway actually captured.
+      const booking = await payAndBook({
+        quote,
+        description: cab.type + ' - ' + pickupLocation + ' to ' + dropLocation,
         prefill: {
           name: user?.name || 'Guest User',
           email: user?.email || '',
           contact: user?.phone || ''
         },
-
-        notes: {
-          bookingType: 'cab',
+        bookingData: {
+          type: 'cab',
+          cabId: cab.id,
+          cabType: cab.type,
+          cabModel: cab.model,
+          driver: cab.driver,
+          licensePlate: cab.licensePlate,
           pickupLocation,
           dropLocation,
-          distance
-        },
-
-        theme: { color: '#003580' },
-        modal: {
-          ondismiss: () => {
-            console.log('❌ Payment cancelled');
-            setToastMessage('Payment cancelled. Please try again.');
-            setTimeout(() => setToastMessage(''), 3500);
-            setIsProcessing(false);
-          }
+          fromCity: pickupLocation,
+          toCity: dropLocation,
+          distance,
+          estimatedTime,
+          userEmail: user?.email,
+          userName: user?.name
         }
-      };
+      });
 
-      console.log('🔓 Opening Razorpay checkout...');
-      const razorpay = new window.Razorpay(razorpayOptions);
-      razorpay.open();
+      navigate('/cab/success', {
+        state: {
+          booking,
+          cab,
+          pickupLocation,
+          dropLocation,
+          distance,
+          estimatedTime,
+          totalAmount: booking.totalAmount
+        }
+      });
 
+      setToastMessage('✓ Booking confirmed! Check your email for details.');
+      setTimeout(() => setToastMessage(''), 3500);
     } catch (err) {
-      console.error('Payment error:', err);
-      setToastMessage('Error: ' + err.message);
+      setToastMessage(err.message || 'Payment failed. Please try again.');
+      setTimeout(() => setToastMessage(''), 4000);
       setIsProcessing(false);
     }
   };
+
+  // The redirect above fires in an effect, so the first render still happens
+  // with no cab. Render nothing rather than dereferencing it.
+  if (!cab?.id) return null;
 
   return (
     <div style={{ background: 'hsl(var(--b2))', minHeight: '100vh', padding: '40px 0 80px', fontFamily: "'Space Grotesk', sans-serif", color: 'hsl(var(--bc))' }}>
@@ -392,7 +288,7 @@ export default function CabPaymentPage() {
               <span>₹{totalAmount.toLocaleString("en-IN")}</span>
             </div>
 
-            <button type="submit" disabled={isProcessing} style={{
+            <button type="submit" disabled={isProcessing || !quoteReady} style={{
               width: '100%',
               padding: '1rem',
               borderRadius: '0.5rem',
@@ -400,11 +296,11 @@ export default function CabPaymentPage() {
               background: 'hsl(var(--p))',
               color: 'white',
               fontWeight: 700,
-              cursor: isProcessing ? 'not-allowed' : 'pointer',
+              cursor: (isProcessing || !quoteReady) ? 'not-allowed' : 'pointer',
               fontSize: '0.95rem',
-              opacity: isProcessing ? 0.6 : 1
+              opacity: (isProcessing || !quoteReady) ? 0.6 : 1
             }}>
-              {isProcessing ? 'Processing...' : `PAY NOW ₹${totalAmount.toLocaleString("en-IN")}`}
+              {isProcessing ? 'Processing...' : `PAY NOW ${quoteReady ? '₹' + Number(totalAmount).toLocaleString("en-IN") : '—'}`}
             </button>
           </div>
 

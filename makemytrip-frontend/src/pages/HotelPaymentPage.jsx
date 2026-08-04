@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import api from '../services/api';
+import { requestQuote, payAndBook } from '../services/checkout';
 import '../styles/HotelPaymentPage.css';
 import { photo } from '../utils/images'
 
@@ -19,13 +19,18 @@ export default function HotelPaymentPage() {
   }, [user, navigate, location.pathname]);
 
   const defaultImage = photo('hotel-luxury-exterior', 400);
-  const hotel = location.state?.hotel || {
-    id: "hotel-fallback",
-    name: "Axiom Resort Luxury Cottages, Arambol",
-    locality: "Arambol, Goa",
-    price: 5000,
-    images: [defaultImage]
-  };
+  // Checkout state lives in router state, which a refresh or a deep link
+  // discards. This used to fall back to a fabricated hotel ("Axiom Resort
+  // Luxury Cottages" at ₹5,000 with id `hotel-fallback`): pricing correctly
+  // refused the unknown id, so the customer saw a real-looking hotel they never
+  // selected, with a quote that could not succeed. Send them back to choose.
+  const hotel = location.state?.hotel ?? null;
+
+  useEffect(() => {
+    if (user && !hotel?.id) {
+      navigate('/hotels', { replace: true });
+    }
+  }, [user, hotel, navigate]);
 
   const getImageUrl = (h) => {
     if (h.image) return h.image;
@@ -35,28 +40,43 @@ export default function HotelPaymentPage() {
     return defaultImage;
   };
 
-  const roomName = location.state?.roomName || "Premium room with Pool view";
-  const checkIn = location.state?.checkIn || "2026-05-15";
-  const checkOut = location.state?.checkOut || "2026-05-16";
+  const roomName = location.state?.roomName ?? 'Selected room';
+  const checkIn = location.state?.checkIn ?? '';
+  const checkOut = location.state?.checkOut ?? '';
   const guests = location.state?.guests || "2 Adults | 1 Room";
   const guestsObj = location.state?.guestsObj || { adults: 2, rooms: 1 };
   const nights = location.state?.nights || 1;
   const rooms = location.state?.rooms || guestsObj.rooms || 1;
-  const totalAmount = location.state?.totalAmount || 4760;
   const bookEntireHotel = location.state?.bookEntireHotel || false;
 
   const [secureAdded, setSecureAdded] = useState(false);
-  const [selectedMethod, _setSelectedMethod] = useState('UPI');
+  const [_selectedMethod, _setSelectedMethod] = useState('UPI');
 
-  const finalDue = secureAdded ? totalAmount + 59 : totalAmount;
+  // The stay is priced by the server from stored room rates. This page used to
+  // derive its own breakdown from a router-state total (defaulting to ₹4760)
+  // using three different rates that did not reconcile with each other.
+  const [quote, setQuote] = useState(null);
+  const [quoteError, setQuoteError] = useState('');
 
-  // Price breakdown (consistent with Review page: 18% GST)
-  const _basePrice      = location.state?.basePrice      || Math.round(finalDue / (1 - 0.15 + 0.18) * (1 - 0.15));
-  const taxesBreakdown = Math.round(finalDue * 0.18 / 1.18) || Math.round(finalDue * 0.18);
-  const serviceFees    = Math.round(finalDue * 0.005) || 297;
-  const hotelFare      = finalDue - serviceFees;
+  useEffect(() => {
+    if (!hotel?.id) return;
 
-  const handleProcessPayment = async (methodName) => {
+    let active = true;
+    requestQuote({ type: 'hotel', itemId: hotel.id, quantity: rooms, nights })
+      .then((q) => { if (active) { setQuote(q); setQuoteError(''); } })
+      .catch((err) => { if (active) { setQuote(null); setQuoteError(err.message); } });
+
+    return () => { active = false; };
+  }, [hotel?.id, rooms, nights]);
+
+  const totalAmount = quote?.totalAmount ?? null;
+  const quoteReady = Boolean(quote);
+  const finalDue = totalAmount;
+  const taxesBreakdown = quote?.taxes ?? 0;
+  const serviceFees = quote?.convenience ?? 0;
+  const hotelFare = quote?.baseFare ?? 0;
+
+  const handleProcessPayment = async () => {
     if (!user) {
       setToastMessage('Please login to continue booking');
       setTimeout(() => setToastMessage(''), 3500);
@@ -72,209 +92,73 @@ export default function HotelPaymentPage() {
     console.log('🏨 Starting hotel booking payment process...');
 
     try {
-      // Step 1: Create Razorpay order
-      console.log('📋 Creating Razorpay order for amount:', finalDue);
-
-      const orderResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/payment/create-order`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          amount: finalDue,
-          currency: 'INR',
-          notes: {
-            bookingType: 'hotel',
-            hotelId: hotel.id,
-            rooms: rooms,
-            nights: nights
-          }
-        })
-      });
-
-      if (!orderResponse.ok) {
-        throw new Error('Failed to create payment order');
+      if (!quote) {
+        setToastMessage(quoteError || 'The room rate is still loading. Please wait a moment.');
+        setTimeout(() => setToastMessage(''), 3500);
+        setIsProcessing(false);
+        return;
       }
 
-      const orderData = await orderResponse.json();
-      console.log('✓ Order created:', orderData.data);
-
-      if (!orderData.success || !orderData.data?.orderId) {
-        throw new Error('Invalid order response from server');
-      }
-
-      // Step 2: Check Razorpay SDK
-      if (!window.Razorpay) {
-        throw new Error('Razorpay SDK not loaded. Please refresh the page.');
-      }
-
-      // Step 3: Open Razorpay checkout
-      const razorpayOptions = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-        order_id: orderData.data.orderId,
-        amount: orderData.data.amount,
-        currency: orderData.data.currency,
-        name: 'MakeMyTrip',
-        description: `${hotel.name} - ${roomName}`,
-
-        handler: async (response) => {
-          console.log('✓ Payment successful!', response);
-
-          try {
-            // Step 4: Verify payment
-            console.log('🔐 Verifying payment...');
-
-            const verifyResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/payment/verify`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-              },
-              body: JSON.stringify({
-                orderId: response.razorpay_order_id,
-                paymentId: response.razorpay_payment_id,
-                signature: response.razorpay_signature
-              })
-            });
-
-            if (!verifyResponse.ok) {
-              throw new Error('Payment verification failed');
-            }
-
-            const verifyData = await verifyResponse.json();
-            console.log('✓ Payment verified!', verifyData);
-
-            if (!verifyData.success) {
-              throw new Error(verifyData.message || 'Payment verification failed');
-            }
-
-            // Step 5: Create booking after successful payment
-            console.log('📝 Creating hotel booking...');
-
-            const bookingPayload = {
-              userId: user.id,
-              type: 'hotel',
-              fromCity: hotel.name,
-              toCity: hotel.locality || hotel.location || '',
-              departureDate: checkIn,
-              returnDate: checkOut,
-              checkIn,
-              checkOut,
-              travellers: {
-                guests,
-                rooms,
-                adults: guestsObj.adults,
-                method: methodName || selectedMethod,
-                roomName,
-                bookEntireHotel,
-                nights
-              },
-              passengers: [{
-                name: user?.name || 'Guest',
-                email: user?.email || ''
-              }],
-              totalAmount: finalDue,
-              paymentId: response.razorpay_payment_id,
-              orderId: response.razorpay_order_id,
-              hotelName: hotel.name,
-              hotelLocality: hotel.locality || hotel.location || '',
-              roomName,
-              nights,
-              rooms,
-              userEmail: user?.email,
-              userName: user?.name,
-              // ✅ ENRICHED HOTEL FIELDS
-              baseFare: finalDue * 0.8,
-              taxes: finalDue * 0.15,
-              convenience: finalDue * 0.05,
-              discount: 0,
-              gst: finalDue * 0.05,
-              // Payment
-              paymentMethod: 'credit_card',
-              paymentStatus: 'completed',
-              transactionId: response.razorpay_payment_id
-            };
-
-            const bookingResponse = await api.post('/bookings/create', bookingPayload);
-            console.log('✓ Hotel booking created!', bookingResponse);
-
-            // api interceptor unwraps res.data — the created booking lives in .data
-            const createdBooking = bookingResponse?.data || bookingResponse;
-            if (!createdBooking?.bookingId) {
-              throw new Error('The booking could not be confirmed.');
-            }
-
-            const bookingData = {
-              ...createdBooking,
-              paymentId: response.razorpay_payment_id
-            };
-
-            navigate('/hotels/success', {
-              state: {
-                booking: bookingData,
-                hotel,
-                roomName,
-                checkIn,
-                checkOut,
-                guests,
-                guestsObj,
-                nights,
-                rooms,
-                totalAmount: finalDue,
-                bookEntireHotel
-              }
-            });
-
-            setToastMessage('✓ Booking confirmed! Check your email for details.');
-            setTimeout(() => setToastMessage(''), 3500);
-
-          } catch (err) {
-            console.error('❌ Payment verification/booking error:', err);
-            setToastMessage('Payment verified but booking failed: ' + err.message);
-            setTimeout(() => setToastMessage(''), 5000);
-            setIsProcessing(false);
-          }
-        },
-
+      // One shared checkout: order -> gateway -> verify -> booking. The server
+      // prices the stay and creates the booking from what the gateway captured,
+      // so the amount charged and the amount recorded cannot diverge.
+      const booking = await payAndBook({
+        quote,
+        description: `${hotel.name} — ${roomName}`,
         prefill: {
           name: user?.name || 'Guest User',
           email: user?.email || '',
           contact: user?.phone || ''
         },
-
-        notes: {
-          bookingType: 'hotel',
+        bookingData: {
+          type: 'hotel',
+          hotelId: hotel.id,
           hotelName: hotel.name,
-          rooms: rooms,
-          nights: nights
-        },
-
-        theme: {
-          color: '#003580'
-        },
-
-        modal: {
-          ondismiss: () => {
-            console.log('❌ Payment cancelled');
-            setToastMessage('Payment cancelled. Please try again.');
-            setTimeout(() => setToastMessage(''), 3500);
-            setIsProcessing(false);
-          }
+          hotelLocality: hotel.locality || hotel.location || '',
+          fromCity: hotel.name,
+          toCity: hotel.locality || hotel.location || '',
+          checkIn,
+          checkOut,
+          departureDate: checkIn,
+          returnDate: checkOut,
+          roomName,
+          nights,
+          rooms,
+          bookEntireHotel,
+          travellers: { guests, rooms, adults: guestsObj.adults, roomName, bookEntireHotel, nights },
+          userEmail: user?.email,
+          userName: user?.name
         }
-      };
+      });
 
-      console.log('🔓 Opening Razorpay checkout...');
-      const razorpay = new window.Razorpay(razorpayOptions);
-      razorpay.open();
+      navigate('/hotels/success', {
+        state: {
+          booking,
+          hotel,
+          roomName,
+          checkIn,
+          checkOut,
+          guests,
+          guestsObj,
+          nights,
+          rooms,
+          totalAmount: booking.totalAmount,
+          bookEntireHotel
+        }
+      });
 
-    } catch (err) {
-      console.error('❌ Payment error:', err);
-      setToastMessage(err.message || 'Payment failed. Please try again.');
+      setToastMessage('✓ Booking confirmed! Check your email for details.');
       setTimeout(() => setToastMessage(''), 3500);
+    } catch (err) {
+      setToastMessage(err.message || 'Payment failed. Please try again.');
+      setTimeout(() => setToastMessage(''), 4000);
       setIsProcessing(false);
     }
   };
+
+  // The redirect fires in an effect, so the first render still runs with no
+  // hotel. Render nothing rather than dereferencing it.
+  if (!hotel?.id) return null;
 
   return (
     <div className="pmt-wrapper">
@@ -406,7 +290,7 @@ export default function HotelPaymentPage() {
             <div className="pmt-total-card">
               <div className="pmt-due-top">
                 <span className="pmt-due-lbl">Total Due</span>
-                <span className="pmt-due-val">₹ {finalDue.toLocaleString("en-IN")}</span>
+                <span className="pmt-due-val">{quoteReady ? `₹ ${Number(finalDue).toLocaleString("en-IN")}` : '—'}</span>
               </div>
 
               <div className="pmt-due-row">

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import showToast from '../utils/toast';
+import { todayLocal } from '../utils/date';
 import '../styles/TrainBookingFlow.css';
 
 export default function TrainPassengersPage() {
@@ -10,7 +11,7 @@ export default function TrainPassengersPage() {
   const { train, selectedClass, searchParams } = location.state || {
     train: { name: "Rajdhani Express", number: "12952", depTime: "16:55", arrTime: "08:30" },
     selectedClass: { code: "3A", name: "AC 3 Tier", price: 2125 },
-    searchParams: { fromCity: "New Delhi", toCity: "Mumbai", travelDate: new Date().toISOString().split('T')[0], quota: "General" }
+    searchParams: { fromCity: "New Delhi", toCity: "Mumbai", travelDate: todayLocal(), quota: "General" }
   };
 
   const [passengers, setPassengers] = useState([

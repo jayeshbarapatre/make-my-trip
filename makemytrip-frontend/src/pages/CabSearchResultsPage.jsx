@@ -1,8 +1,12 @@
 import { useState, useRef, useMemo, useEffect } from 'react'
+import { RESULTS_PER_REQUEST } from '../config/search.config'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '../context/AuthContext'
 import CustomCalendarPicker from '../components/CustomCalendarPicker'
 import { CITIES } from '../data/cities'
+import { cabService } from '../services/cabService'
+import { todayLocal } from '../utils/date'
 import '../styles/TrainResults.css' // We use train results styles for consistency
 import { photo } from '../utils/images'
 
@@ -14,7 +18,7 @@ export default function CabSearchResultsPage() {
   const [fromVal, setFromVal] = useState(location.state?.fromCity || 'New Delhi')
   const [toVal, setToVal] = useState(location.state?.toCity || 'Jaipur')
   const [dateVal, setDateVal] = useState(() => {
-    return location.state?.departDate || new Date().toISOString().split('T')[0]
+    return location.state?.departDate || todayLocal()
   })
 
   const [fromOpen, setFromOpen] = useState(false)
@@ -64,41 +68,45 @@ export default function CabSearchResultsPage() {
   const [alertMsg, setAlertMsg] = useState('')
 
 
-  const CARS = [
-    {
-      id: 'c1',
-      name: 'Dzire, Etios',
-      type: 'Sedan · AC · 4 Seats',
-      desc: 'Spacious boot, comfortable ride',
-      price: '2,850',
-      oldPrice: '3,400',
-      rating: '4.8 (140 ratings)',
-      icon: '🚗',
-      img: photo('cab-sedan')
-    },
-    {
-      id: 'c2',
-      name: 'Ertiga, Lodgy',
-      type: 'SUV · AC · 6 Seats',
-      desc: 'Perfect for group travel & extra luggage',
-      price: '4,150',
-      oldPrice: '4,900',
-      rating: '4.9 (210 ratings)',
-      icon: '🚙',
-      img: photo('cab-suv-2')
-    },
-    {
-      id: 'c3',
-      name: 'Innova Crysta',
-      type: 'Premium SUV · AC · 6 Seats',
-      desc: 'Top-tier luxury and comfort',
-      price: '5,800',
-      oldPrice: '6,600',
-      rating: '4.95 (380 ratings)',
-      icon: '👑',
-      img: photo('cab-interior')
-    }
-  ]
+  // Fetch real cabs from Firestore via the API. We never hardcode fake cab ids
+  // (c1/c2/c3) here — those did not exist in Firestore, so booking them could
+  // never be priced and payment always failed. Empty results show an honest
+  // "no cabs" message instead of bookable fake inventory.
+  const CAB_TYPE_ICON = {
+    sedan: '🚗', suv: '🚙', hatchback: '🚗', 'premium suv': '👑', innova: '👑'
+  }
+
+  const { data: cabData } = useQuery({
+    queryKey: ['cabs', fromVal, toVal],
+    queryFn: () => cabService.search({ from: fromVal, to: toVal, limit: RESULTS_PER_REQUEST }),
+  })
+
+  const CARS = useMemo(() => {
+    // cabService uses the shared axios instance whose response interceptor
+    // (services/api.js) unwraps `res.data`, so the query result IS the API body:
+    // { data: [...cabs], pagination }. The array therefore lives one level up at
+    // cabData.data, not cabData.data.data (that second hop yields undefined and
+    // renders the page empty even when the backend returned cabs).
+    const list = cabData?.data || []
+    if (!Array.isArray(list)) return []
+    return list.map((c) => {
+      const price = Number(c.price) || 0
+      return {
+        id: c.id, // real Firestore doc id — bookable and priceable
+        name: c.type || c.name || 'Cab',
+        type: `${c.type || 'Sedan'} · AC · ${c.capacity || 4} Seats`,
+        desc: c.driver ? `Driven by ${c.driver}` : 'Comfortable ride',
+        price: price.toLocaleString('en-IN'),
+        oldPrice: price > 0 ? Math.round(price * 1.15).toLocaleString('en-IN') : '',
+        rating: `${Number(c.rating || 4.5).toFixed(1)} ratings`,
+        icon: CAB_TYPE_ICON[String(c.type || '').toLowerCase()] || '🚗',
+        img: c.image || photo('cab-sedan'),
+        _priceNum: price,
+        _distanceKm: c.distanceKm,
+        _estimatedTime: c.estimatedTime
+      }
+    })
+  }, [cabData])
 
   const handleSelectCab = (car) => {
     if (!user) {
@@ -106,7 +114,9 @@ export default function CabSearchResultsPage() {
       setShowCustomAlert(true)
       return
     }
-    // Navigate to payment page with cab details
+    const priceNum = car._priceNum ?? (parseInt(String(car.price).replace(/,/g, '')) || 0)
+    // Navigate to payment page with cab details — carries the real Firestore id
+    // so the payment page can price the trip against live inventory.
     navigate('/cab/payment', {
       state: {
         cab: {
@@ -114,14 +124,16 @@ export default function CabSearchResultsPage() {
           type: car.name,
           model: car.type,
           rating: car.rating,
-          price: parseInt(car.price.replace(/,/g, ''))
+          price: priceNum
         },
         pickupLocation: fromVal,
         dropLocation: toVal,
-        distance: '25 km',
-        estimatedTime: '45 mins',
-        totalAmount: parseInt(car.price.replace(/,/g, '')) + 117,
-        baseFare: parseInt(car.price.replace(/,/g, ''))
+        // The route distance stored on the cab — the server validates the quoted
+        // distance against it, so a hardcoded value fails on outstation routes.
+        distance: car._distanceKm ? `${car._distanceKm} km` : '25 km',
+        estimatedTime: car._estimatedTime || '45 mins',
+        totalAmount: priceNum + 117,
+        baseFare: priceNum
       }
     })
   }
@@ -171,9 +183,9 @@ export default function CabSearchResultsPage() {
       r = r.filter(c => filterCabTypes.some(ft => c.type.includes(ft)))
     }
     if (sortBy === 'cheapest') {
-      r.sort((a, b) => parseInt(a.price.replace(',', '')) - parseInt(b.price.replace(',', '')))
+      r.sort((a, b) => (a._priceNum ?? 0) - (b._priceNum ?? 0))
     } else if (sortBy === 'highest_rated') {
-      r.sort((a, b) => parseFloat(b.rating.split(' ')[0]) - parseFloat(a.rating.split(' ')[0]))
+      r.sort((a, b) => parseFloat(b.rating) - parseFloat(a.rating))
     }
     return r
   }, [CARS, filterCabTypes, sortBy])
@@ -327,9 +339,19 @@ export default function CabSearchResultsPage() {
           <div className="tr-trains-list">
             {filteredSortedCabs.length === 0 ? (
               <div className="tr-no-trains">
-                No cabs match your filters.
-                <br />
-                <button onClick={clearFilters} style={{ background: 'hsl(var(--p))', color: 'hsl(var(--pc))', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer', marginTop: '10px' }}>Clear All Filters</button>
+                {CARS.length === 0 ? (
+                  <>
+                    No cabs available for this route right now.
+                    <br />
+                    Try a nearby pickup or drop-off city.
+                  </>
+                ) : (
+                  <>
+                    No cabs match your filters.
+                    <br />
+                    <button onClick={clearFilters} style={{ background: 'hsl(var(--p))', color: 'hsl(var(--pc))', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer', marginTop: '10px' }}>Clear All Filters</button>
+                  </>
+                )}
               </div>
             ) : filteredSortedCabs.map((car) => (
               <div key={car.id} className="tc-card tc-cab-card" onClick={() => handleSelectCab(car)}>

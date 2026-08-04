@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../services/api';
+import { todayLocal } from '../utils/date';
 import '../styles/FlightBookingFlow.css';
 
 export default function FlightResultsPage() {
@@ -15,7 +16,7 @@ export default function FlightResultsPage() {
   const searchParams = location.state?.searchParams || {
     from: queryParams.get('from') || 'Delhi',
     to: queryParams.get('to') || 'Mumbai',
-    date: queryParams.get('date') || new Date().toISOString().split('T')[0],
+    date: queryParams.get('date') || todayLocal(),
     passengers: queryParams.get('passengers') || 1,
     cabinClass: queryParams.get('class') || 'Economy'
   };

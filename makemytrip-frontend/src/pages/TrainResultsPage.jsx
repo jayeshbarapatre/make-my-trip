@@ -1,8 +1,10 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
+import { RESULTS_PER_REQUEST } from '../config/search.config'
 import { useLocation, useNavigate } from 'react-router-dom';
 import { trainService } from '../services/trainService';
 import CustomCalendarPicker from '../components/CustomCalendarPicker';
 import { CITIES } from '../data/cities';
+import { todayLocal } from '../utils/date';
 import '../styles/TrainResults.css';
 
 const fmtDuration = (m) => {
@@ -69,9 +71,7 @@ export default function TrainResultsPage() {
   const [toVal, setToVal] = useState(location.state?.toCity || "Mumbai Central (BCT)");
   const [dateVal, setDateVal] = useState(() => {
     if (location.state?.travelDate) return location.state.travelDate;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return today.toISOString().split('T')[0];
+    return todayLocal();
   });
   const [passengers, setPassengers] = useState(1);
   const [quota, setQuota] = useState(location.state?.quota || "General");
@@ -133,7 +133,9 @@ export default function TrainResultsPage() {
       const fromQuery = getCityOnly(f);
       const toQuery = getCityOnly(t);
 
-      const response = await trainService.search({ from: fromQuery, to: toQuery, date: d });
+      // `passengers` is an availability filter: without it the page lists
+      // trains that cannot seat the party, which then fail at booking.
+      const response = await trainService.search({ from: fromQuery, to: toQuery, date: d, passengers, limit: RESULTS_PER_REQUEST });
       const apiTrains = response.data || [];
 
       const mapped = apiTrains.map(tr => {
@@ -474,7 +476,19 @@ export default function TrainResultsPage() {
                       </div>
 
                       <div className="tc-action-row">
-                        {isSelectedTrain ? (
+                        {/* availableSeats reflects the chosen date and class:
+                            a full sleeper must not hide an empty 3A berth. */}
+                        {train.isAvailable === false ? (
+                          <>
+                            <div className="tc-action-info" style={{ color: 'hsl(var(--er))', fontWeight: 700 }}>
+                              Sold out for {train.travelDate || 'this date'}
+                              {train.travelClass ? ` in ${train.travelClass}` : ''}
+                            </div>
+                            <button className="tc-book-btn" disabled style={{ background: 'hsl(var(--bc) / 0.25)', cursor: 'not-allowed' }}>
+                              UNAVAILABLE
+                            </button>
+                          </>
+                        ) : isSelectedTrain ? (
                           <>
                             <div className="tc-action-info">
                               Selected: <strong>{chosenCls.name} ({chosenCls.code})</strong>

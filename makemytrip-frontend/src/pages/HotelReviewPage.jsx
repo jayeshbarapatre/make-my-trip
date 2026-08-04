@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import '../styles/HotelReviewPage.css';
@@ -10,19 +10,23 @@ function HotelReviewPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  // Retrieve state or fallback values
+  // Checkout state lives in router state, which a refresh or deep link discards.
+  //
+  // This used to fabricate "Axiom Resort Luxury Cottages, Arambol" at ₹5,000
+  // with id `hotel-fallback` and hardcoded 2026-05-15/16 dates. Because this
+  // step runs BEFORE payment, the fake hotel and wrong dates were then carried
+  // forward into the payment page as though the customer had chosen them.
   const defaultImage = photo('hotel-luxury-exterior', 400);
-  const hotel = location.state?.hotel || {
-    id: "hotel-fallback",
-    name: "Axiom Resort Luxury Cottages, Arambol",
-    locality: "Arambol, Goa",
-    rating: 4.5,
-    ratingLabel: "Excellent",
-    reviews: 124,
-    price: 5000,
-    taxes: 511,
-    images: [defaultImage]
-  };
+  const hotel = location.state?.hotel ?? null;
+  const checkIn = location.state?.checkIn ?? '';
+  const checkOut = location.state?.checkOut ?? '';
+  const guestsObj = location.state?.guestsObj ?? { adults: 2, rooms: 1 };
+
+  useEffect(() => {
+    if (!hotel?.id) {
+      navigate('/hotels', { replace: true });
+    }
+  }, [hotel, navigate]);
 
   const getImageUrl = (h) => {
     if (h.image) return h.image;
@@ -32,11 +36,8 @@ function HotelReviewPage() {
     return defaultImage;
   };
 
-  const roomName = location.state?.roomName || "Premium room with Pool view";
-  const checkIn = location.state?.checkIn || "2026-05-15";
-  const checkOut = location.state?.checkOut || "2026-05-16";
-  const guests = location.state?.guests || "2 Adults | 1 Room";
-  const guestsObj = location.state?.guestsObj || { adults: 2, rooms: 1 };
+  const roomName = location.state?.roomName ?? 'Selected room';
+  const guests = location.state?.guests ?? '';
 
   // Calculate nights (with consistent timezone handling)
   const checkInDate = new Date(checkIn + 'T00:00:00');
@@ -122,6 +123,10 @@ function HotelReviewPage() {
     setShowLoginModal(false)
     finalizeBooking()
   }
+
+  // The redirect fires in an effect, so the first render still runs with no
+  // hotel. Render nothing rather than showing inventory the customer never chose.
+  if (!hotel?.id) return null;
 
   return (
     <div className="review-wrapper">

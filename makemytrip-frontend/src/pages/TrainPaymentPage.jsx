@@ -1,27 +1,23 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import api from '../services/api';
+import { requestQuote, payAndBook } from '../services/checkout';
 import '../styles/TrainBookingFlow.css';
-import { photo } from '../utils/images'
 
 export default function TrainPaymentPage() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { train, selectedClass, searchParams, passengers, contact, totalAmount, baseFare } = location.state || {
-    train: { id: '1', name: "Rajdhani Express", number: "12952", depTime: "16:55", arrTime: "08:30" },
-    selectedClass: { code: "3A", name: "AC 3 Tier", price: 2125 },
-    searchParams: { fromCity: "New Delhi", toCity: "Mumbai", travelDate: new Date().toISOString().split('T')[0], quota: "General" },
-    passengers: [{ name: "Jayesh Sharma", age: 29, gender: "Male", berth: "Lower Berth" }],
-    contact: { mobile: "9876543210", email: "jayesh@gmail.com" },
-    totalAmount: 2160,
-    baseFare: 2125
-  };
+  const { train, selectedClass, searchParams, passengers, contact } = location.state || {};
 
   const [selectedMethod, setSelectedMethod] = useState('UPI / Google Pay');
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState('');
-  const [razorpayLoaded, setRazorpayLoaded] = useState(false);
+
+  // The fare comes from the server, which prices from stored inventory. This
+  // page previously computed its own taxes (15%) and sent the total to the
+  // payment endpoint, which accepted whatever figure it was given.
+  const [quote, setQuote] = useState(null);
+  const [quoteError, setQuoteError] = useState('');
 
   // Bookings must belong to an authenticated user
   useEffect(() => {
@@ -30,151 +26,73 @@ export default function TrainPaymentPage() {
     }
   }, [navigate]);
 
-  // Load Razorpay script
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-    script.async = true;
-    script.onload = () => setRazorpayLoaded(true);
-    script.onerror = () => {
-      console.warn('Razorpay script failed to load - payment gateway unavailable');
-      setRazorpayLoaded(false);
-    };
-    document.body.appendChild(script);
-    return () => {
-      if (document.body.contains(script)) {
-        document.body.removeChild(script);
-      }
-    };
-  }, []);
 
-  const handleRazorpayPayment = async () => {
-    if (isProcessing) {
-      console.warn('⚠️ Payment already processing, ignoring duplicate request');
+  // A refresh or deep link discards router state. The render below dereferences
+  // `train`, `searchParams` and `selectedClass` directly, so without this it
+  // threw before the user could see anything.
+  useEffect(() => {
+    if (!train?.id) {
+      navigate('/trains', { replace: true });
+    }
+  }, [train, navigate]);
+  useEffect(() => {
+    if (!train?.id) return;
+
+    let active = true;
+    requestQuote({ type: 'train', itemId: train.id, quantity: passengers?.length || 1 })
+      .then((q) => { if (active) { setQuote(q); setQuoteError(''); } })
+      .catch((err) => { if (active) setQuoteError(err.message); });
+
+    return () => { active = false; };
+  }, [train?.id, passengers?.length]);
+
+  const totalAmount = quote?.totalAmount ?? null;
+  const quoteReady = Boolean(quote);
+
+  const handleProcessPayment = async (methodName) => {
+    if (isProcessing) return;
+
+    if (!quote) {
+      setError(quoteError || 'The fare is still loading. Please wait a moment.');
       return;
     }
 
+    setSelectedMethod(methodName || selectedMethod);
+    setIsProcessing(true);
+    setError('');
+
     try {
-      setIsProcessing(true);
-      setError('');
-
-      // Check if user is authenticated
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('Please login to continue with payment');
-      }
-
-      // Step 1: Create order on backend
-      console.log('Creating payment order...');
-      const orderResponse = await api.post('/payment/create-order', {
-        amount: totalAmount,
-        currency: 'INR',
-        notes: {
-          bookingType: 'train',
-          trainId: train.id,
-          passengers: passengers.length
-        }
-      });
-
-      if (!orderResponse.success) {
-        throw new Error(orderResponse.message || 'Failed to create payment order');
-      }
-
-      const { orderId, amount, currency } = orderResponse.data;
-
-      // Step 2: Open Razorpay checkout
-      if (!window.Razorpay) {
-        throw new Error('Razorpay script not loaded');
-      }
-
-      const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_Sqpk2eYSSYrvWf',
-        amount: amount,
-        currency: currency,
-        order_id: orderId,
-        name: 'MakeMyTrip',
+      const booking = await payAndBook({
+        quote,
         description: `Train Booking - ${train.name} ${train.number}`,
-        image: `${window.location.origin}${photo('state-success', 400)}`,
         prefill: {
           name: passengers?.[0]?.name || '',
           email: contact?.email || '',
           contact: contact?.mobile || ''
         },
-        handler: async (response) => {
-          await verifyPayment(response, orderId);
-        },
-        modal: {
-          ondismiss: () => {
-            setIsProcessing(false);
-            setError('Payment cancelled');
-          }
-        },
-        theme: {
-          color: '#003580'
+        bookingData: {
+          type: 'train',
+          trainId: train.id,
+          fromCity: searchParams?.fromCity,
+          toCity: searchParams?.toCity,
+          departureDate: searchParams?.travelDate,
+          passengers: passengers?.map(p => ({ ...p })) ?? [],
+          selectedClass,
+          userEmail: contact?.email,
+          userName: passengers?.[0]?.name
         }
-      };
-
-      const razorpayWindow = new window.Razorpay(options);
-      razorpayWindow.open();
-    } catch (err) {
-      console.error('Razorpay error:', err);
-      setError(err.message || 'Failed to initialize payment. Please try again.');
-      setIsProcessing(false);
-    }
-  };
-
-  const verifyPayment = async (razorpayResponse, orderId) => {
-    try {
-      console.log('Verifying payment...');
-
-      // Prepare booking data
-      const bookingData = {
-        type: 'train',
-        trainId: train.id,
-        fromCity: searchParams.fromCity,
-        toCity: searchParams.toCity,
-        departureDate: searchParams.travelDate,
-        passengers: passengers.map(p => ({ ...p, name: p.name })),
-        totalAmount,
-        baseFare: baseFare || totalAmount * 0.8,
-        taxes: Math.round(totalAmount * 0.15),
-        userEmail: contact?.email,
-        userName: passengers[0]?.name,
-        paymentMethod: 'razorpay'
-      };
-
-      // Verify payment on backend
-      const verifyResponse = await api.post('/payment/verify', {
-        orderId: orderId,
-        paymentId: razorpayResponse.razorpay_payment_id,
-        signature: razorpayResponse.razorpay_signature,
-        bookingData: bookingData
       });
 
-      // The booking is whatever the backend recorded in Firestore. If it did
-      // not come back, the booking did not happen — do not fabricate one.
-      if (!verifyResponse.success || !verifyResponse.data?.booking?.bookingId) {
-        throw new Error(verifyResponse.message || 'Payment verification failed')
-      }
-
-      const booking = verifyResponse.data.booking;
-      navigate('/trains/success', { state: { booking, train, selectedClass, passengers, searchParams, totalAmount } });
+      navigate('/trains/success', {
+        state: { booking, train, selectedClass, passengers, searchParams, totalAmount: booking.totalAmount }
+      });
     } catch (err) {
-      console.error('Payment verification error:', err);
-      setError(err.message || 'Payment verification failed. Please contact support.');
+      setError(err.message || 'The payment could not be completed. Please try again.');
       setIsProcessing(false);
     }
   };
 
-  const handleProcessPayment = async (methodName) => {
-    if (!razorpayLoaded) {
-      setError('Payment gateway not loaded. Please refresh and try again.');
-      return;
-    }
-
-    setSelectedMethod(methodName);
-    await handleRazorpayPayment();
-  };
+  if (!train?.id || !selectedClass || !searchParams) return null;
 
   return (
     <div className="train-flow-wrapper">
@@ -245,16 +163,16 @@ export default function TrainPaymentPage() {
                 </div>
               )}
 
-              {!razorpayLoaded && (
+              {!quote && (
                 <div style={{ background: 'hsl(var(--wa) / 0.08)', color: 'hsl(var(--wa))', padding: '12px', borderRadius: '6px', marginBottom: '16px', fontSize: '13px' }}>
-                  ⏳ Loading payment gateway...
+                  {quoteError ? `⚠️ ${quoteError}` : '⏳ Fetching the current fare…'}
                 </div>
               )}
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div
-                  onClick={() => !isProcessing && razorpayLoaded && handleProcessPayment('UPI / Google Pay')}
-                  style={{ padding: '20px', border: '1px solid hsl(var(--bc) / 0.1)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: isProcessing || !razorpayLoaded ? 'not-allowed' : 'pointer', background: 'hsl(var(--b2))', transition: 'border-color 0.2s', opacity: isProcessing || !razorpayLoaded ? 0.5 : 1 }}
+                  onClick={() => !isProcessing && quote && handleProcessPayment('UPI / Google Pay')}
+                  style={{ padding: '20px', border: '1px solid hsl(var(--bc) / 0.1)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: isProcessing || !quote ? 'not-allowed' : 'pointer', background: 'hsl(var(--b2))', transition: 'border-color 0.2s', opacity: isProcessing || !quote ? 0.5 : 1 }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                     <span style={{ fontSize: '24px' }}>📱</span>
@@ -263,12 +181,12 @@ export default function TrainPaymentPage() {
                       <div style={{ fontSize: '12px', color: 'hsl(var(--bc) / 0.55)' }}>Instant IRCTC Tatkal &amp; General ticket generation</div>
                     </div>
                   </div>
-                  <span style={{ fontWeight: 800, color: 'hsl(var(--p))' }}>Pay ₹{totalAmount.toLocaleString()} ›</span>
+                  <span style={{ fontWeight: 800, color: 'hsl(var(--p))' }}>{quoteReady ? `Pay ₹${Number(totalAmount).toLocaleString('en-IN')}` : 'Loading…'} ›</span>
                 </div>
 
                 <div
-                  onClick={() => !isProcessing && razorpayLoaded && handleProcessPayment('Credit / Debit Card')}
-                  style={{ padding: '20px', border: '1px solid hsl(var(--bc) / 0.1)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: isProcessing || !razorpayLoaded ? 'not-allowed' : 'pointer', background: 'hsl(var(--b2))', transition: 'border-color 0.2s', opacity: isProcessing || !razorpayLoaded ? 0.5 : 1 }}
+                  onClick={() => !isProcessing && quote && handleProcessPayment('Credit / Debit Card')}
+                  style={{ padding: '20px', border: '1px solid hsl(var(--bc) / 0.1)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: isProcessing || !quote ? 'not-allowed' : 'pointer', background: 'hsl(var(--b2))', transition: 'border-color 0.2s', opacity: isProcessing || !quote ? 0.5 : 1 }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                     <span style={{ fontSize: '24px' }}>💳</span>
@@ -277,12 +195,12 @@ export default function TrainPaymentPage() {
                       <div style={{ fontSize: '12px', color: 'hsl(var(--bc) / 0.55)' }}>Visa, Mastercard, Amex, RuPay</div>
                     </div>
                   </div>
-                  <span style={{ fontWeight: 800, color: 'hsl(var(--p))' }}>Pay ₹{totalAmount.toLocaleString()} ›</span>
+                  <span style={{ fontWeight: 800, color: 'hsl(var(--p))' }}>{quoteReady ? `Pay ₹${Number(totalAmount).toLocaleString('en-IN')}` : 'Loading…'} ›</span>
                 </div>
 
                 <div
-                  onClick={() => !isProcessing && razorpayLoaded && handleProcessPayment('Net Banking')}
-                  style={{ padding: '20px', border: '1px solid hsl(var(--bc) / 0.1)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: isProcessing || !razorpayLoaded ? 'not-allowed' : 'pointer', background: 'hsl(var(--b2))', transition: 'border-color 0.2s', opacity: isProcessing || !razorpayLoaded ? 0.5 : 1 }}
+                  onClick={() => !isProcessing && quote && handleProcessPayment('Net Banking')}
+                  style={{ padding: '20px', border: '1px solid hsl(var(--bc) / 0.1)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: isProcessing || !quote ? 'not-allowed' : 'pointer', background: 'hsl(var(--b2))', transition: 'border-color 0.2s', opacity: isProcessing || !quote ? 0.5 : 1 }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                     <span style={{ fontSize: '24px' }}>🏦</span>
@@ -291,7 +209,7 @@ export default function TrainPaymentPage() {
                       <div style={{ fontSize: '12px', color: 'hsl(var(--bc) / 0.55)' }}>SBI, HDFC, ICICI, Axis &amp; all major banks</div>
                     </div>
                   </div>
-                  <span style={{ fontWeight: 800, color: 'hsl(var(--p))' }}>Pay ₹{totalAmount.toLocaleString()} ›</span>
+                  <span style={{ fontWeight: 800, color: 'hsl(var(--p))' }}>{quoteReady ? `Pay ₹${Number(totalAmount).toLocaleString('en-IN')}` : 'Loading…'} ›</span>
                 </div>
               </div>
 
@@ -316,16 +234,16 @@ export default function TrainPaymentPage() {
 
               <div className="train-fare-total">
                 <span>Total Payable</span>
-                <span style={{ color: 'hsl(var(--er))' }}>₹{totalAmount.toLocaleString("en-IN")}</span>
+                <span style={{ color: 'hsl(var(--er))' }}>{quoteReady ? `₹${Number(totalAmount).toLocaleString("en-IN")}` : '—'}</span>
               </div>
 
               <button
                 className="btn-primary"
                 onClick={() => handleProcessPayment(selectedMethod)}
-                disabled={isProcessing || !razorpayLoaded}
-                style={{ width: '100%', padding: '16px', marginTop: '20px', opacity: isProcessing || !razorpayLoaded ? 0.6 : 1, cursor: isProcessing || !razorpayLoaded ? 'not-allowed' : 'pointer' }}
+                disabled={isProcessing || !quote}
+                style={{ width: '100%', padding: '16px', marginTop: '20px', opacity: isProcessing || !quote ? 0.6 : 1, cursor: isProcessing || !quote ? 'not-allowed' : 'pointer' }}
               >
-                {!razorpayLoaded ? 'Loading...' : isProcessing ? 'Processing...' : `Pay ₹${totalAmount.toLocaleString("en-IN")} Now`}
+                {!quote ? 'Loading...' : isProcessing ? 'Processing...' : `Pay ₹${totalAmount.toLocaleString("en-IN")} Now`}
               </button>
 
               <div style={{ fontSize: '11px', color: 'hsl(var(--bc) / 0.5)', marginTop: '12px', textAlign: 'center' }}>

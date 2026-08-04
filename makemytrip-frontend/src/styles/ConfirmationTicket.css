@@ -1,0 +1,346 @@
+/* ============================================================================
+   ConfirmationTicket — shared booking confirmation layout
+   ----------------------------------------------------------------------------
+   The single source of truth for ALL confirmation pages (flight/hotel/train/
+   bus/cab). Encodes the Flight confirmation page's design language so every
+   category looks like one enterprise product.
+   Tokens: design-tokens.css (--p, --su, --er, --bc, --b1/b2/b3, --radius-*).
+   ============================================================================ */
+
+.ct-wrapper {
+  background: hsl(var(--b2));
+  min-height: 100vh;
+  padding: 40px 20px;
+}
+
+.ct-container {
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+/* The printable ticket card */
+.ct-card {
+  background: hsl(var(--b1));
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  border: 1px solid hsl(var(--bc) / 0.1);
+  margin-bottom: 24px;
+}
+
+/* ── Dark success hero (reference: .flight-success-hero) ── */
+.ct-hero {
+  background:
+    linear-gradient(135deg, rgba(0, 90, 150, 0.86) 0%, rgba(4, 32, 62, 0.90) 100%);
+  color: #ffffff;
+  text-align: center;
+  padding: 48px 32px 40px;
+}
+
+.ct-icon-glow {
+  width: 64px;
+  height: 64px;
+  background: hsl(var(--su));
+  color: #ffffff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  margin: 0 auto 20px;
+  box-shadow: 0 0 20px rgba(5, 150, 105, 0.4);
+  /* Subtle pop-in animation shared across every category */
+  animation: ct-pop 0.4s ease-out;
+}
+
+@keyframes ct-pop {
+  0%   { transform: scale(0.6); opacity: 0; }
+  60%  { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+.ct-title {
+  font-size: 32px;
+  font-weight: 900;
+  margin: 0;
+  letter-spacing: -0.5px;
+  animation: ct-fade-up 0.5s ease-out;
+}
+
+.ct-subtitle {
+  font-size: 16px;
+  opacity: 0.8;
+  margin: 8px 0 32px;
+}
+
+@keyframes ct-fade-up {
+  from { transform: translateY(8px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+
+/* Reference / Booking ID ribbon */
+.ct-ribbon {
+  display: inline-flex;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 16px 32px;
+}
+
+.ct-ribbon-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.ct-ribbon-lbl {
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+}
+
+.ct-ribbon-val {
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.ct-ribbon-sep {
+  width: 1px;
+  background: rgba(255, 255, 255, 0.2);
+  margin: 0 32px;
+}
+
+/* ── Body grid ── */
+.ct-body {
+  padding: 32px;
+}
+
+.ct-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 40px;
+}
+
+.ct-section-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: hsl(var(--bc) / 0.6);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+/* Inner info card */
+.ct-info-card {
+  background: hsl(var(--b2));
+  border: 1px solid hsl(var(--b3));
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.ct-info-headline {
+  font-weight: 800;
+  font-size: 18px;
+  color: hsl(var(--bc) / 0.9);
+}
+
+.ct-info-route {
+  font-size: 14px;
+  color: hsl(var(--bc) / 0.7);
+  margin-top: 4px;
+}
+
+/* Departure/Arrival split */
+.ct-times {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+  border-top: 1px solid hsl(var(--b3));
+  padding-top: 16px;
+}
+
+.ct-time-lbl {
+  font-size: 11px;
+  color: hsl(var(--bc) / 0.6);
+  font-weight: 600;
+}
+
+.ct-time-val {
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.ct-time-sub {
+  font-size: 12px;
+  color: hsl(var(--bc) / 0.6);
+}
+
+/* ── Passenger roster ── */
+.ct-passengers {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ct-passenger {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: hsl(var(--b2));
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid hsl(var(--b3));
+}
+
+.ct-passenger-num {
+  width: 24px;
+  height: 24px;
+  background: hsl(var(--b3));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.ct-passenger-name {
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.ct-passenger-meta {
+  font-size: 11px;
+  color: hsl(var(--bc) / 0.6);
+}
+
+/* Total paid divider */
+.ct-total {
+  margin-top: 24px;
+  border-top: 1px dashed hsl(var(--b3));
+  padding-top: 16px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.ct-total-lbl {
+  font-size: 11px;
+  color: hsl(var(--bc) / 0.6);
+  font-weight: 600;
+}
+
+.ct-total-val {
+  font-size: 18px;
+  font-weight: 900;
+  color: hsl(var(--er));
+}
+
+/* Footnote / what's next */
+.ct-footnote {
+  margin-top: 40px;
+  border-top: 1px solid hsl(var(--b2));
+  padding-top: 20px;
+  text-align: center;
+  font-size: 12px;
+  color: hsl(var(--bc) / 0.5);
+}
+
+.ct-footnote p {
+  margin: 0;
+}
+
+/* ── Action buttons (shared, token-based) ── */
+.ct-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.ct-btn {
+  flex: 1 1 200px;
+  padding: 16px;
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: 10px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: opacity 0.2s ease;
+  font-family: inherit;
+}
+
+.ct-btn-primary {
+  background: hsl(var(--p));
+  color: hsl(var(--pc));
+  border: none;
+  font-weight: 800;
+}
+
+.ct-btn-primary:hover { opacity: 0.88; }
+.ct-btn-primary:focus-visible { outline: 2px solid hsl(var(--p)); outline-offset: 2px; }
+
+.ct-btn-outline {
+  background: transparent;
+  border: 1.5px solid hsl(var(--er));
+  color: hsl(var(--er));
+}
+
+.ct-btn-outline:hover { background: hsl(var(--er) / 0.1); }
+
+.ct-btn-neutral {
+  background: hsl(var(--n));
+  color: hsl(var(--b1));
+  border: none;
+}
+
+.ct-btn-neutral:hover { opacity: 0.88; }
+
+/* Generic key/value meta grid (hotel/cab detail chips) */
+.ct-meta-chips {
+  display: flex;
+  gap: 24px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.ct-meta-chip {
+  font-size: 13px;
+  color: hsl(var(--bc) / 0.8);
+}
+
+/* ── Fallback: booking reference unavailable ── */
+.ct-missing {
+  padding: 80px 24px;
+  text-align: center;
+}
+
+.ct-missing h1 {
+  font-size: 24px;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.ct-missing p {
+  margin-bottom: 24px;
+  opacity: 0.7;
+}
+
+/* ── Responsive ── */
+@media (max-width: 760px) {
+  .ct-wrapper { padding: 20px 12px; }
+  .ct-grid { grid-template-columns: 1fr; gap: 24px; }
+  .ct-hero { padding: 32px 20px 28px; }
+  .ct-title { font-size: 24px; }
+  .ct-body { padding: 20px; }
+  .ct-ribbon { padding: 12px 20px; }
+  .ct-ribbon-sep { margin: 0 20px; }
+  .ct-actions { flex-direction: column; }
+  .ct-btn { flex: none; width: 100%; }
+}

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import api from '../services/api';
+import { requestQuote, payAndBook } from '../services/checkout';
 import '../styles/FlightBookingFlow.css';
 
 export default function FlightPaymentPage() {
@@ -14,18 +14,34 @@ export default function FlightPaymentPage() {
     }
   }, [navigate]);
 
-  const { flight, searchParams, passengers, contact, totalAmount, baseFare } = location.state || {
-    flight: { id: '1', airline: "IndiGo", flightNumber: "6E-205", departure: { city: "Delhi", time: "06:00" }, arrival: { city: "Mumbai", time: "08:15" }, price: 4500, seatsAvailable: 120 },
-    searchParams: { from: "Delhi", to: "Mumbai", date: new Date().toISOString().split('T')[0], passengers: 1, cabinClass: "Economy" },
-    passengers: [{ firstName: "Jayesh", lastName: "Sharma", dob: "1995-05-15", gender: "Male", nationality: "Indian" }],
-    contact: { mobile: "9876543210", email: "jayesh@gmail.com" },
-    totalAmount: 4699,
-    baseFare: 4500
-  };
+  const { flight, searchParams, passengers, contact } = location.state || {};
 
   const [selectedMethod, _setSelectedMethod] = useState('UPI / Google Pay');
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState('');
+
+  // The fare is whatever the server says it is. This page previously rendered a
+  // total passed through router state (falling back to a hardcoded ₹4699) and
+  // then created a booking without taking any payment at all.
+  const [quote, setQuote] = useState(null);
+  const [quoteError, setQuoteError] = useState('');
+
+  const passengerCount = passengers?.length || searchParams?.passengers || 1;
+
+  useEffect(() => {
+    if (!flight?.id) return;
+
+    let active = true;
+    requestQuote({ type: 'flight', itemId: flight.id, quantity: passengerCount })
+      .then((q) => { if (active) { setQuote(q); setQuoteError(''); } })
+      .catch((err) => { if (active) setQuoteError(err.message); });
+
+    return () => { active = false; };
+  }, [flight?.id, passengerCount]);
+
+  const totalAmount = quote?.totalAmount ?? null;
+  const quoteReady = Boolean(quote);
+  const baseFare = quote?.baseFare ?? 0;
 
   const handleProcessPayment = async (methodName) => {
     if (isProcessing) {
@@ -34,69 +50,79 @@ export default function FlightPaymentPage() {
     }
 
     const finalMethod = methodName || selectedMethod;
+
+    if (!quote) {
+      setError(quoteError || 'The fare is still loading. Please wait a moment.');
+      return;
+    }
+
     setIsProcessing(true);
     setError('');
 
     try {
-      const userId = localStorage.getItem('userId');
-      if (!userId) {
+      if (!localStorage.getItem('userId')) {
         navigate('/login?returnTo=/flights', { replace: true });
         return;
       }
-      // The booking reference is issued by the backend. Nothing is treated as
-      // confirmed until Firestore has actually recorded it.
-      const booking = {
-        status: 'confirmed',
-        type: 'flight',
-        flight,
-        passengers,
-        contact,
-        totalAmount,
-        baseFare,
-        departureDate: searchParams.date,
-        paymentMethod: finalMethod,
-        createdAt: new Date().toISOString(),
-        userId
-      };
 
-      const response = await api.post(
-        '/bookings/flights',
-        {
-          userId,
+      // Money moves first. The booking is created by the server from the amount
+      // the gateway captured, and only then is the trip confirmed.
+      const confirmed = await payAndBook({
+        quote,
+        description: `${flight.airline} ${flight.flightNumber} — ${searchParams?.from} to ${searchParams?.to}`,
+        prefill: {
+          name: passengers?.[0]?.firstName || '',
+          email: contact?.email || localStorage.getItem('userEmail') || '',
+          contact: contact?.mobile || ''
+        },
+        bookingData: {
+          type: 'flight',
+          flightId: flight.id,
           userEmail: contact?.email || localStorage.getItem('userEmail') || '',
           userName: passengers?.[0]?.firstName || 'Traveller',
-          flightId: flight.id,
-          passengers: passengers.map(p => `${p.firstName} ${p.lastName}`),
-          fareClass: searchParams.cabinClass,
-          totalAmount,
-          baseFare,
-          travellers: {
-            passengers,
-            contact,
-            searchParams,
-            paymentMethod: finalMethod
-          }
-        },
-        { timeout: 20000 }
-      );
+          fareClass: searchParams?.cabinClass,
+          departureDate: searchParams?.date,
+          passengers: passengers?.map(p => `${p.firstName} ${p.lastName}`) ?? [],
+          travellers: { passengers, contact, searchParams, paymentMethod: finalMethod }
+        }
+      });
 
-      // api interceptor already unwraps res.data, so `response` is the body
-      if (!response?.success || !response.data?.bookingId) {
-        throw new Error(response?.message || 'The booking could not be confirmed.');
-      }
-
-      booking.id = response.data.id || response.data.bookingId;
-      booking.bookingId = response.data.bookingId;
-      booking.pnr = response.data.pnr;
-      booking.status = response.data.status;
-
-      navigate('/flights/success', { state: { booking, flight } });
+      navigate('/flights/success', {
+        state: { booking: { ...confirmed, flight, passengers, contact }, flight }
+      });
     } catch (err) {
-      console.error('Payment error:', err);
-      setError(err.message || 'Failed to process booking. Please try again.');
+      setError(err.message || 'Failed to process the payment. Please try again.');
       setIsProcessing(false);
     }
   };
+
+  // Reached without a selected flight (direct link, refresh, or an expired
+  // session). Previously this page substituted hardcoded demo passengers and a
+  // ₹4699 fare, which made a fake booking look like a real one.
+  if (!flight?.id || !passengers?.length) {
+    return (
+      <div className="flight-flow-wrapper">
+        <div className="flight-flow-container">
+          <div className="flight-form-card" style={{ padding: '48px 32px', textAlign: 'center' }}>
+            <h3 className="flight-form-title" style={{ fontSize: '20px', marginBottom: '12px' }}>
+              This booking session has expired
+            </h3>
+            <p style={{ fontSize: '14px', color: 'hsl(var(--bc) / 0.6)', marginBottom: '24px' }}>
+              Please search again and re-select your flight so we can show you the current fare.
+            </p>
+            <button
+              type="button"
+              onClick={() => navigate('/flights')}
+              className="flight-primary-btn"
+              style={{ padding: '12px 28px' }}
+            >
+              Search flights
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flight-flow-wrapper">
@@ -169,8 +195,8 @@ export default function FlightPaymentPage() {
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div
-                  onClick={() => !isProcessing && handleProcessPayment('UPI / Google Pay')}
-                  style={{ padding: '20px', border: '1px solid hsl(var(--bc) / 0.1)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: isProcessing ? 'not-allowed' : 'pointer', background: 'hsl(var(--b2))', transition: 'border-color 0.2s', opacity: isProcessing ? 0.5 : 1 }}
+                  onClick={() => !isProcessing && quote && handleProcessPayment('UPI / Google Pay')}
+                  style={{ padding: '20px', border: '1px solid hsl(var(--bc) / 0.1)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: (isProcessing || !quote) ? 'not-allowed' : 'pointer', background: 'hsl(var(--b2))', transition: 'border-color 0.2s', opacity: (isProcessing || !quote) ? 0.5 : 1 }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                     <span style={{ fontSize: '24px' }}>📱</span>
@@ -179,12 +205,12 @@ export default function FlightPaymentPage() {
                       <div style={{ fontSize: '12px', color: 'hsl(var(--bc) / 0.55)' }}>Instant booking confirmation & e-ticket</div>
                     </div>
                   </div>
-                  <span style={{ fontWeight: 800, color: 'hsl(var(--p))' }}>Pay ₹{totalAmount.toLocaleString()} ›</span>
+                  <span style={{ fontWeight: 800, color: 'hsl(var(--p))' }}>{quoteReady ? `Pay ₹${Number(totalAmount).toLocaleString('en-IN')}` : 'Loading…'} ›</span>
                 </div>
 
                 <div
-                  onClick={() => !isProcessing && handleProcessPayment('Credit / Debit Card')}
-                  style={{ padding: '20px', border: '1px solid hsl(var(--bc) / 0.1)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: isProcessing ? 'not-allowed' : 'pointer', background: 'hsl(var(--b2))', transition: 'border-color 0.2s', opacity: isProcessing ? 0.5 : 1 }}
+                  onClick={() => !isProcessing && quote && handleProcessPayment('Credit / Debit Card')}
+                  style={{ padding: '20px', border: '1px solid hsl(var(--bc) / 0.1)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: (isProcessing || !quote) ? 'not-allowed' : 'pointer', background: 'hsl(var(--b2))', transition: 'border-color 0.2s', opacity: (isProcessing || !quote) ? 0.5 : 1 }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                     <span style={{ fontSize: '24px' }}>💳</span>
@@ -193,12 +219,12 @@ export default function FlightPaymentPage() {
                       <div style={{ fontSize: '12px', color: 'hsl(var(--bc) / 0.55)' }}>Visa, Mastercard, Amex, RuPay</div>
                     </div>
                   </div>
-                  <span style={{ fontWeight: 800, color: 'hsl(var(--p))' }}>Pay ₹{totalAmount.toLocaleString()} ›</span>
+                  <span style={{ fontWeight: 800, color: 'hsl(var(--p))' }}>{quoteReady ? `Pay ₹${Number(totalAmount).toLocaleString('en-IN')}` : 'Loading…'} ›</span>
                 </div>
 
                 <div
-                  onClick={() => !isProcessing && handleProcessPayment('Net Banking')}
-                  style={{ padding: '20px', border: '1px solid hsl(var(--bc) / 0.1)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: isProcessing ? 'not-allowed' : 'pointer', background: 'hsl(var(--b2))', transition: 'border-color 0.2s', opacity: isProcessing ? 0.5 : 1 }}
+                  onClick={() => !isProcessing && quote && handleProcessPayment('Net Banking')}
+                  style={{ padding: '20px', border: '1px solid hsl(var(--bc) / 0.1)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: (isProcessing || !quote) ? 'not-allowed' : 'pointer', background: 'hsl(var(--b2))', transition: 'border-color 0.2s', opacity: (isProcessing || !quote) ? 0.5 : 1 }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                     <span style={{ fontSize: '24px' }}>🏦</span>
@@ -207,7 +233,7 @@ export default function FlightPaymentPage() {
                       <div style={{ fontSize: '12px', color: 'hsl(var(--bc) / 0.55)' }}>SBI, HDFC, ICICI, Axis & all major banks</div>
                     </div>
                   </div>
-                  <span style={{ fontWeight: 800, color: 'hsl(var(--p))' }}>Pay ₹{totalAmount.toLocaleString()} ›</span>
+                  <span style={{ fontWeight: 800, color: 'hsl(var(--p))' }}>{quoteReady ? `Pay ₹${Number(totalAmount).toLocaleString('en-IN')}` : 'Loading…'} ›</span>
                 </div>
               </div>
 
@@ -220,28 +246,57 @@ export default function FlightPaymentPage() {
             <div className="flight-fare-side">
               <h3 className="flight-form-title" style={{ fontSize: '18px' }}>Total Due</h3>
 
-              <div className="flight-fare-row">
-                <span>Base Fare</span>
-                <span>₹{baseFare.toLocaleString("en-IN")}</span>
-              </div>
+              {quoteError && (
+                <div style={{ background: 'hsl(var(--er) / 0.08)', color: 'hsl(var(--er))', padding: '12px', borderRadius: '6px', fontSize: '13px' }}>
+                  ⚠️ {quoteError}
+                </div>
+              )}
 
-              <div className="flight-fare-row">
-                <span>Convenience Fee</span>
-                <span>₹199</span>
-              </div>
+              {!quote && !quoteError && (
+                <div style={{ fontSize: '13px', color: 'hsl(var(--bc) / 0.6)', padding: '12px 0' }}>
+                  Fetching the current fare…
+                </div>
+              )}
 
-              <div className="flight-fare-total">
-                <span>Total Payable</span>
-                <span style={{ color: 'hsl(var(--er))' }}>₹{totalAmount.toLocaleString("en-IN")}</span>
-              </div>
+              {quote && (
+                <>
+                  <div className="flight-fare-row">
+                    <span>Base Fare ({passengerCount} × ₹{quote.unitPrice.toLocaleString("en-IN")})</span>
+                    <span>₹{baseFare.toLocaleString("en-IN")}</span>
+                  </div>
+
+                  <div className="flight-fare-row">
+                    <span>Taxes &amp; GST</span>
+                    <span>₹{quote.gst.toLocaleString("en-IN")}</span>
+                  </div>
+
+                  <div className="flight-fare-row">
+                    <span>Convenience Fee</span>
+                    <span>₹{quote.convenience.toLocaleString("en-IN")}</span>
+                  </div>
+
+                  <div className="flight-fare-total">
+                    <span>Total Payable</span>
+                    <span style={{ color: 'hsl(var(--er))' }}>₹{totalAmount.toLocaleString("en-IN")}</span>
+                  </div>
+
+                  <div style={{ fontSize: '11px', color: 'hsl(var(--bc) / 0.5)', marginTop: '8px' }}>
+                    {quote.policy}
+                  </div>
+                </>
+              )}
 
               <button
                 className="btn-primary"
                 onClick={() => handleProcessPayment()}
-                disabled={isProcessing}
-                style={{ width: '100%', padding: '16px', marginTop: '20px', opacity: isProcessing ? 0.6 : 1, cursor: isProcessing ? 'not-allowed' : 'pointer' }}
+                disabled={isProcessing || !quote}
+                style={{ width: '100%', padding: '16px', marginTop: '20px', opacity: (isProcessing || !quote) ? 0.6 : 1, cursor: (isProcessing || !quote) ? 'not-allowed' : 'pointer' }}
               >
-                {isProcessing ? 'Processing...' : `Pay ₹${totalAmount.toLocaleString("en-IN")} Now`}
+                {isProcessing
+                  ? 'Processing…'
+                  : quote
+                    ? `Pay ₹${totalAmount.toLocaleString("en-IN")} Now`
+                    : 'Loading fare…'}
               </button>
             </div>
           </div>

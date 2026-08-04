@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { setCriteria } from '../../store/reducers/searchReducer'
 import { SERVICE_TABS, SPECIAL_FARES } from '../../data/homepageData'
 import TabIcon from '../TabIcon'
+import { todayLocal } from '../../utils/date'
 import '../../styles/Hero.css'
 
 export default function HeroSearch() {
@@ -27,7 +28,7 @@ export default function HeroSearch() {
   const [tripType, setTripType] = useState('one-way')
   const [activeTab, setActiveTab] = useState('flights')
   const [activeFare, setActiveFare] = useState('regular')
-  const TODAY = new Date().toISOString().slice(0, 10)
+  const TODAY = todayLocal()
 
   const [form, setForm] = useState({ 
     from: 'Delhi', 

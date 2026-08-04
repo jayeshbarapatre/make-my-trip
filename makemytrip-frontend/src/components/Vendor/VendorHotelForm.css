@@ -158,26 +158,15 @@
   border-top: 1px solid hsl(var(--bc) / 0.1);
 }
 
-.btn-submit,
-.btn-cancel {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 6px;
-  font-weight: 600;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
+/* Sizing/transition come from the central .btn base; only colour differs here. */
 .btn-submit {
   background: hsl(var(--su));
-  color: hsl(var(--suc));
+  color: hsl(var(--b1));
   flex: 1;
 }
 
 .btn-submit:hover:not(:disabled) {
-  opacity: 0.9;
-  box-shadow: 0 4px 12px hsl(var(--su) / 0.3);
+  background: hsl(var(--su) / 0.85);
 }
 
 .btn-submit:disabled {
@@ -186,12 +175,13 @@
 }
 
 .btn-cancel {
-  background: hsl(var(--bc) / 0.1);
+  background: transparent;
   color: hsl(var(--bc));
+  border: 1px solid hsl(var(--b3));
 }
 
 .btn-cancel:hover:not(:disabled) {
-  background: hsl(var(--bc) / 0.15);
+  background: hsl(var(--b2));
 }
 
 .btn-cancel:disabled {

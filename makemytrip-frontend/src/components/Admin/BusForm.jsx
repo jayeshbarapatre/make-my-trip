@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
+import { durationFromTimes } from '../../utils/duration'
 import './FormStyles.css'
 
 const cities = ['Delhi', 'Mumbai', 'Bangalore', 'Hyderabad', 'Chennai', 'Kolkata', 'Pune', 'Jaipur', 'Lucknow', 'Ahmedabad']
@@ -26,26 +27,12 @@ const BusForm = ({ bus, onSubmit, onClose }) => {
     }
   }, [bus])
 
-  useEffect(() => {
-    if (formData.departureTime && formData.arrivalTime) {
-      const [depHour, depMin] = formData.departureTime.split(':').map(Number)
-      const [arrHour, arrMin] = formData.arrivalTime.split(':').map(Number)
-
-      const depTotal = depHour * 60 + depMin
-      let arrTotal = arrHour * 60 + arrMin
-
-      if (arrTotal < depTotal) arrTotal += 24 * 60
-
-      const diffMin = arrTotal - depTotal
-      const hours = Math.floor(diffMin / 60)
-      const minutes = diffMin % 60
-
-      setFormData(prev => ({
-        ...prev,
-        duration: `${hours}h ${minutes}m`
-      }))
-    }
-  }, [formData.departureTime, formData.arrivalTime])
+  // Derived during render, not stored: keeping it in state cost an extra render
+  // per keystroke and briefly displayed a stale duration.
+  const duration = useMemo(
+    () => durationFromTimes(formData.departureTime, formData.arrivalTime),
+    [formData.departureTime, formData.arrivalTime]
+  )
 
   const handleChange = (e) => {
     const { name, value, type: inputType } = e.target
@@ -68,7 +55,7 @@ const BusForm = ({ bus, onSubmit, onClose }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    onSubmit(formData)
+    onSubmit({ ...formData, duration })
   }
 
   return (
@@ -197,7 +184,7 @@ const BusForm = ({ bus, onSubmit, onClose }) => {
               <input
                 type="text"
                 name="duration"
-                value={formData.duration}
+                value={duration}
                 disabled
                 placeholder="Auto-calculated"
               />

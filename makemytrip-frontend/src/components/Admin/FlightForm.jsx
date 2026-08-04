@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
+import { durationFromDateTimes } from '../../utils/duration'
 import AutocompleteInput from './AutocompleteInput'
 import './FormStyles.css'
 
@@ -23,30 +24,16 @@ const FlightForm = ({ flight, onSubmit, onClose }) => {
     }
   }, [flight])
 
-  useEffect(() => {
-    if (
-      formData.departure.date && 
-      formData.departure.time && 
-      formData.arrival.date && 
-      formData.arrival.time
-    ) {
-      const depDate = new Date(`${formData.departure.date}T${formData.departure.time}`)
-      const arrDate = new Date(`${formData.arrival.date}T${formData.arrival.time}`)
-
-      if (!isNaN(depDate.getTime()) && !isNaN(arrDate.getTime())) {
-        const diffMs = arrDate.getTime() - depDate.getTime()
-        if (diffMs > 0) {
-          const hours = Math.floor(diffMs / (1000 * 60 * 60))
-          const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60))
-          const calculatedDuration = `${hours}h ${minutes}m`
-          
-          if (formData.duration !== calculatedDuration) {
-            setFormData(prev => ({ ...prev, duration: calculatedDuration }))
-          }
-        }
-      }
-    }
-  }, [formData.departure.date, formData.departure.time, formData.arrival.date, formData.arrival.time])
+  // Derived during render, not stored: the effect wrote a computed value back
+  // into form state, costing an extra render per keystroke in the time fields
+  // and briefly showing a stale duration.
+  const duration = useMemo(
+    () => durationFromDateTimes(
+      formData.departure.date, formData.departure.time,
+      formData.arrival.date, formData.arrival.time
+    ),
+    [formData.departure.date, formData.departure.time, formData.arrival.date, formData.arrival.time]
+  )
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -79,7 +66,7 @@ const FlightForm = ({ flight, onSubmit, onClose }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    onSubmit(formData)
+    onSubmit({ ...formData, duration })
   }
 
   return (
@@ -244,7 +231,7 @@ const FlightForm = ({ flight, onSubmit, onClose }) => {
               <input
                 type="text"
                 name="duration"
-                value={formData.duration}
+                value={duration}
                 onChange={handleChange}
                 placeholder="e.g., 2h 30m"
               />

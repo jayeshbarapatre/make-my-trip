@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, useLocation, useNavigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import AOS from 'aos'
@@ -7,87 +7,88 @@ import './App.css'
 import Header from './components/Common/Header'
 import Footer from './components/Common/Footer'
 import ProtectedRoute from './components/ProtectedRoute'
-import HomePage from './pages/HomePage'
-import SearchResultsPage from './pages/SearchResultsPage'
-import BookingPage from './pages/BookingPage'
-import BusSearchResultsPage from './pages/BusSearchResultsPage'
-import BusBookingPage from './pages/BusBookingPage'
-import CabSearchResultsPage from './pages/CabSearchResultsPage'
-import CabPaymentPage from './pages/CabPaymentPage'
-import CabSuccessPage from './pages/CabSuccessPage'
-import LoginPage from './pages/LoginPage'
-import HotelsPage from './pages/HotelsPage'
-import HotelListingPage from './pages/HotelListingPage'
-import HotelDetailsPage from './pages/HotelDetailsPage'
-import HotelReviewPage from './pages/HotelReviewPage'
-import HotelPaymentPage from './pages/HotelPaymentPage'
-import HotelSuccessPage from './pages/HotelSuccessPage'
-import TrainsPage from './pages/TrainsPage'
-import TrainResultsPage from './pages/TrainResultsPage'
-import TrainPassengersPage from './pages/TrainPassengersPage'
-import TrainPaymentPage from './pages/TrainPaymentPage'
-import TrainSuccessPage from './pages/TrainSuccessPage'
-import FlightsPage from './pages/FlightsPage'
-import FlightResultsPage from './pages/FlightResultsPage'
-import FlightPassengersPage from './pages/FlightPassengersPage'
-import FlightPaymentPage from './pages/FlightPaymentPage'
-import FlightSuccessPage from './pages/FlightSuccessPage'
-import HolidaysPage from './pages/HolidaysPage'
-import HomestaysPage from './pages/HomestaysPage'
-import CabsPage from './pages/CabsPage'
-import BusesPage from './pages/BusesPage'
-import CruisePage from './pages/CruisePage'
-import ForexPage from './pages/ForexPage'
-import InsurancePage from './pages/InsurancePage'
-import ToursPage from './pages/ToursPage'
-import VisaPage from './pages/VisaPage'
-import MyTrips from './pages/MyTrips'
-import BookingDetailsPage from './pages/BookingDetailsPage'
-import Profile from './pages/Profile'
+const HomePage = lazy(() => import('./pages/HomePage'))
+const SearchResultsPage = lazy(() => import('./pages/SearchResultsPage'))
+const BookingPage = lazy(() => import('./pages/BookingPage'))
+const BusSearchResultsPage = lazy(() => import('./pages/BusSearchResultsPage'))
+const BusBookingPage = lazy(() => import('./pages/BusBookingPage'))
+const CabSearchResultsPage = lazy(() => import('./pages/CabSearchResultsPage'))
+const CabPaymentPage = lazy(() => import('./pages/CabPaymentPage'))
+const CabSuccessPage = lazy(() => import('./pages/CabSuccessPage'))
+const LoginPage = lazy(() => import('./pages/LoginPage'))
+const HotelsPage = lazy(() => import('./pages/HotelsPage'))
+const HotelListingPage = lazy(() => import('./pages/HotelListingPage'))
+const HotelDetailsPage = lazy(() => import('./pages/HotelDetailsPage'))
+const HotelReviewPage = lazy(() => import('./pages/HotelReviewPage'))
+const HotelPaymentPage = lazy(() => import('./pages/HotelPaymentPage'))
+const HotelSuccessPage = lazy(() => import('./pages/HotelSuccessPage'))
+const TrainsPage = lazy(() => import('./pages/TrainsPage'))
+const TrainResultsPage = lazy(() => import('./pages/TrainResultsPage'))
+const TrainPassengersPage = lazy(() => import('./pages/TrainPassengersPage'))
+const TrainPaymentPage = lazy(() => import('./pages/TrainPaymentPage'))
+const TrainSuccessPage = lazy(() => import('./pages/TrainSuccessPage'))
+const FlightsPage = lazy(() => import('./pages/FlightsPage'))
+const FlightResultsPage = lazy(() => import('./pages/FlightResultsPage'))
+const FlightPassengersPage = lazy(() => import('./pages/FlightPassengersPage'))
+const FlightPaymentPage = lazy(() => import('./pages/FlightPaymentPage'))
+const FlightSuccessPage = lazy(() => import('./pages/FlightSuccessPage'))
+const HolidaysPage = lazy(() => import('./pages/HolidaysPage'))
+const HomestaysPage = lazy(() => import('./pages/HomestaysPage'))
+const CabsPage = lazy(() => import('./pages/CabsPage'))
+const BusesPage = lazy(() => import('./pages/BusesPage'))
+const CruisePage = lazy(() => import('./pages/CruisePage'))
+const ForexPage = lazy(() => import('./pages/ForexPage'))
+const InsurancePage = lazy(() => import('./pages/InsurancePage'))
+const ToursPage = lazy(() => import('./pages/ToursPage'))
+const VisaPage = lazy(() => import('./pages/VisaPage'))
+const MyTrips = lazy(() => import('./pages/MyTrips'))
+const WishlistPage = lazy(() => import('./pages/WishlistPage'))
+const BookingDetailsPage = lazy(() => import('./pages/BookingDetailsPage'))
+const Profile = lazy(() => import('./pages/Profile'))
 import { AdminProvider } from './context/AdminContext'
 import { VendorProvider } from './context/VendorContext'
 import { ThemeProvider } from './context/ThemeContext'
-import AdminLoginPage from './pages/AdminLoginPage'
-import AdminDashboard from './pages/AdminDashboard'
-import AdminFlights from './pages/AdminFlights'
-import AdminHotels from './pages/AdminHotels'
-import AdminBuses from './pages/AdminBuses'
-import AdminCabs from './pages/AdminCabs'
-import AdminBookings from './pages/AdminBookings'
-import AdminUsers from './pages/AdminUsers'
-import AdminApprovals from './pages/AdminApprovals'
-import AdminVendors from './pages/AdminVendors'
-import AdminApiHealth from './pages/AdminApiHealth'
-import AdminProfile from './pages/AdminProfile'
-import AdminSettings from './pages/AdminSettings'
-import AdminReports from './pages/AdminReports'
-import AdminRefunds from './pages/AdminRefunds'
-import AdminCoupons from './pages/AdminCoupons'
-import AdminSupport from './pages/AdminSupport'
-import AdminVendorRequests from './pages/AdminVendorRequests'
-import AdminSecurity from './pages/AdminSecurity'
-import AdminHelp from './pages/AdminHelp'
+const AdminLoginPage = lazy(() => import('./pages/AdminLoginPage'))
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'))
+const AdminFlights = lazy(() => import('./pages/AdminFlights'))
+const AdminHotels = lazy(() => import('./pages/AdminHotels'))
+const AdminBuses = lazy(() => import('./pages/AdminBuses'))
+const AdminCabs = lazy(() => import('./pages/AdminCabs'))
+const AdminBookings = lazy(() => import('./pages/AdminBookings'))
+const AdminUsers = lazy(() => import('./pages/AdminUsers'))
+const AdminApprovals = lazy(() => import('./pages/AdminApprovals'))
+const AdminVendors = lazy(() => import('./pages/AdminVendors'))
+const AdminApiHealth = lazy(() => import('./pages/AdminApiHealth'))
+const AdminProfile = lazy(() => import('./pages/AdminProfile'))
+const AdminSettings = lazy(() => import('./pages/AdminSettings'))
+const AdminReports = lazy(() => import('./pages/AdminReports'))
+const AdminRefunds = lazy(() => import('./pages/AdminRefunds'))
+const AdminCoupons = lazy(() => import('./pages/AdminCoupons'))
+const AdminSupport = lazy(() => import('./pages/AdminSupport'))
+const AdminVendorRequests = lazy(() => import('./pages/AdminVendorRequests'))
+const AdminSecurity = lazy(() => import('./pages/AdminSecurity'))
+const AdminHelp = lazy(() => import('./pages/AdminHelp'))
 import ProtectedAdminRoute from './components/Admin/ProtectedAdminRoute'
-import VendorLoginPage from './pages/VendorLoginPage'
-import VendorDashboard from './pages/VendorDashboard'
-import VendorHotels from './pages/VendorHotels'
-import VendorHotelFormPage from './pages/VendorHotelFormPage'
-import VendorHotelRooms from './pages/VendorHotelRooms'
-import VendorBuses from './pages/VendorBuses'
+const VendorLoginPage = lazy(() => import('./pages/VendorLoginPage'))
+const VendorDashboard = lazy(() => import('./pages/VendorDashboard'))
+const VendorHotels = lazy(() => import('./pages/VendorHotels'))
+const VendorHotelFormPage = lazy(() => import('./pages/VendorHotelFormPage'))
+const VendorHotelRooms = lazy(() => import('./pages/VendorHotelRooms'))
+const VendorBuses = lazy(() => import('./pages/VendorBuses'))
 import VendorBusForm from './components/Vendor/VendorBusForm'
-import VendorCabs from './pages/VendorCabs'
-import VendorSettings from './pages/VendorSettings'
-import VendorHelp from './pages/VendorHelp'
-import AdminBusApprovals from './pages/AdminBusApprovals'
-import AdminCabApprovals from './pages/AdminCabApprovals'
-import AdminTrains from './pages/AdminTrains'
+const VendorCabs = lazy(() => import('./pages/VendorCabs'))
+const VendorSettings = lazy(() => import('./pages/VendorSettings'))
+const VendorHelp = lazy(() => import('./pages/VendorHelp'))
+const AdminBusApprovals = lazy(() => import('./pages/AdminBusApprovals'))
+const AdminCabApprovals = lazy(() => import('./pages/AdminCabApprovals'))
+const AdminTrains = lazy(() => import('./pages/AdminTrains'))
 import ProtectedVendorRoute from './components/Vendor/ProtectedVendorRoute'
-import CmsPageRenderer from './pages/CmsPageRenderer'
-import FaqPage from './pages/FaqPage'
-import SupportPage from './pages/SupportPage'
-import CareersPage from './pages/CareersPage'
-import ContactPage from './pages/ContactPage'
-import CompanyPage from './pages/CompanyPage'
+const CmsPageRenderer = lazy(() => import('./pages/CmsPageRenderer'))
+const FaqPage = lazy(() => import('./pages/FaqPage'))
+const SupportPage = lazy(() => import('./pages/SupportPage'))
+const CareersPage = lazy(() => import('./pages/CareersPage'))
+const ContactPage = lazy(() => import('./pages/ContactPage'))
+const CompanyPage = lazy(() => import('./pages/CompanyPage'))
 import { cmsService } from './services/cmsService'
 
 function NotFound() {
@@ -305,6 +306,41 @@ function RouteLoader() {
 }
 
 
+// Shown while a route's chunk is being fetched. Pages are code-split, so the
+// first visit to a route downloads only that page rather than the whole app.
+function PageLoader() {
+  return (
+    <div
+      style={{
+        minHeight: '60vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '16px',
+        flexDirection: 'column'
+      }}
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
+    >
+      <div
+        style={{
+          width: '48px',
+          height: '48px',
+          border: '4px solid hsl(var(--b3))',
+          borderTopColor: 'hsl(var(--p))',
+          borderRadius: '50%',
+          animation: 'mmt-spin 0.8s linear infinite'
+        }}
+      />
+      <span style={{ fontSize: '14px', color: 'hsl(var(--bc) / 0.6)', fontWeight: 600 }}>
+        Loading…
+      </span>
+      <style>{'@keyframes mmt-spin{to{transform:rotate(360deg)}}'}</style>
+    </div>
+  )
+}
+
 function AppContent() {
   const location = useLocation()
   const isAdminRoute = location.pathname.startsWith('/admin')
@@ -357,6 +393,7 @@ function AppContent() {
       <ScrollToTop />
       <RouteLoader />
       {!isAdminRoute && !isVendorRoute && <Header />}
+      <Suspense fallback={<PageLoader />}>
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/flights/results" element={<SearchResultsPage />} />
@@ -393,6 +430,7 @@ function AppContent() {
         <Route path="/tours" element={<ToursPage />} />
         <Route path="/visa" element={<VisaPage />} />
         <Route path="/my-trips" element={<ProtectedRoute><MyTrips /></ProtectedRoute>} />
+        <Route path="/wishlist" element={<ProtectedRoute><WishlistPage /></ProtectedRoute>} />
         <Route path="/booking/:bookingId" element={<ProtectedRoute><BookingDetailsPage /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
 
@@ -443,6 +481,7 @@ function AppContent() {
 
         <Route path="*" element={<NotFound />} />
       </Routes>
+      </Suspense>
       {!isAdminRoute && !isVendorRoute && <Footer />}
       </VendorProvider>
     </AdminProvider>

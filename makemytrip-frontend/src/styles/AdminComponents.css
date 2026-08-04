@@ -1,155 +1,279 @@
 /* Admin Components - Global Styles Based on Paces Design System */
 
 /* ============================================================================
-   BUTTONS
+   BUTTONS — single source of truth
+   Every button in the app inherits from these rules. Page CSS files must NOT
+   re-declare .btn-primary / .btn-sm / .btn-edit etc.; they cascade-override and
+   cause the size/colour inconsistencies across pages.
+   Tokens live in design-tokens.css (--btn-*-h, --btn-*-pad, --radius-*, --su/er/wa/p).
    ============================================================================ */
 
+/* Base button — medium (default) size. */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.5rem 1rem;
+  height: var(--btn-md-h);
+  padding: var(--btn-md-pad);
   border: 1px solid transparent;
-  border-radius: 0.375rem;
-  font-size: 0.875rem;
-  font-weight: 500;
+  border-radius: var(--radius-md);
+  font-family: var(--font-family);
+  font-size: var(--btn-md-fs);
+  font-weight: var(--fw-semibold);
+  line-height: 1;
   letter-spacing: 0.01em;
   cursor: pointer;
-  transition: all 0.2s ease-in-out;
+  transition: var(--transition-base);
   text-decoration: none;
   white-space: nowrap;
   user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
-/* Primary Button */
+/* Accessible focus ring — visible in every theme and on keyboard nav only. */
+.btn:focus-visible,
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible,
+.btn-success:focus-visible,
+.btn-danger:focus-visible,
+.btn-error:focus-visible,
+.btn-warning:focus-visible,
+.btn-outline:focus-visible,
+.btn-ghost:focus-visible {
+  outline: 2px solid hsl(var(--p));
+  outline-offset: 2px;
+}
+
+/* ── Primary ── */
 .btn-primary {
   background: hsl(var(--p));
-  color: white;
+  color: hsl(var(--pc));
 }
-
 .btn-primary:hover {
-  background: #002b5f;
-  transform: translateY(-2px);
+  background: hsl(var(--p) / 0.88);
+  transform: translateY(-1px);
   box-shadow: var(--shadow-md);
 }
-
 .btn-primary:active {
   transform: translateY(0);
   box-shadow: var(--shadow-sm);
 }
-
 .btn-primary:disabled {
-  background: var(--border);
+  background: hsl(var(--bc) / 0.2);
+  color: hsl(var(--bc) / 0.45);
   cursor: not-allowed;
   opacity: 0.6;
+  transform: none;
+  box-shadow: none;
 }
 
-/* Secondary Button */
+/* ── Secondary (outline) ── */
 .btn-secondary {
   background: transparent;
   color: hsl(var(--p));
-  border: 1px solid hsl(var(--p));
+  border: 1.5px solid hsl(var(--p));
 }
-
 .btn-secondary:hover {
-  background: rgba(0, 53, 128, 0.08);
+  background: hsl(var(--p) / 0.08);
+  transform: translateY(-1px);
 }
-
-/* Success Button */
-.btn-success {
-  background: var(--success);
-  color: white;
+.btn-secondary:active {
+  transform: translateY(0);
 }
-
-.btn-success:hover {
-  background: #1e8449;
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
-/* Danger Button */
-.btn-danger {
-  background: var(--danger);
-  color: white;
-}
-
-.btn-danger:hover {
-  background: #c82333;
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
-/* Error Button (alias for danger) */
-.btn-error {
-  background: var(--danger);
-  color: white;
-}
-
-.btn-error:hover {
-  background: #c82333;
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
-.btn-error:disabled {
-  opacity: 0.6;
+.btn-secondary:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
   transform: none;
 }
 
-/* Warning Button */
-.btn-warning {
-  background: var(--warning);
-  color: white;
+/* ── Success ── */
+.btn-success {
+  background: hsl(var(--su));
+  color: hsl(var(--b1));
 }
-
-.btn-warning:hover {
-  background: #d97706;
-  transform: translateY(-2px);
+.btn-success:hover {
+  background: hsl(var(--su) / 0.85);
+  transform: translateY(-1px);
   box-shadow: var(--shadow-md);
 }
 
-/* Outline Button */
+/* ── Danger / Error ── */
+.btn-danger,
+.btn-error {
+  background: hsl(var(--er));
+  color: hsl(var(--b1));
+}
+.btn-danger:hover,
+.btn-error:hover {
+  background: hsl(var(--er) / 0.85);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+.btn-error:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ── Warning ── */
+.btn-warning {
+  background: hsl(var(--wa));
+  color: hsl(var(--b1));
+}
+.btn-warning:hover {
+  background: hsl(var(--wa) / 0.85);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+/* ── Outline (neutral border) ── */
 .btn-outline {
   background: transparent;
-  color: var(--text-primary);
-  border: 1px solid var(--border);
+  color: hsl(var(--bc));
+  border: 1px solid hsl(var(--b3));
 }
-
 .btn-outline:hover {
-  background: var(--bg-hover);
-  border-color: var(--text-secondary);
+  background: hsl(var(--b2));
+  border-color: hsl(var(--bc) / 0.4);
 }
 
-/* Ghost Button */
+/* ── Ghost (no border) ── */
 .btn-ghost {
   background: transparent;
-  color: var(--text-primary);
+  color: hsl(var(--bc));
   border: 1px solid transparent;
 }
-
 .btn-ghost:hover {
-  background: var(--bg-hover);
+  background: hsl(var(--bc) / 0.08);
 }
 
-/* Button Sizes */
+/* ── Sizes ── */
 .btn-sm {
-  padding: 0.375rem 0.75rem;
-  font-size: 0.875rem;
+  height: var(--btn-sm-h);
+  padding: var(--btn-sm-pad);
+  font-size: var(--btn-sm-fs);
+  font-weight: var(--fw-medium);
+  border-radius: var(--radius-sm);
 }
 
 .btn-lg {
-  padding: 0.75rem 1.5rem;
-  font-size: 1rem;
+  height: var(--btn-lg-h);
+  padding: var(--btn-lg-pad);
+  font-size: var(--btn-lg-fs);
+  font-weight: var(--fw-bold);
+  border-radius: var(--radius-lg);
 }
 
 .btn-icon {
-  width: 2.5rem;
-  height: 2.5rem;
+  width: var(--btn-md-h);
+  height: var(--btn-md-h);
   padding: 0;
-  border-radius: 0.5rem;
+  border-radius: var(--radius-full);
 }
+.btn-icon.btn-sm {
+  width: var(--btn-sm-h);
+  height: var(--btn-sm-h);
+}
+
+/* ── Soft action buttons (table row actions) ──
+   Tinted-background icon/text buttons used in admin + vendor tables.
+   Share .btn-sm sizing so they line up in an actions cell. */
+.btn-edit {
+  background: hsl(var(--p) / 0.12);
+  color: hsl(var(--p));
+}
+.btn-edit:hover {
+  background: hsl(var(--p) / 0.2);
+}
+
+.btn-toggle {
+  background: hsl(var(--wa) / 0.12);
+  color: hsl(var(--wa));
+}
+.btn-toggle:hover {
+  background: hsl(var(--wa) / 0.2);
+}
+
+.btn-delete {
+  background: hsl(var(--er) / 0.12);
+  color: hsl(var(--er));
+}
+.btn-delete:hover {
+  background: hsl(var(--er) / 0.2);
+}
+
+.btn-rooms {
+  background: hsl(var(--su) / 0.12);
+  color: hsl(var(--su));
+}
+.btn-rooms:hover {
+  background: hsl(var(--su) / 0.2);
+}
+
+/* .btn-submit reuses the success soft style (vendor forms). */
+.btn-submit {
+  background: hsl(var(--su) / 0.12);
+  color: hsl(var(--su));
+}
+.btn-submit:hover:not(:disabled) {
+  background: hsl(var(--su) / 0.2);
+}
+.btn-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* .btn-cancel reuses the outline style. */
+.btn-cancel {
+  background: transparent;
+  color: hsl(var(--bc));
+  border: 1px solid hsl(var(--b3));
+}
+.btn-cancel:hover:not(:disabled) {
+  background: hsl(var(--b2));
+}
+.btn-cancel:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Loading state ──
+   Add .btn-loading to disable interaction and show a spinner via ::after. */
+.btn-loading,
+.btn[disabled],
+.btn-primary[disabled],
+.btn-secondary[disabled] {
+  pointer-events: none;
+}
+.btn-loading {
+  color: transparent !important;
+  position: relative;
+  opacity: 0.8;
+}
+.btn-loading::after {
+  content: "";
+  position: absolute;
+  width: 1rem;
+  height: 1rem;
+  top: 50%;
+  left: 50%;
+  margin: -0.5rem 0 0 -0.5rem;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: btn-spin 0.6s linear infinite;
+}
+@keyframes btn-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Full-width convenience modifier used by checkout/payment pages. */
+.btn-block {
+  width: 100%;
+}
+
 
 /* ============================================================================
    PAGE HEADER

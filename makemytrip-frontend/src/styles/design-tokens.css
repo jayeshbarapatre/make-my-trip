@@ -140,11 +140,11 @@
   --lh-relaxed:  1.6;
 
   /* â”€â”€ Border Radius â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-  --radius-xs:   2px;
-  --radius-sm:   4px;   /* inputs, chips                          */
-  --radius-md:   8px;   /* cards                                  */
-  --radius-lg:   12px;
-  --radius-xl:   20px;
+  --radius-xs:   4px;
+  --radius-sm:   6px;   /* inputs, chips, small buttons           */
+  --radius-md:   10px;  /* cards, default buttons                 */
+  --radius-lg:   14px;  /* large buttons, panels                  */
+  --radius-xl:   22px;
   --radius-full: 9999px;
 
   /* ── Elevation / Shadows ── */
@@ -177,8 +177,7 @@
 
   /* â”€â”€ Input â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   --input-border: 1px solid hsl(var(--b3));
-  --input-radius: var(--radius-sm);
-  --input-pad:    12px 16px;
+  --input-radius: var(--radius-sm);  --input-pad:    12px 16px;
   --input-fs:     var(--fs-body);
   --input-h:      40px;
 }

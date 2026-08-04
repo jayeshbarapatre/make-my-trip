@@ -9,15 +9,18 @@ import 'swiper/css/free-mode'
 import { useAuth } from '../context/AuthContext'
 import CustomCalendarPicker from '../components/CustomCalendarPicker'
 import { getHotelDetails } from '../services/hotelService'
+import { useWishlist } from '../hooks/useWishlist'
 import '../styles/HotelDetailsPage.css'
 import OtpLoginModal from '../components/Auth/OtpLoginModal'
 import { photo } from '../utils/images'
+import { todayLocal, addDaysLocal } from '../utils/date'
 
 export default function HotelDetailsPage() {
   const { hotelId } = useParams()
   const location = useLocation()
   const navigate = useNavigate()
   const { _user } = useAuth()
+  const { has: isWishlisted, toggle: toggleWishlist } = useWishlist()
 
   const [hotel, setHotel] = useState(location.state?.hotel || null)
   const [loading, setLoading] = useState(!location.state?.hotel)
@@ -118,13 +121,10 @@ export default function HotelDetailsPage() {
     }
   }, [hotel?.id])
 
-  // Default dates: today and tomorrow (not hardcoded stale dates)
-  const today     = new Date()
-  const tomorrow  = new Date(today); tomorrow.setDate(today.getDate() + 1)
-  const fmt = (d) => d.toISOString().slice(0, 10)
-
-  const [checkIn,  setCheckIn]  = useState(location.state?.checkIn  || fmt(today))
-  const [checkOut, setCheckOut] = useState(location.state?.checkOut || fmt(tomorrow))
+  // Default dates: today and tomorrow in the LOCAL timezone (toISOString()
+  // returns UTC, so before ~5:30 AM IST it produced yesterday's date).
+  const [checkIn,  setCheckIn]  = useState(location.state?.checkIn  || todayLocal())
+  const [checkOut, setCheckOut] = useState(location.state?.checkOut || addDaysLocal(1))
   const [showCheckInCal, setShowCheckInCal] = useState(false)
   const [showCheckOutCal, setShowCheckOutCal] = useState(false)
 
@@ -163,6 +163,7 @@ export default function HotelDetailsPage() {
   }
 
   const nights = calculateNights()
+  const savedToWishlist = Boolean(hotel?.id) && isWishlisted(hotel.id)
   const totalHotelRooms = hotel?.rooms || 10;
   const takeoverMultiplier = totalHotelRooms * 0.9;
   const rooms = bookEntireHotel ? totalHotelRooms : (guestsObj.rooms || 1)
@@ -265,8 +266,26 @@ export default function HotelDetailsPage() {
         </div>
 
         <div className="hd-action-row">
-          <button className="hd-btn-secondary" onClick={() => showNotify('Wishlist', 'Hotel added to your wishlist successfully!', 'success')}>
-            ❤️ Wishlist
+          {/* This button used to pop "added to your wishlist successfully" and
+              save nothing at all. It now persists through the wishlist API and
+              reports a failure rather than claiming a save that did not happen. */}
+          <button
+            className="hd-btn-secondary"
+            aria-pressed={savedToWishlist}
+            onClick={async () => {
+              const nowSaved = await toggleWishlist('hotel', hotel.id, {
+                name: hotel.name,
+                city: hotel.city,
+                image: hotel.images?.[0] ?? hotel.image ?? null,
+                price: hotel.pricePerNight ?? hotel.price ?? null,
+                rating: hotel.rating ?? null
+              })
+              if (nowSaved !== savedToWishlist) {
+                showNotify('Wishlist', nowSaved ? 'Saved to your wishlist.' : 'Removed from your wishlist.', 'success')
+              }
+            }}
+          >
+            {savedToWishlist ? '❤️ Saved' : '🤍 Wishlist'}
           </button>
           <button className="hd-btn-secondary" onClick={() => showNotify('Shared', 'Hotel link copied to clipboard!', 'success')}>
             🔗 Share

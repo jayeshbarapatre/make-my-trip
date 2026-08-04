@@ -6,6 +6,7 @@ import { UDAIPUR_HOTELS } from '../data/udaipurHotelsData'
 import { useWeather } from '../hooks/useWeather'
 import CustomCalendarPicker from '../components/CustomCalendarPicker'
 import TabIcon from '../components/TabIcon'
+import { todayLocal, addDaysLocal } from '../utils/date'
 import '../styles/Hero.css' // Navigation and topbar imports
 import '../styles/HomePage.css' // Dynamic style imports
 import { photo } from '../utils/images'
@@ -51,8 +52,8 @@ export default function HotelsPage() {
   const navigate = useNavigate()
   // Computed once per mount rather than on every render: reading the clock
   // during render makes the value change between renders of the same screen.
-  const [TODAY] = useState(() => new Date().toISOString().slice(0, 10))
-  const [TOMORROW] = useState(() => new Date(Date.now() + 86400000).toISOString().slice(0, 10))
+  const [TODAY] = useState(() => todayLocal())
+  const [TOMORROW] = useState(() => addDaysLocal(1))
 
   const [activeTab, setActiveTab] = useState('hotels')
   const [activeChip, setActiveChip] = useState('Free cancellation')
@@ -87,7 +88,7 @@ export default function HotelsPage() {
     try {
       const saved = localStorage.getItem('recentSearches_hotels')
       return saved ? JSON.parse(saved) : [
-        { city: 'Udaipur', date: new Date().toISOString().split('T')[0] || new Date().toISOString().split('T')[0] },
+        { city: 'Udaipur', date: todayLocal() },
         { city: 'Goa', date: '2026-05-15' }
       ]
     } catch {
@@ -323,7 +324,7 @@ export default function HotelsPage() {
                   onChange={(date) => {
                     setCheckInDate(date)
                     if (checkOutDate <= date) {
-                      const nextDay = new Date(new Date(date).getTime() + 86400000).toISOString().slice(0, 10)
+                      const nextDay = addDaysLocal(1, new Date(date))
                       setCheckOutDate(nextDay)
                     }
                   }}

@@ -1,4 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
+import { RESULTS_PER_REQUEST } from '../config/search.config'
+import { useWishlist } from '../hooks/useWishlist'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { UDAIPUR_HOTELS, HOTEL_PINS } from '../data/udaipurHotelsData'
 import { useAuth } from '../context/AuthContext'
@@ -451,7 +453,11 @@ function PhotoCarousel({ seeds, photos, hotelId: _hotelId }) {
 function HotelCard({ h, density, wishlist, toggleWishlist, onSelectHotel }) {
   const on = wishlist.has(h.id);
   return (
-    <article className={`hotel-card d-${density}`} onClick={() => onSelectHotel && onSelectHotel(h)} style={{ cursor: 'pointer' }}>
+    <article
+      className={`hotel-card d-${density}`}
+      onClick={() => h.isAvailable !== false && onSelectHotel && onSelectHotel(h)}
+      style={{ cursor: h.isAvailable === false ? 'not-allowed' : 'pointer', opacity: h.isAvailable === false ? 0.6 : 1 }}
+    >
       <div className="hc-photo">
         <PhotoCarousel seeds={h.seed} photos={h.photos} hotelId={h.id}/>
       </div>
@@ -491,16 +497,32 @@ function HotelCard({ h, density, wishlist, toggleWishlist, onSelectHotel }) {
               <div className="price">₹ {h.price.toLocaleString("en-IN")}</div>
               <div className="taxes">+ ₹ {h.taxes} taxes &amp; fees</div>
               <div className="per-night">Per Night</div>
+              {/* Availability for the chosen dates. The API reports rooms free
+                  across every night of the stay, so a property free tonight but
+                  full tomorrow is correctly shown as unavailable rather than
+                  failing at payment. */}
+              {h.isAvailable === false && (
+                <div className="rp-soldout" style={{ fontSize: '11px', fontWeight: 800, color: 'hsl(var(--er))', marginTop: '8px' }}>
+                  {h.availabilityBasis === 'dates' ? 'Sold out for your dates' : 'Sold out'}
+                </div>
+              )}
+              {h.isAvailable !== false && h.availableRooms > 0 && h.availableRooms <= 3 && (
+                <div className="rp-lastfew" style={{ fontSize: '11px', fontWeight: 700, color: 'hsl(var(--wa))', marginTop: '8px' }}>
+                  Only {h.availableRooms} room{h.availableRooms !== 1 ? 's' : ''} left
+                </div>
+              )}
               <div style={{ display: 'flex', gap: '8px', marginTop: '12px', justifyContent: "end" }}>
                 <button
                   className="hp-hc-btn"
+                  disabled={h.isAvailable === false}
                   onClick={(e) => {
                     e.stopPropagation();
+                    if (h.isAvailable === false) return;
                     onSelectHotel && onSelectHotel(h);
                   }}
-                  style={{ padding: '6px 12px', fontSize: '11px', borderRadius: '6px', background: 'hsl(var(--er))', border: 'none', color: '#fff', fontWeight: 800 }}
+                  style={{ padding: '6px 12px', fontSize: '11px', borderRadius: '6px', background: h.isAvailable === false ? 'hsl(var(--bc) / 0.25)' : 'hsl(var(--er))', border: 'none', color: '#fff', fontWeight: 800, cursor: h.isAvailable === false ? 'not-allowed' : 'pointer' }}
                 >
-                  Book Stay
+                  {h.isAvailable === false ? 'Unavailable' : 'Book Stay'}
                 </button>
               </div>
             </div>
@@ -688,7 +710,12 @@ function MobileApp({ hotels, wishlist, toggleWishlist, onOpenFilter, onSelectHot
       <div className="m-result-h">{hotels.length} Properties in Udaipur</div>
       <div className="m-list">
         {hotels.map(h => (
-          <article key={h.id} className="m-card" onClick={() => onSelectHotel && onSelectHotel(h)} style={{ cursor: 'pointer' }}>
+          <article
+            key={h.id}
+            className="m-card"
+            onClick={() => h.isAvailable !== false && onSelectHotel && onSelectHotel(h)}
+            style={{ cursor: h.isAvailable === false ? 'not-allowed' : 'pointer', opacity: h.isAvailable === false ? 0.6 : 1 }}
+          >
             <div className="m-photo">
               <img src={h.img || photo('hotel-luxury-exterior', 800)} alt={h.name} loading="lazy" decoding="async"/>
               <button className={"m-wl" + (wishlist.has(h.id) ? " on" : "")} onClick={(e) => { e.stopPropagation(); toggleWishlist(h.id); }}>
@@ -713,16 +740,23 @@ function MobileApp({ hotels, wishlist, toggleWishlist, onOpenFilter, onSelectHot
                 <span className="m-pn">/ night</span>
               </div>
               <div className="m-taxes">+ ₹{h.taxes} taxes</div>
+              {h.isAvailable === false && (
+                <div style={{ fontSize: '11px', fontWeight: 800, color: 'hsl(var(--er))', marginTop: '6px' }}>
+                  {h.availabilityBasis === 'dates' ? 'Sold out for your dates' : 'Sold out'}
+                </div>
+              )}
               <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
                 <button
                   className="hp-hc-btn"
+                  disabled={h.isAvailable === false}
                   onClick={(e) => {
                     e.stopPropagation();
+                    if (h.isAvailable === false) return;
                     onSelectHotel && onSelectHotel(h);
                   }}
-                  style={{ padding: '6px 12px', fontSize: '11px', borderRadius: '6px', background: 'hsl(var(--er))', border: 'none', color: '#fff', fontWeight: 800 }}
+                  style={{ padding: '6px 12px', fontSize: '11px', borderRadius: '6px', background: h.isAvailable === false ? 'hsl(var(--bc) / 0.25)' : 'hsl(var(--er))', border: 'none', color: '#fff', fontWeight: 800, cursor: h.isAvailable === false ? 'not-allowed' : 'pointer' }}
                 >
-                  Book Stay
+                  {h.isAvailable === false ? 'Unavailable' : 'Book Stay'}
                 </button>
               </div>
             </div>
@@ -781,7 +815,22 @@ export default function HotelListingPage() {
       try {
         setLoading(true);
         setApiError(null);
-        const res = await searchHotels({ city: cityQuery, checkIn, checkOut, guests });
+        // `rooms` is an availability filter, and it lives inside the `guests`
+        // JSON blob the search bar builds. Without unpacking it the page listed
+        // hotels with fewer rooms free than the customer asked for, which then
+        // failed at booking.
+        let roomsWanted = 1;
+        try {
+          roomsWanted = Math.max(1, JSON.parse(guests || '{}')?.rooms || 1);
+        } catch {
+          roomsWanted = 1;
+        }
+
+        const res = await searchHotels({
+          city: cityQuery, checkIn, checkOut, guests,
+          rooms: roomsWanted,
+          limit: RESULTS_PER_REQUEST
+        });
 
         // Map backend response to match expected frontend structure if needed
         const mapped = (res.data || []).map((h, _i) => ({
@@ -864,7 +913,10 @@ export default function HotelListingPage() {
   });
 
   const [sort, setSort] = useState("popular");
-  const [wishlist, setWishlist] = useState(new Set());
+  // Server-backed, so a saved hotel survives a refresh and is visible on any
+  // device. This was a component-local Set that was silently discarded on
+  // navigation, while the detail page's button saved nothing at all.
+  const { ids: wishlist, toggle: toggleWishlistItem } = useWishlist();
   const [mapOpen, setMapOpen] = useState(false);
   const [page, setPage] = useState(1);
 
@@ -878,10 +930,13 @@ export default function HotelListingPage() {
   }), []);
 
   const toggleWishlist = (id) => {
-    setWishlist(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
-      return next;
+    const hotel = DYNAMIC_HOTELS.find(h => h.id === id);
+    return toggleWishlistItem('hotel', id, {
+      name: hotel?.name ?? null,
+      city: hotel?.city ?? null,
+      image: hotel?.images?.[0] ?? hotel?.image ?? null,
+      price: hotel?.pricePerNight ?? hotel?.price ?? null,
+      rating: hotel?.rating ?? null
     });
   };
 

@@ -14,6 +14,7 @@ import { CITIES } from '../data/cities'
 import { flightService } from '../services/flightService'
 import CustomCalendarPicker from '../components/CustomCalendarPicker'
 import TabIcon from '../components/TabIcon'
+import { todayLocal, toLocalDateStr } from '../utils/date'
 
 import { useTranslation } from '../hooks/useTranslation'
 
@@ -198,7 +199,7 @@ export default function HomePage() {
       if (returnDateObj <= departDateObj) {
         const nextDay = new Date(departDate)
         nextDay.setDate(nextDay.getDate() + 1)
-        setReturnDate(nextDay.toISOString().split('T')[0])
+        setReturnDate(toLocalDateStr(nextDay))
       }
     }
   }, [departDate, tripType])
@@ -365,7 +366,7 @@ export default function HomePage() {
     const passengersCount = travellers.adults + travellers.children;
     const fromVal = fromCity?.city || fromQuery
     const toVal = toCity?.city || toQuery
-    const dateVal = departDate || new Date().toISOString().split('T')[0]
+    const dateVal = departDate || todayLocal()
 
     if (activeTab === 'buses') {
       let url = `/buses/results?from=${fromVal}&to=${toVal}&date=${dateVal}&passengers=${passengersCount}`

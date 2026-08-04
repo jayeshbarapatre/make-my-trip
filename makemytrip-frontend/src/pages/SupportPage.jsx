@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useToast } from '../hooks/useToast';
 import Header from '../components/Common/Header';
 import Footer from '../components/Common/Footer';
+import { todayLocal } from '../utils/date';
 import './SupportPage.css';
 
 export default function SupportPage() {
@@ -44,7 +45,7 @@ export default function SupportPage() {
       subject: subject.trim(),
       description: description.trim(),
       status: 'Open',
-      date: new Date().toISOString().split('T')[0]
+      date: todayLocal()
     };
 
     setTickets([newTicket, ...tickets]);

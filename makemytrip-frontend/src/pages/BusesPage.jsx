@@ -4,6 +4,7 @@ import { SERVICE_TABS } from '../data/homepageData'
 import { useWeather } from '../hooks/useWeather'
 import CustomCalendarPicker from '../components/CustomCalendarPicker'
 import TabIcon from '../components/TabIcon'
+import { todayLocal } from '../utils/date'
 import '../styles/Hero.css'
 import { photo } from '../utils/images'
 
@@ -11,11 +12,7 @@ export default function BusesPage() {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('buses')
   const [activeChip, setActiveChip] = useState('All Buses')
-  const [travelDate, setTravelDate] = useState(() => {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    return today.toISOString().split('T')[0]
-  })
+  const [travelDate, setTravelDate] = useState(() => todayLocal())
   const [showTravelCal, setShowTravelCal] = useState(false)
   const [fromCity, setFromCity] = useState({ name: 'Chennai', state: 'Tamil Nadu, India' })
   const [toCity, setToCity] = useState({ name: 'Bengaluru', state: 'Karnataka, India' })

@@ -339,42 +339,8 @@
   text-align: center;
 }
 
-/* Primary button (generic) */
-.btn-primary {
-  background: hsl(var(--p));
-  color: hsl(var(--pc));
-  border: none;
-  border-radius: 8px;
-  padding: 12px 24px;
-  font-size: 14px;
-  font-weight: 800;
-  cursor: pointer;
-  transition: opacity 0.2s ease;
-}
+/* Primary button (.btn-primary) is defined once in AdminComponents.css. */
+/* Black/lofi/wireframe theme overrides removed — the token-based button in
+   AdminComponents.css adapts correctly to every theme. */
 
-/* Black theme override: primary is white, so text must be dark */
-[data-theme="black"] .btn-primary {
-  background: #e02026;
-  color: #ffffff;
-}
 
-[data-theme="black"] .flight-btn-primary {
-  background: #e02026;
-  color: #ffffff;
-}
-
-/* Lofi/Wireframe override: primary is black, ensure white text */
-[data-theme="lofi"] .btn-primary,
-[data-theme="wireframe"] .btn-primary {
-  background: hsl(var(--p));
-  color: #ffffff;
-}
-
-.btn-primary:hover {
-  opacity: 0.88;
-}
-
-.btn-primary:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}

@@ -1,6 +1,18 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import { authService } from '../services/authService'
+import { clearSession } from '../services/api'
 import { useToastContext } from './ToastContext'
+
+// Login, registration and OTP verification all return the same credential
+// envelope, so persisting it lives in one place. The refresh token is the part
+// that keeps a session alive now that access tokens are short-lived — dropping
+// it on any one of these paths would silently log the user out an hour later.
+function persistSession({ user, token, refreshToken }) {
+  localStorage.setItem('token', token)
+  if (refreshToken) localStorage.setItem('refreshToken', refreshToken)
+  localStorage.setItem('userId', user.id)
+  localStorage.setItem('userEmail', user.email)
+}
 
 // Reads locally-saved profile for a mobile OTP user
 function getMobileProfile(phone) {
@@ -45,15 +57,28 @@ export function AuthProvider({ children }) {
     restoreSession()
   }, [])
 
+  // Raised by the api interceptor when a refresh fails — the session was
+  // revoked (logout elsewhere, password reset, suspension) or simply expired.
+  // Without this the UI keeps rendering a signed-in user whose every request
+  // now 401s.
+  useEffect(() => {
+    const onExpired = () => {
+      setUser(null)
+      localStorage.removeItem('userId')
+      localStorage.removeItem('userEmail')
+      toast.info('Please sign in again to continue.', 'Session ended')
+    }
+    window.addEventListener('auth:session-expired', onExpired)
+    return () => window.removeEventListener('auth:session-expired', onExpired)
+  }, [toast])
+
   const login = async (email, password) => {
     setLoading(true)
     try {
       const res = await authService.login({ email, password })
       if (res && res.data) {
-        const { user: userData, token } = res.data
-        localStorage.setItem('token', token)
-        localStorage.setItem('userId', userData.id)
-        localStorage.setItem('userEmail', userData.email)
+        const { user: userData, token, refreshToken } = res.data
+        persistSession({ user: userData, token, refreshToken })
         setUser(userData)
         toast.success("You have successfully logged in", "Congratulations")
         return userData
@@ -69,10 +94,8 @@ export function AuthProvider({ children }) {
     try {
       const res = await authService.register(userData)
       if (res && res.data) {
-        const { user: newUser, token } = res.data
-        localStorage.setItem('token', token)
-        localStorage.setItem('userId', newUser.id)
-        localStorage.setItem('userEmail', newUser.email)
+        const { user: newUser, token, refreshToken } = res.data
+        persistSession({ user: newUser, token, refreshToken })
         setUser(newUser)
         toast.success("You have successfully registered", "Congratulations")
         return newUser
@@ -88,10 +111,8 @@ export function AuthProvider({ children }) {
     try {
       const res = await authService.verifyMobileOtp(phone, otp)
       if (res && res.data) {
-        const { user: userData, token } = res.data
-        localStorage.setItem('token', token)
-        localStorage.setItem('userId', userData.id)
-        localStorage.setItem('userEmail', userData.email)
+        const { user: userData, token, refreshToken } = res.data
+        persistSession({ user: userData, token, refreshToken })
         // Merge any locally-saved name/email for this phone number
         const saved = getMobileProfile(phone)
         const mergedUser = saved?.name ? { ...userData, ...saved } : userData
@@ -111,7 +132,9 @@ export function AuthProvider({ children }) {
     } catch {
       // Swallowing logout error in case token already expired on server
     } finally {
-      localStorage.removeItem('token')
+      // Logout is now server-authoritative — the call above ends the session.
+      // This only clears the local copy.
+      clearSession()
       localStorage.removeItem('userId')
       localStorage.removeItem('userEmail')
       setUser(null)

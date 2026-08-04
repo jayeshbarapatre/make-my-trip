@@ -98,7 +98,9 @@ export const processPayment = async (amount, bookingData, onHandler) => {
 
   // Step 2: Prepare checkout options
   const options = {
-    key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_Sqpk2eYSSYrvWf',
+    // No hardcoded fallback: a key baked into the bundle ships to every browser
+    // and silently outlives its rotation at the provider.
+    key: import.meta.env.VITE_RAZORPAY_KEY_ID,
     amount: order.amount,
     currency: order.currency,
     order_id: order.orderId,

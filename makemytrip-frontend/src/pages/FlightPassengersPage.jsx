@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import showToast from '../utils/toast';
+import { todayLocal } from '../utils/date';
 import '../styles/FlightBookingFlow.css';
 
 export default function FlightPassengersPage() {
@@ -9,7 +10,7 @@ export default function FlightPassengersPage() {
 
   const { flight, searchParams } = location.state || {
     flight: { airline: "IndiGo", flightNumber: "6E-205", departure: { city: "Delhi", time: "06:00" }, arrival: { city: "Mumbai", time: "08:15" }, price: 4500, seatsAvailable: 120 },
-    searchParams: { from: "Delhi", to: "Mumbai", date: new Date().toISOString().split('T')[0], passengers: 1, cabinClass: "Economy" }
+    searchParams: { from: "Delhi", to: "Mumbai", date: todayLocal(), passengers: 1, cabinClass: "Economy" }
   };
 
   const [passengers, setPassengers] = useState([

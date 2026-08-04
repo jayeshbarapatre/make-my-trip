@@ -4,6 +4,7 @@ import { SERVICE_TABS } from '../data/homepageData'
 import { useWeather } from '../hooks/useWeather'
 import CustomCalendarPicker from '../components/CustomCalendarPicker'
 import TabIcon from '../components/TabIcon'
+import { todayLocal } from '../utils/date'
 import '../styles/Hero.css'
 import { photo } from '../utils/images'
 
@@ -11,11 +12,7 @@ export default function CabsPage() {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('cabs')
   const [activeChip, setActiveChip] = useState('Outstation One-Way')
-  const [departDate, setDepartDate] = useState(() => {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    return today.toISOString().split('T')[0]
-  })
+  const [departDate, setDepartDate] = useState(() => todayLocal())
   const [showDepartCal, setShowDepartCal] = useState(false)
   const [fromCity, setFromCity] = useState({ name: 'Delhi', state: 'Delhi, India' })
   const [toCity, setToCity] = useState({ name: 'Jaipur', state: 'Rajasthan, India' })

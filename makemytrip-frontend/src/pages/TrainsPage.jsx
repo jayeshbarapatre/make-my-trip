@@ -5,6 +5,7 @@ import { useWeather } from '../hooks/useWeather'
 import CustomCalendarPicker from '../components/CustomCalendarPicker'
 import TabIcon from '../components/TabIcon'
 import Photo from '../components/Common/Photo'
+import { todayLocal } from '../utils/date'
 import '../styles/Hero.css'
 
 const RAIL_GALLERY = [
@@ -18,11 +19,7 @@ export default function TrainsPage() {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('trains')
   const [activeChip, setActiveChip] = useState('General')
-  const [travelDate, setTravelDate] = useState(() => {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    return today.toISOString().split('T')[0]
-  })
+  const [travelDate, setTravelDate] = useState(() => todayLocal())
   const [showTravelCal, setShowTravelCal] = useState(false)
 
   // Helper to format date into Day, Month Name, Year and Weekday

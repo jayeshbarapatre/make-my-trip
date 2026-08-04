@@ -31,25 +31,11 @@
 
 
 .btn-primary {
-  padding: 10px 20px;
-  background: hsl(var(--p));
-  color: hsl(var(--pc));
-  border: none;
-  border-radius: 6px;
-  font-weight: 600;
-  font-size: 14px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  transition: all 0.2s ease;
-  white-space: nowrap;
+  /* defined centrally in AdminComponents.css */
 }
 
 .btn-primary:hover {
-  opacity: 0.9;
-  box-shadow: 0 4px 12px hsl(var(--p) / 0.3);
+  /* defined centrally in AdminComponents.css */
 }
 
 .modal-overlay {
@@ -179,31 +165,29 @@
   transition: all 0.2s ease;
 }
 
+/* Vendor submit/cancel buttons: solid primary + neutral outline, both
+   token-based so they match the central system's sizes and adapt to themes. */
 .btn-submit {
   background: hsl(var(--p));
   color: hsl(var(--pc));
   flex: 1;
 }
-
 .btn-submit:hover:not(:disabled) {
-  opacity: 0.9;
-  box-shadow: 0 4px 12px hsl(var(--p) / 0.3);
+  background: hsl(var(--p) / 0.88);
 }
-
 .btn-submit:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
 .btn-cancel {
-  background: hsl(var(--bc) / 0.1);
+  background: transparent;
   color: hsl(var(--bc));
+  border: 1px solid hsl(var(--b3));
 }
-
 .btn-cancel:hover:not(:disabled) {
-  background: hsl(var(--bc) / 0.15);
+  background: hsl(var(--b2));
 }
-
 .btn-cancel:disabled {
   opacity: 0.6;
   cursor: not-allowed;
@@ -306,36 +290,23 @@
 }
 
 .btn-sm {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.2s ease;
-  flex: 1;
-  justify-content: center;
+  /* defined centrally in AdminComponents.css */
 }
 
 .btn-edit {
-  background: hsl(var(--p) / 0.2);
-  color: hsl(var(--p));
+  /* defined centrally in AdminComponents.css */
 }
 
 .btn-edit:hover {
-  background: hsl(var(--p) / 0.3);
+  /* defined centrally in AdminComponents.css */
 }
 
 .btn-delete {
-  background: hsl(var(--er) / 0.2);
-  color: hsl(var(--er));
+  /* defined centrally in AdminComponents.css */
 }
 
 .btn-delete:hover {
-  background: hsl(var(--er) / 0.3);
+  /* defined centrally in AdminComponents.css */
 }
 
 .loading-state {

@@ -1,5 +1,28 @@
 
+import { useState } from 'react'
+import { documentService } from '../services/documentService'
+import { useToastContext } from '../context/ToastContext'
+
 export default function BookingCard({ booking, onCancel, onViewDetails, onTriggerPayment }) {
+  const toast = useToastContext()
+  const [downloading, setDownloading] = useState(false)
+
+  // The button used to pop an alert() describing a download that never
+  // happened. The document is rendered server-side from the stored booking, so
+  // it carries a real invoice number and matches the record rather than a
+  // screenshot of whatever is on screen.
+  const handleDownloadTicket = async () => {
+    if (downloading) return
+    setDownloading(true)
+    try {
+      await documentService.downloadTicket(booking.id)
+    } catch (err) {
+      toast.error(err.message || 'Could not generate your e-ticket. Please try again.', 'Download failed')
+    } finally {
+      setDownloading(false)
+    }
+  }
+
   const isFlight = booking.type === 'flight'
   const isTrain = booking.type === 'train'
   const _isHotel = booking.type === 'hotel'
@@ -141,12 +164,11 @@ export default function BookingCard({ booking, onCancel, onViewDetails, onTrigge
           </button>
 
           <button
-            onClick={() => {
-              alert(`📥 DOWNLOADING E-TICKET (PDF)\nBooking ID: ${booking.bookingId}\nPNR: ${booking.pnr}\nStatus: ${booking.status.toUpperCase()}\nAmount: ₹${booking.totalAmount}`)
-            }}
-            style={{ background: 'hsl(var(--b1))', border: '1px solid hsl(var(--b3))', padding: '6px 14px', borderRadius: '6px', fontSize: '13px', fontWeight: 600, color: 'hsl(var(--p))', cursor: 'pointer' }}
+            onClick={handleDownloadTicket}
+            disabled={downloading}
+            style={{ background: 'hsl(var(--b1))', border: '1px solid hsl(var(--b3))', padding: '6px 14px', borderRadius: '6px', fontSize: '13px', fontWeight: 600, color: 'hsl(var(--p))', cursor: downloading ? 'wait' : 'pointer', opacity: downloading ? 0.6 : 1 }}
           >
-            📥 Download Ticket PDF
+            {downloading ? '⏳ Preparing…' : '📥 Download Ticket PDF'}
           </button>
         </div>
 
