@@ -15,6 +15,27 @@ export const validatePassword = (password) => {
   return password.length >= 8 && /\d/.test(password)
 }
 
+// Returns a human-readable problem, or null when the password is acceptable.
+// Privileged accounts get a stricter bar than customers because a compromised
+// admin credential exposes every user's data, not just one account's.
+export const describePasswordWeakness = (password, { strict = false } = {}) => {
+  if (!password || typeof password !== 'string') return 'A password is required'
+
+  const minLength = strict ? 12 : 8
+  if (password.length < minLength) {
+    return `Password must be at least ${minLength} characters long`
+  }
+  if (!/\d/.test(password)) return 'Password must contain at least one number'
+  if (!/[a-z]/.test(password)) return 'Password must contain at least one lowercase letter'
+
+  if (strict) {
+    if (!/[A-Z]/.test(password)) return 'Password must contain at least one uppercase letter'
+    if (!/[^A-Za-z0-9]/.test(password)) return 'Password must contain at least one symbol'
+  }
+
+  return null
+}
+
 export const validateName = (name) => {
   if (!name || typeof name !== 'string') return false
   return name.length >= 2 && name.length <= 100

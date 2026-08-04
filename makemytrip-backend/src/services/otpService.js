@@ -108,11 +108,16 @@ const FAILURES = {
 }
 
 /**
- * Verifies and atomically consumes an OTP. A code can succeed exactly once:
- * the consuming update runs inside a transaction, so concurrent requests
- * cannot both pass with the same code.
+ * Verifies an OTP and, by default, atomically consumes it. A code can succeed
+ * exactly once: the consuming update runs inside a transaction, so concurrent
+ * requests cannot both pass with the same code.
+ *
+ * `consume: false` checks the code without spending it, for a two-step flow
+ * where one screen validates the code and a later request performs the
+ * privileged action. A failed attempt is still counted, so the non-consuming
+ * path cannot be used as an unlimited oracle to guess a code.
  */
-export const verifyOtp = async ({ identifier, channel, purpose = 'login', otp }) => {
+export const verifyOtp = async ({ identifier, channel, purpose = 'login', otp, consume = true }) => {
   if (!identifier || !otp) {
     return { ok: false, ...FAILURES.INVALID }
   }
@@ -156,9 +161,11 @@ export const verifyOtp = async ({ identifier, channel, purpose = 'login', otp })
       }
     }
 
-    // Consume immediately so the same code cannot be replayed.
-    tx.delete(ref)
-    return { ok: true, meta: data.meta || {}, purpose, channel, identifier: data.identifier }
+    // Consume immediately so the same code cannot be replayed. A validate-only
+    // caller leaves the code live for the request that actually acts on it.
+    if (consume) tx.delete(ref)
+
+    return { ok: true, consumed: consume, meta: data.meta || {}, purpose, channel, identifier: data.identifier }
   })
 }
 
