@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./makemytrip-backend
+    expose:
+      - "5000"
+    env_file:
+      - ./makemytrip-backend/.env
+    environment:
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - redis
+    # IMPORTANT: Do NOT commit real Firebase credentials. Use secrets or environment variables at runtime.
+    # Example: add GOOGLE_APPLICATION_CREDENTIALS pointing to a mounted secret.
+
+  redis:
+    image: redis:6-alpine
+    # Internal-only: do not publish 6379 to the host network without auth.
+    # If you must expose it, set REDIS_PASSWORD and requirepass below.
+    expose:
+      - "6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    restart: unless-stopped

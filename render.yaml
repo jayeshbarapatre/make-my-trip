@@ -1,0 +1,77 @@
+# Render Blueprint — MakeMyTrip production deployment
+#
+# Two services:
+#   1. backend  — Node.js Web Service (Express API + Firebase Admin SDK)
+#   2. frontend — Static Site (Vite SPA build, served from Render's CDN)
+#
+# Secrets live in the Render dashboard (Environment tab), NOT in this file.
+# Create every key from .env there before the first deploy:
+#   JWT_SECRET, FIREBASE_*, RAZORPAY_*, SMTP_*, CORS_ORIGIN, VITE_API_BASE_URL
+#
+# The frontend calls the backend by absolute URL (VITE_API_BASE_URL), so the
+# two services are independent — no reverse proxy needed on Render.
+
+services:
+  # ── Backend API ──────────────────────────────────────────────────────────
+  - type: web
+    name: makemytrip-backend
+    runtime: node
+    plan: starter
+    region: singapore
+    rootDir: makemytrip-backend
+    buildCommand: npm ci --omit=dev
+    startCommand: node src/index.js
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      # Render injects NODE_ENV=production automatically for web services.
+      - key: PORT
+        value: 5000
+      - key: CORS_ORIGIN
+        # Set in dashboard to the frontend's Render URL (https://makemytrip-frontend.onrender.com)
+        sync: false
+      # Every secret below is stored in the dashboard and never written to the repo.
+      - key: JWT_SECRET
+        sync: false
+      - key: ACCESS_TOKEN_TTL
+        value: 1h
+      - key: REFRESH_TOKEN_TTL_DAYS
+        value: 30
+      - key: FIREBASE_PROJECT_ID
+        sync: false
+      - key: FIREBASE_CLIENT_EMAIL
+        sync: false
+      - key: FIREBASE_PRIVATE_KEY
+        sync: false
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+
+  # ── Frontend SPA ─────────────────────────────────────────────────────────
+  - type: web
+    name: makemytrip-frontend
+    runtime: static
+    rootDir: makemytrip-frontend
+    buildCommand: npm ci && npm run build
+    # Render static sites serve the publish directory directly with a global CDN.
+    publishDir: dist
+    pullRequestPreviewsEnabled: false
+    # SPA fallback so client-side routes (e.g. /buses/results) resolve on refresh.
+    routes:
+      - source: /*
+        destination: /index.html
+    envVars:
+      # The API base URL is baked in at build time. Point it at the backend
+      # service's public URL once it is live.
+      - key: VITE_API_BASE_URL
+        # e.g. https://makemytrip-backend.onrender.com/api/v1
+        sync: false

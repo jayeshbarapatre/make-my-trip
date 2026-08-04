@@ -1,0 +1,23 @@
+# Keep secrets, build cruft and the local DB out of the production image.
+.env
+.env.*
+!.env.production.example
+serviceAccountKey.json
+serviceAccountKey.placeholder.bak
+node_modules
+npm-debug.log*
+.DS_Store
+coverage
+.nyc_output
+tests
+scratch
+preview
+*.log
+.git
+.gitignore
+
+# Build artefacts and docs never belong in a runtime image.
+dist
+public/uploads
+.github
+*.md

@@ -1,0 +1,112 @@
+name: Firestore Rules & Indexes
+
+# Rules and indexes are configuration that only takes effect once deployed.
+# Before this workflow existed, `firestore.rules` had never been pushed to any
+# project — it was a file in the repository with no bearing on what the database
+# actually allowed.
+#
+# Validation runs on every pull request that touches them. Deployment runs only
+# on main, and only after validation passes.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'makemytrip-backend/firestore.rules'
+      - 'firestore.indexes.json'
+      - 'firebase.json'
+      - '.github/workflows/firestore-rules.yml'
+  pull_request:
+    paths:
+      - 'makemytrip-backend/firestore.rules'
+      - 'firestore.indexes.json'
+      - 'firebase.json'
+
+jobs:
+  validate:
+    name: Validate rules and indexes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Index definitions must be valid JSON
+        run: node -e "JSON.parse(require('fs').readFileSync('firestore.indexes.json','utf8')); console.log('firestore.indexes.json parses')"
+
+      - name: firebase.json must point at files that exist
+        run: |
+          node -e "
+            const fs=require('fs');
+            const cfg=JSON.parse(fs.readFileSync('firebase.json','utf8'));
+            for (const key of ['rules','indexes']) {
+              const p=cfg.firestore[key];
+              if(!p) throw new Error('firebase.json: firestore.'+key+' is not set');
+              if(!fs.existsSync(p)) throw new Error('firebase.json points at missing '+p);
+              console.log(key,'->',p,'exists');
+            }
+          "
+
+      - name: Rules must not grant client access
+        # All access is server-side through the Admin SDK, which bypasses rules.
+        # Any `allow` that is not `if false` means a client can reach the data
+        # directly, and must be a deliberate, reviewed decision.
+        run: |
+          node -e "
+            const fs=require('fs');
+            const src=fs.readFileSync('makemytrip-backend/firestore.rules','utf8');
+            const allows=src.split('\n')
+              .map((l,i)=>({line:i+1,text:l.trim()}))
+              .filter(x=>/^allow /.test(x.text));
+            const open=allows.filter(x=>!/if false;/.test(x.text));
+            if(open.length){
+              console.error('Rules grant client access:');
+              open.forEach(o=>console.error('  line '+o.line+': '+o.text));
+              process.exit(1);
+            }
+            console.log(allows.length+' allow statements, all deny');
+          "
+
+      - name: Compile rules against the emulator
+        run: |
+          firebase emulators:exec --only firestore --project demo-validate \
+            "node -e \"console.log('rules compiled and loaded')\""
+
+  deploy:
+    name: Deploy to Firebase
+    needs: validate
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      # FIREBASE_SERVICE_ACCOUNT must be a repository secret holding the JSON
+      # key of a service account with the Firebase Rules Admin role.
+      # FIREBASE_PROJECT_ID names the target project.
+      - name: Deploy rules and indexes
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: /tmp/sa.json
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+        run: |
+          if [ -z "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" ]; then
+            echo "FIREBASE_SERVICE_ACCOUNT secret is not set — skipping deploy."
+            echo "Add it in Settings > Secrets to enable automatic rule deployment."
+            exit 1
+          fi
+          printf '%s' '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > /tmp/sa.json
+          firebase deploy \
+            --only firestore:rules,firestore:indexes \
+            --project "$FIREBASE_PROJECT_ID" \
+            --non-interactive

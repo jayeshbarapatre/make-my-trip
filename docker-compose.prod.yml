@@ -1,0 +1,97 @@
+# =============================================================================
+# MakeMyTrip — PRODUCTION docker compose
+# -----------------------------------------------------------------------------
+# Services:
+#   frontend  builds the Vite SPA (artifacts only)
+#   nginx     serves the SPA over HTTPS and reverse-proxies /api -> backend
+#   backend   Express API (Firestore-backed)
+#   redis     BullMQ email queue + cache
+#
+# Secrets come from makemytrip-backend/.env (copy .env.production.example).
+# TLS certs are mounted from deploy/nginx/certs/.
+#
+# Usage:
+#   cd h:/make-my-trip-practical
+#   cp makemytrip-backend/.env.production.example makemytrip-backend/.env   # then edit
+#   # drop fullchain.pem + privkey.pem into deploy/nginx/certs/
+#   docker compose -f docker-compose.prod.yml up -d --build
+#
+# Point your domain's DNS at this host's IP; nginx handles HTTP->HTTPS.
+# =============================================================================
+
+# compose spec no longer needs a top-level version field.
+services:
+  # ── Frontend: build artifacts only (no running process) ──────────────────
+  frontend:
+    build:
+      context: ./makemytrip-frontend
+      # Inject the public API base URL at build time. Use the public HTTPS URL.
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-https://YOUR_DOMAIN/api/v1}
+    # The nginx service reads dist/ from this volume.
+    volumes:
+      - frontend_dist:/dist
+    # Nothing to keep alive; this container just produces the build.
+    restart: "no"
+
+  # ── Nginx: TLS termination + SPA host + API proxy ───────────────────────
+  nginx:
+    image: nginx:1.27-alpine
+    depends_on:
+      - frontend
+      - backend
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # Compiled SPA is served from the frontend container's volume.
+      - frontend_dist:/usr/share/nginx/html:ro
+      # Site config.
+      - ./deploy/nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      # TLS certs (mount Let's Encrypt or your own fullchain/privkey here).
+      - ./deploy/nginx/certs:/etc/nginx/certs:ro
+      # ACME challenge dir for cert renewal.
+      - ./deploy/nginx/certbot:/var/www/certbot:ro
+    restart: unless-stopped
+
+  # ── Backend: Express API (Firestore is the DB) ──────────────────────────
+  backend:
+    build:
+      context: ./makemytrip-backend
+    env_file:
+      - ./makemytrip-backend/.env
+    environment:
+      # Force production posture even if .env is stale.
+      - NODE_ENV=production
+      - REDIS_URL=redis://redis:6379
+      # Exactly one proxy (the nginx service below) appends to X-Forwarded-For.
+      # Without this req.ip is nginx's container address, so every client shares
+      # one rate-limit bucket. Raise to 2 if you put Cloudflare or a cloud load
+      # balancer in front of nginx.
+      - TRUST_PROXY=1
+    depends_on:
+      - redis
+    # Only expose the API on the internal network; nginx is the public edge.
+    expose:
+      - "5000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  # ── Redis: email queue + cache ──────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    expose:
+      - "6379"
+    restart: unless-stopped
+
+volumes:
+  frontend_dist:
+  redis_data:

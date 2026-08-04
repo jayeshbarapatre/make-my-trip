@@ -1,116 +1,102 @@
 rules_version = '2';
 
-// Production security rules for the MakeMyTrip-style booking platform.
+// Firestore security rules.
 //
-// NOTE: In the current architecture ALL reads/writes go through the Express
-// backend using the Firebase Admin SDK (which bypasses these rules). These
-// rules therefore lock the database down for any direct client access:
-// public catalog data is readable, everything else is owner-scoped or denied.
+// ── How access actually works here ──
+//
+// Every read and write goes through the Express API using the Firebase Admin
+// SDK, which bypasses these rules entirely. Authorization is enforced in
+// `middleware/rbac.js` (roles, permissions, ownership) and re-read from the
+// user document on every request.
+//
+// Critically: this platform authenticates with its OWN JWTs, signed with
+// JWT_SECRET — not with Firebase Authentication. `request.auth` is therefore
+// ALWAYS null for any client, and no `request.auth.uid` comparison here could
+// ever evaluate true. An earlier version of this file was written as though
+// Firebase Auth were in use, with owner-scoped rules like
+// `request.auth.uid == resource.data.userId`. Those read as though client
+// access worked and was safely scoped; in reality they were unreachable code
+// that always denied. They have been replaced with explicit denial so the file
+// states what it does.
+//
+// These rules are not the authorization model. They are the backstop that keeps
+// the database unreachable if someone points a client SDK at it using the
+// project config, which is public by definition.
+//
+// Verified: no Firebase client SDK is installed or imported anywhere in
+// makemytrip-frontend, and there are no VITE_FIREBASE_* variables.
+// `tests/audit.test.mjs` pins both that and the contents of this file.
+//
+// ── If a client SDK is ever introduced ──
+//
+// Do not simply relax these rules. Firebase Auth would first have to become the
+// identity provider, or the API would have to mint Firebase custom tokens
+// carrying the user id. Only then can an owner check be written that means
+// anything. Until that exists, opening any rule here opens it to everyone.
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    function signedIn() {
-      return request.auth != null;
-    }
+    // ── Catalog ──
+    //
+    // These were `allow read: if true`. That let anyone holding the project id
+    // bulk-export the entire inventory — 430 hotels, 509 trains, 250 cabs, 162
+    // flights — directly from Firestore, bypassing the API's rate limiting,
+    // pagination and availability filtering. Nothing required it: the catalog is
+    // served by GET /api/v1/{flights,hotels,buses,trains,cabs}.
+    match /flights/{id}          { allow read, write: if false; }
+    match /hotels/{id}           { allow read, write: if false; }
+    match /buses/{id}            { allow read, write: if false; }
+    match /trains/{id}           { allow read, write: if false; }
+    match /cabs/{id}             { allow read, write: if false; }
+    match /room_categories/{id}  { allow read, write: if false; }
 
-    function ownsResource() {
-      return signedIn() && request.auth.uid == resource.data.userId;
-    }
+    // ── Identity and credentials ──
+    //
+    // `users` holds bcrypt password hashes; `sessions` holds the hash of a live
+    // refresh token, so a read there is a step towards session theft and a write
+    // is session forgery; `otps` holds live one-time codes.
+    match /users/{email}         { allow read, write: if false; }
+    match /sessions/{id}         { allow read, write: if false; }
+    match /otps/{id}             { allow read, write: if false; }
 
-    // ── Public catalog collections (read-only for clients) ──
-    match /flights/{id} {
-      allow read: if true;
-      allow write: if false; // admin SDK only
-    }
-    match /hotels/{id} {
-      allow read: if true;
-      allow write: if false;
-    }
-    match /buses/{id} {
-      allow read: if true;
-      allow write: if false;
-    }
-    match /trains/{id} {
-      allow read: if true;
-      allow write: if false;
-    }
-    match /cabs/{id} {
-      allow read: if true;
-      allow write: if false;
-    }
+    // ── Money ──
+    //
+    // Bookings and payments carry passenger names, contact details and captured
+    // amounts. Refund state is decided by `refundService`, never by a client.
+    match /bookings/{id}         { allow read, write: if false; }
+    match /payments/{id}         { allow read, write: if false; }
+    match /refunds/{id}          { allow read, write: if false; }
 
-    // ── User profiles: owner-only ──
-    match /users/{email} {
-      allow read, update: if signedIn() && request.auth.uid == resource.data.id;
-      allow create, delete: if false; // account lifecycle handled server-side
-    }
+    // Coupons: a readable collection would let anyone enumerate unlisted codes,
+    // their discounts and their remaining redemptions.
+    match /coupons/{id}          { allow read, write: if false; }
 
-    // ── Bookings: strict per-user isolation ──
-    match /bookings/{id} {
-      allow read: if ownsResource();
-      allow create: if signedIn() && request.auth.uid == request.resource.data.userId;
-      allow update: if ownsResource()
-        && request.resource.data.userId == resource.data.userId; // cannot reassign owner
-      allow delete: if false; // cancellations are status updates, not deletes
-    }
+    // ── Operational ──
+    //
+    // audit_logs carries other actors' IP addresses and email addresses, and a
+    // forgeable audit log is worse than none.
+    match /audit_logs/{id}       { allow read, write: if false; }
+    match /emailLogs/{id}        { allow read, write: if false; }
+    match /settings/{id}         { allow read, write: if false; }
+    match /notifications/{id}    { allow read, write: if false; }
 
-    // ── OTPs, email logs, payments: server-side only ──
-    match /otps/{id} {
-      allow read, write: if false;
-    }
-    match /payments/{id} {
-      allow read: if ownsResource();
-      allow write: if false; // written only by the verified-payment path
-    }
+    // ── User-generated content ──
+    //
+    // Reviews are published through GET /api/v1/reviews/subject/:id, which
+    // applies the same status filter server-side. Reading them straight from
+    // Firestore added nothing and exposed the collection to enumeration.
+    match /reviews/{id}          { allow read, write: if false; }
+    match /wishlists/{id}        { allow read, write: if false; }
+    match /support_tickets/{id}  { allow read, write: if false; }
+    match /vendor_requests/{id}  { allow read, write: if false; }
+    match /cms_pages/{id}        { allow read, write: if false; }
+    match /email_templates/{id}  { allow read, write: if false; }
 
-    // ── Audit trail: append-only, and only from the backend. No client may
-    //    read it (it carries other actors' IPs and emails) or write to it
-    //    (a forgeable audit log is worse than none). ──
-    match /audit_logs/{id} {
-      allow read, write: if false;
-    }
-
-    // ── Refunds: the owner may watch progress; only the backend may change
-    //    the amount or the status. ──
-    match /refunds/{id} {
-      allow read: if ownsResource();
-      allow write: if false;
-    }
-
-    // ── Reviews: published ratings are public, but writes go through the API
-    //    so a review can only be attached to a booking the author really made. ──
-    match /reviews/{id} {
-      allow read: if resource.data.status == 'published' && resource.data.isDeleted == false;
-      allow write: if false;
-    }
-
-    // ── Wishlists: strictly private to their owner. ──
-    match /wishlists/{id} {
-      allow read: if ownsResource();
-      allow write: if false;
-    }
-
-    // ── Support tickets: owner may read their own thread; all writes go
-    //    through the API so status transitions stay guarded. ──
-    match /support_tickets/{id} {
-      allow read: if ownsResource();
-      allow write: if false;
-    }
-
-    // ── Coupons: never client-readable. Exposing the collection would let
-    //    anyone enumerate unlisted codes and their limits. Validation is an
-    //    authenticated API call. ──
-    match /coupons/{id} {
-      allow read, write: if false;
-    }
-
-    // ── Vendor onboarding requests: applicant-visible, admin-decided. ──
-    match /vendor_requests/{id} {
-      allow read: if signedIn() && request.auth.uid == resource.data.userId;
-      allow write: if false;
-    }
-
-    // ── Default: deny everything else ──
+    // ── Default: deny anything not named above ──
+    //
+    // This already covers every collection listed here. They are enumerated
+    // anyway so that a future collection added without a rule is visibly
+    // missing from this file, rather than silently inheriting a default.
     match /{document=**} {
       allow read, write: if false;
     }
