@@ -1,14 +1,39 @@
 import multer from 'multer'
 import crypto from 'crypto'
 import path from 'path'
+import os from 'os'
 import { fileURLToPath } from 'url'
 import fs from 'fs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const uploadDir = path.join(__dirname, '../../public/uploads')
 
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true })
+/**
+ * Where uploads land.
+ *
+ * A serverless filesystem is read-only apart from the OS temp directory, so
+ * `mkdirSync` on the bundle path throws EROFS/ENOENT at module load — and this
+ * module is imported during route registration, so that one line took down the
+ * entire API. Every endpoint returned 503 because an upload directory could not
+ * be created.
+ *
+ * On a normal host this stays exactly as it was. On a lambda it falls back to
+ * the temp directory, where writes succeed but do not survive the instance.
+ * That is the honest behaviour: uploads are already ephemeral there, and the
+ * durable fix is object storage (roadmap M28), not a directory.
+ */
+const isServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME)
+
+export const uploadDir = isServerless
+  ? path.join(os.tmpdir(), 'uploads')
+  : path.join(__dirname, '../../public/uploads')
+
+try {
+  if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true })
+} catch (err) {
+  // Never fatal. A platform that will not let us create this directory should
+  // cost us file upload, not the whole API.
+  console.warn(`⚠️ Upload directory unavailable (${uploadDir}): ${err.message}`)
+  console.warn('   File uploads will fail; every other endpoint is unaffected.')
 }
 
 /**

@@ -39,6 +39,7 @@
     "verify:search": "node scripts/verifySearch.js",
     "verify:booking": "node scripts/verifyBookingFlow.js",
     "verify:payment": "node scripts/verifyPayment.js",
+    "verify:deploy": "node scripts/verifyDeployment.js",
     "verify:all": "npm run verify:search && npm run verify:booking && npm run verify:payment",
     "bootstrap": "node scripts/bootstrapInventory.js"
   },
