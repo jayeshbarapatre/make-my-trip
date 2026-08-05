@@ -363,3 +363,72 @@ describe('checkout pages never fabricate inventory', () => {
     }
   })
 })
+
+describe('the customer never sees a browser dialog or a simulated payment', () => {
+  // Two failure modes lived in the customer-facing UI.
+  //
+  // `alert()` — 24 of them, against a project convention that says to use the
+  // toast system. Most were validation ("Return date cannot be earlier than
+  // departure date"), but sixteen were placeholder CTAs on verticals with no
+  // backend: `alert('Initiating secure forex purchase flow!')` fired from a
+  // button sitting under real-looking prices.
+  //
+  // Worse, MyTrips carried a Razorpay-branded modal whose "Simulate UPI / Card
+  // Payment" button told the customer "Payment verified successfully! Your trip
+  // upgrade is fully confirmed." No payment, no booking, no email. It called
+  // create-order with a bare amount, which the server rejects outright.
+
+  const SRC = new URL('../../makemytrip-frontend/src/', import.meta.url)
+
+  const walk = async (dir) => {
+    const { readdir } = await import('node:fs/promises')
+    const out = []
+    for (const entry of await readdir(dir, { withFileTypes: true })) {
+      const child = new URL(`${entry.name}${entry.isDirectory() ? '/' : ''}`, dir)
+      if (entry.isDirectory()) out.push(...await walk(child))
+      else if (/\.jsx?$/.test(entry.name)) out.push(child)
+    }
+    return out
+  }
+
+  // Comments describing the removed behaviour are fine; code is not.
+  const codeOf = (src) =>
+    src.split('\n').filter((l) => !l.trim().startsWith('//') && !l.trim().startsWith('*')).join('\n')
+
+  test('no source file calls alert()', async () => {
+    const offenders = []
+    for (const file of await walk(SRC)) {
+      const code = codeOf(await readFile(file, 'utf8'))
+      // `window.alert` and a bare `alert(` both count; `.alert(` on an object
+      // (e.g. a library instance) does not.
+      if (/(?<![.\w])alert\s*\(/.test(code) || /window\.alert\s*\(/.test(code)) {
+        offenders.push(file.pathname.split('/src/')[1])
+      }
+    }
+    assert.deepEqual(offenders, [], 'these files still use a browser dialog instead of the toast system')
+  })
+
+  test('nothing simulates a payment or fakes a verification', async () => {
+    const offenders = []
+    for (const file of await walk(SRC)) {
+      const code = codeOf(await readFile(file, 'utf8'))
+      if (/Simulate\s+(UPI|Card|Payment)/i.test(code)) offenders.push(file.pathname.split('/src/')[1])
+      if (/setPaymentSuccess\(true\)/.test(code)) offenders.push(file.pathname.split('/src/')[1])
+    }
+    assert.deepEqual(offenders, [], 'a payment may only be confirmed by the gateway, never by a button')
+  })
+
+  test('a vertical with no backend says so instead of pretending', async () => {
+    // These render a full storefront. If one is still reachable it must carry
+    // the coming-soon banner, so a customer is never walked to a dead purchase.
+    const GATED = [
+      'CruisePage.jsx', 'ForexPage.jsx', 'VisaPage.jsx', 'InsurancePage.jsx',
+      'ToursPage.jsx', 'HomestaysPage.jsx', 'HolidaysPage.jsx'
+    ]
+
+    for (const page of GATED) {
+      const code = await readFile(new URL(`pages/${page}`, SRC), 'utf8')
+      assert.match(code, /<ComingSoon\b/, `${page} must tell the customer it is not bookable yet`)
+    }
+  })
+})

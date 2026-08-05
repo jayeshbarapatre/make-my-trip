@@ -449,7 +449,7 @@ export default function HotelsPage() {
             <h2 className="inner-sec-title">Top hotel deals this week</h2>
             <p className="inner-sec-subtitle">Limited inventory · Book fast</p>
           </div>
-          <span className="inner-sec-all-link" onClick={() => alert('Loading deals...')}>View all →</span>
+          <span className="inner-sec-all-link" onClick={() => navigate('/hotels')}>View all →</span>
         </div>
 
         <div className="hotels-deals-grid">

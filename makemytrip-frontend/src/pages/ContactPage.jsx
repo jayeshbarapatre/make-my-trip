@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { cmsService } from '../services/cmsService'
+import { useToastContext } from '../context/ToastContext'
 import './ContactPage.css'
 
 const ContactPage = () => {
+  const toast = useToastContext()
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -22,7 +24,7 @@ const ContactPage = () => {
     e.preventDefault()
 
     if (!formData.name || !formData.email || !formData.subject || !formData.message) {
-      alert('Please fill in all required fields')
+      toast.warning('Please fill in all required fields', 'Missing details')
       return
     }
 
@@ -33,7 +35,7 @@ const ContactPage = () => {
       setFormData({ name: '', email: '', phone: '', subject: '', message: '' })
       setTimeout(() => setSubmitted(false), 3000)
     } catch (err) {
-      alert('Failed to submit. Please try again later.')
+      toast.error('Failed to submit. Please try again later.', 'Something went wrong')
       console.error(err)
     } finally {
       setLoading(false)

@@ -1,4 +1,7 @@
 import { useState } from 'react'
+import ComingSoon from '../components/ComingSoon'
+import { comingSoonToast } from '../utils/comingSoon'
+import { useToastContext } from '../context/ToastContext'
 import { useNavigate } from 'react-router-dom'
 import { SERVICE_TABS } from '../data/homepageData'
 import { useWeather } from '../hooks/useWeather'
@@ -9,6 +12,7 @@ import { photo } from '../utils/images'
 
 export default function HomestaysPage() {
   const navigate = useNavigate()
+  const toast = useToastContext()
   const [activeTab, setActiveTab] = useState('villas')
   const [activeChip, setActiveChip] = useState('Entire home')
   const [checkInDate, setCheckInDate] = useState('2026-05-20')
@@ -118,6 +122,7 @@ export default function HomestaysPage() {
             <span className="crumb-sep">›</span>
             <span className="crumb-cur">Homestays &amp; Villas</span>
           </div>
+          <ComingSoon vertical="Homestays & villas" blurb="You can browse stays here, but they cannot be booked yet." ctaPath="/hotels" ctaLabel="Browse hotels" />
           <h1>Live like a local. Stay like family.</h1>
           <p style={{ marginBottom: weather ? 10 : 28 }}>Handpicked homes and villas in 1,000+ Indian destinations · Hosted by people, not chains</p>
           {weather && (
@@ -191,7 +196,7 @@ export default function HomestaysPage() {
                 <div className="inner-field-val">4 <span className="unit-suffix">Adults</span></div>
                 <div className="inner-field-sub">Family-friendly</div>
               </div>
-              <button className="inner-search-cta" onClick={() => alert('Searching Homestays & Villas...!')}>
+              <button className="inner-search-cta" onClick={() => comingSoonToast(toast, "Homestays & villas")}>
                 SEARCH
               </button>
             </div>
@@ -220,7 +225,7 @@ export default function HomestaysPage() {
             <h2 className="inner-sec-title">Featured homestays</h2>
             <p className="inner-sec-subtitle">Trending homes our travellers love</p>
           </div>
-          <span className="inner-sec-all-link" onClick={() => alert('Loading homestays...')}>View all →</span>
+          <span className="inner-sec-all-link" onClick={() => comingSoonToast(toast, "Homestays & villas")}>View all →</span>
         </div>
 
         <div className="homestays-feat-grid">
@@ -266,7 +271,7 @@ export default function HomestaysPage() {
           <div className="host-banner-left">
             <h2>List your home. <span>Earn with MMT.</span></h2>
             <p>Already running a homestay or have a spare property? Reach 50M+ travellers, set your own rates, and get paid securely — with zero listing fees.</p>
-            <button onClick={() => alert('Navigating to Become a Host onboarding flow...')}>Become a host</button>
+            <button onClick={() => comingSoonToast(toast, "Homestays & villas")}>Become a host</button>
           </div>
           <div className="host-banner-right">🔑</div>
         </div>

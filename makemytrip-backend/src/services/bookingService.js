@@ -316,7 +316,57 @@ export const loadPaymentAuthority = async ({ orderId, paymentId, userId }) => {
     orderId: payment.orderId ?? String(orderId ?? ''),
     paymentId: payment.paymentId ?? (paymentId ? String(paymentId) : null),
     amount,
-    method: payment.method ?? 'razorpay'
+    method: payment.method ?? 'razorpay',
+    // The trip this payment was priced for. `createBookingForPayment` refuses a
+    // booking that does not match it.
+    quote: payment.quote ?? null
+  }
+}
+
+/** Nights the payload actually books, or null when it does not say. */
+const nightsBooked = (type, payload) => {
+  if (type !== 'hotel') return null
+  try {
+    return travelDatesFor(type, payload).length
+  } catch {
+    return null
+  }
+}
+
+/**
+ * The trip a booking claims must be the trip its payment was priced for.
+ *
+ * `authority.amount` comes from the gateway, so the price was never forgeable —
+ * but the *item* was. `payload` alone decided which inventory got reserved and
+ * nothing compared it to the quote the customer actually paid against, so
+ * quoting the cheapest bus seat, paying for it, then submitting a booking for a
+ * long-haul flight bought a confirmed PNR and nine real seats for bus money.
+ *
+ * Quantity and nights are capped rather than pinned: booking less than was paid
+ * for is a refund question, not an attack, and flight payloads legitimately
+ * reserve fewer seats than they price (infants travel on a lap).
+ */
+const assertMatchesQuote = ({ quote, type, itemId, quantity, nights }) => {
+  const mismatch = (detail) =>
+    authorityError(
+      `This booking does not match the trip that was paid for (${detail})`,
+      'QUOTE_MISMATCH'
+    )
+
+  if (quote.type && quote.type !== type) throw mismatch('different type')
+
+  if (quote.itemId && String(quote.itemId) !== String(itemId ?? '')) {
+    throw mismatch('different item')
+  }
+
+  const paidUnits = Number(quote.quantity)
+  if (Number.isFinite(paidUnits) && paidUnits > 0 && quantity > paidUnits) {
+    throw mismatch(`${paidUnits} paid for, ${quantity} requested`)
+  }
+
+  const paidNights = Number(quote.nights)
+  if (Number.isFinite(paidNights) && paidNights > 0 && nights !== null && nights > paidNights) {
+    throw mismatch(`${paidNights} nights paid for, ${nights} requested`)
   }
 }
 
@@ -332,7 +382,8 @@ export const createBookingForPayment = async ({
   authority,
   userId,
   userEmail = null,
-  userName = null
+  userName = null,
+  quote = null
 }) => {
   const type = BOOKING_TYPES.has(payload.type) ? payload.type : 'flight'
   const details = sanitizeBookingDetails(payload)
@@ -346,6 +397,17 @@ export const createBookingForPayment = async ({
   // no booking without a seat).
   const itemId = resolveItemId(payload)
   const quantity = bookedQuantity(type, payload)
+
+  // Runs before anything is written, so a mismatched booking reserves no seat.
+  if (quote) {
+    assertMatchesQuote({ quote, type, itemId, quantity, nights: nightsBooked(type, payload) })
+  } else {
+    console.warn(
+      `⚠️ ${authority.paymentId ?? authority.orderId}: payment carries no stored quote — ` +
+      'item and quantity could not be verified against what was paid for'
+    )
+  }
+
   const inventoryCollection = RESOURCE_COLLECTIONS[type]
   const inventoryRef = itemId && inventoryCollection
     ? db.collection(inventoryCollection).doc(itemId)

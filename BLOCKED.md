@@ -21,28 +21,45 @@ Internal work never waits on this list.
 
 ---
 
-## B2 — SMTP delivery verification
+## B2 — SMTP delivery
 
 | | |
 |---|---|
-| **Reason** | `SMTP_USER` / `SMTP_PASS` are among five credentials published in commit `7a28d2b`; the server's secret guard refuses to boot with them |
+| **Reason** | `SMTP_USER` / `SMTP_PASS` are among five credentials published in commit `7a28d2b`. The provider now rejects them outright: the server logs `535-5.7.8 Username and Password not accepted` at boot and **no transactional email is delivered** — booking confirmations included |
 | **Dependency** | Credential rotation at the provider (see `SECURITY_ROTATION.md`) |
 | **Completed** | Template rendering is exercised and asserted by `verify:booking`, so a broken template is caught. Email logging, retry and the admin resend path are implemented |
 | **Auto-executes** | Once rotated, `verify:booking` asserts real delivery instead of render-only |
 
+> Corrected 2026-08-05: an earlier revision of this entry said the secret guard
+> refuses to boot. It does not — `SMTP_*` is feature-gated, so the server starts
+> and email fails silently per-send. That is the more dangerous failure mode and
+> the reason this is still a launch blocker.
+
 ---
 
-## B3 — HTTP-layer and browser tests
+## B2a — Razorpay webhook secret
 
 | | |
 |---|---|
-| **Reason** | Cannot start `node src/index.js` (permission), and there is no browser in this environment |
-| **Dependency** | A Bash permission rule for the server command, plus B2 (the server will not boot until credentials rotate) |
-| **Completed** | `tests/security.test.mjs` (15 tests) and the Playwright specs exist and are wired to `npm run test:all` |
-| **Auto-executes** | `npm run test:all` covers middleware ordering, rate limiters and CORS; Playwright drives the booking flow |
+| **Reason** | `RAZORPAY_WEBHOOK_SECRET` is unset, so `POST /payment/webhook` returns 503 to every delivery — the abandoned-checkout hole it exists to close stays open |
+| **Dependency** | Razorpay Dashboard → Settings → Webhooks: create the endpoint, subscribe to `payment.captured` and `payment.failed`, copy the signing secret (**not** the API key secret) |
+| **Completed** | Handler, signature verification, idempotency and 15 tests (`npm run test:webhook`, `npm run test:quote`). Listed in `.env.example` and `render.yaml` |
+| **Guard** | Now on the `FEATURE_GATED` list in `src/config/secrets.js`, so production startup aborts rather than running with the hole open |
 
-> This is also why screenshots cannot be produced. `verify:search` and
-> `verify:booking` print real per-route, per-stage execution output instead.
+---
+
+## B3 — Browser tests
+
+| | |
+|---|---|
+| **Reason** | No browser in this environment, so the Playwright specs cannot be driven locally |
+| **Dependency** | CI, or a local browser install |
+| **Completed** | `.github/workflows/playwright.yml` runs the specs on push and PR |
+
+> Corrected 2026-08-05: this entry also claimed the server cannot be started and
+> that `tests/security.test.mjs` therefore could not run. Both are resolved — the
+> server starts, and the security suite passes 15/15 against it. It now runs in
+> CI via `.github/workflows/tests.yml`.
 
 ---
 
@@ -63,4 +80,5 @@ Internal work never waits on this list.
 |---|---|---|
 | Cab inventory model | (a) unlimited (b) daily capacity per route+class (c) physical fleet | **(b)** — prevents overselling without inventing fleet management |
 | Seven non-functional pages (Cruise, Forex, Holidays, Homestays, Insurance, Tours, Visa) | (a) remove from nav (b) "coming soon" (c) build out (15–25 h each) | **(a) or (b)** for launch |
-| ~140 uncommitted files | commit / accept risk | Commit — this is the largest single risk to the project |
+| Mobile OTP | Twilio is unconfigured, so `/auth/send-otp` returns 503 | Ship on email sign-in, or provision Twilio |
+| Redis | Unreachable, so rate limiters and cache fall back to in-memory | Fine at one instance (`render.yaml` starter plan). Provision Redis **before** scaling out, or per-instance limits multiply |

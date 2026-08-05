@@ -1,7 +1,9 @@
 import { useState } from 'react'
+import { useToastContext } from '../../context/ToastContext'
 import '../../styles/Sections.css'
 
 export default function AppDownload() {
+  const toast = useToastContext()
   const [phoneNumber, setPhoneNumber] = useState('')
   const [submitted, setSubmitted] = useState(false)
 
@@ -12,7 +14,7 @@ export default function AppDownload() {
     setTimeout(() => {
       setSubmitted(false)
       setPhoneNumber('')
-      alert('Download link sent successfully!')
+      toast.success('Download link sent successfully!', 'Check your phone')
     }, 1500)
   }
 

@@ -11,6 +11,7 @@ import 'swiper/css'
 import 'swiper/css/navigation'
 import { SERVICE_TABS } from '../data/homepageData'
 import { CITIES } from '../data/cities'
+import { useToastContext } from '../context/ToastContext'
 import { flightService } from '../services/flightService'
 import CustomCalendarPicker from '../components/CustomCalendarPicker'
 import TabIcon from '../components/TabIcon'
@@ -77,6 +78,7 @@ const PICKS = [
 
 export default function HomePage() {
   const { t } = useTranslation()
+  const toast = useToastContext()
   const [activeTab,  setActiveTab]  = useState('flights')
   const [tripType,   setTripType]   = useState('oneway')
   const [activeFare, setActiveFare] = useState('Regular')
@@ -270,7 +272,7 @@ export default function HomePage() {
         if (current <= 0) return prev
         const nextVal = current - 1
         if (type === 'adults' && prev.infants > nextVal) {
-          alert("Each infant must be accompanied by at least one adult.")
+          toast.warning("Each infant must be accompanied by at least one adult.", "Check travellers")
           return prev
         }
         return { ...prev, [type]: nextVal }
@@ -279,7 +281,7 @@ export default function HomePage() {
         if (current >= 6) return prev
         const nextVal = current + 1
         if (type === 'infants' && nextVal > prev.adults) {
-          alert("You cannot add more infants than the total number of accompanying adults.")
+          toast.warning("You cannot add more infants than the total number of accompanying adults.", "Check travellers")
           return prev
         }
         return { ...prev, [type]: nextVal }
@@ -593,7 +595,7 @@ export default function HomePage() {
                         const today = new Date()
                         today.setHours(0,0,0,0)
                         if (new Date(date) < today) {
-                          alert("Departure date cannot be in the past. Please select a valid date.")
+                          toast.warning("Departure date cannot be in the past. Please select a valid date.", "Check dates")
                           return
                         }
                         setDepartDate(date)
@@ -618,7 +620,7 @@ export default function HomePage() {
                             value={returnDate}
                             onChange={(date) => {
                               if (new Date(date) < new Date(departDate)) {
-                                alert("Return date cannot be earlier than departure date.")
+                                toast.warning("Return date cannot be earlier than departure date.", "Check dates")
                                 return
                               }
                               setReturnDate(date)

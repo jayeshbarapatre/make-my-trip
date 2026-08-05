@@ -1,0 +1,84 @@
+name: Tests
+
+on:
+  push:
+    branches: ["main", "master", "dev"]
+  pull_request:
+    branches: ["*"]
+
+jobs:
+  backend:
+    name: Backend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: makemytrip-backend
+    env:
+      # Test-only value. It only has to satisfy the 32-character minimum in
+      # src/config/secrets.js; nothing it signs outlives the job.
+      JWT_SECRET: ci_only_secret_not_used_anywhere_else_0123456789
+      FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+      FIREBASE_CLIENT_EMAIL: ${{ secrets.FIREBASE_CLIENT_EMAIL }}
+      FIREBASE_PRIVATE_KEY: ${{ secrets.FIREBASE_PRIVATE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: makemytrip-backend/package-lock.json
+
+      - run: npm ci
+
+      # No datastore, no network. These gate every merge unconditionally —
+      # signature handling, idempotency, quote binding and availability.
+      - name: Offline suites
+        run: npm run test:mocked
+
+      # The remaining suites read Firestore. Without credentials they would skip
+      # themselves anyway (tests/firestoreGuard.mjs), so the step is gated
+      # explicitly rather than reporting a green run that tested nothing.
+      - name: Firestore-backed suites
+        if: env.FIREBASE_PROJECT_ID != ''
+        run: npm test
+
+      - name: HTTP security suite
+        if: env.FIREBASE_PROJECT_ID != ''
+        run: |
+          PORT=5199 node src/index.js > /tmp/server.log 2>&1 &
+          for _ in $(seq 1 60); do
+            curl -sf http://localhost:5199/health > /dev/null && break
+            sleep 1
+          done
+          npm run test:security
+        env:
+          NODE_ENV: test
+          CORS_ORIGIN: http://localhost:5173
+
+      - name: Server log
+        if: failure()
+        run: cat /tmp/server.log || true
+
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: makemytrip-frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: makemytrip-frontend/package-lock.json
+
+      - run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build

@@ -59,6 +59,11 @@ const REQUIRED = [
 const FEATURE_GATED = [
   { name: 'RAZORPAY_KEY_ID', feature: 'payments and refunds' },
   { name: 'RAZORPAY_KEY_SECRET', feature: 'payments and refunds' },
+  // Without this the webhook rejects every delivery, and a customer who closes
+  // the tab after paying leaves money captured with no booking and nothing on
+  // the platform that notices. In production that is a data-loss bug, not a
+  // degraded feature, so it belongs on the list that aborts startup.
+  { name: 'RAZORPAY_WEBHOOK_SECRET', feature: 'payment webhooks (abandoned-checkout recovery)' },
   { name: 'SMTP_HOST', feature: 'transactional email' },
   { name: 'SMTP_USER', feature: 'transactional email' },
   { name: 'SMTP_PASS', feature: 'transactional email' }

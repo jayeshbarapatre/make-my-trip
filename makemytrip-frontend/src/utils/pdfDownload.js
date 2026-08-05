@@ -7,6 +7,9 @@
  */
 import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
+// A plain module cannot use the ToastContext hook, so it uses the imperative
+// helper. Either way the customer never sees a browser dialog.
+import { showToast } from './toast'
 
 export default async function downloadElementAsPdf(elementId, fileName) {
   const element = document.getElementById(elementId)
@@ -27,6 +30,6 @@ export default async function downloadElementAsPdf(elementId, fileName) {
     pdf.save(fileName)
   } catch (error) {
     console.error('PDF Error:', error)
-    alert('Failed to generate PDF')
+    showToast('Could not generate the PDF. Your booking is unaffected — try again from My Trips.', 'error', 5000)
   }
 }

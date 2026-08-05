@@ -7,6 +7,7 @@ import FlightLoader from '../components/Atoms/FlightLoader'
 import { useAuth } from '../context/AuthContext'
 import CustomCalendarPicker from '../components/CustomCalendarPicker'
 import { CITIES } from '../data/cities'
+import { useToastContext } from '../context/ToastContext'
 import { todayLocal } from '../utils/date'
 import '../styles/FlightResults.css'
 import OtpLoginModal from '../components/Auth/OtpLoginModal'
@@ -84,6 +85,7 @@ const PROMOS = [
 
 // ─────────────────────────────────────────────────────────────
 export default function SearchResultsPage() {
+  const toast = useToastContext()
   const [params]  = useSearchParams()
   const navigate  = useNavigate()
   const [sortBy, setSortBy]             = useState('cheapest')
@@ -523,7 +525,7 @@ export default function SearchResultsPage() {
                 value={returnDate}
                 onChange={v => {
                   if (new Date(v) < new Date(dateVal)) {
-                    alert('Return date cannot be earlier than departure date')
+                    toast.warning('Return date cannot be earlier than departure date', 'Check dates')
                     return
                   }
                   setReturnDate(v)

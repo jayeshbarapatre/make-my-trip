@@ -1,4 +1,7 @@
 import { useState } from 'react'
+import ComingSoon from '../components/ComingSoon'
+import { comingSoonToast } from '../utils/comingSoon'
+import { useToastContext } from '../context/ToastContext'
 import { useNavigate } from 'react-router-dom'
 import { SERVICE_TABS } from '../data/homepageData'
 import TabIcon from '../components/TabIcon'
@@ -6,6 +9,7 @@ import '../styles/Hero.css'
 
 export default function ForexPage() {
   const navigate = useNavigate()
+  const toast = useToastContext()
   const [activeTab, setActiveTab] = useState('forex')
   const [inrAmount, setInrAmount] = useState('50,000')
   const [usdAmount, setUsdAmount] = useState('600')
@@ -55,6 +59,7 @@ export default function ForexPage() {
             <span className="crumb-sep">›</span>
             <span className="crumb-cur">Forex Card &amp; Cash</span>
           </div>
+          <ComingSoon vertical="Forex" blurb="Rates shown are indicative. We are not selling currency or cards yet." ctaPath="/" ctaLabel="Browse flights" />
           <h1>Multi-Currency Forex Cards &amp; Cash</h1>
           <p style={{ fontWeight: 600, marginBottom: 28 }}>Best Exchange Rates Guaranteed · Same-Day Doorstep Delivery</p>
 
@@ -104,7 +109,7 @@ export default function ForexPage() {
                 <div className="inner-field-val">${usdAmount}</div>
                 <div className="inner-field-sub">In Forex Card or Cash</div>
               </div>
-              <button className="inner-search-cta" onClick={() => alert('Initiating secure forex purchase flow!')}>
+              <button className="inner-search-cta" onClick={() => comingSoonToast(toast, "Forex")}>
                 GET FOREX NOW
               </button>
             </div>
@@ -139,7 +144,7 @@ export default function ForexPage() {
                   <span className="price">{card.fee}</span>
                   <small>Zero Hidden Issuance Charges</small>
                 </div>
-                <button onClick={() => alert(`Initiating application for ${card.name}`)}>
+                <button onClick={() => comingSoonToast(toast, "Forex")}>
                   APPLY NOW
                 </button>
               </div>

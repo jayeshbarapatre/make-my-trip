@@ -1,4 +1,7 @@
 import { useState } from 'react'
+import ComingSoon from '../components/ComingSoon'
+import { comingSoonToast } from '../utils/comingSoon'
+import { useToastContext } from '../context/ToastContext'
 import { useNavigate } from 'react-router-dom'
 import { SERVICE_TABS } from '../data/homepageData'
 import CustomCalendarPicker from '../components/CustomCalendarPicker'
@@ -7,6 +10,7 @@ import '../styles/Hero.css'
 
 export default function VisaPage() {
   const navigate = useNavigate()
+  const toast = useToastContext()
   const [activeTab, setActiveTab] = useState('visa')
   const [activeChip, setActiveChip] = useState('All Visas')
   const [travelDate, setTravelDate] = useState('2026-06-01')
@@ -88,6 +92,7 @@ export default function VisaPage() {
             <span className="crumb-sep">›</span>
             <span className="crumb-cur">Visa Application Services</span>
           </div>
+          <ComingSoon vertical="Visa services" blurb="Requirements shown are for reference. Applications cannot be filed here yet." ctaPath="/" ctaLabel="Browse flights" />
           <h1>Seamless e-Visa &amp; Immigration Services</h1>
           <p style={{ marginBottom: 28 }}>Minimal documentation · Expert document checks · 99.8% Visa success rate</p>
 
@@ -142,7 +147,7 @@ export default function VisaPage() {
                 <div className="inner-field-val">Tourist <span className="unit-suffix">e-Visa</span></div>
                 <div className="inner-field-sub">Single Entry</div>
               </div>
-              <button className="inner-search-cta" onClick={() => alert('Checking Visa Requirements...!')}>
+              <button className="inner-search-cta" onClick={() => comingSoonToast(toast, "Visa services")}>
                 CHECK VISA
               </button>
             </div>
@@ -191,7 +196,7 @@ export default function VisaPage() {
                   <span className="price">₹{visa.price}</span>
                   <small>Embassy + MMT Fee (incl taxes)</small>
                 </div>
-                <button onClick={() => alert(`Initiating Visa application for ${visa.country}`)}>
+                <button onClick={() => comingSoonToast(toast, "Visa services")}>
                   APPLY VISA
                 </button>
               </div>

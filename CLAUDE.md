@@ -181,7 +181,14 @@ POST   /api/v1/bookings/hotels        — Create hotel booking (auth required)
 POST   /api/v1/payment/quote          — Authoritative price + signed quoteToken (auth required)
 POST   /api/v1/payment/create-order   — Razorpay order; takes { quoteToken }, NOT an amount (auth required)
 POST   /api/v1/payment/verify         — Verify gateway callback; creates the booking (auth required)
+POST   /api/v1/payment/webhook        — Razorpay webhook; HMAC-authenticated, NOT session-authenticated
 ```
+
+`/payment/webhook` is the only reliable source of payment truth — `/payment/verify`
+runs only if the customer's browser comes back. It is mounted with `express.raw`
+**ahead of** `express.json` in `src/index.js` (a re-serialised body does not
+reproduce the bytes Razorpay signed), declared before the router-level
+`authenticate`, and idempotent through the `pay_{paymentId}` document key.
 
 #### Admin (all require `authenticateAdmin` + `adminOnly`; `/register` additionally requires SUPER_ADMIN)
 ```
@@ -280,6 +287,9 @@ SMTP_PASS=your-app-password
 # Payment Gateway (Razorpay/Stripe)
 RAZORPAY_KEY_ID=your-key
 RAZORPAY_KEY_SECRET=your-secret
+# Webhook signing secret — NOT the API key secret. Dashboard → Settings →
+# Webhooks. Startup aborts in production without it.
+RAZORPAY_WEBHOOK_SECRET=your-webhook-secret
 ```
 
 ### Firebase Credentials (Optional)
@@ -345,9 +355,10 @@ Rules:
 ### Booking creation — one path, payment required (`src/services/bookingService.js`)
 
 `createBookingForPayment()` is the **only** function that writes a booking document.
-Both `POST /payment/verify` and `POST /bookings/*` go through it.
+`POST /payment/verify`, `POST /payment/webhook` and `POST /bookings/*` all go through it.
 
 - A booking requires a **captured, caller-owned** gateway payment; `totalAmount` comes from the gateway, never the request.
+- **The booking must match the quote it was paid for.** The gateway fixes the *price*; nothing fixed the *item*, so a trip could be priced as the cheapest bus seat and booked as a long-haul flight. Every caller passes the `quote` recorded on the payment document at create-order time, and `assertMatchesQuote` rejects a mismatched type, itemId, seat count or night count with `QUOTE_MISMATCH` **before** anything is written. Quantity and nights are capped, not pinned — booking less than was paid for is a refund question, and flight payloads legitimately reserve fewer seats than they price (infants travel on a lap).
 - Client payloads are **whitelisted** — `SERVER_OWNED_FIELDS` (userId, bookingId, status, paymentStatus, …) are stripped. Never spread the raw request body into a Firestore document.
 - Booking docs are keyed `pay_{paymentId}`, so retries and double-clicks are idempotent.
 - Cancellation calls `releaseAvailability()` to return seats/rooms to the pool.

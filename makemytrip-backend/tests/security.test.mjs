@@ -117,13 +117,16 @@ describe('booking integrity', () => {
   })
 
   test('a user only ever sees their own bookings', async () => {
-    // The route takes a userId path parameter; it must be ignored in favour of
-    // the authenticated principal.
-    const { status, body } = await get('/bookings/user/SOMEONE_ELSE', { token: customer.token })
+    // The route takes a userId path parameter. `canReadOwn` denies outright when
+    // it names anyone but the authenticated principal — stricter than silently
+    // re-scoping the query, and it does not pretend the request was honoured.
+    const other = await get('/bookings/user/SOMEONE_ELSE', { token: customer.token })
+    assert.equal(other.status, 403, 'asking for another user\'s bookings must be refused')
 
-    assert.equal(status, 200)
-    const bookings = body?.data ?? []
-    for (const b of bookings) {
+    // The caller's own id still works, and returns only their bookings.
+    const own = await get(`/bookings/user/${customer.id}`, { token: customer.token })
+    assert.equal(own.status, 200)
+    for (const b of own.body?.data ?? []) {
       assert.equal(b.userId, customer.id, 'no other user\'s booking may be returned')
     }
   })

@@ -1,4 +1,7 @@
 import { useState } from 'react'
+import ComingSoon from '../components/ComingSoon'
+import { comingSoonToast } from '../utils/comingSoon'
+import { useToastContext } from '../context/ToastContext'
 import { useNavigate } from 'react-router-dom'
 import { SERVICE_TABS } from '../data/homepageData'
 import { useWeather } from '../hooks/useWeather'
@@ -9,6 +12,7 @@ import { photo } from '../utils/images'
 
 export default function CruisePage() {
   const navigate = useNavigate()
+  const toast = useToastContext()
   const [activeTab, setActiveTab] = useState('cruise')
   const [activeChip, setActiveChip] = useState('All Cruises')
   const [departDate, setDepartDate] = useState('2026-05-22')
@@ -88,6 +92,7 @@ export default function CruisePage() {
             <span className="crumb-sep">›</span>
             <span className="crumb-cur">Cruise booking</span>
           </div>
+          <ComingSoon vertical="Cruises" blurb="You can browse sailings here, but cabins cannot be booked yet." ctaPath="/hotels" ctaLabel="Browse hotels" />
           <h1>Luxury Cruise Booking</h1>
           <p style={{ marginBottom: weather ? 10 : 28 }}>Sail the Oceans in Style - Cordelia, Royal Caribbean, Genting Dream</p>
           {weather && (
@@ -148,7 +153,7 @@ export default function CruisePage() {
                 <div className="inner-field-val">1 <span className="unit-suffix">Cabin, 2 Pax</span></div>
                 <div className="inner-field-sub">Standard Balcony</div>
               </div>
-              <button className="inner-search-cta" onClick={() => alert('Searching Cruises...!')}>
+              <button className="inner-search-cta" onClick={() => comingSoonToast(toast, "Cruises")}>
                 SEARCH
               </button>
             </div>
@@ -198,7 +203,7 @@ export default function CruisePage() {
                   <span className="price">₹{cruise.price}</span>
                   <small>Cabin Price (excl taxes)</small>
                 </div>
-                <button onClick={() => alert(`Initiating cabin booking for ${cruise.name}`)}>
+                <button onClick={() => comingSoonToast(toast, "Cruises")}>
                   VIEW CABINS
                 </button>
               </div>

@@ -5,9 +5,11 @@ import { setCriteria } from '../../store/reducers/searchReducer'
 import { SERVICE_TABS, SPECIAL_FARES } from '../../data/homepageData'
 import TabIcon from '../TabIcon'
 import { todayLocal } from '../../utils/date'
+import { useToastContext } from '../../context/ToastContext'
 import '../../styles/Hero.css'
 
 export default function HeroSearch() {
+  const toast = useToastContext()
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const { _user } = useSelector((s) => s.auth)
@@ -55,7 +57,7 @@ export default function HeroSearch() {
 
   const handleSearch = (e) => {
     e.preventDefault()
-    if (!form.date) return alert('Please select a departure date')
+    if (!form.date) return toast.warning('Please select a departure date', 'Check dates')
     dispatch(setCriteria(form))
     navigate(`/flights/results?from=${form.from}&to=${form.to}&date=${form.date}&passengers=${form.passengers}`)
   }

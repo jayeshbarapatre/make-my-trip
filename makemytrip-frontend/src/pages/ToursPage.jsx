@@ -1,4 +1,7 @@
 import { useState } from 'react'
+import ComingSoon from '../components/ComingSoon'
+import { comingSoonToast } from '../utils/comingSoon'
+import { useToastContext } from '../context/ToastContext'
 import { useNavigate } from 'react-router-dom'
 import { SERVICE_TABS } from '../data/homepageData'
 import CustomCalendarPicker from '../components/CustomCalendarPicker'
@@ -8,6 +11,7 @@ import { photo } from '../utils/images'
 
 export default function ToursPage() {
   const navigate = useNavigate()
+  const toast = useToastContext()
   const [activeTab, setActiveTab] = useState('tours')
   const [activeChip, setActiveChip] = useState('All Attractions')
   const [activityDate, setActivityDate] = useState('2026-05-18')
@@ -96,6 +100,7 @@ export default function ToursPage() {
             <span className="crumb-sep">›</span>
             <span className="crumb-cur">Tours &amp; Attractions</span>
           </div>
+          <ComingSoon vertical="Tours & activities" blurb="You can browse experiences here, but tickets cannot be booked yet." ctaPath="/hotels" ctaLabel="Browse hotels" />
           <h1>Explore Best Tours, Activities &amp; Attractions</h1>
           <p style={{ marginBottom: 28 }}>Skip-the-line tickets · Immersive local experiences · Global attractions</p>
 
@@ -150,7 +155,7 @@ export default function ToursPage() {
                 <div className="inner-field-val">2 <span className="unit-suffix">Adults</span></div>
                 <div className="inner-field-sub">General pass</div>
               </div>
-              <button className="inner-search-cta" onClick={() => alert('Searching Activities & Tours...!')}>
+              <button className="inner-search-cta" onClick={() => comingSoonToast(toast, "Tours & activities")}>
                 SEARCH
               </button>
             </div>
@@ -201,7 +206,7 @@ export default function ToursPage() {
                   <span className="price">₹{tour.price}</span>
                   <small>Instant Voucher</small>
                 </div>
-                <button onClick={() => alert(`Initiating ticket booking for ${tour.title}`)}>
+                <button onClick={() => comingSoonToast(toast, "Tours & activities")}>
                   BOOK TICKETS
                 </button>
               </div>

@@ -47,6 +47,16 @@ services:
         sync: false
       - key: RAZORPAY_KEY_SECRET
         sync: false
+      # Razorpay Dashboard → Settings → Webhooks. NOT the API key secret.
+      # Startup aborts in production without it: an unverifiable webhook means a
+      # customer who closes the tab after paying leaves money captured with no
+      # booking, and nothing notices.
+      - key: RAZORPAY_WEBHOOK_SECRET
+        sync: false
+      # Peppers stored OTP hashes. Without it OTPs fall back to JWT_SECRET, so
+      # rotating JWT_SECRET would invalidate every OTP in flight.
+      - key: OTP_PEPPER
+        sync: false
       - key: SMTP_HOST
         sync: false
       - key: SMTP_PORT

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { bookingService, paymentService } from '../services/authService'
+import { bookingService } from '../services/authService'
 import BookingCard from '../components/BookingCard'
 import EnhancedBookingDetailsModal from '../components/EnhancedBookingDetailsModal'
 import { useAuth } from '../context/AuthContext'
@@ -39,11 +39,6 @@ export default function MyTrips() {
     setTimeout(() => setNotification({ show: false, message: '', type: 'success' }), 4000)
   }
 
-  // Razorpay Checkout Simulation State
-  const [razorpayOrder, setRazorpayOrder] = useState(null)
-  const [showRazorpay, setShowRazorpay] = useState(false)
-  const [paymentSuccess, setPaymentSuccess] = useState(false)
-
   // Mobile OTP Wallet Login Simulation State
   const [showOtpModal, setShowOtpModal] = useState(false)
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
@@ -60,6 +55,12 @@ export default function MyTrips() {
   } = useQuery({
     queryKey: ['bookings', user?.id],
     enabled: Boolean(user?.id),
+    // A booking made after this list was last fetched must show up the moment
+    // the customer opens My Trips. The global 5-minute staleTime otherwise
+    // served the pre-booking cache, so a paid trip looked like it never
+    // happened — the single most alarming thing a booking site can do.
+    refetchOnMount: 'always',
+    staleTime: 0,
     queryFn: async () => {
       const response = await bookingService.getUserBookings(user.id)
       return Array.isArray(response)
@@ -95,17 +96,6 @@ export default function MyTrips() {
   }
 
   // Trigger Razorpay payment flow
-  const handleTriggerPayment = async (amount) => {
-    try {
-      const order = await paymentService.createOrder(amount)
-      setRazorpayOrder(order)
-      setShowRazorpay(true)
-      setPaymentSuccess(false)
-    } catch (err) {
-      showNotification(err.message || 'Failed to initialize payment', 'error')
-    }
-  }
-
   // Mobile OTP Send Handler
     // Mobile OTP Verify Handler
     // Search & Filter Logic
@@ -475,7 +465,6 @@ export default function MyTrips() {
                 setShowCancelConfirm(true)
               }}
               onViewDetails={(bkg) => setSelectedBooking(bkg)}
-              onTriggerPayment={handleTriggerPayment}
             />
           ))
         )}
@@ -488,66 +477,6 @@ export default function MyTrips() {
           booking={selectedBooking}
           onClose={() => setSelectedBooking(null)}
         />
-      )}
-
-      {/* ── Modal 2: Razorpay Payment Simulation Checkout ── */}
-      {showRazorpay && razorpayOrder && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1100, padding: '20px' }}>
-          <div style={{ background: 'hsl(var(--b1))', width: '100%', maxWidth: '500px', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 25px 50px rgba(0,0,0,0.3)' }}>
-
-            {/* Razorpay Brand Header */}
-            <div style={{ background: 'hsl(var(--p))', color: 'hsl(var(--pc))', padding: '24px', textAlign: 'center', position: 'relative' }}>
-              <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '2px', fontWeight: 800, opacity: 0.9 }}>TEST MODE SECURE CHECKOUT</div>
-              <h2 style={{ margin: '6px 0 0', fontSize: '28px', fontWeight: 900, color: 'hsl(var(--pc))' }}>Razorpay</h2>
-              <button onClick={() => setShowRazorpay(false)} style={{ position: 'absolute', right: '20px', top: '20px', background: 'rgba(0,0,0,0.2)', border: 'none', color: 'hsl(var(--pc))', width: '32px', height: '32px', borderRadius: '50%', cursor: 'pointer', fontWeight: 'bold' }}>✕</button>
-            </div>
-
-            <div style={{ padding: '32px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '14px', color: 'hsl(var(--bc) / 0.55)' }}>Order ID Generated from Backend</div>
-                <div style={{ fontSize: '15px', fontWeight: 700, color: 'hsl(var(--bc))', background: 'hsl(var(--b2))', padding: '8px', borderRadius: '6px', marginTop: '4px', fontFamily: 'monospace' }}>
-                  {razorpayOrder.id}
-                </div>
-              </div>
-
-              <div style={{ background: 'hsl(var(--b2))', border: '1px solid hsl(var(--b3))', padding: '20px', borderRadius: '12px', textAlign: 'center' }}>
-                <div style={{ fontSize: '13px', color: 'hsl(var(--bc) / 0.55)', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 700 }}>Amount Due</div>
-                <div style={{ fontSize: '36px', fontWeight: 900, color: 'hsl(var(--bc))', marginTop: '4px' }}>
-                  ₹{(razorpayOrder.amount / 100).toLocaleString()}
-                </div>
-              </div>
-
-              {paymentSuccess ? (
-                <div style={{ background: 'hsl(var(--su) / 0.08)', color: 'hsl(var(--su))', padding: '20px', borderRadius: '12px', textAlign: 'center', fontWeight: 700 }}>
-                  🎉 Payment Verified Successfully! Confirmation Sent.
-                </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  <button
-                    onClick={() => {
-                      setPaymentSuccess(true)
-                      setTimeout(() => {
-                        setShowRazorpay(false)
-                        alert("Razorpay Payment verified successfully! Your trip upgrade is fully confirmed.")
-                      }, 1500)
-                    }}
-                    style={{ background: 'hsl(var(--su))', color: 'hsl(var(--b1))', border: 'none', padding: '16px', borderRadius: '12px', fontSize: '16px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px hsl(var(--su) / 0.3)', transition: 'transform 0.1s' }}
-                  >
-                    💳 Simulate UPI / Card Payment
-                  </button>
-
-                  <button
-                    onClick={() => setShowRazorpay(false)}
-                    style={{ background: 'hsl(var(--b2))', color: 'hsl(var(--bc) / 0.55)', border: 'none', padding: '14px', borderRadius: '12px', fontSize: '15px', fontWeight: 700, cursor: 'pointer' }}
-                  >
-                    Cancel Checkout
-                  </button>
-                </div>
-              )}
-            </div>
-
-          </div>
-        </div>
       )}
 
       {/* ── Modal 3: Razorpay Style Mobile OTP Wallet Login ── */}

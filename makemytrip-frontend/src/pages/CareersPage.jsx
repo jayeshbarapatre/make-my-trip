@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { cmsService } from '../services/cmsService';
+import { useToastContext } from '../context/ToastContext';
 import './CareersPage.css';
 
 export default function CareersPage() {
+  const toast = useToastContext();
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedJob, setSelectedJob] = useState(null);
@@ -34,19 +36,19 @@ export default function CareersPage() {
   const handleSubmitApplication = async (e) => {
     e.preventDefault();
     if (!formData.name || !formData.email) {
-      alert('Please fill in required fields');
+      toast.warning('Please fill in required fields', 'Missing details');
       return;
     }
 
     try {
       setSubmitting(true);
       await cmsService.applyJob(selectedJob.id, formData);
-      alert('Application submitted successfully!');
+      toast.success('Application submitted successfully!', 'Thanks for applying');
       setFormData({ name: '', email: '', phone: '', resume: '', message: '' });
       setShowApplicationForm(false);
       setSelectedJob(null);
     } catch (err) {
-      alert('Failed to submit application');
+      toast.error('Failed to submit application. Please try again.', 'Something went wrong');
       console.error(err);
     } finally {
       setSubmitting(false);

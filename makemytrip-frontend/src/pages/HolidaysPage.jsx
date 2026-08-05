@@ -1,4 +1,7 @@
 import { useState } from 'react'
+import ComingSoon from '../components/ComingSoon'
+import { comingSoonToast } from '../utils/comingSoon'
+import { useToastContext } from '../context/ToastContext'
 import { useNavigate } from 'react-router-dom'
 import { SERVICE_TABS } from '../data/homepageData'
 import { useWeather } from '../hooks/useWeather'
@@ -9,6 +12,7 @@ import { photo } from '../utils/images'
 
 export default function HolidaysPage() {
   const navigate = useNavigate()
+  const toast = useToastContext()
   const [activeTab, setActiveTab] = useState('holidays')
   const [activeChip, setActiveChip] = useState('India')
   const [departDate, setDepartDate] = useState('2026-05-20')
@@ -131,6 +135,7 @@ export default function HolidaysPage() {
             <span className="crumb-sep">›</span>
             <span className="crumb-cur">Holiday Packages</span>
           </div>
+          <ComingSoon vertical="Holiday packages" blurb="You can browse packages here, but they cannot be booked yet." ctaPath="/hotels" ctaLabel="Browse hotels" />
           <h1>Trips planned, perfectly.</h1>
           <p style={{ marginBottom: weather ? 10 : 28 }}>Flights + stays + sightseeing — one bundle, one price, zero hassle</p>
           {weather && (
@@ -193,7 +198,7 @@ export default function HolidaysPage() {
                 <div className="inner-field-val">2 <span className="unit-suffix">Adults</span></div>
                 <div className="inner-field-sub">Add children</div>
               </div>
-              <button className="inner-search-cta" onClick={() => alert('Searching Holidays...!')}>
+              <button className="inner-search-cta" onClick={() => comingSoonToast(toast, "Holiday packages")}>
                 SEARCH
               </button>
             </div>
@@ -242,7 +247,7 @@ export default function HolidaysPage() {
             <h2 className="inner-sec-title">Top holiday packages in India</h2>
             <p className="inner-sec-subtitle">All-inclusive · Best price guarantee</p>
           </div>
-          <span className="inner-sec-all-link" onClick={() => alert('Loading India packages...')}>All packages →</span>
+          <span className="inner-sec-all-link" onClick={() => comingSoonToast(toast, "Holiday packages")}>All packages →</span>
         </div>
 
         <div className="holidays-pkgs-grid">
@@ -266,7 +271,7 @@ export default function HolidaysPage() {
                     ₹{pkg.price}
                     <small>{pkg.duration}</small>
                   </div>
-                  <button className="holiday-pkg-action-btn" onClick={() => alert(`Viewing itinerary for ${pkg.title}`)}>
+                  <button className="holiday-pkg-action-btn" onClick={() => comingSoonToast(toast, "Holiday packages")}>
                     VIEW
                   </button>
                 </div>

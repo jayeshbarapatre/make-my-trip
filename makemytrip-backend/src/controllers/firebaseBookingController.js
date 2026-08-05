@@ -44,6 +44,9 @@ export const createBooking = async (req, res) => {
     const { booking, created } = await createBookingForPayment({
       payload: req.body,
       authority,
+      // Recorded against the payment at create-order time. The body decides
+      // which inventory is reserved, so it has to agree with what was priced.
+      quote: authority.quote,
       userId,
       userEmail: userEmail ?? req.user?.email ?? null,
       userName: userName ?? null

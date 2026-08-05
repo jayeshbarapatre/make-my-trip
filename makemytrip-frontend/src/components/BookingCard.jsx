@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { documentService } from '../services/documentService'
 import { useToastContext } from '../context/ToastContext'
 
-export default function BookingCard({ booking, onCancel, onViewDetails, onTriggerPayment }) {
+export default function BookingCard({ booking, onCancel, onViewDetails }) {
   const toast = useToastContext()
   const [downloading, setDownloading] = useState(false)
 
@@ -174,21 +174,19 @@ export default function BookingCard({ booking, onCancel, onViewDetails, onTrigge
 
         <div style={{ display: 'flex', gap: '8px' }}>
           {booking.status === 'confirmed' && (
-            <>
-              <button
-                onClick={() => onTriggerPayment(booking.totalAmount)}
-                style={{ background: 'hsl(var(--wa) / 0.1)', border: '1px solid hsl(var(--wa))', padding: '6px 14px', borderRadius: '6px', fontSize: '13px', fontWeight: 700, color: 'hsl(var(--wa))', cursor: 'pointer' }}
-              >
-                ⚡ Razorpay Add-ons / Upgrade
-              </button>
-
-              <button
-                onClick={() => onCancel(booking.id)}
-                style={{ background: 'hsl(var(--er) / 0.1)', border: '1px solid hsl(var(--er))', padding: '6px 14px', borderRadius: '6px', fontSize: '13px', fontWeight: 600, color: 'hsl(var(--er))', cursor: 'pointer' }}
-              >
-                ✕ Cancel Trip
-              </button>
-            </>
+            // "Razorpay Add-ons / Upgrade" used to sit here. It called
+            // create-order with a bare amount (which the server rejects with
+            // QUOTE_REQUIRED), then opened a Razorpay-branded modal whose
+            // "Simulate UPI / Card Payment" button told the customer their
+            // payment was verified and their upgrade confirmed. No payment, no
+            // booking, no email. Add-ons need a real quote → order → verify
+            // round trip like every other purchase.
+            <button
+              onClick={() => onCancel(booking.id)}
+              style={{ background: 'hsl(var(--er) / 0.1)', border: '1px solid hsl(var(--er))', padding: '6px 14px', borderRadius: '6px', fontSize: '13px', fontWeight: 600, color: 'hsl(var(--er))', cursor: 'pointer' }}
+            >
+              ✕ Cancel Trip
+            </button>
           )}
 
           {booking.status === 'cancelled' && (

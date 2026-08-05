@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
+import { useToastContext } from '../../context/ToastContext'
 import './FormStyles.css'
 
 export const RoomForm = ({ room, onSave, onClose, hotelId: _hotelId }) => {
+  const toast = useToastContext()
   const [formData, setFormData] = useState({
     categoryName: '',
     description: '',
@@ -54,7 +56,7 @@ export const RoomForm = ({ room, onSave, onClose, hotelId: _hotelId }) => {
     e.preventDefault()
 
     if (!formData.categoryName.trim() || !formData.totalRooms || !formData.basePrice) {
-      alert('Category Name, Total Rooms, and Price are required')
+      toast.error('Category Name, Total Rooms, and Price are required', 'Missing details')
       return
     }
 

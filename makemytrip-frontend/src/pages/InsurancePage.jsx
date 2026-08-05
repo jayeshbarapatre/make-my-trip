@@ -1,4 +1,7 @@
 import { useState } from 'react'
+import ComingSoon from '../components/ComingSoon'
+import { comingSoonToast } from '../utils/comingSoon'
+import { useToastContext } from '../context/ToastContext'
 import { useNavigate } from 'react-router-dom'
 import { SERVICE_TABS } from '../data/homepageData'
 import TabIcon from '../components/TabIcon'
@@ -7,6 +10,7 @@ import { photo } from '../utils/images'
 
 export default function InsurancePage() {
   const navigate = useNavigate()
+  const toast = useToastContext()
   const [activeTab, setActiveTab] = useState('insurance')
   const [activeChip, setActiveChip] = useState('Premium Protect')
 
@@ -59,6 +63,7 @@ export default function InsurancePage() {
             <span className="crumb-sep">›</span>
             <span className="crumb-cur">Travel Insurance</span>
           </div>
+          <ComingSoon vertical="Travel insurance" blurb="Plans shown are illustrative. No policy can be purchased here yet." ctaPath="/" ctaLabel="Browse flights" />
           <h1>Comprehensive Travel Insurance</h1>
           <p style={{ marginBottom: 28 }}>Zero Deductibles · Direct Cashless Claims Across 150+ Countries</p>
 
@@ -104,7 +109,7 @@ export default function InsurancePage() {
                 <div className="inner-field-val">1 <span className="unit-suffix">Adult</span></div>
                 <div className="inner-field-sub">Age: 25 years</div>
               </div>
-              <button className="inner-search-cta" onClick={() => alert('Searching Travel Insurance Plans...!')}>
+              <button className="inner-search-cta" onClick={() => comingSoonToast(toast, "Travel insurance")}>
                 GET PLANS
               </button>
             </div>
@@ -154,7 +159,7 @@ export default function InsurancePage() {
                   <span className="price">₹{plan.price}</span>
                   <small>Premium (incl GST)</small>
                 </div>
-                <button onClick={() => alert(`Initiating application for ${plan.name}`)}>
+                <button onClick={() => comingSoonToast(toast, "Travel insurance")}>
                   BUY POLICY
                 </button>
               </div>
