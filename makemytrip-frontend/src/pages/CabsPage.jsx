@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import ComingSoon from '../components/ComingSoon'
 import { useNavigate } from 'react-router-dom'
 import { SERVICE_TABS } from '../data/homepageData'
 import { useWeather } from '../hooks/useWeather'
@@ -142,6 +143,7 @@ export default function CabsPage() {
             <span className="crumb-sep">›</span>
             <span className="crumb-cur">Cabs Booking</span>
           </div>
+          <ComingSoon vertical="Cabs" blurb="You can browse routes and fares here, but cabs cannot be booked yet." ctaPath="/trains" ctaLabel="Browse trains" />
           <h1>Online Cab Booking</h1>
           <p style={{ marginBottom: weather ? 10 : 28 }}>Intercity outstations · Airport transfers · Local hourly rentals</p>
           {weather && (

@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken'
 import { db } from '../config/firebase.js'
+import { isSellable } from '../config/verticals.js'
 import { evaluateCoupon } from '../controllers/couponController.js'
 
 // The authoritative price of a trip. Nothing else in the platform is allowed to
@@ -92,6 +93,16 @@ const positiveInt = (value, fallback = 1) => {
 export const quoteTrip = async ({ type, itemId, quantity = 1, nights = 1, distance = 0, couponCode = null, userId = null }) => {
   const catalog = CATALOG[type]
   if (!catalog) throw priceError(`Cannot price an unknown booking type: ${type}`, 'UNKNOWN_TYPE')
+
+  // The chokepoint for a closed vertical: no quote, no signed token, no order,
+  // no payment, no booking. Cabs are closed because they reserve no inventory.
+  if (!isSellable(type)) {
+    throw priceError(
+      `${type} bookings are not available yet. Nothing has been charged.`,
+      'VERTICAL_UNAVAILABLE',
+      503
+    )
+  }
 
   if (!itemId || typeof itemId !== 'string') {
     throw priceError('A valid inventory item id is required to price this trip', 'ITEM_REQUIRED')

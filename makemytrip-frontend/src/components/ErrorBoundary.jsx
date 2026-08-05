@@ -28,9 +28,26 @@ export default class ErrorBoundary extends Component {
   }
 
   componentDidCatch (error, info) {
-    // Keep the stack in the console for local debugging; a real deployment
-    // should forward this to an error reporter instead.
     console.error('Unhandled UI error:', error, info?.componentStack)
+
+    // Report it so a crash in production is visible without a customer having
+    // to describe it. Plain fetch rather than the axios instance: that one
+    // carries auth interceptors that can redirect on 401, and a crash report
+    // must never navigate the page. Failure here is swallowed — a broken
+    // reporter must not replace one error with another.
+    try {
+      fetch(`${import.meta.env.VITE_API_BASE_URL}/client-errors`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: error?.message ?? String(error),
+          stack: error?.stack ?? '',
+          componentStack: info?.componentStack ?? '',
+          path: window.location.pathname
+        }),
+        keepalive: true
+      }).catch(() => {})
+    } catch { /* reporting is best-effort */ }
   }
 
   render () {

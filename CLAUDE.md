@@ -168,6 +168,20 @@ GET    /api/v1/autocomplete/airlines  — Airline list
 GET    /api/v1/search?q=query         — Cross-service search (flights, hotels, buses, etc.)
 ```
 
+#### Error reporting
+```
+POST   /api/v1/client-errors          — Frontend ErrorBoundary crash sink (public, rate limited)
+```
+
+Unhandled server errors and browser crashes are grouped by fingerprint into the
+`errorReports` collection — one document per distinct failure with an occurrence
+count, not one per occurrence. `src/services/errorReporter.js` redacts JWTs,
+emails, phone numbers, card numbers and gateway keys before writing, never
+stores a request body, and never throws. Repeat writes for the same fingerprint
+are throttled (`ERROR_REPORT_THROTTLE_SECONDS`, default 60) so a hot error loop
+cannot exhaust the Firestore daily quota. `onErrorReported()` is the seam for
+forwarding to Sentry later without touching a call site.
+
 #### Bookings
 ```
 GET    /api/v1/bookings               — All bookings (admin, auth required)
@@ -351,6 +365,20 @@ Rules:
 - Cab fares are `price` (base) + `perKmRate × distance`. `cabAdminController` normalises `baseFare` onto `price`.
 - The frontend displays the quote's breakdown verbatim (`src/services/checkout.js`); it must never compute a total.
 - `create-order` rejects a bare `amount` with `QUOTE_REQUIRED`. A stale quote whose price moved is rejected with `QUOTE_STALE`.
+
+### Closed verticals (`src/config/verticals.js`)
+
+**Cabs are not sellable.** `RESOURCE_COLLECTIONS` in `bookingService.js` covers
+flight, hotel, bus and train — not cab — so a cab booking reserves nothing and
+sells without limit. `quoteTrip` refuses any type in `UNSELLABLE_TYPES` with
+`503 VERTICAL_UNAVAILABLE`, which is the chokepoint: no quote → no signed token
+→ `create-order` refuses → no captured payment → no booking. Existing cab
+bookings stay readable and cancellable. Reopen by giving cabs a daily capacity
+model per route and class, then clearing the env var.
+
+The seven verticals with no backend at all (Cruise, Forex, Visa, Insurance,
+Tours, Homestays, Holidays) render a storefront and carry a `<ComingSoon>`
+banner. `tests/search.test.mjs` pins that they still do.
 
 ### Booking creation — one path, payment required (`src/services/bookingService.js`)
 

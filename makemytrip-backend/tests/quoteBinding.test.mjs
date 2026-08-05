@@ -48,6 +48,7 @@ mock.module('../src/services/emailService.js', {
 
 const { createBookingForPayment } = await import('../src/services/bookingService.js')
 const { handleWebhook } = await import('../src/controllers/paymentController.js')
+const { quoteTrip } = await import('../src/services/pricingService.js')
 
 const AUTHORITY = { orderId: 'order_qb', paymentId: 'pay_qb', amount: 882, method: 'netbanking' }
 
@@ -304,5 +305,42 @@ describe('the webhook holds the stored draft to the same standard', () => {
     assert.equal(status, 200)
     assert.ok(body.bookingId)
     assert.ok(db.peek('bookings/pay_pay_clean'))
+  })
+})
+
+describe('a vertical that reserves no inventory cannot be sold', () => {
+  // Cabs are absent from RESOURCE_COLLECTIONS, so a cab booking reserves
+  // nothing and sells without limit — every one sold is a promise with no
+  // vehicle behind it. quoteTrip is the chokepoint: no quote means no signed
+  // token, which means create-order refuses, which means there is no captured
+  // payment for a booking to be built from.
+  beforeEach(reset)
+
+  test('a cab cannot be quoted', async () => {
+    db.seed('cabs/cab_1', { from: 'Delhi', to: 'Agra', price: 3000, perKmRate: 12, isActive: true })
+
+    await assert.rejects(
+      () => quoteTrip({ type: 'cab', itemId: 'cab_1', quantity: 1, distance: 200 }),
+      (err) => {
+        assert.equal(err.code, 'VERTICAL_UNAVAILABLE')
+        assert.equal(err.status, 503)
+        return true
+      }
+    )
+  })
+
+  test('the refusal happens before any inventory is read', async () => {
+    // No cab document exists here at all. A 503 rather than a 404 proves the
+    // gate closed first, so a closed vertical costs no Firestore read.
+    await assert.rejects(
+      () => quoteTrip({ type: 'cab', itemId: 'cab_missing', quantity: 1, distance: 10 }),
+      (err) => err.code === 'VERTICAL_UNAVAILABLE'
+    )
+  })
+
+  test('an open vertical still quotes', async () => {
+    const quote = await quoteTrip({ type: 'bus', itemId: 'bus_1', quantity: 1 })
+    assert.equal(quote.type, 'bus')
+    assert.ok(quote.totalAmount > 0, 'a sellable vertical must still price')
   })
 })

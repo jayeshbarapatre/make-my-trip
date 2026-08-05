@@ -78,7 +78,26 @@ Internal work never waits on this list.
 
 | Decision | Options | Recommendation |
 |---|---|---|
-| Cab inventory model | (a) unlimited (b) daily capacity per route+class (c) physical fleet | **(b)** — prevents overselling without inventing fleet management |
-| Seven non-functional pages (Cruise, Forex, Holidays, Homestays, Insurance, Tours, Visa) | (a) remove from nav (b) "coming soon" (c) build out (15–25 h each) | **(a) or (b)** for launch |
+| ~~Cab inventory model~~ | **Decided 2026-08-05: cabs are closed.** They reserved nothing, so every one sold was a promise with no vehicle behind it. `quoteTrip` refuses the vertical (`UNSELLABLE_TYPES`), the tab and footer link are gone, and `CabsPage` carries a coming-soon banner. Reopen with option (b) — daily capacity per route+class | — |
+| ~~Seven non-functional pages~~ | **Decided 2026-08-05: gated.** Each carries a `<ComingSoon>` banner; every placeholder CTA now says plainly that nothing has been charged or reserved | — |
 | Mobile OTP | Twilio is unconfigured, so `/auth/send-otp` returns 503 | Ship on email sign-in, or provision Twilio |
 | Redis | Unreachable, so rate limiters and cache fall back to in-memory | Fine at one instance (`render.yaml` starter plan). Provision Redis **before** scaling out, or per-instance limits multiply |
+
+---
+
+## Launch gates
+
+Completion is not declared by writing a document. Each gate below needs
+evidence, and three of them need credentials that do not exist in this repo.
+
+| # | Gate | Status |
+|---|---|---|
+| 1 | SMTP rotated, and one real confirmation email received | **Blocked** — B2 |
+| 2 | One real ₹1 payment in Razorpay **live** mode, with the browser tab killed mid-payment, proving the webhook writes the booking | **Blocked** — B2a + live keys. Every test of this path so far uses a faked gateway |
+| 3 | Firestore on Blaze, rules and indexes deployed | **Blocked** — B4 |
+| 4 | Production errors captured somewhere queryable | **Done** — `errorReports`, verified end-to-end with redaction against real Firestore |
+| 5 | Cabs off sale until they reserve inventory | **Done** — see above |
+
+After 1–3: soft launch on one or two routes to a controlled audience, and
+reconcile `payments` against `bookings` daily. Orphan payments are the signal
+that matters. Open it up once that reconciles clean.

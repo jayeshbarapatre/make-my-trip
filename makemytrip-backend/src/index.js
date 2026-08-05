@@ -108,6 +108,7 @@ async function initializeApp() {
     // Import all modules
     const { getRedis } = await import('./config/redis.js')
     const { verifyConnection } = await import('./services/emailService.js')
+    const { reportError } = await import('./services/errorReporter.js')
 
     // Global flood ceiling, ahead of every route. Per-route policies sit after
     // their auth middleware so they can bucket by account; that leaves requests
@@ -137,6 +138,7 @@ async function initializeApp() {
     const { supportRouter, couponRouter } = await import('./routes/support.js')
     const vendorRequestRoutes = (await import('./routes/vendorRequests.js')).default
     const documentRoutes = (await import('./routes/documents.js')).default
+    const clientErrorRoutes = (await import('./routes/clientErrors.js')).default
 
     // Firestore is the only database and initialises itself on first import of
     // config/firebase.js. The `connectDB()` call that stood here was a no-op
@@ -190,6 +192,8 @@ async function initializeApp() {
     app.use('/api/v1/vendor-requests', vendorRequestRoutes)
     app.use('/api/documents', documentRoutes)
     app.use('/api/v1/documents', documentRoutes)
+    app.use('/api/client-errors', clientErrorRoutes)
+    app.use('/api/v1/client-errors', clientErrorRoutes)
 
     // 404 handler
     app.use((_req, res) => res.status(404).json({ message: 'Route not found' }))
@@ -209,7 +213,24 @@ async function initializeApp() {
       }
 
       console.error(`💥 Unhandled error on ${req.method} ${req.originalUrl}:`, err?.stack || err)
-      res.status(err?.status || 500).json({
+
+      const status = err?.status || 500
+
+      // Capture it somewhere queryable. console.error alone means the first
+      // report of an outage is a customer email.
+      reportError({
+        error: err,
+        source: 'server',
+        severity: status >= 500 ? 'error' : 'warning',
+        context: {
+          method: req.method,
+          path: req.originalUrl,
+          statusCode: status,
+          userId: req.user?.id ?? null
+        }
+      })
+
+      res.status(status).json({
         success: false,
         message: 'An unexpected error occurred. Please try again.'
       })
