@@ -275,21 +275,33 @@ async function initializeApp() {
   }
 }
 
-initializeApp()
-  .then(() => {
-    server = app.listen(PORT, () => {
-      console.log(`✅ Server listening on http://localhost:${PORT}`)
-    })
+// On a serverless platform there is no port to own and no process to keep
+// alive — the platform owns both, and `api/index.js` drives initialisation per
+// cold start instead. Listening here would bind a port that nothing routes to
+// and, worse, `process.exit(1)` on a startup failure would kill the runtime
+// mid-request rather than returning a 500.
+const isServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME)
 
-    server.on('error', (err) => {
-      console.error('❌ Server error:', err.message)
+if (!isServerless) {
+  initializeApp()
+    .then(() => {
+      server = app.listen(PORT, () => {
+        console.log(`✅ Server listening on http://localhost:${PORT}`)
+      })
+
+      server.on('error', (err) => {
+        console.error('❌ Server error:', err.message)
+        process.exit(1)
+      })
+    })
+    .catch(() => {
+      console.error('❌ Startup aborted — not accepting traffic')
       process.exit(1)
     })
-  })
-  .catch(() => {
-    console.error('❌ Startup aborted — not accepting traffic')
-    process.exit(1)
-  })
+}
+
+export { app, initializeApp }
+export default app
 
 process.on('uncaughtException', (err) => {
   console.error('💥 Uncaught Exception:', err.message)

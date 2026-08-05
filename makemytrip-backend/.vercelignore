@@ -1,0 +1,20 @@
+# Keep the lambda small, and keep destructive tooling out of a deployed bundle.
+#
+# `scripts/` holds seeders and migrations that write to (and in places delete
+# from) Firestore. They are guarded by scripts/lib/prodGuard.js, but the safest
+# guard is not shipping them next to production credentials at all.
+scripts/
+tests/
+preview/
+prisma/
+
+# Local-only artifacts
+db.json
+*.log
+.env
+.env.*
+!.env.example
+serviceAccountKey.json
+
+# Docs
+*.md
