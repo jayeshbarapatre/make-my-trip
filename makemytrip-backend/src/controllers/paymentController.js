@@ -1,7 +1,13 @@
 import crypto from 'crypto'
 import { FieldValue } from 'firebase-admin/firestore'
 import { db } from '../config/firebase.js'
-import { razorpay, razorpayKeySecret as KEY_SECRET, paiseToRupees } from '../config/razorpay.js'
+import {
+  razorpay,
+  razorpayKeySecret as KEY_SECRET,
+  razorpayWebhookSecret,
+  isWebhookConfigured,
+  paiseToRupees
+} from '../config/razorpay.js'
 import { sendBookingConfirmationEmail } from '../services/emailService.js'
 import { writeAuditLog, AuditAction } from '../services/auditLog.js'
 import { createBookingForPayment } from '../services/bookingService.js'
@@ -49,7 +55,7 @@ export const createRazorpayOrder = async (req, res) => {
   const userId = req.user?.id || req.userId
 
   try {
-    const { quoteToken, currency = 'INR', notes = {} } = req.body
+    const { quoteToken, currency = 'INR', notes = {}, bookingDraft = null } = req.body
 
     // The amount is never taken from the request. It is re-derived from stored
     // inventory via the signed quote, so a tampered client cannot choose its own
@@ -98,6 +104,11 @@ export const createRazorpayOrder = async (req, res) => {
         discount: quote.discount,
         totalAmount: quote.totalAmount
       },
+      // Traveller details, captured before payment so the webhook can complete
+      // the booking when the browser never comes back. `createBookingForPayment`
+      // strips every server-owned field from this, exactly as it does for the
+      // browser-return path, so nothing here is trusted for money or ownership.
+      bookingDraft: bookingDraft && typeof bookingDraft === 'object' ? bookingDraft : null,
       createdAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp(),
       createdBy: userId ?? null,
@@ -213,7 +224,8 @@ export const verifyPayment = async (req, res) => {
     // The order was recorded at creation time against its owner. Refuse to let
     // one account claim another account's payment.
     const orderSnap = await db.collection('payments').doc(orderId).get()
-    const orderOwner = orderSnap.exists ? orderSnap.data().userId : null
+    const orderRecord = orderSnap.exists ? orderSnap.data() : null
+    const orderOwner = orderRecord?.userId ?? null
     if (orderOwner && orderOwner !== userId) {
       writeAuditLog({
         req,
@@ -264,6 +276,10 @@ export const verifyPayment = async (req, res) => {
         // the gateway, and every server-owned field is stripped from the payload.
         const result = await createBookingForPayment({
           payload: bookingData,
+          // The signed quote recorded at create-order time. Without this the
+          // payload alone chose which inventory to reserve, so a trip could be
+          // priced as the cheapest bus seat and booked as a long-haul flight.
+          quote: orderRecord?.quote ?? null,
           authority: {
             orderId,
             paymentId,
@@ -323,9 +339,227 @@ export const verifyPayment = async (req, res) => {
       action: AuditAction.PAYMENT_REJECTED,
       entity: 'payments',
       entityId: paymentId,
-      newValue: { reason: 'exception', message: err.message },
+      newValue: { reason: err.code ?? 'exception', message: err.message },
       status: 'failure'
     })
+    // A rejected booking (QUOTE_MISMATCH, INSUFFICIENT_AVAILABILITY) is the
+    // caller's fault and carries a message worth showing; only genuinely
+    // unexpected failures collapse into a 500.
+    if (err.status) {
+      return res.status(err.status).json({ success: false, code: err.code, message: err.message })
+    }
     res.status(500).json({ success: false, message: 'Payment verification failed' })
+  }
+}
+
+/**
+ * Razorpay webhook — the only reliable source of payment truth.
+ *
+ * `POST /payment/verify` only runs if the customer's browser comes back. When
+ * it does not — tab closed, connection dropped, phone died — the money is
+ * captured and no booking exists. Nothing on the platform notices, and the
+ * customer has paid for nothing. This endpoint closes that hole.
+ *
+ * Unauthenticated by necessity (Razorpay holds no session), so the HMAC over
+ * the raw body IS the authentication. The route must be mounted with
+ * `express.raw` ahead of `express.json`: a parsed-and-restringified body does
+ * not reproduce the bytes Razorpay signed, and every signature would fail.
+ *
+ * Idempotent: bookings are keyed `pay_{paymentId}`, so a retried delivery
+ * converges on the same document rather than creating a second booking. The
+ * browser-return path writes the same key, so the two cannot both win.
+ */
+export const handleWebhook = async (req, res) => {
+  const signature = req.get('x-razorpay-signature')
+
+  if (!isWebhookConfigured) {
+    console.error('Razorpay webhook received but RAZORPAY_WEBHOOK_SECRET is not set')
+    return res.status(503).json({ success: false, message: 'Webhook not configured' })
+  }
+
+  // `express.raw` leaves a Buffer; anything else means the route was mounted
+  // without it and no signature could ever verify.
+  const raw = Buffer.isBuffer(req.body) ? req.body : null
+  if (!raw) {
+    console.error('Razorpay webhook body is not raw — check the express.raw mount order')
+    return res.status(500).json({ success: false, message: 'Webhook misconfigured' })
+  }
+
+  if (!signature) {
+    return res.status(400).json({ success: false, message: 'Missing signature' })
+  }
+
+  const expected = crypto.createHmac('sha256', razorpayWebhookSecret).update(raw).digest('hex')
+  const expectedBuf = Buffer.from(expected, 'utf8')
+  const providedBuf = Buffer.from(String(signature), 'utf8')
+  const signatureValid =
+    expectedBuf.length === providedBuf.length && crypto.timingSafeEqual(expectedBuf, providedBuf)
+
+  if (!signatureValid) {
+    writeAuditLog({
+      req,
+      action: AuditAction.PAYMENT_WEBHOOK,
+      entity: 'payments',
+      entityId: 'unknown',
+      newValue: { reason: 'invalid_signature' },
+      status: 'failure'
+    })
+    return res.status(400).json({ success: false, message: 'Invalid webhook signature' })
+  }
+
+  let event
+  try {
+    event = JSON.parse(raw.toString('utf8'))
+  } catch {
+    return res.status(400).json({ success: false, message: 'Malformed webhook payload' })
+  }
+
+  const entity = event?.payload?.payment?.entity
+  const eventType = event?.event
+
+  // Acknowledge anything we do not act on. Returning non-2xx makes Razorpay
+  // retry an event we will never process, indefinitely.
+  if (!entity?.id || !['payment.captured', 'payment.failed'].includes(eventType)) {
+    return res.json({ success: true, ignored: eventType ?? 'unknown' })
+  }
+
+  const paymentId = entity.id
+  const orderId = entity.order_id
+
+  try {
+    if (eventType === 'payment.failed') {
+      if (orderId) {
+        await db.collection('payments').doc(orderId).set(
+          {
+            paymentId,
+            status: 'failed',
+            failureReason: entity.error_description ?? entity.error_reason ?? null,
+            updatedAt: FieldValue.serverTimestamp()
+          },
+          { merge: true }
+        )
+      }
+      writeAuditLog({
+        req,
+        action: AuditAction.PAYMENT_WEBHOOK,
+        entity: 'payments',
+        entityId: paymentId,
+        newValue: { event: eventType, orderId },
+        status: 'success'
+      })
+      return res.json({ success: true, handled: eventType })
+    }
+
+    // payment.captured — the booking must exist after this returns.
+    const bookingRef = db.collection('bookings').doc(`pay_${paymentId}`)
+    const existing = await bookingRef.get()
+
+    if (existing.exists) {
+      // The browser got back first, or this delivery is a retry. Both are fine.
+      writeAuditLog({
+        req,
+        action: AuditAction.PAYMENT_WEBHOOK,
+        entity: 'bookings',
+        entityId: existing.id,
+        newValue: { event: eventType, outcome: 'already_booked' },
+        status: 'success'
+      })
+      return res.json({ success: true, handled: eventType, bookingId: existing.data()?.bookingId ?? null })
+    }
+
+    const orderSnap = orderId ? await db.collection('payments').doc(orderId).get() : null
+    const order = orderSnap?.exists ? orderSnap.data() : null
+
+    const amount = paiseToRupees(entity.amount)
+
+    await db.collection('payments').doc(orderId ?? paymentId).set(
+      {
+        paymentId,
+        status: entity.status,
+        amountCaptured: amount,
+        method: entity.method ?? null,
+        source: 'webhook',
+        updatedAt: FieldValue.serverTimestamp()
+      },
+      { merge: true }
+    )
+
+    // Without the order record there is no owner and no priced trip, so a
+    // booking cannot be attributed. Record the payment and let reconciliation
+    // surface it rather than inventing a booking.
+    if (!order?.userId) {
+      writeAuditLog({
+        req,
+        action: AuditAction.PAYMENT_WEBHOOK,
+        entity: 'payments',
+        entityId: paymentId,
+        newValue: { event: eventType, outcome: 'orphan_payment', orderId },
+        status: 'failure'
+      })
+      return res.json({ success: true, handled: eventType, orphan: true })
+    }
+
+    const draft = order.bookingDraft ?? {}
+    const payload = {
+      ...draft,
+      type: draft.type ?? order.quote?.type ?? 'flight',
+      quantity: draft.quantity ?? order.quote?.quantity,
+      nights: draft.nights ?? order.quote?.nights
+    }
+
+    const { booking } = await createBookingForPayment({
+      payload,
+      // The draft is client input, exactly like the browser-return payload, so
+      // it is held to the same quote it was priced against.
+      quote: order.quote ?? null,
+      authority: {
+        orderId: orderId ?? null,
+        paymentId,
+        amount,
+        method: entity.method ?? 'razorpay'
+      },
+      userId: order.userId,
+      userEmail: draft.userEmail ?? entity.email ?? null,
+      userName: draft.userName ?? null
+    })
+
+    writeAuditLog({
+      req,
+      action: AuditAction.PAYMENT_WEBHOOK,
+      entity: 'bookings',
+      entityId: booking?.bookingId ?? paymentId,
+      newValue: { event: eventType, outcome: 'booking_created', orderId },
+      status: 'success'
+    })
+
+    // A customer who never saw the confirmation screen needs the email even
+    // more than one who did.
+    if (booking && (draft.userEmail || entity.email)) {
+      sendBookingConfirmationEmail({ ...booking, userEmail: draft.userEmail ?? entity.email })
+        .catch((e) => console.error('Webhook confirmation email failed:', e.message))
+    }
+
+    return res.json({ success: true, handled: eventType, bookingId: booking?.bookingId ?? null })
+  } catch (err) {
+    console.error('Webhook processing error:', err)
+    writeAuditLog({
+      req,
+      action: AuditAction.PAYMENT_WEBHOOK,
+      entity: 'payments',
+      entityId: paymentId,
+      newValue: { event: eventType, reason: err.code ?? 'exception', message: err.message },
+      status: 'failure'
+    })
+
+    // A rejected booking (QUOTE_MISMATCH, INSUFFICIENT_AVAILABILITY) is
+    // permanent: the same delivery will fail the same way forever, so retrying
+    // it only buries the audit trail. Acknowledge and leave the captured
+    // payment for reconciliation to refund.
+    if (err.status) {
+      return res.json({ success: true, handled: eventType, rejected: err.code ?? 'rejected' })
+    }
+
+    // 500 so Razorpay retries — the booking genuinely has not been written.
+    return res.status(500).json({ success: false, message: 'Webhook processing failed' })
   }
 }

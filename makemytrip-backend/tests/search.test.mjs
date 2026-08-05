@@ -346,16 +346,20 @@ describe('checkout pages never fabricate inventory', () => {
     // The redirect runs in an effect, so the first render still happens with no
     // state. TrainPaymentPage dereferenced train.name and threw.
     //
-    // Two shapes are acceptable: bail out with `return null` and let the
-    // redirect take over, or render an explicit recovery screen — which is what
-    // FlightPaymentPage does, and is the better of the two because it explains
-    // what happened instead of navigating silently.
+    // `return null` used to be accepted here. It is not any more: it paints a
+    // blank white page, which a customer cannot tell apart from a crash or a
+    // hung request, and the effect-based redirect does not always fire — a
+    // deep-linked /cab/payment sat blank indefinitely. A checkout page must
+    // render something that explains what happened and offers a way back,
+    // either <CheckoutStateLost /> or its own inline recovery block.
     for (const page of PAGES) {
       const code = codeOf(await readPage(page))
-      const bailsOut = /return null/.test(code)
-      const recovers = /if \(!\w+\?\.id[^)]*\)\s*\{\s*return \(/.test(code)
+      const recovers =
+        /return\s*<CheckoutStateLost/.test(code) ||
+        /if \(!\w+\?\.id[^)]*\)\s*\{\s*return \(/.test(code)
 
-      assert.ok(bailsOut || recovers, `${page} must not render against missing state`)
+      assert.ok(recovers, `${page} must render a recovery screen, not a blank page, when state is missing`)
+      assert.ok(!/\breturn null\b/.test(code), `${page} still bails out with a blank render`)
     }
   })
 })

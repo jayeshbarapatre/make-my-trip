@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { requestQuote, payAndBook } from '../services/checkout';
 import '../styles/HotelPaymentPage.css';
 import { photo } from '../utils/images'
+import CheckoutStateLost from '../components/CheckoutStateLost'
 
 export default function HotelPaymentPage() {
   const location = useLocation();
@@ -158,7 +159,7 @@ export default function HotelPaymentPage() {
 
   // The redirect fires in an effect, so the first render still runs with no
   // hotel. Render nothing rather than dereferencing it.
-  if (!hotel?.id) return null;
+  if (!hotel?.id) return <CheckoutStateLost searchPath="/hotels" label="hotel search" />;
 
   return (
     <div className="pmt-wrapper">
@@ -185,7 +186,13 @@ export default function HotelPaymentPage() {
 
               <div className="pmt-traveller-row">
                 <span className="pmt-traveller-lbl">👤 Primary Guest:</span>
-                <span>{user ? user.name || "Jayesh Sharma" : "Jayesh Sharma"} ({user ? user.email || "jayesh@gmail.com" : "jayesh@gmail.com"}, +91-9876543210)</span>
+                {/* This used to fall back to a hardcoded name, email and phone
+                    number, so every signed-out visitor was shown a stranger's
+                    details as their own booking contact. */}
+                <span>
+                  {user?.name || 'Guest'}
+                  {user?.email ? ` (${user.email}${user.phone ? `, ${user.phone}` : ''})` : ''}
+                </span>
               </div>
             </div>
 
@@ -197,7 +204,12 @@ export default function HotelPaymentPage() {
                     <h4>Additional discounts and saved payment options</h4>
                     <p>Login to access saved payments and discounts!</p>
                   </div>
-                  <button className="pmt-login-btn" onClick={() => alert("Please proceed with payment or login via the header.")}>LOGIN</button>
+                  <button
+                    className="pmt-login-btn"
+                    onClick={() => navigate('/login?returnTo=' + encodeURIComponent(location.pathname))}
+                  >
+                    LOGIN
+                  </button>
                 </div>
               </div>
             )}

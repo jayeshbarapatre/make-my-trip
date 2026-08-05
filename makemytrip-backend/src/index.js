@@ -46,6 +46,14 @@ app.use((_req, res, next) => {
   next()
 })
 
+// The Razorpay webhook is HMAC-signed over the exact bytes it sent. Parsing and
+// re-serialising that body changes key order and whitespace, so the signature
+// could never verify — this MUST stay ahead of express.json. Both mount paths
+// are covered because every route is registered under /api and /api/v1.
+const rawJson = express.raw({ type: 'application/json', limit: '256kb' })
+app.use('/api/payment/webhook', rawJson)
+app.use('/api/v1/payment/webhook', rawJson)
+
 // Bounded body size: an unbounded JSON parser lets one request exhaust memory.
 app.use(express.json({ limit: '256kb' }))
 app.use(express.urlencoded({ extended: true, limit: '256kb' }))

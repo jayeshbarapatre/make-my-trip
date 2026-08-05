@@ -1,10 +1,19 @@
 import { Router } from 'express'
-import { createRazorpayOrder, getQuote, verifyPayment } from '../controllers/paymentController.js'
+import { createRazorpayOrder, getQuote, verifyPayment, handleWebhook } from '../controllers/paymentController.js'
 import { authenticate } from '../middleware/auth.js'
 import { loadPrincipal } from '../middleware/rbac.js'
-import { createLimiter } from '../middleware/rateLimiter.js'
+import { createLimiter, generalLimiter } from '../middleware/rateLimiter.js'
 
 const router = Router()
+
+// Razorpay holds no session, so this route cannot sit behind `authenticate`.
+// It must therefore be declared BEFORE the router-level auth middleware below.
+// The HMAC over the raw body is what authenticates the caller; an unsigned or
+// mis-signed payload is rejected before any Firestore work happens.
+//
+// Rate limited because it is public: a flood of unsigned bodies should cost an
+// attacker more than it costs us.
+router.post('/webhook', generalLimiter, handleWebhook)
 
 // `loadPrincipal` re-reads role, account status and session validity from
 // Firestore. Without it these routes trusted the token alone, so a suspended

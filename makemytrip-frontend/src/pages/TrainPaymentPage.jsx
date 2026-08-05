@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { requestQuote, payAndBook } from '../services/checkout';
 import '../styles/TrainBookingFlow.css';
+import CheckoutStateLost from '../components/CheckoutStateLost'
 
 export default function TrainPaymentPage() {
   const location = useLocation();
@@ -92,7 +93,7 @@ export default function TrainPaymentPage() {
     }
   };
 
-  if (!train?.id || !selectedClass || !searchParams) return null;
+  if (!train?.id || !selectedClass || !searchParams) return <CheckoutStateLost searchPath="/trains" label="train search" />;
 
   return (
     <div className="train-flow-wrapper">

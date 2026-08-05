@@ -7,6 +7,7 @@ import './App.css'
 import Header from './components/Common/Header'
 import Footer from './components/Common/Footer'
 import ProtectedRoute from './components/ProtectedRoute'
+import ErrorBoundary from './components/ErrorBoundary'
 const HomePage = lazy(() => import('./pages/HomePage'))
 const SearchResultsPage = lazy(() => import('./pages/SearchResultsPage'))
 const BookingPage = lazy(() => import('./pages/BookingPage'))
@@ -393,6 +394,8 @@ function AppContent() {
       <ScrollToTop />
       <RouteLoader />
       {!isAdminRoute && !isVendorRoute && <Header />}
+      {/* Keyed on the path so navigating away from a crashed route recovers. */}
+      <ErrorBoundary resetKey={location.pathname}>
       <Suspense fallback={<PageLoader />}>
       <Routes>
         <Route path="/" element={<HomePage />} />
@@ -482,6 +485,7 @@ function AppContent() {
         <Route path="*" element={<NotFound />} />
       </Routes>
       </Suspense>
+      </ErrorBoundary>
       {!isAdminRoute && !isVendorRoute && <Footer />}
       </VendorProvider>
     </AdminProvider>

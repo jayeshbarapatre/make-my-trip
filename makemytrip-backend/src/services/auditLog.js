@@ -13,6 +13,7 @@ export const AuditAction = {
   PAYMENT_ORDER_CREATED: 'payment_order_created',
   PAYMENT_VERIFIED: 'payment_verified',
   PAYMENT_REJECTED: 'payment_rejected',
+  PAYMENT_WEBHOOK: 'payment_webhook',
   BOOKING_CREATED: 'booking_created',
   BOOKING_CANCELLED: 'booking_cancelled',
   REFUND_INITIATED: 'refund_initiated',

@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { requestQuote, payAndBook } from '../services/checkout';
 import '../styles/HotelPaymentPage.css';
+import CheckoutStateLost from '../components/CheckoutStateLost'
 
 export default function CabPaymentPage() {
   const location = useLocation();
@@ -131,7 +132,7 @@ export default function CabPaymentPage() {
 
   // The redirect above fires in an effect, so the first render still happens
   // with no cab. Render nothing rather than dereferencing it.
-  if (!cab?.id) return null;
+  if (!cab?.id) return <CheckoutStateLost searchPath="/cabs" label="cab search" />;
 
   return (
     <div style={{ background: 'hsl(var(--b2))', minHeight: '100vh', padding: '40px 0 80px', fontFamily: "'Space Grotesk', sans-serif", color: 'hsl(var(--bc))' }}>

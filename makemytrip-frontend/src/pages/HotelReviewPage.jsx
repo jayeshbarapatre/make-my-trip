@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import '../styles/HotelReviewPage.css';
 import OtpLoginModal from '../components/Auth/OtpLoginModal'
 import { photo } from '../utils/images'
+import CheckoutStateLost from '../components/CheckoutStateLost'
 
 function HotelReviewPage() {
   const location = useLocation();
@@ -126,7 +127,7 @@ function HotelReviewPage() {
 
   // The redirect fires in an effect, so the first render still runs with no
   // hotel. Render nothing rather than showing inventory the customer never chose.
-  if (!hotel?.id) return null;
+  if (!hotel?.id) return <CheckoutStateLost searchPath="/hotels" label="hotel search" />;
 
   return (
     <div className="review-wrapper">

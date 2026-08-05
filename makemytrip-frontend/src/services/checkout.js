@@ -57,7 +57,14 @@ export const payAndBook = async ({ quote, bookingData, prefill = {}, description
 
   let order
   try {
-    const body = await api.post('/payment/create-order', { quoteToken: quote.quoteToken })
+    // The draft travels with the order so the server can finish the booking from
+    // the webhook if this browser never comes back — a closed tab after payment
+    // otherwise leaves money captured with no booking. The server strips every
+    // field it owns from this, so it is display/traveller data only.
+    const body = await api.post('/payment/create-order', {
+      quoteToken: quote.quoteToken,
+      bookingDraft: bookingData ?? null
+    })
     order = body?.data ?? body
   } catch (err) {
     throw new Error(messageFor(err, 'Could not start the payment. Please try again.'), { cause: err })

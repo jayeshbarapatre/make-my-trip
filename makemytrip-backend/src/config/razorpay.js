@@ -15,8 +15,24 @@ export const razorpay = isGatewayConfigured
 
 export const razorpayKeySecret = KEY_SECRET
 
+/**
+ * Secret for `POST /payment/webhook`. Razorpay signs webhook bodies with the
+ * value configured in the dashboard, which is deliberately NOT the API key
+ * secret — using the wrong one silently rejects every delivery.
+ */
+export const razorpayWebhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET || ''
+
+export const isWebhookConfigured = Boolean(razorpayWebhookSecret)
+
 if (!isGatewayConfigured) {
   console.warn('⚠️ RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET not set — payment and refund endpoints will return 503')
+}
+
+if (!isWebhookConfigured) {
+  console.warn(
+    '⚠️ RAZORPAY_WEBHOOK_SECRET not set — payment webhooks will be rejected. ' +
+    'Until it is, a customer who closes the tab after paying leaves money captured with no booking.'
+  )
 }
 
 // Razorpay works in the minor unit (paise); everything we persist is in rupees.
