@@ -1,49 +1,38 @@
-import Redis from 'ioredis'
-
-const redisUrl = process.env.REDIS_URL || 'redis://127.0.0.1:6379'
+import { Redis } from '@upstash/redis'
 
 let redis = null
-let isConnecting = false
 
+/**
+ * Returns a singleton Upstash Redis client.
+ *
+ * The client uses the REST HTTP API, so it works in serverless environments
+ * (Vercel, Edge, etc.) without requiring a persistent TCP connection.
+ *
+ * Required env vars:
+ *   UPSTASH_REDIS_REST_URL   – e.g. https://vital-mammoth-140969.upstash.io
+ *   UPSTASH_REDIS_REST_TOKEN – the bearer token from the Upstash console
+ */
 export const getRedis = () => {
-  if (!redis && !isConnecting) {
-    isConnecting = true
+  if (redis) return redis
 
-    // Create connection but don't block on it
-    redis = new Redis(redisUrl, {
-      enableReadyCheck: false, // Don't wait for ready status
-      enableOfflineQueue: false, // Don't queue commands while disconnected
-      retryStrategy: (times) => {
-        if (times > 10) return null // Stop retrying after 10 attempts
-        const delay = Math.min(times * 50, 2000)
-        return delay
-      },
-      maxRetriesPerRequest: null,
-      connectTimeout: 3000, // 3 second timeout
-      lazyConnect: false // Connect immediately but don't block
-    })
+  const url = process.env.UPSTASH_REDIS_REST_URL
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN
 
-    redis.on('connect', () => {
-      console.log('✅ Redis connected')
-    })
-
-    redis.on('error', (err) => {
-      console.warn('⚠️ Redis error:', err.message, '(will continue without Redis)')
-    })
-
-    redis.on('close', () => {
-      console.log('⚠️ Redis disconnected')
-    })
+  if (!url || !token) {
+    console.warn('⚠️ UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN not set — Redis disabled')
+    return null
   }
 
+  redis = new Redis({ url, token })
+  console.log('✅ Upstash Redis client initialised')
   return redis
 }
 
+/**
+ * Graceful close — no-op for the HTTP client (no persistent connection to drain).
+ */
 export const closeRedis = async () => {
-  if (redis) {
-    await redis.quit()
-    redis = null
-  }
+  redis = null
 }
 
 export default getRedis
