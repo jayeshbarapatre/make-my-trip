@@ -87,19 +87,39 @@ Internal work never waits on this list.
 
 ## Launch gates
 
-Completion is not declared by writing a document. Each gate below needs
-evidence, and three of them need credentials that do not exist in this repo.
+**Target (stated 2026-08-05):** a real application — real Firestore, real SMTP,
+real user accounts, real booking records, real PDFs, real booking flow — with
+**dummy travel inventory** and **test-mode payments** instead of live providers.
+
+That scopes two things *out*: live Razorpay (KYC, real money settling) and live
+inventory providers (Amadeus/GDS). It scopes SMTP firmly *in* — "real SMTP"
+means a confirmation email has to actually arrive.
+
+Completion is not declared by writing a document. Each gate needs evidence.
 
 | # | Gate | Status |
 |---|---|---|
-| 1 | SMTP rotated, and one real confirmation email received | **Blocked** — B2 |
-| 2a | The chain works against the real gateway in **test** mode | **Done** — `npm run verify:payment -- --local-webhook-secret`, 29/29. A real order is created at api.razorpay.com and the gateway holds exactly the amount the server priced |
-| 2b | Razorpay can **deliver** a webhook to us | **Open** — needs `RAZORPAY_WEBHOOK_SECRET` from the dashboard plus a public URL (`cloudflared tunnel --url http://localhost:5000`, or deploy first). Free, ~10 minutes |
-| 2c | One real ₹1 payment in **live** mode | **Blocked** — needs account activation/KYC |
-| 3 | Firestore on Blaze, rules and indexes deployed | **Blocked** — B4 |
+| 1 | A real confirmation email arrives | **BLOCKER** — the only one left. `535-5.7.8` from Gmail; reproduced live by `verify:payment`. Rotate the app password (~5 min), or move to Resend/Brevo — same `SMTP_*` vars, no code change |
+| 2a | The chain works against the real gateway, test mode | **Done** — `npm run verify:payment -- --local-webhook-secret`, 29/29. A real order exists at api.razorpay.com holding exactly the amount the server priced |
+| 2b | Razorpay can **deliver** a webhook to us | **Open, ~10 min, free** — `RAZORPAY_WEBHOOK_SECRET` from the dashboard plus a public URL (`cloudflared tunnel --url http://localhost:5000`, or deploy first). Needed in test mode too: a closed tab loses a booking regardless of payment mode |
+| 3 | Firestore indexes deployed | **Open** — `firebase deploy --only firestore:indexes`, or the service-account secret the `firestore-rules.yml` workflow already expects. Works on the free Spark plan |
 | 4 | Production errors captured somewhere queryable | **Done** — `errorReports`, verified end-to-end with redaction against real Firestore |
-| 5 | Cabs off sale until they reserve inventory | **Done** — see above |
+| 5 | Cabs do not oversell | **Done** by closing the vertical. Worth revisiting: see below |
 
-After 1–3: soft launch on one or two routes to a controlled audience, and
-reconcile `payments` against `bookings` daily. Orphan payments are the signal
-that matters. Open it up once that reconciles clean.
+**Out of scope by decision:** live Razorpay keys, live inventory providers,
+Firestore Blaze (Spark's 50k reads/day is ample for dummy inventory, especially
+after the search fix took a cross-vertical page from ~1,596 reads to a handful).
+
+### Open question — cabs
+
+Cabs were closed because they reserve no inventory. With inventory dummy across
+*every* vertical, that is a data-integrity bug rather than a customer-harm one:
+no flight or hotel booking produces a real trip either. Two ways forward:
+
+- **Give cabs a daily capacity model** per route and class, joining `DATED_TYPES`
+  and `RESOURCE_COLLECTIONS` like buses and trains. Then cabs sell correctly and
+  the vertical reopens. This is BLOCKED.md B5 option (b), and is bounded work.
+- **Reopen as-is** (`UNSELLABLE_TYPES=`) and accept that cabs oversell until
+  inventory becomes real.
+
+The first is the right answer if cabs are meant to be part of the product.
