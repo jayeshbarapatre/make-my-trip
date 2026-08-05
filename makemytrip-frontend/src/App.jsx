@@ -8,6 +8,7 @@ import Header from './components/Common/Header'
 import Footer from './components/Common/Footer'
 import ProtectedRoute from './components/ProtectedRoute'
 import ErrorBoundary from './components/ErrorBoundary'
+import DemoNotice from './components/DemoNotice'
 const HomePage = lazy(() => import('./pages/HomePage'))
 const SearchResultsPage = lazy(() => import('./pages/SearchResultsPage'))
 const BookingPage = lazy(() => import('./pages/BookingPage'))
@@ -346,6 +347,11 @@ function AppContent() {
   const location = useLocation()
   const isAdminRoute = location.pathname.startsWith('/admin')
   const isVendorRoute = location.pathname.startsWith('/vendor')
+  // Every route where a visitor is committing to, or has just completed, a
+  // booking — /hotel/payment, /cab/success, /booking/:id and friends. Admin and
+  // vendor consoles are excluded: nobody there mistakes the inventory for real.
+  const isDemoSurface = !isAdminRoute && !isVendorRoute &&
+    /(^\/booking|\/(payment|review|success))/.test(location.pathname)
 
   // Initialize theme on mount
   useEffect(() => {
@@ -394,6 +400,15 @@ function AppContent() {
       <ScrollToTop />
       <RouteLoader />
       {!isAdminRoute && !isVendorRoute && <Header />}
+      {/* Checkout and confirmation are where "this is a demo" costs the most to
+          not know, so the banner is rendered once here for every route in that
+          flow rather than threaded through seven page components. The footer
+          carries the same statement site-wide. */}
+      {isDemoSurface && (
+        <div style={{ maxWidth: '1200px', margin: '20px auto 0', padding: '0 24px' }}>
+          <DemoNotice variant="banner" />
+        </div>
+      )}
       {/* Keyed on the path so navigating away from a crashed route recovers. */}
       <ErrorBoundary resetKey={location.pathname}>
       <Suspense fallback={<PageLoader />}>

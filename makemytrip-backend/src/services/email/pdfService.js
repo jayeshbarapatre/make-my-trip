@@ -1,4 +1,5 @@
 import PDFDocument from 'pdfkit'
+import { DEMO_MODE, DEMO_NOTICE, DEMO_BANNER } from '../../config/demoMode.js'
 
 const BRAND_COLOR = '#003580'
 const ACCENT_COLOR = '#e63946'
@@ -28,9 +29,40 @@ const addHeader = (doc, title) => {
   doc.moveDown(2)
 }
 
+/**
+ * States plainly that the document is not a reservation.
+ *
+ * A PDF ticket is the artifact most likely to be mistaken for the real thing:
+ * it leaves the site, gets forwarded and printed, and arrives without any of
+ * the context that makes a demo obviously a demo. So the disclosure goes at the
+ * top, before the PNR and the route, not in small print at the bottom.
+ */
+const addDemoBanner = (doc) => {
+  if (!DEMO_MODE) return
+
+  const y = doc.y
+  doc.rect(40, y, doc.page.width - 80, 26).fill('#fff4e5')
+  doc.rect(40, y, 4, 26).fill('#e67700')
+  doc.font('Helvetica-Bold', 10).fillColor('#8a4b00')
+  doc.text(DEMO_BANNER, 54, y + 8, { width: doc.page.width - 110 })
+  doc.font('Helvetica', 10).fillColor('black')
+  doc.y = y + 26
+  doc.moveDown(1)
+}
+
 const addFooter = (doc) => {
   doc.fontSize(10)
   doc.fillColor('#666')
+
+  if (DEMO_MODE) {
+    doc.fontSize(7)
+    doc.text(DEMO_NOTICE, 50, doc.page.height - 58, {
+      align: 'center',
+      width: doc.page.width - 100
+    })
+    doc.fontSize(10)
+  }
+
   doc.text('© 2024 MakeMyTrip. All rights reserved.', 50, doc.page.height - 30, { align: 'center' })
   doc.text('This is an automated document. Please keep for your records.', 50, doc.page.height - 15, { align: 'center' })
 }
@@ -76,6 +108,7 @@ export const generateTicketPDF = async (booking) => {
 
       // Header
       addHeader(doc, `${String(booking.type ?? "booking").toUpperCase()} TICKET`)
+      addDemoBanner(doc)
 
       // Booking Details
       doc.fontSize(14).fillColor(BRAND_COLOR).text('Booking Details')
@@ -256,6 +289,7 @@ export const generateInvoicePDF = async (booking, invoiceNumber) => {
       doc.text('INVOICE', 50, 50)
       doc.fillColor('black')
       doc.moveDown(2)
+      addDemoBanner(doc)
 
       // Invoice Details
       doc.fontSize(10)

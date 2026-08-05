@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import DemoNotice from '../DemoNotice'
 import { Link } from 'react-router-dom'
 import { cmsService } from '../../services/cmsService'
 import '../../styles/HomePage.css'
@@ -99,6 +100,7 @@ export default function Footer() {
         </div>
 
         <div className="hp-ft-bottom">
+          <DemoNotice variant="line" />
           <div>© 2026 MakeMyTrip Pvt Ltd · All rights reserved</div>
           <div className="hp-ft-pay">
             {['VISA', 'MasterCard', 'RuPay', 'UPI', 'NetBanking'].map(p => (

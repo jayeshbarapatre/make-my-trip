@@ -1,4 +1,5 @@
 import { brand } from './brand.js'
+import { DEMO_MODE, DEMO_NOTICE } from '../../config/demoMode.js'
 
 const esc = (value) => {
   if (value === null || value === undefined) return ''
@@ -253,6 +254,7 @@ export const renderLayout = ({ preheader = '', hero = '', body = '', footerNote 
       <tr><td class="pad" style="padding:18px 28px;background:${brand.wash};border-top:1px solid ${brand.line};
         font:400 11px/1.7 Arial,Helvetica,sans-serif;color:${brand.muted};text-align:center;">
         ${footerNote ? `${esc(footerNote)}<br>` : ''}
+        ${DEMO_MODE ? `<span style="display:block;margin:10px 0;padding:10px 12px;background:#fff4e5;border-left:3px solid #e67700;color:#8a4b00;font-size:12px;line-height:1.5;text-align:left">${esc(DEMO_NOTICE)}</span>` : ''}
         © ${new Date().getFullYear()} ${esc(brand.name)}. All rights reserved.<br>
         This is an automated message — please do not reply to this email.
       </td></tr>
