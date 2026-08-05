@@ -10,7 +10,7 @@ import {
 } from '../config/razorpay.js'
 import { sendBookingConfirmationEmail } from '../services/emailService.js'
 import { writeAuditLog, AuditAction } from '../services/auditLog.js'
-import { createBookingForPayment } from '../services/bookingService.js'
+import { createBookingForPayment, findRecentDuplicate } from '../services/bookingService.js'
 import { quoteTrip, redeemQuote, signQuote } from '../services/pricingService.js'
 
 const gatewayUnavailable = (res) =>
@@ -69,6 +69,26 @@ export const createRazorpayOrder = async (req, res) => {
     }
 
     const quote = await redeemQuote(quoteToken, userId)
+
+    // Duplicate prevention, deliberately placed before the gateway is touched.
+    // Catching a repeat after capture would mean refusing a booking for money
+    // already taken; catching it here costs the customer nothing.
+    if (bookingDraft && typeof bookingDraft === 'object') {
+      const existing = await findRecentDuplicate({
+        userId,
+        type: quote.type,
+        payload: bookingDraft
+      })
+
+      if (existing) {
+        return res.status(409).json({
+          success: false,
+          code: 'DUPLICATE_BOOKING',
+          message: 'You just booked this trip. Check My Trips before paying again.',
+          data: { bookingId: existing.bookingId }
+        })
+      }
+    }
 
     const order = await razorpay.orders.create({
       amount: Math.round(quote.totalAmount * 100),

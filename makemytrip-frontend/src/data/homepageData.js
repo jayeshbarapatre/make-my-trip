@@ -10,10 +10,7 @@ export const SERVICE_TABS = [
   { id: 'holidays',  icon: 'holidays',  label: 'Holiday\nPackages' },
   { id: 'trains',    icon: 'trains',    label: 'Trains' },
   { id: 'buses',     icon: 'buses',     label: 'Buses' },
-  // Cabs are not sellable: a cab booking reserves no inventory, so every one
-  // sold is a promise with no vehicle behind it. quoteTrip refuses the
-  // vertical outright (src/config/verticals.js). Restore this entry once cabs
-  // have a daily capacity model per route and class.
+  { id: 'cabs',      icon: 'cabs',      label: 'Cabs' },
   { id: 'tours',     icon: 'tours',     label: 'Tours &\nAttractions' },
   { id: 'visa',      icon: 'visa',      label: 'Visa' },
   { id: 'cruise',    icon: 'cruise',    label: 'Cruise', isNew: true },

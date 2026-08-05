@@ -16,6 +16,7 @@ const FOOTER_COLS_FALLBACK = [
     { title: 'Hotels', url: '/hotels' },
     { title: 'Trains', url: '/trains' },
     { title: 'Buses', url: '/buses' },
+    { title: 'Cabs', url: '/cabs' },
   ]},
   { title: 'Support',  links: [
     { title: 'Contact us', url: '/contact-us' },

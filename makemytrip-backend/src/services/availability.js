@@ -32,8 +32,19 @@ export const DATED_FLAG = 'datedAvailability'
 
 export const AVAILABILITY_SUBCOLLECTION = 'availability'
 
-/** Types that book a dated slot. Cabs are on-demand; flights are dated already. */
-export const DATED_TYPES = new Set(['hotel', 'bus', 'train'])
+/** Types that book a dated slot. Flights are dated already — one doc, one departure. */
+export const DATED_TYPES = new Set(['hotel', 'bus', 'train', 'cab'])
+
+/**
+ * Types that are dated by construction rather than by migration.
+ *
+ * The `datedAvailability` flag exists so a partially migrated collection keeps
+ * selling from its legacy counter. Cabs have no legacy counter to fall back to
+ * — a cab document is one vehicle with one driver and one plate, and carries
+ * no seat total — so there is nothing to migrate *from*. Treating an unflagged
+ * cab as legacy is what let cabs sell without limit.
+ */
+export const ALWAYS_DATED = new Set(['cab'])
 
 /** Types whose availability is subdivided by travel class. */
 export const CLASSED_TYPES = new Set(['train'])
@@ -100,8 +111,9 @@ export const travelDatesFor = (type, payload = {}) => {
     return stayNights(checkIn, checkOut)
   }
 
-  if (type === 'bus' || type === 'train') {
-    const raw = payload.travelDate ?? payload.departureDate ?? payload.date ?? payload.journeyDate
+  if (type === 'bus' || type === 'train' || type === 'cab') {
+    const raw = payload.travelDate ?? payload.departureDate ?? payload.pickupDate ??
+      payload.date ?? payload.journeyDate
     const date = parseSearchDate(raw)
     if (!date) {
       throw err(`A ${type} booking needs a travel date as YYYY-MM-DD`, 'DATE_REQUIRED')
@@ -141,7 +153,12 @@ export const capacityOf = (item = {}, type, classCode = null) => {
 
   const legacy = type === 'hotel'
     ? [item.totalRooms, item.rooms, item.roomsAvailable]
-    : [item.totalSeats, item.seats, item.seatsAvailable]
+    : type === 'cab'
+      // `capacity` on a cab is passenger seats, not fleet size — reading it
+      // here would sell a six-seater six times over. One document is one
+      // vehicle, so it runs one trip a day unless the operator says otherwise.
+      ? [item.dailyCapacity, 1]
+      : [item.totalSeats, item.seats, item.seatsAvailable]
 
   const found = legacy.find((v) => Number.isFinite(Number(v)) && Number(v) >= 0)
   return found === undefined ? null : Number(found)

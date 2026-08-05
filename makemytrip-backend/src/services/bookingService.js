@@ -1,10 +1,11 @@
 import { FieldValue } from 'firebase-admin/firestore'
-import { now } from '../utils/time.js'
+import { now, toMillis } from '../utils/time.js'
 import { db } from '../config/firebase.js'
 import { generateBookingId, generatePNR } from '../utils/idGenerator.js'
 import { redeemCoupon } from '../controllers/couponController.js'
 import {
   DATED_TYPES,
+  ALWAYS_DATED,
   isDated,
   travelDatesFor,
   travelClassFor,
@@ -94,7 +95,8 @@ const RESOURCE_COLLECTIONS = {
   flight: 'flights',
   hotel: 'hotels',
   bus: 'buses',
-  train: 'trains'
+  train: 'trains',
+  cab: 'cabs'
 }
 
 const availabilityField = (type, data) =>
@@ -132,7 +134,7 @@ const reserveAvailabilityInTx = async (tx, type, ref, quantity, payload = {}) =>
   // Migrated inventory is reserved per travel date. The legacy branch below is
   // kept for items the backfill has not reached yet, so a partially migrated
   // collection keeps selling instead of failing.
-  if (DATED_TYPES.has(type) && isDated(data)) {
+  if (DATED_TYPES.has(type) && (isDated(data) || ALWAYS_DATED.has(type))) {
     const dates = travelDatesFor(type, payload)
     const classCode = travelClassFor(type, payload)
 
@@ -185,8 +187,10 @@ export const releaseAvailability = async (type, itemId, quantity, payload = {}) 
 
     // Mirror of the reserve path: dated inventory is returned to the exact
     // nights it was taken from, so cancelling a January stay cannot free a
-    // room in July.
-    if (DATED_TYPES.has(type) && isDated(data)) {
+    // room in July. The ALWAYS_DATED arm must match the reserve branch exactly
+    // — reserving per date and releasing to a legacy counter would strand the
+    // slot forever.
+    if (DATED_TYPES.has(type) && (isDated(data) || ALWAYS_DATED.has(type))) {
       // A booking stored before the migration carries no travel dates. Guessing
       // which nights to credit would corrupt unrelated dates, so leave it for
       // the operator rather than restoring the wrong ones.
@@ -228,6 +232,11 @@ export const bookedQuantity = (type, body = {}) => {
   const explicit = parseInt(body.seatCount, 10)
   if (Number.isFinite(explicit) && explicit > 0) return explicit
 
+  // A cab books whole vehicles. Falling through to the passenger count below
+  // would reserve one car per traveller — four seats in a four-seater would
+  // take four cars off the road.
+  if (type === 'cab') return Math.max(1, parseInt(body.vehicles ?? body.quantity, 10) || 1)
+
   if (type === 'hotel') return Math.max(1, parseInt(body.rooms, 10) || 1)
   // Infants travel on an adult's lap and are not charged a seat, so exclude
   // them from the seat reservation count.
@@ -244,9 +253,77 @@ export const bookedQuantity = (type, body = {}) => {
   return Math.max(1, parseInt(body.passengerCount, 10) || 1)
 }
 
+/**
+ * Identifies "the same trip" for duplicate detection: one traveller, one item,
+ * one departure date.
+ *
+ * Three equality filters query without a composite index, which is why this is
+ * denormalised onto the booking rather than reconstructed from its parts at
+ * read time.
+ */
+export const tripKeyOf = (type, payload = {}) => {
+  const itemId = resolveItemId(payload)
+  if (!itemId) return null
+
+  let date = ''
+  try {
+    // Hotels span nights; the first one identifies the stay.
+    date = travelDatesFor(type, payload)[0] ?? ''
+  } catch {
+    date = ''
+  }
+
+  return `${type}:${itemId}:${date}`
+}
+
 export const resolveItemId = (payload = {}) =>
   payload.flightId || payload.hotelId || payload.busId ||
   payload.trainId || payload.cabId || payload.itemId || null
+
+/** How long an identical confirmed booking blocks another attempt. */
+const DUPLICATE_WINDOW_MS = 10 * 60 * 1000
+
+/**
+ * Finds a confirmed booking this user already holds for the same trip.
+ *
+ * Deliberately time-bounded. The failure mode worth preventing is an accidental
+ * repeat — a double-click, a refresh mid-checkout, a back-button retry — not a
+ * deliberate second purchase. Blocking outright would make it impossible to
+ * book a second room, or a seat for someone else, on a trip already booked;
+ * ten minutes catches the accident and lets the intent through.
+ *
+ * Bookings written before `tripKey` existed simply do not match, so this can
+ * only ever be over-permissive, never wrongly blocking.
+ *
+ * @returns {Promise<{bookingId: string, id: string}|null>}
+ */
+export const findRecentDuplicate = async ({ userId, type, payload, windowMs = DUPLICATE_WINDOW_MS }) => {
+  const tripKey = tripKeyOf(type, payload)
+  if (!userId || !tripKey) return null
+
+  // Three equality filters — Firestore merges single-field indexes, so this
+  // needs no composite. The time window is applied in memory because adding a
+  // range filter here would require one.
+  const snap = await db.collection('bookings')
+    .where('userId', '==', userId)
+    .where('tripKey', '==', tripKey)
+    .where('status', '==', 'confirmed')
+    .limit(5)
+    .get()
+
+  const cutoff = Date.now() - windowMs
+
+  for (const doc of snap.docs) {
+    const data = doc.data()
+    if (data.isDeleted === true) continue
+    const createdMs = toMillis(data.createdAt)
+    if (Number.isFinite(createdMs) && createdMs >= cutoff) {
+      return { id: doc.id, bookingId: data.bookingId ?? doc.id }
+    }
+  }
+
+  return null
+}
 
 const authorityError = (message, code, status = 400) => {
   const err = new Error(message)
@@ -426,6 +503,9 @@ export const createBookingForPayment = async ({
       userId,
       type,
       bookingType: type,
+      // Denormalised so `findRecentDuplicate` can match on three equality
+      // filters, which Firestore serves without a composite index.
+      tripKey: tripKeyOf(type, payload),
       totalAmount: authority.amount,
       ...(breakdown ?? {}),
       fareBreakdownVerified: breakdown !== null,

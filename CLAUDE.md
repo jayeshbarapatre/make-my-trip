@@ -369,19 +369,43 @@ Rules:
 - The frontend displays the quote's breakdown verbatim (`src/services/checkout.js`); it must never compute a total.
 - `create-order` rejects a bare `amount` with `QUOTE_REQUIRED`. A stale quote whose price moved is rejected with `QUOTE_STALE`.
 
-### Closed verticals (`src/config/verticals.js`)
+### Verticals (`src/config/verticals.js`)
 
-**Cabs are not sellable.** `RESOURCE_COLLECTIONS` in `bookingService.js` covers
-flight, hotel, bus and train — not cab — so a cab booking reserves nothing and
-sells without limit. `quoteTrip` refuses any type in `UNSELLABLE_TYPES` with
-`503 VERTICAL_UNAVAILABLE`, which is the chokepoint: no quote → no signed token
-→ `create-order` refuses → no captured payment → no booking. Existing cab
-bookings stay readable and cancellable. Reopen by giving cabs a daily capacity
-model per route and class, then clearing the env var.
+Every vertical reserves dated inventory, so nothing ships closed. `UNSELLABLE_TYPES`
+(comma-separated) is the kill switch: `quoteTrip` refuses a listed type with
+`503 VERTICAL_UNAVAILABLE`, and no quote means no signed token → `create-order`
+refuses → no captured payment → no booking. Existing bookings of a closed type
+stay readable and cancellable.
+
+**Cabs are dated per vehicle.** A cab document is one vehicle with one driver and
+one plate, so it books a slot per travel date like a bus seat — `capacity` on the
+document is *passenger seats*, never fleet size, and reading it as capacity would
+sell a six-seater six times. Daily capacity is `dailyCapacity` (default 1). Cabs
+are in `ALWAYS_DATED` because, unlike hotels/buses/trains, they have no legacy
+counter to migrate from — treating an unflagged cab as legacy is what let them
+oversell.
 
 The seven verticals with no backend at all (Cruise, Forex, Visa, Insurance,
 Tours, Homestays, Holidays) render a storefront and carry a `<ComingSoon>`
 banner. `tests/search.test.mjs` pins that they still do.
+
+### Duplicate booking prevention
+
+`create-order` refuses a second order when the caller already holds a confirmed
+booking with the same `tripKey` (`type:itemId:firstTravelDate`) created in the
+last 10 minutes — `409 DUPLICATE_BOOKING`. Placed before the gateway is touched,
+because catching a repeat after capture would mean refusing a booking for money
+already taken.
+
+Time-bounded on purpose: the failure mode worth preventing is an accident (a
+double-click, a refresh mid-checkout, a back-button retry), not a deliberate
+second purchase. Blocking outright would make it impossible to book a second
+room, or a seat for a friend, on a trip already booked.
+
+`tripKey` is denormalised onto the booking so the lookup is three equality
+filters, which Firestore serves without a composite index. Checkout pages also
+carry a synchronous `useRef` re-entry guard — React state flips too late to stop
+a fast double-click.
 
 ### Booking creation — one path, payment required (`src/services/bookingService.js`)
 

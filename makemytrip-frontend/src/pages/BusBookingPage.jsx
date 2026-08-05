@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { busService } from '../services/busService'
@@ -74,6 +74,7 @@ export default function BusBookingPage() {
   const [contact, setContact] = useState({ email: '', phone: '' })
   const [errors, setErrors] = useState({})
   const [paymentLoading, setPaymentLoading] = useState(false)
+  const inFlight = useRef(false)
   const [bookingDetails, setBookingDetails] = useState(null)
   const [quote, setQuote] = useState(null)
   const [quoteError, setQuoteError] = useState('')
@@ -291,6 +292,12 @@ export default function BusBookingPage() {
       return
     }
 
+    // Synchronous re-entry guard. `paymentLoading` is React state, so a second
+    // click landing before the re-render still saw `false` and opened a second
+    // checkout — two captures, two bookings, one trip. A ref flips immediately.
+    if (inFlight.current) return
+    inFlight.current = true
+
     setPaymentLoading(true)
     try {
       // Check if user is authenticated
@@ -298,12 +305,14 @@ export default function BusBookingPage() {
       if (!token) {
         showToast('Please login to continue with payment', 'error')
         setPaymentLoading(false)
+        inFlight.current = false
         return
       }
 
       if (!quote) {
         showToast(quoteError || 'The fare is still loading. Please wait a moment.', 'error')
         setPaymentLoading(false)
+        inFlight.current = false
         return
       }
 
@@ -343,6 +352,7 @@ export default function BusBookingPage() {
     } catch (error) {
       showToast(error.message || 'Payment failed. Please try again.', 'error')
       setPaymentLoading(false)
+      inFlight.current = false
     }
   }
 

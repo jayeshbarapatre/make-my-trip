@@ -1,21 +1,20 @@
 /**
  * Which verticals may be sold.
  *
- * Cabs are off by default. `bookingService.RESOURCE_COLLECTIONS` covers flight,
- * hotel, bus and train — not cab — so a cab booking reserves nothing and sells
- * without limit. Every cab sold is a promise with no vehicle behind it, and the
- * customer finds out at the curb. Selling something that cannot be delivered is
- * worse than not selling it, so the vertical stays closed until cabs have a
- * daily capacity model per route and class (BLOCKED.md B5).
+ * Nothing is closed by default any more. Cabs were, because they reserved no
+ * inventory and so sold without limit; they now book a dated slot per vehicle
+ * like every other vertical (`ALWAYS_DATED` in services/availability.js), so
+ * the reason is gone.
  *
- * Enforced in `pricingService.quoteTrip`, which is the chokepoint: no quote
- * means no signed quoteToken, which means `create-order` refuses, which means
- * there is no captured payment for a booking to be built from. Existing cab
- * bookings stay readable and cancellable.
+ * The switch stays because it is the right chokepoint: `pricingService.quoteTrip`
+ * refuses a closed type, and no quote means no signed quoteToken, which means
+ * `create-order` refuses, which means there is no captured payment for a booking
+ * to be built from. Existing bookings of a closed type stay readable and
+ * cancellable.
  *
- * To reopen a vertical, set UNSELLABLE_TYPES to the remaining list (or empty).
+ * To close a vertical, list it in UNSELLABLE_TYPES (comma-separated).
  */
-const DEFAULT_UNSELLABLE = 'cab'
+const DEFAULT_UNSELLABLE = ''
 
 const configured = process.env.UNSELLABLE_TYPES ?? DEFAULT_UNSELLABLE
 

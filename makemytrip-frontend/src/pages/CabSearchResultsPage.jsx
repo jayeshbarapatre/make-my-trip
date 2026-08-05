@@ -128,6 +128,10 @@ export default function CabSearchResultsPage() {
         },
         pickupLocation: fromVal,
         dropLocation: toVal,
+        // A cab document is one vehicle with one driver and one plate, so it is
+        // reserved against a travel date like a bus seat. Without this the
+        // booking carries no date and the server cannot hold the vehicle.
+        travelDate: dateVal,
         // The route distance stored on the cab — the server validates the quoted
         // distance against it, so a hardcoded value fails on outstation routes.
         distance: car._distanceKm ? `${car._distanceKm} km` : '25 km',

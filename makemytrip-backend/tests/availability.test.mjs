@@ -105,14 +105,22 @@ describe('travel dates from a booking payload', () => {
     assert.deepEqual(travelDatesFor('train', { journeyDate: '2026-08-10' }), ['2026-08-10'])
   })
 
-  test('types without a dated slot return nothing', () => {
-    assert.deepEqual(travelDatesFor('cab', {}), [])
+  test('a cab occupies the single travel date', () => {
+    // Cabs used to return [] here, which is why they reserved nothing and sold
+    // the same vehicle without limit. One document is one vehicle with one
+    // driver and one plate, so it books a date like a bus seat.
+    assert.deepEqual(travelDatesFor('cab', { travelDate: '2026-08-10' }), ['2026-08-10'])
+    assert.deepEqual(travelDatesFor('cab', { pickupDate: '2026-08-10' }), ['2026-08-10'])
+  })
+
+  test('a flight needs no date — the document is one departure', () => {
     assert.deepEqual(travelDatesFor('flight', {}), [])
   })
 
   test('a dated type without a date is refused rather than silently unbounded', () => {
     assert.throws(() => travelDatesFor('hotel', {}), /checkIn and checkOut/)
     assert.throws(() => travelDatesFor('bus', {}), /travel date/)
+    assert.throws(() => travelDatesFor('cab', {}), /travel date/)
   })
 
   test('train class defaults, and normalises case', () => {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { flightService } from '../services/flightService'
@@ -124,6 +124,7 @@ export default function BookingPage() {
   const [upiDetails, setUpiDetails] = useState({ vpa: '' })
   const [selectedBank, setSelectedBank] = useState('HDFC')
   const [paymentLoading, setPaymentLoading] = useState(false)
+  const inFlight = useRef(false)
   const [loadingMessage, setLoadingMessage] = useState('')
 
   // Confirmation data state
@@ -335,6 +336,12 @@ export default function BookingPage() {
       return
     }
 
+    // Synchronous re-entry guard. `paymentLoading` is React state, so a second
+    // click landing before the re-render still saw `false` and opened a second
+    // checkout — two captures, two bookings, one trip. A ref flips immediately.
+    if (inFlight.current) return
+    inFlight.current = true
+
     setPaymentLoading(true)
     setLoadingMessage('Opening secure payment...')
 
@@ -371,6 +378,7 @@ export default function BookingPage() {
       })
 
       setPaymentLoading(false)
+      inFlight.current = false
       setBookingDetails({
         bookingId: confirmed.bookingId,
         pnr: confirmed.pnr,
@@ -385,6 +393,7 @@ export default function BookingPage() {
       showToastMsg('🎉 Booking confirmed! Your ticket has been sent to your email.', 'success')
     } catch (err) {
       setPaymentLoading(false)
+      inFlight.current = false
       showToastMsg(err.message || 'The payment could not be completed.', 'error')
     }
   }

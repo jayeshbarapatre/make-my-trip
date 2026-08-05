@@ -28,6 +28,7 @@ export default function CabPaymentPage() {
   const dropLocation = location.state?.dropLocation ?? '';
   const distance = location.state?.distance ?? '';
   const estimatedTime = location.state?.estimatedTime ?? '';
+  const travelDate = location.state?.travelDate ?? '';
 
   useEffect(() => {
     if (user && !cab?.id) {
@@ -100,6 +101,10 @@ export default function CabPaymentPage() {
           licensePlate: cab.licensePlate,
           pickupLocation,
           dropLocation,
+          // The vehicle is held for this date. The server rejects a cab
+          // booking without one (DATE_REQUIRED) rather than silently
+          // reserving nothing.
+          travelDate,
           fromCity: pickupLocation,
           toCity: dropLocation,
           distance,
@@ -132,7 +137,11 @@ export default function CabPaymentPage() {
 
   // The redirect above fires in an effect, so the first render still happens
   // with no cab. Render nothing rather than dereferencing it.
-  if (!cab?.id) return <CheckoutStateLost searchPath="/cabs" label="cab search" />;
+  // The travel date is as load-bearing as the cab itself: the server reserves
+  // the vehicle against it and refuses the booking without one. Catching it
+  // here sends the customer back to re-pick; catching it after payment would
+  // mean money captured against a booking the server then rejects.
+  if (!cab?.id || !travelDate) return <CheckoutStateLost searchPath="/cabs" label="cab search" />;
 
   return (
     <div style={{ background: 'hsl(var(--b2))', minHeight: '100vh', padding: '40px 0 80px', fontFamily: "'Space Grotesk', sans-serif", color: 'hsl(var(--bc))' }}>
