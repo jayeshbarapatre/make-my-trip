@@ -93,7 +93,9 @@ evidence, and three of them need credentials that do not exist in this repo.
 | # | Gate | Status |
 |---|---|---|
 | 1 | SMTP rotated, and one real confirmation email received | **Blocked** — B2 |
-| 2 | One real ₹1 payment in Razorpay **live** mode, with the browser tab killed mid-payment, proving the webhook writes the booking | **Blocked** — B2a + live keys. Every test of this path so far uses a faked gateway |
+| 2a | The chain works against the real gateway in **test** mode | **Done** — `npm run verify:payment -- --local-webhook-secret`, 29/29. A real order is created at api.razorpay.com and the gateway holds exactly the amount the server priced |
+| 2b | Razorpay can **deliver** a webhook to us | **Open** — needs `RAZORPAY_WEBHOOK_SECRET` from the dashboard plus a public URL (`cloudflared tunnel --url http://localhost:5000`, or deploy first). Free, ~10 minutes |
+| 2c | One real ₹1 payment in **live** mode | **Blocked** — needs account activation/KYC |
 | 3 | Firestore on Blaze, rules and indexes deployed | **Blocked** — B4 |
 | 4 | Production errors captured somewhere queryable | **Done** — `errorReports`, verified end-to-end with redaction against real Firestore |
 | 5 | Cabs off sale until they reserve inventory | **Done** — see above |

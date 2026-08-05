@@ -38,7 +38,8 @@
     "seed:coverage": "node scripts/seedRouteCoverage.js",
     "verify:search": "node scripts/verifySearch.js",
     "verify:booking": "node scripts/verifyBookingFlow.js",
-    "verify:all": "npm run verify:search && npm run verify:booking",
+    "verify:payment": "node scripts/verifyPayment.js",
+    "verify:all": "npm run verify:search && npm run verify:booking && npm run verify:payment",
     "bootstrap": "node scripts/bootstrapInventory.js"
   },
   "keywords": [],

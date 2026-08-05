@@ -34,6 +34,9 @@ cd makemytrip-backend
 npm run dev                  # Start with --watch (auto-reload on changes)
 npm run start                # Start normally (production)
 npm run test                 # Regression + auth + audit suites (real Firestore)
+npm run test:mocked          # Offline suites (module-mocked; no datastore, no network)
+npm run verify:payment       # Real Razorpay test-mode order + signed webhook -> booking
+                             #   add -- --local-webhook-secret to arm the webhook stages
 npm run admin:create         # Provision the first admin (add --super for SUPER_ADMIN)
 
 # Seeding — every one of these writes to Firestore
