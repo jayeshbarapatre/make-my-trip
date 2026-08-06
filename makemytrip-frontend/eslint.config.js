@@ -77,4 +77,10 @@ export default defineConfig([
     files: ['vite.config.js', 'postcss.config.js', 'eslint.config.js'],
     languageOptions: { globals: { ...globals.node } },
   },
+  {
+    // Tests run in Node under vitest, not in the browser: they read source
+    // files off disk and resolve paths from process.cwd().
+    files: ['src/**/*.test.{js,jsx}', 'src/test/**/*.{js,jsx}'],
+    languageOptions: { globals: { ...globals.node } },
+  },
 ])

@@ -80,5 +80,13 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      # No browser, no datastore, no network — so unlike the Playwright specs
+      # these can gate every merge. They pin the defects that actually shipped:
+      # the axios transport string reaching the sign-up form, the response shape
+      # that made flight search always report "no flights", and the duplicate
+      # route patterns that silently rendered the wrong page.
+      - name: Unit and component tests
+        run: npm test
+
       - name: Build
         run: npm run build
