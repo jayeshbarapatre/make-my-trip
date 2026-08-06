@@ -1,12 +1,15 @@
 import axios from 'axios'
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1'
+import { API_BASE_URL, API_TIMEOUT } from '../config/api.config'
+import { messageForRequestError } from './apiError'
 
 // These modules live outside /admin — they are shared RBAC endpoints that also
 // serve customers and vendors. The admin panel reaches them with the same
 // adminToken, which the backend now resolves through the unified user store.
 const platformAPI = axios.create({
   baseURL: API_BASE_URL,
+  // This instance carried no timeout at all, so an unanswered admin request
+  // spun until the browser gave up on its own.
+  timeout: API_TIMEOUT,
   headers: { 'Content-Type': 'application/json' }
 })
 
@@ -19,8 +22,7 @@ platformAPI.interceptors.request.use((config) => {
 platformAPI.interceptors.response.use(
   (res) => res.data,
   (err) => {
-    const message = err.response?.data?.message || err.message || 'Request failed'
-    const error = new Error(message)
+    const error = new Error(messageForRequestError(err, 'Request failed'))
     error.status = err.response?.status
     error.code = err.response?.data?.code
     return Promise.reject(error)

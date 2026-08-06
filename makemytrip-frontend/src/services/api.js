@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { API_BASE_URL, API_TIMEOUT } from '../config/api.config'
+import { messageForRequestError } from './apiError'
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -79,8 +80,9 @@ api.interceptors.response.use(
       }
     }
 
-    const message = err.response?.data?.message || err.message || 'An error occurred'
-    const error = new Error(message)
+    // Every downstream call site reads `error.message`, so normalising here is
+    // what keeps an axios transport string out of ~40 different screens.
+    const error = new Error(messageForRequestError(err))
     error.status = status || 500
     error.code = err.response?.data?.code
     error.response = {
