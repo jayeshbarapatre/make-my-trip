@@ -260,13 +260,9 @@ body {
    size, radius, hover and focus come from `.btn .btn-primary .btn-lg`; this file
    used to restate all of it for the inner pages and disagree with the home page
    on every value.
-   Both strips are targeted together so the two cannot drift apart again. The
-   inset keeps the pill clear of the strip's own rounded border. */
-.inner-search-grid > .btn,
-.hp-grid > .btn {
-  align-self: stretch;
-  margin: 6px;
-}
+   No margin or align-self here on purpose. `h-full` on the button already makes
+   it match the row, and adding a margin on top of a height:100% grid item makes
+   the box 100% + margin — which pushed it taller than the fields beside it. */
 
 /* Quick Filter Chips Row */
 .inner-chips-row {
