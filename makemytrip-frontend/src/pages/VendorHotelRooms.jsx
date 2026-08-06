@@ -142,7 +142,7 @@ const VendorHotelRooms = () => {
             <h1>{hotel?.name}</h1>
             <p className="subtitle">Room Categories</p>
           </div>
-          <button className="btn-primary" onClick={() => setShowForm(true)}>
+          <button className="btn btn-primary" onClick={() => setShowForm(true)}>
             <i className="fas fa-plus"></i> Add Room Category
           </button>
         </div>

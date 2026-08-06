@@ -186,8 +186,7 @@ const AdminApprovals = () => {
                   Cancel
                 </button>
                 <button
-                  className="btn-primary"
-                  style={{ background: 'var(--success)', display: 'flex', alignItems: 'center', gap: '8px', padding: '0.625rem 1rem', fontSize: '0.9375rem', borderRadius: '0.5rem', cursor: 'pointer', border: 'none', color: '#fff' }}
+                  className="btn btn-success"
                   onClick={confirmApprove}
                   disabled={processing}
                 >
@@ -265,8 +264,7 @@ const AdminApprovals = () => {
                   Cancel
                 </button>
                 <button
-                  className="btn-primary"
-                  style={{ background: 'var(--danger)', display: 'flex', alignItems: 'center', gap: '8px', padding: '0.625rem 1rem', fontSize: '0.9375rem', borderRadius: '0.5rem', cursor: 'pointer', border: 'none', color: '#fff' }}
+                  className="btn btn-error"
                   onClick={() => handleReject(rejectingId)}
                   disabled={processing || !rejectReason.trim()}
                 >

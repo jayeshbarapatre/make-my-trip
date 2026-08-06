@@ -116,7 +116,7 @@ const AdminFlights = () => {
               <span>⛔ Inactive: <strong style={{ color: 'hsl(var(--er))' }}>{allFlights.filter(f => !f.isActive).length}</strong></span>
             </div>
           </div>
-          <button className="btn-primary" onClick={() => setShowForm(true)} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button className="btn btn-primary" onClick={() => setShowForm(true)} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             {Icons.plane({ size: 16 })} Add New Flight
           </button>
         </div>

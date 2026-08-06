@@ -287,10 +287,10 @@ export default function FlightPaymentPage() {
               )}
 
               <button
-                className="btn-primary"
+                className="btn btn-primary btn-lg btn-block"
                 onClick={() => handleProcessPayment()}
                 disabled={isProcessing || !quote}
-                style={{ width: '100%', padding: '16px', marginTop: '20px', opacity: (isProcessing || !quote) ? 0.6 : 1, cursor: (isProcessing || !quote) ? 'not-allowed' : 'pointer' }}
+                style={{ marginTop: '20px' }}
               >
                 {isProcessing
                   ? 'Processing…'

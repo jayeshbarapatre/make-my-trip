@@ -207,7 +207,7 @@ export default function TrainPassengersPage() {
                 </div>
               ))}
 
-              <button type="button" className="train-add-pass-btn" onClick={handleAddPassenger}>
+              <button type="button" className="btn btn-secondary train-add-pass-btn" onClick={handleAddPassenger}>
                 + Add Another Passenger
               </button>
             </div>
@@ -272,7 +272,7 @@ export default function TrainPassengersPage() {
                 <span>₹{((selectedClass.price * passengers.length) + 35).toLocaleString("en-IN")}</span>
               </div>
 
-              <button type="submit" className="btn-primary" style={{ width: '100%', padding: '16px', marginTop: '20px' }}>
+              <button type="submit" className="btn btn-primary btn-lg btn-block" style={{ marginTop: '20px' }}>
                 Continue to Review &amp; Payment
               </button>
             </div>

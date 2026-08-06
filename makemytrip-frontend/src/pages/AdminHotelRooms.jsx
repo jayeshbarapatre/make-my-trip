@@ -111,7 +111,7 @@ const AdminHotelRooms = () => {
             </div>
           </div>
           <button
-            className="btn-primary"
+            className="btn btn-primary"
             onClick={() => {
               setEditingRoom(null)
               setShowForm(true)

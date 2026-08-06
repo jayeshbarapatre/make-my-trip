@@ -382,18 +382,15 @@
   color: hsl(var(--bc));
 }
 
+/* Geometry, type and interaction come from `.btn .btn-secondary` in
+   AdminComponents.css — this used to restate all of it by hand (and reached for
+   --color-primary, a namespace the rest of the app does not use), which is why
+   it sat at a different height to the submit button directly beneath it.
+   Only the one deliberate difference is kept: a full-width dashed affordance,
+   so "add another" reads as a slot rather than a second call to action. */
 .train-add-pass-btn {
-  background: hsl(var(--b2));
-  color: var(--color-primary);
-  border: 1px solid hsl(var(--b2));
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 800;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+  width: 100%;
+  border-style: dashed;
 }
 
 /* Sidebar Fare Card */

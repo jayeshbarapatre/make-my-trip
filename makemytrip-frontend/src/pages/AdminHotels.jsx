@@ -104,7 +104,7 @@ const AdminHotels = () => {
               <span>⛔ Inactive: <strong style={{ color: 'hsl(var(--er))' }}>{allHotels.filter(h => !h.isActive).length}</strong></span>
             </div>
           </div>
-          <button className="btn-primary" onClick={() => setShowForm(true)} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button className="btn btn-primary" onClick={() => setShowForm(true)} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             {Icons.plus({ size: 16 })} Add New Hotel
           </button>
         </div>

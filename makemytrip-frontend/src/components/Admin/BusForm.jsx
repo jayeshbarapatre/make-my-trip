@@ -240,10 +240,10 @@ const BusForm = ({ bus, onSubmit, onClose }) => {
         </div>
 
         <div className="form-actions">
-          <button type="button" className="btn-secondary" onClick={onClose}>
+          <button type="button" className="btn btn-secondary" onClick={onClose}>
             Cancel
           </button>
-          <button type="submit" className="btn-primary">
+          <button type="submit" className="btn btn-primary">
             {bus ? 'Update Bus' : 'Create Bus'}
           </button>
         </div>

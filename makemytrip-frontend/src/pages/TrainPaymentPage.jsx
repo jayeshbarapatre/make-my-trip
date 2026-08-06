@@ -239,10 +239,10 @@ export default function TrainPaymentPage() {
               </div>
 
               <button
-                className="btn-primary"
+                className="btn btn-primary btn-lg btn-block"
                 onClick={() => handleProcessPayment(selectedMethod)}
                 disabled={isProcessing || !quote}
-                style={{ width: '100%', padding: '16px', marginTop: '20px', opacity: isProcessing || !quote ? 0.6 : 1, cursor: isProcessing || !quote ? 'not-allowed' : 'pointer' }}
+                style={{ marginTop: '20px' }}
               >
                 {!quote ? 'Loading...' : isProcessing ? 'Processing...' : `Pay ₹${totalAmount.toLocaleString("en-IN")} Now`}
               </button>

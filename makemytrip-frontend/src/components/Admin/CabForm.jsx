@@ -112,8 +112,8 @@ const CabForm = ({ cab, onSubmit, onClose }) => {
         </div>
 
         <div className="form-actions">
-          <button type="button" className="btn-secondary" onClick={onClose}>Cancel</button>
-          <button type="submit" className="btn-primary">{cab ? 'Update Cab' : 'Create Cab'}</button>
+          <button type="button" className="btn btn-secondary" onClick={onClose}>Cancel</button>
+          <button type="submit" className="btn btn-primary">{cab ? 'Update Cab' : 'Create Cab'}</button>
         </div>
       </form>
     </div>

@@ -112,8 +112,8 @@ const HotelForm = ({ hotel, onSubmit, onClose }) => {
         </div>
 
         <div className="form-actions">
-          <button type="button" className="btn-secondary" onClick={onClose}>Cancel</button>
-          <button type="submit" className="btn-primary">{hotel ? 'Update Hotel' : 'Create Hotel'}</button>
+          <button type="button" className="btn btn-secondary" onClick={onClose}>Cancel</button>
+          <button type="submit" className="btn btn-primary">{hotel ? 'Update Hotel' : 'Create Hotel'}</button>
         </div>
       </form>
     </div>

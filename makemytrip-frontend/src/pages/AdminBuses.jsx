@@ -86,7 +86,7 @@ const AdminBuses = () => {
       <div className="admin-page">
         <div className="page-header">
           <h1>Buses Management</h1>
-          <button className="btn-primary" onClick={() => setShowForm(true)} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button className="btn btn-primary" onClick={() => setShowForm(true)} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             {Icons.bus({ size: 16 })} Add New Bus
           </button>
         </div>

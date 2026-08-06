@@ -279,7 +279,7 @@ export default function FlightPassengersPage() {
                 <span>₹{((flight.price * passengers.length) + 199).toLocaleString("en-IN")}</span>
               </div>
 
-              <button type="submit" className="btn-primary" style={{ width: '100%', padding: '16px', marginTop: '20px' }}>
+              <button type="submit" className="btn btn-primary btn-lg btn-block" style={{ marginTop: '20px' }}>
                 Continue to Review & Payment
               </button>
             </div>

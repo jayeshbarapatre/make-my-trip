@@ -138,16 +138,14 @@ const AdminCabApprovals = () => {
                           />
                           <div style={{ display: 'flex', gap: '8px' }}>
                             <button
-                              className="btn-primary"
-                              style={{ padding: '4px 8px', fontSize: '12px', background: 'var(--error)' }}
+                              className="btn btn-sm btn-error"
                               onClick={() => handleReject(cab.id)}
                               disabled={processing}
                             >
                               Confirm
                             </button>
                             <button
-                              className="btn-secondary"
-                              style={{ padding: '4px 8px', fontSize: '12px' }}
+                              className="btn btn-sm btn-secondary"
                               onClick={() => { setRejectingId(null); setRejectReason('') }}
                               disabled={processing}
                             >
@@ -158,16 +156,14 @@ const AdminCabApprovals = () => {
                       ) : (
                         <div style={{ display: 'flex', gap: '8px' }}>
                           <button
-                            className="btn-primary"
-                            style={{ padding: '6px 12px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px', background: 'var(--success)', border: 'none' }}
+                            className="btn btn-sm btn-success"
                             onClick={() => setApprovingId(cab.id)}
                             disabled={processing}
                           >
                             <i className="fas fa-check"></i> Approve
                           </button>
                           <button
-                            className="btn-secondary"
-                            style={{ padding: '6px 12px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--error)', borderColor: 'var(--error)' }}
+                            className="btn btn-sm btn-error"
                             onClick={() => setRejectingId(cab.id)}
                             disabled={processing}
                           >
@@ -196,10 +192,10 @@ const AdminCabApprovals = () => {
               <div className="modal-body" style={{ padding: '20px' }}>
                 <p>Are you sure you want to approve this cab listing? It will become visible to customers immediately.</p>
                 <div style={{ display: 'flex', gap: '10px', marginTop: '20px', justifyContent: 'flex-end' }}>
-                  <button className="btn-secondary" onClick={() => setApprovingId(null)} disabled={processing}>
+                  <button className="btn btn-secondary" onClick={() => setApprovingId(null)} disabled={processing}>
                     Cancel
                   </button>
-                  <button className="btn-primary" style={{ background: 'var(--success)', border: 'none' }} onClick={confirmApprove} disabled={processing}>
+                  <button className="btn btn-success" onClick={confirmApprove} disabled={processing}>
                     {processing ? 'Approving...' : 'Yes, Approve Cab'}
                   </button>
                 </div>

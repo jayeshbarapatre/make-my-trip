@@ -643,7 +643,7 @@ export default function BookingPage() {
                     <span>{fmtPrice(totalAmount)}</span>
                   </div>
 
-                  <button className="btn-primary" style={{ width: '100%' }} onClick={handleProceedToTravellers}>
+                  <button className="btn btn-primary btn-lg btn-block" onClick={handleProceedToTravellers}>
                     PROCEED TO TRAVELLER DETAILS
                   </button>
                 </div>
@@ -885,7 +885,7 @@ export default function BookingPage() {
                     <span style={{ color: 'var(--clr-primary)' }}>{fmtPrice(totalAmount)}</span>
                   </div>
 
-                  <button className="btn-primary" style={{ width: '100%' }} onClick={handleProceedToPayment}>
+                  <button className="btn btn-primary btn-lg btn-block" onClick={handleProceedToPayment}>
                     PROCEED TO PAYMENT
                   </button>
                 </div>
@@ -1058,7 +1058,7 @@ export default function BookingPage() {
                           </div>
                         )}
 
-                        <button type="submit" className="btn-primary" disabled={!quoteReady} style={{ width: '100%', marginTop: '24px', opacity: quoteReady ? 1 : 0.6, cursor: quoteReady ? 'pointer' : 'not-allowed' }}>
+                        <button type="submit" className="btn btn-primary btn-lg btn-block" disabled={!quoteReady} style={{ marginTop: '24px' }}>
                           PAY NOW {fmtPrice(totalAmount)}
                         </button>
                       </form>
@@ -1323,7 +1323,7 @@ export default function BookingPage() {
               <div style={s.receiptActionsRow}>
                 <button
                   type="button"
-                  className="btn-primary"
+                  className="btn btn-primary btn-lg"
                   style={s.actionBtnMain}
                   onClick={handleDownloadPDF}
                 >
@@ -1332,6 +1332,7 @@ export default function BookingPage() {
 
                 <button
                   type="button"
+                  className="btn btn-lg"
                   style={s.actionBtnSec}
                   onClick={() => {
                     showToastMsg(`Confirmation email sent to ${bookingDetails.contact.email}`, 'success');
@@ -1342,6 +1343,7 @@ export default function BookingPage() {
 
                 <button
                   type="button"
+                  className="btn btn-lg"
                   style={s.actionBtnHome}
                   onClick={() => navigate('/')}
                 >
@@ -1999,34 +2001,24 @@ const s = {
     marginTop: '12px',
     flexWrap: 'wrap'
   },
+  // These three sit side by side, so they must share a geometry. They used to
+  // hand-roll their own padding, radius, font-size and weight and disagreed on
+  // every one of them. Height, padding, radius and type now come from
+  // `.btn .btn-lg`; only the colour and the flex basis stay here.
   actionBtnMain: {
     flex: '1 1 280px',
-    padding: '16px',
-    fontSize: '14px',
-    fontWeight: 800,
     letterSpacing: '0.5px'
   },
   actionBtnSec: {
     flex: '1 1 200px',
-    padding: '16px',
-    background: '#fff',
+    background: 'hsl(var(--b1))',
     border: '1.5px solid hsl(var(--er))',
-    color: 'hsl(var(--er))',
-    borderRadius: '8px',
-    fontSize: '13px',
-    fontWeight: 700,
-    cursor: 'pointer'
+    color: 'hsl(var(--er))'
   },
   actionBtnHome: {
     flex: '1 1 200px',
-    padding: '16px',
     background: 'hsl(var(--bc))',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '13px',
-    fontWeight: 700,
-    cursor: 'pointer'
+    color: 'hsl(var(--b1))'
   },
 
   /* Premium Confirmation Styles */
