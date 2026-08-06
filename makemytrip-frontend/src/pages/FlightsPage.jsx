@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import Photo from '../components/Common/Photo';
 import { photo } from '../utils/images';
+import { todayLocal } from '../utils/date';
 
 const CABIN_GALLERY = [
   { name: 'flight-cabin', caption: 'Modern cabins', copy: 'Wide seats and generous legroom across every partner airline.' },
@@ -37,11 +38,12 @@ export default function FlightsPage() {
     'Lucknow'
   ];
 
-  const handleSearch = async (e) => {
-    e.preventDefault();
+  // Takes the search explicitly rather than reading state, so a popular-route
+  // button can run one immediately instead of waiting a render for setState.
+  const runSearch = async ({ from, to, date }) => {
     setError('');
 
-    if (!fromCity || !toCity || !departDate) {
+    if (!from || !to || !date) {
       setError('Please fill in all required fields');
       return;
     }
@@ -54,21 +56,31 @@ export default function FlightsPage() {
     setLoading(true);
 
     try {
-      const response = await api.get(
+      // The response interceptor in services/api.js already returns res.data,
+      // so this is the body: { data: [...], pagination: {...} }. Reading
+      // `.data.data` off it was always undefined, which made the check below
+      // always false — every search on this page reported "No flights found",
+      // however much inventory the route had.
+      const body = await api.get(
         '/flights',
-        { params: { from: fromCity, to: toCity, date: departDate, passengers } }
+        { params: { from, to, date, passengers } }
       );
 
-      if (response.data.data && response.data.data.length > 0) {
+      const flights = Array.isArray(body?.data) ? body.data : [];
+
+      if (flights.length > 0) {
         // The results page reads the search from the query string, exactly as
         // the home page and header search do. This used to hand it the flights
         // and the criteria in router state, which that page never reads — so a
         // search for Mumbai → Goa arrived showing the page's fallback route
         // instead, and the results fetched here were thrown away.
+        // Built from the arguments, not from state — a popular-route search runs
+        // in the same tick as its setState calls, so state is still the old
+        // route here.
         const query = new URLSearchParams({
-          from: fromCity,
-          to: toCity,
-          date: departDate,
+          from,
+          to,
+          date,
           passengers: String(passengers),
           class: cabinClass,
           type: tripType
@@ -85,6 +97,23 @@ export default function FlightsPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    runSearch({ from: fromCity, to: toCity, date: departDate });
+  };
+
+  // Clicking a popular route used to fill the two fields and stop there, which
+  // reads as a dead button — the visitor has already told us where they want to
+  // go. It now fills the form and searches, defaulting the date to today when
+  // one has not been picked yet.
+  const handlePopularRoute = (route) => {
+    const date = departDate || todayLocal();
+    setFromCity(route.from);
+    setToCity(route.to);
+    setDepartDate(date);
+    runSearch({ from: route.from, to: route.to, date });
   };
 
   return (
@@ -290,10 +319,7 @@ export default function FlightsPage() {
             ].map((route, idx) => (
               <button
                 key={idx}
-                onClick={() => {
-                  setFromCity(route.from);
-                  setToCity(route.to);
-                }}
+                onClick={() => handlePopularRoute(route)}
                 style={{
                   padding: '16px',
                   background: 'hsl(var(--b2))',
