@@ -54,23 +54,28 @@ export default function FlightsPage() {
     setLoading(true);
 
     try {
-      const searchParams = {
-        from: fromCity,
-        to: toCity,
-        date: departDate,
-        returnDate: tripType === 'roundtrip' ? returnDate : null,
-        passengers,
-        cabinClass,
-        tripType
-      };
-
       const response = await api.get(
         '/flights',
         { params: { from: fromCity, to: toCity, date: departDate, passengers } }
       );
 
       if (response.data.data && response.data.data.length > 0) {
-        navigate('/flights/results', { state: { flights: response.data.data, searchParams } });
+        // The results page reads the search from the query string, exactly as
+        // the home page and header search do. This used to hand it the flights
+        // and the criteria in router state, which that page never reads — so a
+        // search for Mumbai → Goa arrived showing the page's fallback route
+        // instead, and the results fetched here were thrown away.
+        const query = new URLSearchParams({
+          from: fromCity,
+          to: toCity,
+          date: departDate,
+          passengers: String(passengers),
+          class: cabinClass,
+          type: tripType
+        });
+        if (tripType === 'roundtrip' && returnDate) query.set('returnDate', returnDate);
+
+        navigate(`/flights/results?${query.toString()}`);
       } else {
         setError('No flights found for your search. Please try different dates or cities.');
       }

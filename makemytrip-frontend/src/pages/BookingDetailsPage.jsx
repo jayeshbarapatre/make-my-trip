@@ -31,7 +31,7 @@ export default function BookingDetailsPage() {
 
   useEffect(() => {
     if (!user) {
-      navigate('/login?returnTo=/booking/' + bookingId)
+      navigate('/login?returnTo=' + encodeURIComponent('/bookings/' + bookingId))
       return
     }
 

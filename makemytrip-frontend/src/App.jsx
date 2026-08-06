@@ -30,7 +30,6 @@ const TrainPassengersPage = lazy(() => import('./pages/TrainPassengersPage'))
 const TrainPaymentPage = lazy(() => import('./pages/TrainPaymentPage'))
 const TrainSuccessPage = lazy(() => import('./pages/TrainSuccessPage'))
 const FlightsPage = lazy(() => import('./pages/FlightsPage'))
-const FlightResultsPage = lazy(() => import('./pages/FlightResultsPage'))
 const FlightPassengersPage = lazy(() => import('./pages/FlightPassengersPage'))
 const FlightPaymentPage = lazy(() => import('./pages/FlightPaymentPage'))
 const FlightSuccessPage = lazy(() => import('./pages/FlightSuccessPage'))
@@ -431,7 +430,10 @@ function AppContent() {
         <Route path="/trains/payment" element={<ProtectedRoute><TrainPaymentPage /></ProtectedRoute>} />
         <Route path="/trains/success" element={<ProtectedRoute><TrainSuccessPage /></ProtectedRoute>} />
         <Route path="/flights" element={<FlightsPage />} />
-        <Route path="/flights/results" element={<FlightResultsPage />} />
+        {/* /flights/results is declared once, above, by SearchResultsPage. A
+            second identical declaration stood here for FlightResultsPage; two
+            routes with the same pattern rank equally and the first one always
+            wins, so this never rendered. */}
         <Route path="/flights/passengers" element={<ProtectedRoute><FlightPassengersPage /></ProtectedRoute>} />
         <Route path="/flights/payment" element={<ProtectedRoute><FlightPaymentPage /></ProtectedRoute>} />
         <Route path="/flights/success" element={<ProtectedRoute><FlightSuccessPage /></ProtectedRoute>} />
@@ -449,7 +451,11 @@ function AppContent() {
         <Route path="/visa" element={<VisaPage />} />
         <Route path="/my-trips" element={<ProtectedRoute><MyTrips /></ProtectedRoute>} />
         <Route path="/wishlist" element={<ProtectedRoute><WishlistPage /></ProtectedRoute>} />
-        <Route path="/booking/:bookingId" element={<ProtectedRoute><BookingDetailsPage /></ProtectedRoute>} />
+        {/* Was /booking/:bookingId, which is the same pattern as
+            /booking/:flightId above — a parameter's name does not distinguish a
+            route. Every /booking/<id> URL matched the flight checkout page, so
+            this was unreachable. */}
+        <Route path="/bookings/:bookingId" element={<ProtectedRoute><BookingDetailsPage /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
 
         <Route path="/admin/login" element={<AdminLoginPage />} />
