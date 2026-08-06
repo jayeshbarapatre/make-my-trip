@@ -1155,10 +1155,14 @@
   font-size: 10px;
 }
 
+/* Placement is decided per pin in HotelListingPage and passed in as --mc-tx /
+   --mc-ty, so a card near an edge anchors inward instead of overflowing the
+   dialog (which clips). The offset that used to live in margin-top is folded
+   into --mc-ty, because the card now flips below the pin near the top edge and
+   a fixed negative margin would fight that. */
 .udaipur-page-wrapper .map-card {
   position: absolute;
-  transform: translate(-50%, -100%);
-  margin-top: -32px;
+  transform: translate(var(--mc-tx, -50%), var(--mc-ty, calc(-100% - 32px)));
   width: 240px;
   background: hsl(var(--b1));
   border-radius: 8px;
@@ -1172,12 +1176,12 @@
 @keyframes cardIn {
   from {
     opacity: 0;
-    transform: translate(-50%, -90%);
+    transform: translate(var(--mc-tx, -50%), calc(var(--mc-ty, calc(-100% - 32px)) + 10px));
   }
 
   to {
     opacity: 1;
-    transform: translate(-50%, -100%);
+    transform: translate(var(--mc-tx, -50%), var(--mc-ty, calc(-100% - 32px)));
   }
 }
 

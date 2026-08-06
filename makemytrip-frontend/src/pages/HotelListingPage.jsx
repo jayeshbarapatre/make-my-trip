@@ -633,8 +633,22 @@ function MapOverlay({ open, onClose, pins, hotels, wishlist, toggleWishlist: _to
             const h = hotels.find(x => x.id === hover);
             const p = pins.find(x => x.id === hover);
             if (!h || !p) return null;
+
+            // The card is 240px wide and sits centred above its pin. For a pin
+            // near an edge that lands outside the canvas, and .map-dialog clips
+            // its overflow — so the card was cut in half with no way to read it.
+            // Anchor to the near edge instead, and drop below the pin when
+            // there is no room above.
+            const tx = p.x < 0.18 ? '-16px'
+              : p.x > 0.82 ? 'calc(-100% + 16px)'
+              : '-50%';
+            const ty = p.y < 0.34 ? '32px' : 'calc(-100% - 32px)';
+
             return (
-              <div className="map-card" style={{left: `${p.x * 100}%`, top: `${p.y * 100}%`}}>
+              <div
+                className="map-card"
+                style={{ left: `${p.x * 100}%`, top: `${p.y * 100}%`, '--mc-tx': tx, '--mc-ty': ty }}
+              >
                 <img src={h.img || photo('hotel-luxury-exterior', 400)} alt={h.name} loading="lazy" decoding="async"/>
                 <div className="mc-body">
                   <div className="mc-rating">
