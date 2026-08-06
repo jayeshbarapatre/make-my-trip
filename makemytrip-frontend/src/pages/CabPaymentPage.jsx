@@ -280,23 +280,55 @@ export default function CabPaymentPage() {
           <div style={{ background: 'hsl(var(--b1))', padding: '1.5rem', borderRadius: '0.75rem', border: '1px solid hsl(var(--b2))', height: 'fit-content', position: 'sticky', top: '20px' }}>
             <h3 style={{ marginTop: 0, marginBottom: '1.5rem', fontSize: '0.95rem', fontWeight: 700, color: 'hsl(var(--bc))' }}>BOOKING SUMMARY</h3>
 
-            {/* Price Breakdown */}
-            <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px solid hsl(var(--b2))' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.875rem', color: 'hsl(var(--nc))' }}>
-                <span>Base Fare</span>
-                <span>₹{baseFare.toLocaleString("en-IN")}</span>
+            {/* The fare arrives from the server a moment after this renders, so
+                every figure below is null on the first paint. Reading it
+                unconditionally crashed the whole page into the ErrorBoundary
+                before the customer ever saw a cab — and a failed quote left it
+                crashed for good. Same shape as FlightPaymentPage. */}
+            {!quote && !quoteError && (
+              <div style={{ fontSize: '13px', color: 'hsl(var(--bc) / 0.6)', padding: '12px 0' }}>
+                Fetching the current fare…
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.875rem', color: 'hsl(var(--nc))' }}>
-                <span>Taxes & Fees</span>
-                <span>₹{(totalAmount - baseFare).toLocaleString("en-IN")}</span>
-              </div>
-            </div>
+            )}
 
-            {/* Total */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem', fontSize: '1.25rem', fontWeight: 700, color: 'hsl(var(--p))' }}>
-              <span>Payable Amt:</span>
-              <span>₹{totalAmount.toLocaleString("en-IN")}</span>
-            </div>
+            {quoteError && (
+              <div style={{ fontSize: '13px', color: 'hsl(var(--er))', padding: '12px 0', lineHeight: 1.5 }}>
+                {quoteError}
+              </div>
+            )}
+
+            {quote && (
+              <>
+                {/* Rendered verbatim from the quote — the frontend never
+                    computes a total (see pricingService). */}
+                <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px solid hsl(var(--b2))' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.875rem', color: 'hsl(var(--nc))' }}>
+                    <span>Base Fare</span>
+                    <span>₹{baseFare.toLocaleString("en-IN")}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.875rem', color: 'hsl(var(--nc))' }}>
+                    <span>Taxes &amp; GST</span>
+                    <span>₹{(quote.gst ?? 0).toLocaleString("en-IN")}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.875rem', color: 'hsl(var(--nc))' }}>
+                    <span>Convenience Fee</span>
+                    <span>₹{(quote.convenience ?? 0).toLocaleString("en-IN")}</span>
+                  </div>
+                </div>
+
+                {/* Total */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem', fontSize: '1.25rem', fontWeight: 700, color: 'hsl(var(--p))' }}>
+                  <span>Payable Amt:</span>
+                  <span>₹{totalAmount.toLocaleString("en-IN")}</span>
+                </div>
+
+                {quote.policy && (
+                  <div style={{ fontSize: '11px', color: 'hsl(var(--bc) / 0.5)', marginTop: '-8px', marginBottom: '12px' }}>
+                    {quote.policy}
+                  </div>
+                )}
+              </>
+            )}
 
             <button type="submit" disabled={isProcessing || !quoteReady} style={{
               width: '100%',
