@@ -7,6 +7,7 @@ import { SERVICE_TABS } from '../data/homepageData'
 import CustomCalendarPicker from '../components/CustomCalendarPicker'
 import TabIcon from '../components/TabIcon'
 import '../styles/Hero.css'
+import SearchButton from '../components/Common/SearchButton'
 
 export default function VisaPage() {
   const navigate = useNavigate()
@@ -147,9 +148,7 @@ export default function VisaPage() {
                 <div className="inner-field-val">Tourist <span className="unit-suffix">e-Visa</span></div>
                 <div className="inner-field-sub">Single Entry</div>
               </div>
-              <button className="inner-search-cta" onClick={() => comingSoonToast(toast, "Visa services")}>
-                CHECK VISA
-              </button>
+              <SearchButton onClick={() => comingSoonToast(toast, "Visa services")} label="Check Visa" />
             </div>
 
             {/* Chips filters list */}

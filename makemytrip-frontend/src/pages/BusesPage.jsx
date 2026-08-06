@@ -7,6 +7,7 @@ import TabIcon from '../components/TabIcon'
 import { todayLocal } from '../utils/date'
 import '../styles/Hero.css'
 import { photo } from '../utils/images'
+import SearchButton from '../components/Common/SearchButton'
 
 export default function BusesPage() {
   const navigate = useNavigate()
@@ -315,9 +316,7 @@ export default function BusesPage() {
                 <div className="inner-field-val">Sleeper <span className="unit-suffix">Class</span></div>
                 <div className="inner-field-sub">AC Preferred</div>
               </div>
-              <button className="inner-search-cta" onClick={handleSearchBuses}>
-                SEARCH
-              </button>
+              <SearchButton onClick={handleSearchBuses} />
             </div>
 
             {/* Chips filters list */}

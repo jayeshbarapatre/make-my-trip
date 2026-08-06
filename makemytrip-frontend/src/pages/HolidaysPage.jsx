@@ -9,6 +9,7 @@ import CustomCalendarPicker from '../components/CustomCalendarPicker'
 import TabIcon from '../components/TabIcon'
 import '../styles/Hero.css'
 import { photo } from '../utils/images'
+import SearchButton from '../components/Common/SearchButton'
 
 export default function HolidaysPage() {
   const navigate = useNavigate()
@@ -198,9 +199,7 @@ export default function HolidaysPage() {
                 <div className="inner-field-val">2 <span className="unit-suffix">Adults</span></div>
                 <div className="inner-field-sub">Add children</div>
               </div>
-              <button className="inner-search-cta" onClick={() => comingSoonToast(toast, "Holiday packages")}>
-                SEARCH
-              </button>
+              <SearchButton onClick={() => comingSoonToast(toast, "Holiday packages")} />
             </div>
 
             {/* Chips filters list */}

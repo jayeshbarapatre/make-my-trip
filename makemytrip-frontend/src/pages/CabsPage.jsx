@@ -7,6 +7,7 @@ import TabIcon from '../components/TabIcon'
 import { todayLocal } from '../utils/date'
 import '../styles/Hero.css'
 import { photo } from '../utils/images'
+import SearchButton from '../components/Common/SearchButton'
 
 export default function CabsPage() {
   const navigate = useNavigate()
@@ -308,9 +309,7 @@ export default function CabsPage() {
                 <div className="inner-field-val">10:00 <span className="unit-suffix">AM</span></div>
                 <div className="inner-field-sub">Morning departure</div>
               </div>
-              <button className="inner-search-cta" onClick={handleSearchCabs}>
-                SEARCH
-              </button>
+              <SearchButton onClick={handleSearchCabs} />
             </div>
 
             {/* Chips filters list */}

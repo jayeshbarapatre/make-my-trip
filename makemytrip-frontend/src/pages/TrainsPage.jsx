@@ -7,6 +7,7 @@ import TabIcon from '../components/TabIcon'
 import Photo from '../components/Common/Photo'
 import { todayLocal } from '../utils/date'
 import '../styles/Hero.css'
+import SearchButton from '../components/Common/SearchButton'
 
 const RAIL_GALLERY = [
   { name: 'train-modern', caption: 'Modern rakes', copy: 'Vande Bharat, Rajdhani and Shatabdi services across the network.' },
@@ -393,9 +394,7 @@ export default function TrainsPage() {
                 <div className="inner-field-sub">Quota: {activeChip}</div>
               </div>
 
-              <button className="inner-search-cta" onClick={handleSearchTrains}>
-                SEARCH
-              </button>
+              <SearchButton onClick={handleSearchTrains} />
             </div>
 
             {/* Chips filters list */}

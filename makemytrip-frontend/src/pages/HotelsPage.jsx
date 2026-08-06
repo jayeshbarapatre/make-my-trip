@@ -10,6 +10,7 @@ import { todayLocal, addDaysLocal } from '../utils/date'
 import '../styles/Hero.css' // Navigation and topbar imports
 import '../styles/HomePage.css' // Dynamic style imports
 import { photo } from '../utils/images'
+import SearchButton from '../components/Common/SearchButton'
 
 // Generates highly realistic stays for any input city
 const generateHotelsForCity = (cityName) => {
@@ -399,9 +400,7 @@ export default function HotelsPage() {
                 )}
               </div>
 
-              <button className="inner-search-cta" onClick={handleSearchSubmit}>
-                SEARCH
-              </button>
+              <SearchButton onClick={handleSearchSubmit} />
             </div>
 
             {/* Recent Searches chips row */}

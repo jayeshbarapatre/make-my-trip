@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom'
 import { SERVICE_TABS } from '../data/homepageData'
 import TabIcon from '../components/TabIcon'
 import '../styles/Hero.css'
+import SearchButton from '../components/Common/SearchButton'
 
 export default function ForexPage() {
   const navigate = useNavigate()
@@ -109,9 +110,7 @@ export default function ForexPage() {
                 <div className="inner-field-val">${usdAmount}</div>
                 <div className="inner-field-sub">In Forex Card or Cash</div>
               </div>
-              <button className="inner-search-cta" onClick={() => comingSoonToast(toast, "Forex")}>
-                GET FOREX NOW
-              </button>
+              <SearchButton onClick={() => comingSoonToast(toast, "Forex")} label="Get Forex Now" />
             </div>
           </div>
 

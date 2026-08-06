@@ -9,6 +9,7 @@ import CustomCalendarPicker from '../components/CustomCalendarPicker'
 import TabIcon from '../components/TabIcon'
 import '../styles/Hero.css'
 import { photo } from '../utils/images'
+import SearchButton from '../components/Common/SearchButton'
 
 export default function CruisePage() {
   const navigate = useNavigate()
@@ -153,9 +154,7 @@ export default function CruisePage() {
                 <div className="inner-field-val">1 <span className="unit-suffix">Cabin, 2 Pax</span></div>
                 <div className="inner-field-sub">Standard Balcony</div>
               </div>
-              <button className="inner-search-cta" onClick={() => comingSoonToast(toast, "Cruises")}>
-                SEARCH
-              </button>
+              <SearchButton onClick={() => comingSoonToast(toast, "Cruises")} />
             </div>
 
             {/* Chips filters list */}

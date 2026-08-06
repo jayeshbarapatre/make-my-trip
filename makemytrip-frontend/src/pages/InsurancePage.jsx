@@ -7,6 +7,7 @@ import { SERVICE_TABS } from '../data/homepageData'
 import TabIcon from '../components/TabIcon'
 import '../styles/Hero.css'
 import { photo } from '../utils/images'
+import SearchButton from '../components/Common/SearchButton'
 
 export default function InsurancePage() {
   const navigate = useNavigate()
@@ -109,9 +110,7 @@ export default function InsurancePage() {
                 <div className="inner-field-val">1 <span className="unit-suffix">Adult</span></div>
                 <div className="inner-field-sub">Age: 25 years</div>
               </div>
-              <button className="inner-search-cta" onClick={() => comingSoonToast(toast, "Travel insurance")}>
-                GET PLANS
-              </button>
+              <SearchButton onClick={() => comingSoonToast(toast, "Travel insurance")} label="Get Plans" />
             </div>
 
             {/* Chips filters list */}
