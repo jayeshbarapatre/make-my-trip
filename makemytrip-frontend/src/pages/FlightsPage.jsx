@@ -310,10 +310,13 @@ export default function FlightsPage() {
           </h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
             {[
+              // Every route here must return flights, or the button advertises a
+              // search that answers "no flights found". Mumbai → Chennai was
+              // listed and has no inventory on any date; Delhi → Goa does.
               { from: 'Delhi', to: 'Mumbai' },
               { from: 'Mumbai', to: 'Bangalore' },
               { from: 'Delhi', to: 'Bangalore' },
-              { from: 'Mumbai', to: 'Chennai' },
+              { from: 'Delhi', to: 'Goa' },
               { from: 'Delhi', to: 'Hyderabad' },
               { from: 'Bangalore', to: 'Hyderabad' }
             ].map((route, idx) => (

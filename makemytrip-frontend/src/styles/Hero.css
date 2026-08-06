@@ -198,7 +198,6 @@
   gap: 12px;
 }
 
-
 .service-tabs::-webkit-scrollbar { display: none; }
 
 .service-tab {
@@ -716,30 +715,6 @@
   z-index: 10;
 }
 
-.search-btn-main {
-  padding: 14px 100px;
-  background: linear-gradient(135deg, var(--color-accent-blue) 0%, var(--color-accent-blue) 100%);
-  color: var(--color-bg-card);
-  border: none;
-  border-radius: 40px;
-  font-size: 18px;
-  font-weight: 800;
-  letter-spacing: 1.5px;
-  box-shadow: 0 8px 25px rgba(0, 108, 228, 0.4);
-  cursor: pointer;
-  transition: var(--transition-smooth);
-}
-
-.search-btn-main:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 35px rgba(0, 108, 228, 0.5);
-  background: linear-gradient(135deg, var(--color-accent-blue) 0%, var(--color-accent-blue) 100%);
-}
-
-.search-btn-main:active {
-  transform: translateY(-1px);
-}
-
 /* â”€â”€ Scroll Cue / Explore more â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .explore-more {
   display: flex;
@@ -867,11 +842,7 @@
   .search-inputs .input-cell:nth-child(n+5) {
     grid-column: span 3;
   }
-  .search-btn-main {
-    padding: 12px 60px;
-    font-size: 16px;
   }
-}
 
 @media (max-width: 767px) {
   .hero-topbar { padding: 16px 20px; }
@@ -907,10 +878,7 @@
   .tools-row { padding: 12px; gap: 8px; }
   .tool-btn { padding: 8px 12px; font-size: 11px; }
   .search-btn-wrap { bottom: -20px; }
-  .search-btn-main { padding: 10px 40px; font-size: 14px; }
-}
-
-
+  }
 
 /* Responsive hero artwork — narrower photograph for smaller viewports */
 @media (max-width: 1200px) {

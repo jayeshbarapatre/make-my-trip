@@ -201,11 +201,24 @@ export default function HotelsPage() {
 
   useEffect(() => {
     let active = true
-    searchHotels({ limit: 4 })
+    // Asking for exactly four returned the first four alphabetically — four
+    // Marriotts, in four cities nobody chose. Pull a wider slice, keep the best
+    // rated property per city, and show four different places.
+    searchHotels({ limit: 40 })
       .then((body) => {
         if (!active) return
         const list = Array.isArray(body?.data) ? body.data : []
-        setDeals(list.slice(0, 4))
+        const bestPerCity = new Map()
+        for (const h of list) {
+          const key = (h.city || h.location || h.id || '').toLowerCase()
+          const held = bestPerCity.get(key)
+          if (!held || Number(h.rating || 0) > Number(held.rating || 0)) bestPerCity.set(key, h)
+        }
+        setDeals(
+          [...bestPerCity.values()]
+            .sort((a, b) => Number(b.rating || 0) - Number(a.rating || 0))
+            .slice(0, 4)
+        )
       })
       .catch(() => { if (active) setDeals([]) })
       .finally(() => { if (active) setDealsLoading(false) })
