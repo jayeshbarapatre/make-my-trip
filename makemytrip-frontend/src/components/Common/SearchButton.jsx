@@ -18,17 +18,25 @@ import { useTranslation } from '../../hooks/useTranslation'
 export default function SearchButton ({ onClick, type = 'button', className = '', label }) {
   const { t } = useTranslation()
 
+  // The wrapper is the grid cell, not the button. `height: 100%` on a direct
+  // grid item has no definite containing block to resolve against, so the
+  // button's own h-full was unreliable — it sized to its content and sat short
+  // of the fields beside it. The cell stretches to the row (grid items do by
+  // default) and `display: grid` on it stretches the button to fill the cell,
+  // so the height comes out of layout instead of a percentage.
   return (
-    <button
-      type={type}
-      onClick={onClick}
-      className={`btn btn-primary btn-lg rounded-full px-12 h-full ${className}`.trim()}
-    >
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2.2" />
-        <path d="M20 20l-3.5-3.5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
-      </svg>
-      {label ?? t('search')}
-    </button>
+    <div className="search-cta">
+      <button
+        type={type}
+        onClick={onClick}
+        className={`btn btn-primary btn-lg rounded-full px-12 ${className}`.trim()}
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2.2" />
+          <path d="M20 20l-3.5-3.5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+        </svg>
+        {label ?? t('search')}
+      </button>
+    </div>
   )
 }

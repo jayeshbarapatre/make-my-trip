@@ -257,12 +257,22 @@ body {
 
 /* Giant Search button inside grid */
 /* The search CTA at the end of every search strip is <SearchButton>. Its colour,
-   size, radius, hover and focus come from `.btn .btn-primary .btn-lg`; this file
-   used to restate all of it for the inner pages and disagree with the home page
-   on every value.
-   No margin or align-self here on purpose. `h-full` on the button already makes
-   it match the row, and adding a margin on top of a height:100% grid item makes
-   the box 100% + margin — which pushed it taller than the fields beside it. */
+   radius, hover and focus come from `.btn .btn-primary .btn-lg`; this file used
+   to restate all of it for the inner pages and disagree with the home page on
+   every value.
+   `.search-cta` is the grid cell. It stretches to the row like any grid item,
+   and being a grid container itself it stretches the button to fill it — so the
+   button's height is produced by layout rather than by a percentage that had no
+   definite height to resolve against. No margin here: on a full-height cell a
+   margin adds to 100% and pushes the button past the fields beside it. */
+.search-cta {
+  display: grid;
+}
+
+.search-cta > .btn {
+  height: auto;
+  white-space: nowrap;
+}
 
 /* Quick Filter Chips Row */
 .inner-chips-row {
