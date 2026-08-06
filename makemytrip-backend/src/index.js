@@ -208,7 +208,13 @@ async function initializeApp() {
       if (err?.type === 'entity.too.large') {
         return res.status(413).json({ success: false, message: 'Request body is too large' })
       }
-      if (err?.type === 'entity.parse.failed') {
+      // body-parser tags a malformed body `entity.parse.failed`. Vercel's Node
+      // runtime reads the body first through its own getter, which throws a
+      // bare `Error: Invalid JSON` carrying no type and no status — so the
+      // check above missed it there and a bad request was answered 500 instead
+      // of 400, and logged to errorReports as if the server had faulted.
+      // Nothing else in src/ raises that message.
+      if (err?.type === 'entity.parse.failed' || err?.message === 'Invalid JSON') {
         return res.status(400).json({ success: false, message: 'Malformed JSON body' })
       }
 
