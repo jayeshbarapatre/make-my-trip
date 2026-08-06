@@ -25,7 +25,15 @@ npm run dev       # Start dev server (Vite)
 npm run build     # Production build (dist/)
 npm run preview   # Preview production build locally
 npm run lint      # Run ESLint
+npm test          # Unit + component (vitest). No browser, no datastore — gates CI
+npm run test:e2e  # Playwright; needs a browser and a running server
 ```
+
+Frontend tests pin the defects that have actually shipped rather than chasing a
+coverage number: the axios transport string reaching the sign-up form, the
+`response.data.data` misread that made flight search always report "no flights",
+and duplicate route patterns that silently render the wrong page. Add to them in
+that spirit — a test per defect, verified non-vacuous by reintroducing the bug.
 
 ### Backend
 ```bash
@@ -168,7 +176,11 @@ GET    /api/v1/autocomplete/airlines  — Airline list
 
 #### Unified Search
 ```
-GET    /api/v1/search?q=query         — Cross-service search (flights, hotels, buses, etc.)
+GET    /api/v1/search/flights?from=&to=&date=&passengers=
+GET    /api/v1/search/hotels?destination=&checkinDate=&checkoutDate=&guests=
+GET    /api/v1/search/buses?from=&to=&date=
+GET    /api/v1/search/cabs?fromLat=&fromLng=&toLat=&toLng=
+GET    /api/v1/search/providers    — which upstream provider backs each vertical
 ```
 
 #### Error reporting
