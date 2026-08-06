@@ -34,6 +34,40 @@
   --danger:             hsl(var(--er));
   --warning:            hsl(var(--wa));
 
+  /* ── Legacy --color-* / --border-radius-* / --box-shadow-* scale ─────────
+     Hero.css and Sections.css each declared this whole set at :root with
+     DIFFERENT values for six of them. Both are imported by page and component
+     modules rather than here, so they land in route chunks — and a route chunk's
+     CSS is injected when the route loads and is never removed on client-side
+     navigation. Visiting /flights/results therefore redefined :root for the rest
+     of the session: accent blue turned cyan, "gray" text lost its fade, the
+     large radius dropped 20px→16px and shadows softened, across every page,
+     including pages that import neither file. 40 usages of --color-accent-blue
+     alone.
+
+     Declared once here instead, where index.css loads it first and globally.
+     The values are the ones the app already shows everywhere before that route
+     chunk loads, so this fixes the drift rather than restyling anything.
+     Prefer --clr-* / --radius-* / --shadow-* in new code. */
+  --color-primary-blue:  hsl(var(--bc));
+  --color-accent-blue:   hsl(var(--p));
+  --color-accent-hover:  hsl(var(--p));
+  --color-accent-red:    hsl(var(--er));
+  --color-accent-yellow: hsl(var(--wa));
+  --color-bg-light:      hsl(var(--b2));
+  --color-bg-gray:       hsl(var(--b2));
+  --color-bg-card:       hsl(var(--b1));
+  --color-text-dark:     hsl(var(--bc));
+  --color-text-gray:     hsl(var(--bc) / 0.6);
+  --color-text-muted:    hsl(var(--bc) / 0.5);
+  --border-radius-lg:    20px;
+  --border-radius-md:    12px;
+  --border-radius-sm:    8px;
+  --box-shadow-premium:  0 12px 32px rgba(0, 0, 0, 0.08);
+  --box-shadow-subtle:   0 4px 20px rgba(0, 0, 0, 0.04);
+  --box-shadow-hover:    0 20px 48px rgba(0, 0, 0, 0.15);
+  --transition-smooth:   all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
   /* â”€â”€ Text Colors â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   --clr-text-primary:   hsl(var(--bc));
   --clr-text-secondary: hsl(var(--bc) / 0.75);

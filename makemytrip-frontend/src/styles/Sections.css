@@ -2,24 +2,10 @@
    PORTAL SECTIONS â€” PREMIUM DESIGN SYSTEM (COSMOS PHILOSOPHY)
    â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
-:root {
-  --color-primary-blue: hsl(var(--p));
-  --color-accent-blue: hsl(var(--in));
-  --color-accent-red: hsl(var(--er));
-  --color-accent-yellow: hsl(var(--wa));
-  --color-bg-light: hsl(var(--b2));
-  --color-bg-gray: hsl(var(--b2));
-  --color-bg-card: hsl(var(--b1));
-  --color-text-dark: hsl(var(--bc));
-  --color-text-gray: hsl(var(--bc));
-  --color-text-muted: hsl(var(--nc));
-  --border-radius-lg: 16px;
-  --border-radius-md: 12px;
-  --border-radius-sm: 8px;
-  --box-shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.04);
-  --box-shadow-hover: 0 12px 30px rgba(0, 0, 0, 0.1);
-  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
+/* The --color-* / --border-radius-* / --box-shadow-* scale this file used to
+   declare at :root now lives in design-tokens.css. Both this file and its
+   sibling declared it with different values, and because both load as route
+   chunks the winner depended on which route you had visited. */
 
 /* Theme-specific overrides for light mode */
 html[data-theme="light"],

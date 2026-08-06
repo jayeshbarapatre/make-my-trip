@@ -1,23 +1,8 @@
 /* â”€â”€ CSS Custom Properties & DaisyUI Design Tokens â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-:root {
-  /* DaisyUI Business Theme Colors */
-  --color-primary-blue: hsl(var(--bc));
-  --color-accent-blue: hsl(var(--p));
-  --color-accent-hover: hsl(var(--p));
-  --color-accent-red: hsl(var(--er));
-  --color-accent-yellow: hsl(var(--wa));
-  --color-bg-light: hsl(var(--b2));
-  --color-bg-card: hsl(var(--b1));
-  --color-text-dark: hsl(var(--bc));
-  --color-text-gray: hsl(var(--bc) / 0.6);
-  --color-text-muted: hsl(var(--bc) / 0.5);
-  --border-radius-lg: 20px;
-  --border-radius-md: 12px;
-  --border-radius-sm: 8px;
-  --box-shadow-premium: 0 12px 32px rgba(0, 0, 0, 0.08);
-  --box-shadow-hover: 0 20px 48px rgba(0, 0, 0, 0.15);
-  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
+/* The --color-* / --border-radius-* / --box-shadow-* scale this file used to
+   declare at :root now lives in design-tokens.css. Both this file and
+   Sections.css declared it with different values, and because both load as
+   route chunks the winner depended on which route you had visited. */
 
 /* â”€â”€ Hero background section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .hero-bg {
