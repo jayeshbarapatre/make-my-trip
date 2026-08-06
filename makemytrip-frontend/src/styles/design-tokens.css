@@ -21,6 +21,19 @@
   --clr-info:           hsl(var(--p));
   --clr-info-bg:        hsl(var(--p) / 0.08);
 
+  /* Aliases for the un-prefixed names. 30 places in the admin and vendor pages
+     reach for var(--success) / var(--error) / var(--danger), which nothing ever
+     defined. An undefined custom property makes the whole declaration invalid
+     at computed-value time, so `background: var(--error)` did not fall back to
+     the class's colour — it computed to transparent, leaving a button with no
+     fill and near-invisible label. `color:` versions silently inherited instead
+     of going red or green.
+     Prefer --clr-* in new code; these exist so the existing call sites render. */
+  --success:            hsl(var(--su));
+  --error:              hsl(var(--er));
+  --danger:             hsl(var(--er));
+  --warning:            hsl(var(--wa));
+
   /* â”€â”€ Text Colors â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   --clr-text-primary:   hsl(var(--bc));
   --clr-text-secondary: hsl(var(--bc) / 0.75);
