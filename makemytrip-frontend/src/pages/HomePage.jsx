@@ -11,18 +11,18 @@ import 'swiper/css'
 import 'swiper/css/navigation'
 import { SERVICE_TABS } from '../data/homepageData'
 import { CITIES } from '../data/cities'
+import { OFFERS, PICKS } from '../data/offersData'
 import { useToastContext } from '../context/ToastContext'
 import { flightService } from '../services/flightService'
 import CustomCalendarPicker from '../components/CustomCalendarPicker'
 import TabIcon from '../components/TabIcon'
-import { todayLocal, toLocalDateStr } from '../utils/date'
+import { todayLocal, toLocalDateStr, addDaysLocal } from '../utils/date'
 
 import { useTranslation } from '../hooks/useTranslation'
 import SearchButton from '../components/Common/SearchButton'
 
 import '../styles/HomePage.css'
 import '../styles/Hero.css'
-import { photo } from '../utils/images'
 
 const TRIP_TYPES = [
   { id: 'oneway',    label: 'One-way' },
@@ -32,13 +32,6 @@ const TRIP_TYPES = [
 
 const FARES = ['Regular', 'Student', 'Armed Forces', 'Senior Citizen', 'Doctors & Nurses']
 
-const OFFERS = [
-  { type: 'flight',  tag: 'FLIGHTS',  title: 'Flat 25% off domestic flights',  desc: 'Save up to ₹3,000 on bookings made with HDFC credit cards. Code: MMTHDFC',          cta: 'Book Now', image: photo('flight-airplane') },
-  { type: 'hotel',   tag: 'HOTELS',   title: 'Hotels at ₹999 per night',        desc: 'Verified 3-star+ stays across 80 Indian cities. Free cancellation included.',        cta: 'View Deals', image: photo('hotel-luxury-exterior') },
-  { type: 'luxury',  tag: 'LUXURY',   title: 'Premium escapes, up to 40% off',  desc: 'Curated 5-star resorts in Maldives, Bali, and the Andamans for your dream getaway.', cta: 'Explore', image: photo('hotel-rooftop') },
-  { type: 'beach',   tag: 'PACKAGES', title: 'Goa long weekend bundle',          desc: 'Flights + hotel + airport transfer from ₹14,499 per person. 3N / 4D.',              cta: 'Book Now', image: photo('dest-goa') },
-  { type: 'cab',     tag: 'CABS',     title: 'Flat ₹200 off airport cabs',       desc: 'Reliable airport transfers in 60+ cities. Pay only when you ride.',                  cta: 'Book Cab', image: photo('cab-taxi') },
-]
 
 const CATEGORIES = [
   { key: 'flights',  icon: '✈',  title: 'Flights',  desc: 'Lowest fares across 500+ airlines, with Price Lock and free cancellation options.' },
@@ -69,13 +62,6 @@ const DESTINATIONS = [
   { cls: 'hp-d-andaman',   name: 'Andaman',    desc: 'Islands · 5 nights',            price: '₹19,499' },
 ]
 
-const PICKS = [
-  { cls: 'hp-pick-1', eyebrow: "EDITOR'S PICK", title: 'Spice route through Kerala',  desc: '10-day curated journey through tea plantations, backwaters, and coastal towns.', from: '₹42,999' },
-  { cls: 'hp-pick-2', eyebrow: 'NEW',            title: 'Northeast escapes',            desc: 'Tawang & Shillong · 6N' },
-  { cls: 'hp-pick-3', eyebrow: 'WELLNESS',       title: 'Yoga retreats',                desc: 'Rishikesh & Pondicherry' },
-  { cls: 'hp-pick-4', eyebrow: 'LUXURY',         title: 'Royal Rajasthan',              desc: 'Heritage palace stays' },
-  { cls: 'hp-pick-5', eyebrow: 'ADVENTURE',      title: 'Himalayan treks',              desc: 'Beginner to expert routes' },
-]
 
 export default function HomePage() {
   const { t } = useTranslation()
@@ -341,6 +327,44 @@ export default function HomePage() {
       setLoading(false)
     }
   }
+
+  // Every promotion, destination and category card below used to be inert
+  // markup. A card that looks like an advert has to go somewhere when it is
+  // clicked, so each now lands on the offer's own page or, where the site can
+  // already answer the question, straight into a real search.
+  const openOffer = (id) => navigate(`/offers/${id}`)
+
+  const openDestination = (city) => {
+    const params = new URLSearchParams({
+      city,
+      checkIn: todayLocal(),
+      checkOut: addDaysLocal(1),
+      guests: JSON.stringify({ rooms: 1, adults: 2, children: 0 })
+    })
+    navigate(`/hotels/results?${params.toString()}`)
+  }
+
+  const CATEGORY_ROUTES = {
+    flights: '/',
+    hotels: '/hotels',
+    holidays: '/holidays',
+    cabs: '/cabs'
+  }
+
+  // Cards are divs, so they are not reachable by keyboard on their own.
+  const cardProps = (onActivate, label) => ({
+    role: 'link',
+    tabIndex: 0,
+    'aria-label': label,
+    style: { cursor: 'pointer' },
+    onClick: onActivate,
+    onKeyDown: (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault()
+        onActivate()
+      }
+    }
+  })
 
   function handleSearch(e) {
     if (e) e.preventDefault()
@@ -812,14 +836,21 @@ export default function HomePage() {
           >
             {OFFERS.map((o, idx) => (
               <SwiperSlide key={o.type} className="hp-offer-slide">
-                <div className="hp-offer-card" data-aos="fade-up" data-aos-delay={idx * 100}>
+                <div
+                  className="hp-offer-card"
+                  data-aos="fade-up"
+                  data-aos-delay={idx * 100}
+                  {...cardProps(() => openOffer(o.id), `${o.title} — view offer`)}
+                >
                   <div className={`hp-offer-img hp-offer-${o.type}`} style={{ backgroundImage: `url(${o.image})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
                     <span className="hp-offer-tag">{o.tag}</span>
                   </div>
                   <div className="hp-offer-body">
                     <h3>{o.title}</h3>
                     <p>{o.desc}</p>
-                    <button className="hp-offer-btn">{o.cta}</button>
+                    <button className="hp-offer-btn" type="button" onClick={(e) => { e.stopPropagation(); openOffer(o.id) }}>
+                      {o.cta}
+                    </button>
                   </div>
                 </div>
               </SwiperSlide>
@@ -839,7 +870,13 @@ export default function HomePage() {
           </div>
           <div className="hp-cat-grid">
             {CATEGORIES.map((c, idx) => (
-              <div key={c.key} className={`hp-cat-card hp-cat-${c.key}`} data-aos="fade-up" data-aos-delay={idx * 100}>
+              <div
+                key={c.key}
+                className={`hp-cat-card hp-cat-${c.key}`}
+                data-aos="fade-up"
+                data-aos-delay={idx * 100}
+                {...cardProps(() => navigate(CATEGORY_ROUTES[c.key] ?? '/'), `${c.title} — browse`)}
+              >
                 <div className="hp-cat-icon">{c.icon}</div>
                 <h3>{c.title}</h3>
                 <p>{c.desc}</p>
@@ -880,7 +917,13 @@ export default function HomePage() {
           </div>
           <div className="hp-dest-grid">
             {DESTINATIONS.map((d, idx) => (
-              <div key={d.name} className="hp-dest-card" data-aos="zoom-in" data-aos-delay={idx * 100}>
+              <div
+                key={d.name}
+                className="hp-dest-card"
+                data-aos="zoom-in"
+                data-aos-delay={idx * 100}
+                {...cardProps(() => openDestination(d.name), `Find stays in ${d.name}`)}
+              >
                 <div className={`hp-dest-img ${d.cls}`}></div>
                 <div className="hp-dest-info">
                   <h3>{d.name}</h3>
@@ -905,7 +948,13 @@ export default function HomePage() {
           </div>
           <div className="hp-picks-grid">
             {PICKS.map((p, idx) => (
-              <div key={p.cls} className={`hp-pick ${p.cls}`} data-aos="fade-up" data-aos-delay={idx * 100}>
+              <div
+                key={p.cls}
+                className={`hp-pick ${p.cls}`}
+                data-aos="fade-up"
+                data-aos-delay={idx * 100}
+                {...cardProps(() => openOffer(p.id), `${p.title} — view details`)}
+              >
                 <div className="hp-pick-content">
                   <span className="hp-pick-eyebrow">{p.eyebrow}</span>
                   <h3>{p.title}</h3>
