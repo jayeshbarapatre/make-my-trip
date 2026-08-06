@@ -4,8 +4,10 @@ import { adminTrainsService } from '../services/adminService'
 import TrainForm from '../components/Admin/TrainForm'
 import Icons from '../utils/icons'
 import './AdminFlights.css'
+import { useConfirm } from '../context/ConfirmContext'
 
 const AdminTrains = () => {
+  const confirm = useConfirm()
   const [trains, setTraines] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -34,7 +36,7 @@ const AdminTrains = () => {
   }, [page, search])
 
   const handleDelete = async (id) => {
-    if (window.confirm('Delete this train?')) {
+    if (await confirm({ title: 'Delete this train?', message: 'The train is removed from search. This cannot be undone.', confirmLabel: 'Delete', tone: 'danger' })) {
       try {
         await adminTrainsService.delete(id)
         setTraines(trains.filter(b => b.id !== id))

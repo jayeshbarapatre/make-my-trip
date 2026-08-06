@@ -4,8 +4,10 @@ import { adminHotelsService } from '../services/adminService'
 import HotelForm from '../components/Admin/HotelForm'
 import Icons from '../utils/icons'
 import './AdminFlights.css'
+import { useConfirm } from '../context/ConfirmContext'
 
 const AdminHotels = () => {
+  const confirm = useConfirm()
   const [hotels, setHotels] = useState([])
   const [allHotels, setAllHotels] = useState([])
   const [loading, setLoading] = useState(true)
@@ -46,7 +48,7 @@ const AdminHotels = () => {
   }, [])
 
   const handleDelete = async (id) => {
-    if (window.confirm('Delete this hotel?')) {
+    if (await confirm({ title: 'Delete this hotel?', message: 'The property is removed from search. This cannot be undone.', confirmLabel: 'Delete', tone: 'danger' })) {
       try {
         await adminHotelsService.delete(id)
         setHotels(hotels.filter(h => h.id !== id))

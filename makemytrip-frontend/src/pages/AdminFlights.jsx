@@ -4,8 +4,10 @@ import { adminFlightsService } from '../services/adminService'
 import FlightForm from '../components/Admin/FlightForm'
 import Icons from '../utils/icons'
 import './AdminFlights.css'
+import { useConfirm } from '../context/ConfirmContext'
 
 const AdminFlights = () => {
+  const confirm = useConfirm()
   const [flights, setFlights] = useState([])
   const [allFlights, setAllFlights] = useState([])
   const [loading, setLoading] = useState(true)
@@ -58,7 +60,7 @@ const AdminFlights = () => {
   }, [])
 
   const handleDelete = async (id) => {
-    if (window.confirm('Delete this flight? This action cannot be undone.')) {
+    if (await confirm({ title: 'Delete this flight?', message: 'The flight is removed from search. This cannot be undone.', confirmLabel: 'Delete', tone: 'danger' })) {
       try {
         await adminFlightsService.delete(id)
         setFlights(flights.filter(f => f.id !== id))

@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { API_BASE_URL } from '../config/api.config';
+import { useConfirm } from '../context/ConfirmContext'
 
 // Both calls below hardcoded http://localhost:5000, so this page reported
 // "Unable to load API health metrics" in every deployment that was not a
 // developer's own machine — and the cache flush silently targeted nothing.
 export default function AdminApiHealth() {
+  const confirm = useConfirm()
   const [cacheStats, setCacheStats] = useState(null);
   const [bookingLogs, setBookingLogs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -39,7 +41,7 @@ export default function AdminApiHealth() {
   }, []);
 
   const handleFlushCache = async () => {
-    if (!window.confirm('Are you sure you want to flush all cached data?')) {
+    if (!await confirm({ title: 'Flush cached data?', message: 'Cached search results are discarded and rebuilt on the next request.' })) {
       return;
     }
 

@@ -5,6 +5,7 @@ import AdminLayout from '../components/Admin/AdminLayout'
 import DataPanel from '../components/Admin/DataPanel'
 import { refundsAdminService } from '../services/platformAdminService'
 import './AdminFlights.css'
+import { useConfirm } from '../context/ConfirmContext'
 
 const STATUSES = ['', 'requested', 'approved', 'processing', 'completed', 'rejected', 'failed']
 
@@ -47,6 +48,7 @@ const ACTIONS = {
 const inr = (n) => `₹${Number(n || 0).toLocaleString('en-IN')}`
 
 export default function AdminRefunds() {
+  const confirm = useConfirm()
   const [status, setStatus] = useState('')
   const [busyId, setBusyId] = useState(null)
   const queryClient = useQueryClient()
@@ -61,12 +63,18 @@ export default function AdminRefunds() {
   const runAction = async (refund, action) => {
     let note
     if (action.needsNote) {
-      note = window.prompt(`Reason for "${action.label}" — the customer will see this:`)
-      if (note === null) return
-      if (!note.trim()) {
-        toast.error('A reason is required')
-        return
-      }
+      // The customer reads this, so it is collected in a real field with the
+      // required-check in the dialog rather than in window.prompt, which some
+      // browsers decline to show at all.
+      const result = await confirm({
+        title: action.label,
+        message: `Give a reason for "${action.label}". The customer will see this.`,
+        confirmLabel: action.label,
+        requireReason: true,
+        reasonPlaceholder: 'Reason the customer will see…'
+      })
+      if (!result) return
+      note = result.reason
     }
 
     setBusyId(refund.id)

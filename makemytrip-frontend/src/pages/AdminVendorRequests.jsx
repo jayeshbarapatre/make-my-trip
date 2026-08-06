@@ -5,6 +5,7 @@ import AdminLayout from '../components/Admin/AdminLayout'
 import DataPanel from '../components/Admin/DataPanel'
 import { vendorRequestsService } from '../services/platformAdminService'
 import './AdminFlights.css'
+import { useConfirm } from '../context/ConfirmContext'
 
 const STATUSES = ['', 'pending', 'changes_requested', 'approved', 'rejected']
 
@@ -31,6 +32,7 @@ const DECISIONS = {
 }
 
 export default function AdminVendorRequests() {
+  const confirm = useConfirm()
   const [status, setStatus] = useState('pending')
   const [busyId, setBusyId] = useState(null)
   const queryClient = useQueryClient()
@@ -45,12 +47,17 @@ export default function AdminVendorRequests() {
   const decide = async (req, decision) => {
     let note
     if (decision.needsNote) {
-      note = window.prompt(`Reason for "${decision.label}" — the applicant will see this:`)
-      if (note === null) return
-      if (!note.trim()) {
-        toast.error('A reason is required')
-        return
-      }
+      // The applicant reads this, so it is collected in a real field with the
+      // required-check in the dialog rather than in window.prompt.
+      const result = await confirm({
+        title: decision.label,
+        message: `Give a reason for "${decision.label}". The applicant will see this.`,
+        confirmLabel: decision.label,
+        requireReason: true,
+        reasonPlaceholder: 'Reason the applicant will see…'
+      })
+      if (!result) return
+      note = result.reason
     }
 
     setBusyId(req.id)

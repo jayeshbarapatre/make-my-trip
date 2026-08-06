@@ -46,6 +46,7 @@ const MyTrips = lazy(() => import('./pages/MyTrips'))
 const WishlistPage = lazy(() => import('./pages/WishlistPage'))
 const BookingDetailsPage = lazy(() => import('./pages/BookingDetailsPage'))
 const OfferDetailsPage = lazy(() => import('./pages/OfferDetailsPage'))
+const OffersPage = lazy(() => import('./pages/OffersPage'))
 const Profile = lazy(() => import('./pages/Profile'))
 import { AdminProvider } from './context/AdminContext'
 import { VendorProvider } from './context/VendorContext'
@@ -414,6 +415,7 @@ function AppContent() {
       <Suspense fallback={<PageLoader />}>
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/offers" element={<OffersPage />} />
         <Route path="/offers/:offerId" element={<OfferDetailsPage />} />
         <Route path="/flights/results" element={<SearchResultsPage />} />
         <Route path="/booking/:flightId" element={<ProtectedRoute><BookingPage /></ProtectedRoute>} />

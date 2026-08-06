@@ -4,8 +4,10 @@ import AdminLayout from '../components/Admin/AdminLayout'
 import { RoomForm } from '../components/Admin/RoomForm'
 import { adminRoomsService, adminHotelsService } from '../services/adminService'
 import './AdminFlights.css'
+import { useConfirm } from '../context/ConfirmContext'
 
 const AdminHotelRooms = () => {
+  const confirm = useConfirm()
   const { id: hotelId } = useParams()
   const navigate = useNavigate()
 
@@ -61,7 +63,7 @@ const AdminHotelRooms = () => {
   }
 
   const handleDeleteRoom = async (roomId) => {
-    if (!window.confirm('Are you sure you want to delete this room?')) return
+    if (!await confirm({ title: 'Delete this room?', message: 'The room type is removed from the property. This cannot be undone.', confirmLabel: 'Delete', tone: 'danger' })) return
 
     try {
       await adminRoomsService.deleteRoom(hotelId, roomId)

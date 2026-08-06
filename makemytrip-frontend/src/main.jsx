@@ -4,6 +4,7 @@ import { Provider } from 'react-redux'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { store } from './store/index.js'
 import { ToastProvider } from './context/ToastContext.jsx'
+import { ConfirmProvider } from './context/ConfirmContext.jsx'
 import { AuthProvider } from './context/AuthContext.jsx'
 import App from './App.jsx'
 import './index.css'
@@ -19,9 +20,11 @@ createRoot(document.getElementById('root')).render(
     <Provider store={store}>
       <QueryClientProvider client={queryClient}>
         <ToastProvider>
+          <ConfirmProvider>
           <AuthProvider>
             <App />
           </AuthProvider>
+          </ConfirmProvider>
         </ToastProvider>
       </QueryClientProvider>
     </Provider>

@@ -39,6 +39,7 @@ export default defineConfig([
           'useVendor',
           'useTheme',
           'useToastContext',
+          'useConfirm',
           'ThemeContext',
           'getMobileProfile',
           'saveMobileProfile',

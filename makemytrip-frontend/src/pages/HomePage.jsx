@@ -790,7 +790,7 @@ export default function HomePage() {
               <div className="hp-sec-sub">Limited-time savings curated for you</div>
             </div>
             <div className="hp-offers-controls">
-              <a href="#offers" className="hp-see-all">View all offers →</a>
+              <button type="button" className="hp-see-all" onClick={() => navigate('/offers')}>View all offers →</button>
               <div className="hp-offer-nav">
                 <button className="hp-offer-nav-btn hp-offer-prev" aria-label="Previous offer">
                   <svg className="hp-offer-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -913,7 +913,7 @@ export default function HomePage() {
               <h2>Destinations &amp; experiences</h2>
               <div className="hp-sec-sub">Hand-picked places that make for unforgettable trips</div>
             </div>
-            <a href="#destinations" className="hp-see-all">All destinations →</a>
+            <button type="button" className="hp-see-all" onClick={() => navigate('/hotels')}>All destinations →</button>
           </div>
           <div className="hp-dest-grid">
             {DESTINATIONS.map((d, idx) => (
@@ -944,7 +944,7 @@ export default function HomePage() {
               <h2>Top picks for May</h2>
               <div className="hp-sec-sub">Curated travel deals from our editors</div>
             </div>
-            <a href="#picks" className="hp-see-all">See more →</a>
+            <button type="button" className="hp-see-all" onClick={() => navigate('/offers')}>See more →</button>
           </div>
           <div className="hp-picks-grid">
             {PICKS.map((p, idx) => (

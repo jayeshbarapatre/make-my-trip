@@ -5,6 +5,7 @@ import AdminLayout from '../components/Admin/AdminLayout'
 import DataPanel from '../components/Admin/DataPanel'
 import { couponsAdminService } from '../services/platformAdminService'
 import './AdminFlights.css'
+import { useConfirm } from '../context/ConfirmContext'
 
 const BLANK = {
   code: '',
@@ -30,6 +31,7 @@ const field = {
 const labelStyle = { display: 'flex', flexDirection: 'column', gap: '5px', fontSize: '12px', fontWeight: 700, color: 'hsl(var(--bc) / 0.6)' }
 
 export default function AdminCoupons() {
+  const confirm = useConfirm()
   const [form, setForm] = useState(BLANK)
   const [saving, setSaving] = useState(false)
   const queryClient = useQueryClient()
@@ -85,7 +87,12 @@ export default function AdminCoupons() {
   }
 
   const remove = async (code) => {
-    if (!window.confirm(`Remove coupon ${code}? Existing bookings keep their discount.`)) return
+    if (!await confirm({
+      title: `Remove coupon ${code}?`,
+      message: 'Existing bookings keep their discount. New checkouts will no longer accept this code.',
+      confirmLabel: 'Remove',
+      tone: 'danger'
+    })) return
     try {
       await couponsAdminService.remove(code)
       await queryClient.invalidateQueries({ queryKey: ['coupons'] })

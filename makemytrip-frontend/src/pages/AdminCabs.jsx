@@ -4,8 +4,10 @@ import { adminCabsService } from '../services/adminService'
 import CabForm from '../components/Admin/CabForm'
 import Icons from '../utils/icons'
 import './AdminFlights.css'
+import { useConfirm } from '../context/ConfirmContext'
 
 const AdminCabs = () => {
+  const confirm = useConfirm()
   const [cabs, setCabs] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -34,7 +36,7 @@ const AdminCabs = () => {
   }, [page, search])
 
   const handleDelete = async (id) => {
-    if (window.confirm('Delete this cab?')) {
+    if (await confirm({ title: 'Delete this cab?', message: 'The vehicle is removed from search. This cannot be undone.', confirmLabel: 'Delete', tone: 'danger' })) {
       try {
         await adminCabsService.delete(id)
         setCabs(cabs.filter(c => c._id !== id))

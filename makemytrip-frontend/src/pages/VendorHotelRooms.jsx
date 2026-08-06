@@ -4,8 +4,10 @@ import VendorLayout from '../components/Vendor/VendorLayout'
 import { vendorHotelsService, vendorRoomsService } from '../services/vendorService'
 import toast from 'react-hot-toast'
 import './VendorHotelRooms.css'
+import { useConfirm } from '../context/ConfirmContext'
 
 const VendorHotelRooms = () => {
+  const confirm = useConfirm()
   const { hotelId } = useParams()
   const navigate = useNavigate()
   const [hotel, setHotel] = useState(null)
@@ -97,7 +99,7 @@ const VendorHotelRooms = () => {
   }
 
   const handleDelete = async (roomId) => {
-    if (!window.confirm('Delete this room category?')) return
+    if (!await confirm({ title: 'Delete this room category?', message: 'The category is removed from your property. This cannot be undone.', confirmLabel: 'Delete', tone: 'danger' })) return
 
     try {
       await vendorRoomsService.delete(hotelId, roomId)

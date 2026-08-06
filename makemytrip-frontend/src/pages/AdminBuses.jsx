@@ -4,8 +4,10 @@ import { adminBusesService } from '../services/adminService'
 import BusForm from '../components/Admin/BusForm'
 import Icons from '../utils/icons'
 import './AdminFlights.css'
+import { useConfirm } from '../context/ConfirmContext'
 
 const AdminBuses = () => {
+  const confirm = useConfirm()
   const [buses, setBuses] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -34,7 +36,7 @@ const AdminBuses = () => {
   }, [page, search])
 
   const handleDelete = async (id) => {
-    if (window.confirm('Delete this bus?')) {
+    if (await confirm({ title: 'Delete this bus?', message: 'The bus is removed from search. This cannot be undone.', confirmLabel: 'Delete', tone: 'danger' })) {
       try {
         await adminBusesService.delete(id)
         setBuses(buses.filter(b => b.id !== id))

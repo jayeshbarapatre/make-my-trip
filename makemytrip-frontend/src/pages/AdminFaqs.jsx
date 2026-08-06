@@ -3,8 +3,10 @@ import AdminLayout from '../components/Admin/AdminLayout'
 import { cmsService } from '../services/cmsService'
 import toast from 'react-hot-toast'
 import './AdminFaqs.css'
+import { useConfirm } from '../context/ConfirmContext'
 
 const AdminFaqs = () => {
+  const confirm = useConfirm()
   const [faqs, setFaqs] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -56,7 +58,7 @@ const AdminFaqs = () => {
   }
 
   const handleDelete = async (id) => {
-    if (window.confirm('Delete this FAQ?')) {
+    if (await confirm({ title: 'Delete this FAQ?', message: 'It stops appearing on the help pages immediately.', confirmLabel: 'Delete', tone: 'danger' })) {
       try {
         await cmsService.deleteFaq(id)
         setFaqs(faqs.filter(f => f.id !== id))
