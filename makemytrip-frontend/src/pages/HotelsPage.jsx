@@ -11,6 +11,7 @@ import '../styles/Hero.css' // Navigation and topbar imports
 import '../styles/HomePage.css' // Dynamic style imports
 import { photo } from '../utils/images'
 import SearchButton from '../components/Common/SearchButton'
+import { searchHotels } from '../services/hotelService'
 
 // Generates highly realistic stays for any input city
 const generateHotelsForCity = (cityName) => {
@@ -190,12 +191,26 @@ export default function HotelsPage() {
 
   // Helper for verified travel imagery
 
-  const DEALS = [
-    { title: 'The Park Goa', meta: 'Calangute · 4.5 ★ · Beachfront', price: '3,499', old: '5,200', img: photo('hotel-resort') },
-    { title: 'Taj Vivanta', meta: 'Bengaluru · 4.7 ★ · Premium', price: '6,199', old: '8,900', img: photo('hotel-luxury-exterior') },
-    { title: 'Kumarakom Lake Resort', meta: 'Kerala · 4.8 ★ · Backwaters', price: '8,499', old: '11,200', img: photo('hotel-pool') },
-    { title: 'Jaipur Heritage Haveli', meta: 'Old City · 4.4 ★ · Heritage', price: '2,899', old: '4,100', img: photo('hotel-lobby') }
-  ]
+  // These four cards were invented hotels — "The Park Goa", "Taj Vivanta" and
+  // friends existed nowhere in the datastore, so there was no detail page to
+  // send anyone to and the cards had to stay inert. They are now real
+  // properties, which makes each one openable.
+  const DEAL_IMAGES = [photo('hotel-resort'), photo('hotel-luxury-exterior'), photo('hotel-pool'), photo('hotel-lobby')]
+  const [deals, setDeals] = useState([])
+  const [dealsLoading, setDealsLoading] = useState(true)
+
+  useEffect(() => {
+    let active = true
+    searchHotels({ limit: 4 })
+      .then((body) => {
+        if (!active) return
+        const list = Array.isArray(body?.data) ? body.data : []
+        setDeals(list.slice(0, 4))
+      })
+      .catch(() => { if (active) setDeals([]) })
+      .finally(() => { if (active) setDealsLoading(false) })
+    return () => { active = false }
+  }, [])
 
   const CITIES = [
     { name: 'Goa', count: '3,420 hotels', img: photo('dest-goa') },
@@ -206,12 +221,32 @@ export default function HotelsPage() {
     { name: 'Ladakh', count: '620 hotels', img: photo('dest-ladakh') }
   ]
 
+  // Each category resolves to the city that best represents it. There is no
+  // category filter on the listing endpoint, so a city search is the honest
+  // interpretation — it lands the visitor on real inventory rather than a
+  // filter the backend cannot apply.
   const CATS = [
-    { name: 'Beach resorts', count: '1,240 stays', icon: '🌅' },
-    { name: 'Hill stations', count: '980 stays', icon: '🏔' },
-    { name: 'Heritage hotels', count: '420 stays', icon: '👑' },
-    { name: '5-star luxury', count: '610 stays', icon: '💎' }
+    { name: 'Beach resorts', count: '1,240 stays', icon: '🌅', city: 'Goa' },
+    { name: 'Hill stations', count: '980 stays', icon: '🏔', city: 'Manali' },
+    { name: 'Heritage hotels', count: '420 stays', icon: '👑', city: 'Udaipur' },
+    { name: '5-star luxury', count: '610 stays', icon: '💎', city: 'Mumbai' }
   ]
+
+  const openHotel = (hotel) => {
+    navigate(`/hotels/detail/${hotel.id}`, {
+      state: { hotel, checkIn: checkInDate, checkOut: checkOutDate, guests }
+    })
+  }
+
+  const openCity = (city) => {
+    const params = new URLSearchParams({
+      city,
+      checkIn: checkInDate,
+      checkOut: checkOutDate,
+      guests: JSON.stringify(guests)
+    })
+    navigate(`/hotels/results?${params.toString()}`)
+  }
 
   const handleTabChange = (id) => {
     setActiveTab(id)
@@ -448,19 +483,46 @@ export default function HotelsPage() {
             <h2 className="inner-sec-title">Top hotel deals this week</h2>
             <p className="inner-sec-subtitle">Limited inventory · Book fast</p>
           </div>
-          <span className="inner-sec-all-link" onClick={() => navigate('/hotels')}>View all →</span>
+          {/* Pointed at /hotels, the page it is already on. */}
+          <span className="inner-sec-all-link" onClick={() => navigate('/hotels/results')}>View all →</span>
         </div>
 
         <div className="hotels-deals-grid">
-          {DEALS.map((deal, idx) => (
-            <div key={deal.title} className="hotels-deal-card" data-aos="fade-up" data-aos-delay={idx * 100}>
-              <div className="hotels-deal-img-wrapper" style={{ backgroundImage: `url(${deal.img})` }} />
+          {dealsLoading && (
+            <p className="hotels-deal-meta" style={{ padding: '8px 2px' }}>Loading this week’s deals…</p>
+          )}
+
+          {!dealsLoading && deals.length === 0 && (
+            <p className="hotels-deal-meta" style={{ padding: '8px 2px' }}>
+              Deals are unavailable right now. <button type="button" className="btn btn-sm btn-secondary" onClick={() => navigate('/hotels/results')}>Browse all hotels</button>
+            </p>
+          )}
+
+          {deals.map((hotel, idx) => (
+            <div
+              key={hotel.id}
+              className="hotels-deal-card"
+              data-aos="fade-up"
+              data-aos-delay={idx * 100}
+              role="link"
+              tabIndex={0}
+              aria-label={`${hotel.name} — view details`}
+              style={{ cursor: 'pointer' }}
+              onClick={() => openHotel(hotel)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openHotel(hotel) }
+              }}
+            >
+              <div className="hotels-deal-img-wrapper" style={{ backgroundImage: `url(${hotel.images?.[0] || DEAL_IMAGES[idx % DEAL_IMAGES.length]})` }} />
               <div className="hotels-deal-body">
-                <h4>{deal.title}</h4>
-                <p className="hotels-deal-meta">{deal.meta}</p>
+                <h4>{hotel.name}</h4>
+                <p className="hotels-deal-meta">
+                  {[hotel.location || hotel.city, hotel.rating ? `${hotel.rating} ★` : null, hotel.stars ? `${hotel.stars}-star` : null]
+                    .filter(Boolean).join(' · ')}
+                </p>
                 <div className="hotels-deal-price-row">
-                  <span className="hotels-deal-price">₹{deal.price}</span>
-                  <span className="hotels-deal-strike">₹{deal.old}</span>
+                  <span className="hotels-deal-price">₹{Number(hotel.price || 0).toLocaleString('en-IN')}</span>
+                  <span className="hotels-deal-meta">/night</span>
                 </div>
               </div>
             </div>
@@ -477,9 +539,25 @@ export default function HotelsPage() {
           </div>
         </div>
 
+        {/* These went through with the city alone, so the dates and guests the
+            visitor had already chosen above were dropped and the results page
+            fell back to its own defaults. openCity carries them. */}
         <div className="hotels-cities-grid">
           {CITIES.map((city, idx) => (
-            <div key={city.name} className="hotels-city-card" style={{ cursor: 'pointer' }} data-aos="zoom-in" data-aos-delay={idx * 100} onClick={() => navigate(`/hotels/results?city=${city.name}`)}>
+            <div
+              key={city.name}
+              className="hotels-city-card"
+              style={{ cursor: 'pointer' }}
+              data-aos="zoom-in"
+              data-aos-delay={idx * 100}
+              role="link"
+              tabIndex={0}
+              aria-label={`Browse stays in ${city.name}`}
+              onClick={() => openCity(city.name)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openCity(city.name) }
+              }}
+            >
               <div className="hotels-city-bg" style={{ backgroundImage: `url(${city.img})` }} />
               <div className="hotels-city-info">
                 <h4>{city.name}</h4>
@@ -498,7 +576,20 @@ export default function HotelsPage() {
 
         <div className="hotels-cats-grid">
           {CATS.map((cat, idx) => (
-            <div key={cat.name} className="hotels-cat-card" data-aos="fade-up" data-aos-delay={idx * 100}>
+            <div
+              key={cat.name}
+              className="hotels-cat-card"
+              data-aos="fade-up"
+              data-aos-delay={idx * 100}
+              role="link"
+              tabIndex={0}
+              aria-label={`${cat.name} — browse stays in ${cat.city}`}
+              style={{ cursor: 'pointer' }}
+              onClick={() => openCity(cat.city)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openCity(cat.city) }
+              }}
+            >
               <div className="hotels-cat-ico">{cat.icon}</div>
               <div className="hotels-cat-details">
                 <h4>{cat.name}</h4>
