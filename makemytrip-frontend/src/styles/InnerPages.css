@@ -1110,7 +1110,14 @@ body {
     border-bottom: 1px solid hsl(var(--b3));
     border-bottom: 1px solid hsl(var(--b3));
   }
-  .inner-search-cta {
+  /* The strip stacks to a single column here, so the CTA is its bottom bar
+     rather than a pill at the end of a row: square top corners, the card's
+     radius on the bottom two, and normal padding instead of the pill's 3rem.
+     Targets .search-cta > .btn (0,2,0) so it beats Tailwind's rounded-full and
+     px-12 utilities (0,1,0) regardless of stylesheet order. This was written
+     against .inner-search-cta, which no longer exists in the markup — the rule
+     had been silently dead since <SearchButton> replaced it. */
+  .search-cta > .btn {
     padding: 14px;
     border-radius: 0 0 12px 12px;
   }
