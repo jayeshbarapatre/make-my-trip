@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import {useState, useMemo} from 'react'
 import { durationFromTimes } from '../../utils/duration'
 import './FormStyles.css'
 
@@ -6,7 +6,7 @@ const cities = ['Delhi', 'Mumbai', 'Bangalore', 'Hyderabad', 'Chennai', 'Kolkata
 const amenitiesList = ['WiFi', 'Charging Point', 'Blanket', 'Water Bottle', 'Movie']
 
 const TrainForm = ({ train, onSubmit, onClose }) => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState(() => train ?? ({
     operatorName: '',
     trainNumber: '',
     type: 'AC',
@@ -20,13 +20,8 @@ const TrainForm = ({ train, onSubmit, onClose }) => {
     seatsAvailable: 400,
     amenities: [],
     image: ''
-  })
+  }))
 
-  useEffect(() => {
-    if (train) {
-      setFormData(train)
-    }
-  }, [train])
 
   // Derived during render — see BusForm.
   const duration = useMemo(

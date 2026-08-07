@@ -98,7 +98,8 @@ const AdminBuses = () => {
         {showForm && (
           <div className="modal-overlay" onClick={handleCloseForm}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-              <BusForm bus={editingBus} onSubmit={handleFormSubmit} onClose={handleCloseForm} />
+              <BusForm key={editingBus?.id ?? 'new'}
+bus={editingBus} onSubmit={handleFormSubmit} onClose={handleCloseForm} />
             </div>
           </div>
         )}

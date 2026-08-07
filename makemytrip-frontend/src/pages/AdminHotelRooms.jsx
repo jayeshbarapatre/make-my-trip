@@ -214,6 +214,7 @@ const AdminHotelRooms = () => {
           }}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
               <RoomForm
+                key={editingRoom?.id ?? 'new'}
                 room={editingRoom}
                 hotelId={hotelId}
                 onSave={handleSaveRoom}

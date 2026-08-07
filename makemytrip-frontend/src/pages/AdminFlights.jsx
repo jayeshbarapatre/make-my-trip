@@ -128,7 +128,7 @@ const AdminFlights = () => {
         {showForm && (
           <div className="modal-overlay" onClick={handleCloseForm}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-              <FlightForm
+              <FlightForm key={editingFlight?.id ?? 'new'}
                 flight={editingFlight}
                 onSubmit={handleFormSubmit}
                 onClose={handleCloseForm}

@@ -98,7 +98,8 @@ const AdminTrains = () => {
         {showForm && (
           <div className="modal-overlay" onClick={handleCloseForm}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-              <TrainForm train={editingTrain} onSubmit={handleFormSubmit} onClose={handleCloseForm} />
+              <TrainForm key={editingTrain?.id ?? 'new'}
+train={editingTrain} onSubmit={handleFormSubmit} onClose={handleCloseForm} />
             </div>
           </div>
         )}

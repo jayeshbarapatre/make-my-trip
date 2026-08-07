@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import './FormStyles.css'
 
 const CabForm = ({ cab, onSubmit, onClose }) => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState(() => cab ?? ({
     operatorName: '',
     cabNumber: '',
     type: 'Economy',
@@ -12,11 +12,8 @@ const CabForm = ({ cab, onSubmit, onClose }) => {
     location: '',
     currentCity: '',
     cabs: 20
-  })
+  }))
 
-  useEffect(() => {
-    if (cab) setFormData(cab)
-  }, [cab])
 
   const handleChange = (e) => {
     const { name, value } = e.target

@@ -1,32 +1,23 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useToastContext } from '../../context/ToastContext'
 import './FormStyles.css'
 
 export const RoomForm = ({ room, onSave, onClose, hotelId: _hotelId }) => {
   const toast = useToastContext()
-  const [formData, setFormData] = useState({
-    categoryName: '',
-    description: '',
-    capacity: 2,
-    totalRooms: 10,
-    basePrice: '',
-    amenities: [],
-    images: []
-  })
-
-  useEffect(() => {
-    if (room) {
-      setFormData({
-        categoryName: room.categoryName || '',
-        description: room.description || '',
-        capacity: room.capacity || 2,
-        totalRooms: room.totalRooms || 10,
-        basePrice: room.basePrice || '',
-        amenities: Array.isArray(room.amenities) ? room.amenities : [],
-        images: Array.isArray(room.images) ? room.images : []
-      })
-    }
-  }, [room])
+  // Seeded once from the room, rather than copied in by an effect. The effect
+  // rendered blank fields first and filled them on a second pass; the caller
+  // now passes a key so a different room remounts the form instead.
+  // Fields are still normalised here — a stored room can be missing any of
+  // them, and an undefined value would turn its input uncontrolled.
+  const [formData, setFormData] = useState(() => ({
+    categoryName: room?.categoryName || '',
+    description: room?.description || '',
+    capacity: room?.capacity || 2,
+    totalRooms: room?.totalRooms || 10,
+    basePrice: room?.basePrice || '',
+    amenities: Array.isArray(room?.amenities) ? room.amenities : [],
+    images: Array.isArray(room?.images) ? room.images : []
+  }))
 
   const handleChange = (e) => {
     const { name, value, type } = e.target

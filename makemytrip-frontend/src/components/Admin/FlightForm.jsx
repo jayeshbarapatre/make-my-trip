@@ -1,10 +1,10 @@
-import { useState, useEffect, useMemo } from 'react'
+import {useState, useMemo} from 'react'
 import { durationFromDateTimes } from '../../utils/duration'
 import AutocompleteInput from './AutocompleteInput'
 import './FormStyles.css'
 
 const FlightForm = ({ flight, onSubmit, onClose }) => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState(() => flight ?? ({
     airline: '',
     flightNumber: '',
     departure: { city: '', airport: '', time: '', date: '' },
@@ -16,13 +16,8 @@ const FlightForm = ({ flight, onSubmit, onClose }) => {
     stops: 0,
     aircraft: '',
     image: ''
-  })
+  }))
 
-  useEffect(() => {
-    if (flight) {
-      setFormData(flight)
-    }
-  }, [flight])
 
   // Derived during render, not stored: the effect wrote a computed value back
   // into form state, costing an extra render per keystroke in the time fields

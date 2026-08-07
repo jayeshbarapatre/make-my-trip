@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import './FormStyles.css'
 
 const HotelForm = ({ hotel, onSubmit, onClose }) => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState(() => hotel ?? ({
     name: '',
     city: '',
     location: '',
@@ -14,11 +14,8 @@ const HotelForm = ({ hotel, onSubmit, onClose }) => {
     amenities: [],
     image: '',
     images: []
-  })
+  }))
 
-  useEffect(() => {
-    if (hotel) setFormData(hotel)
-  }, [hotel])
 
   const handleChange = (e) => {
     const { name, value } = e.target

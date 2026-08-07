@@ -125,7 +125,7 @@ const AdminHotels = () => {
         {showForm && (
           <div className="modal-overlay" onClick={handleCloseForm}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-              <HotelForm
+              <HotelForm key={editingHotel?.id ?? 'new'}
                 hotel={editingHotel}
                 onSubmit={handleFormSubmit}
                 onClose={handleCloseForm}

@@ -97,7 +97,8 @@ const AdminCabs = () => {
         {showForm && (
           <div className="modal-overlay" onClick={handleCloseForm}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-              <CabForm cab={editingCab} onSubmit={handleFormSubmit} onClose={handleCloseForm} />
+              <CabForm key={editingCab?.id ?? 'new'}
+cab={editingCab} onSubmit={handleFormSubmit} onClose={handleCloseForm} />
             </div>
           </div>
         )}

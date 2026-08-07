@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import {useState, useMemo} from 'react'
 import { durationFromTimes } from '../../utils/duration'
 import './FormStyles.css'
 
@@ -6,7 +6,7 @@ const cities = ['Delhi', 'Mumbai', 'Bangalore', 'Hyderabad', 'Chennai', 'Kolkata
 const amenitiesList = ['WiFi', 'Charging Point', 'Blanket', 'Water Bottle', 'Movie']
 
 const BusForm = ({ bus, onSubmit, onClose }) => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState(() => bus ?? ({
     operatorName: '',
     busNumber: '',
     type: 'AC',
@@ -19,13 +19,8 @@ const BusForm = ({ bus, onSubmit, onClose }) => {
     seats: 45,
     amenities: [],
     image: ''
-  })
+  }))
 
-  useEffect(() => {
-    if (bus) {
-      setFormData(bus)
-    }
-  }, [bus])
 
   // Derived during render, not stored: keeping it in state cost an extra render
   // per keystroke and briefly displayed a stale duration.
