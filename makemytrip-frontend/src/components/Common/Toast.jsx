@@ -186,15 +186,11 @@ function ToastItem({ toast, onClose }) {
 
 export default function ToastContainer({ toasts, removeToast }) {
   const activeModalToast = toasts.find((t) => t.isModal)
-  const [showBackdrop, setShowBackdrop] = useState(false)
 
-  useEffect(() => {
-    if (activeModalToast) {
-      setShowBackdrop(true)
-    } else {
-      setShowBackdrop(false)
-    }
-  }, [activeModalToast])
+  // Derived, not stored. This was state kept in sync by an effect, which meant
+  // the backdrop was always one render behind the toast it belongs to: the
+  // modal appeared, then the dim followed on the next pass.
+  const showBackdrop = Boolean(activeModalToast)
 
   if (toasts.length === 0) return null
 
