@@ -42,33 +42,56 @@ const AdminHeader = ({ toggleSidebar }) => {
   }
 
   useEffect(() => {
+    // Counted with allSettled, not all.
+    //
+    // `/approvals/flights` and `/approvals/trains` do not exist — vendors can
+    // only list hotels, buses and cabs — so those two calls 404. Under
+    // Promise.all a single rejection skipped every setState below, which zeroed
+    // the counts for the three categories that DID have pending items. A vendor
+    // could submit a hotel and the bell stayed empty, with nothing to suggest
+    // the notification had been created at all.
+    //
+    // allSettled means one broken endpoint costs its own count and nothing
+    // else's.
     const fetchPendingNotifications = async () => {
-      try {
-        const [busRes, cabRes, hotelRes, flightRes, trainRes] = await Promise.all([
-          adminService.getPendingBuses(),
-          adminService.getPendingCabs(),
-          adminService.getPendingHotels(),
-          adminService.getPendingFlights(),
-          adminService.getPendingTrains()
-        ])
-        const buses = busRes.data?.data?.buses || []
-        const cabs = cabRes.data?.data?.cabs || []
-        const hotels = hotelRes.data?.data?.hotels || []
-        const flights = flightRes.data?.data?.flights || []
-        const trains = trainRes.data?.data?.trains || trainRes.data?.data?.traines || []
-        
-        setPendingBusesCount(buses.length)
-        setPendingCabsCount(cabs.length)
-        setPendingHotelsCount(hotels.length)
-        setPendingFlightsCount(flights.length)
-        setPendingTrainsCount(trains.length)
-      } catch (err) {
-        console.error('Failed to fetch pending notifications', err)
+      const count = (result, ...keys) => {
+        if (result.status !== 'fulfilled') return 0
+        const data = result.value?.data?.data ?? {}
+        for (const k of keys) if (Array.isArray(data[k])) return data[k].length
+        return 0
       }
+
+      const [busRes, cabRes, hotelRes] = await Promise.allSettled([
+        adminService.getPendingBuses(),
+        adminService.getPendingCabs(),
+        adminService.getPendingHotels()
+      ])
+
+      for (const [name, r] of [['buses', busRes], ['cabs', cabRes], ['hotels', hotelRes]]) {
+        if (r.status === 'rejected') {
+          console.error(`Could not load pending ${name}:`, r.reason?.message ?? r.reason)
+        }
+      }
+
+      setPendingBusesCount(count(busRes, 'buses'))
+      setPendingCabsCount(count(cabRes, 'cabs'))
+      setPendingHotelsCount(count(hotelRes, 'hotels'))
+      setPendingFlightsCount(0)
+      setPendingTrainsCount(0)
     }
     
+    // Fetched on mount, then on a slow poll and whenever the tab regains focus.
+    //
+    // Without this the count was a snapshot from page load: a vendor could
+    // submit a listing and the admin would sit in front of a stale, empty bell
+    // until they happened to refresh. The approval queries only match PENDING
+    // documents, so the poll is a handful of reads.
+    let pollId = null
+
     if (admin) {
       fetchPendingNotifications()
+      pollId = setInterval(fetchPendingNotifications, 60_000)
+      window.addEventListener('focus', fetchPendingNotifications)
     }
 
     const handleClickOutside = (event) => {
@@ -80,7 +103,11 @@ const AdminHeader = ({ toggleSidebar }) => {
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      if (pollId) clearInterval(pollId)
+      window.removeEventListener('focus', fetchPendingNotifications)
+    }
   }, [admin])
 
   const handleNotificationClick = (path) => {
