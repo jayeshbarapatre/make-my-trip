@@ -88,12 +88,45 @@ const toStorage = (body, { partial = false } = {}) => {
   return out
 }
 
+/**
+ * Storage shape back into the shape the admin UI speaks.
+ *
+ * `toStorage` accepts either naming and normalises to the canonical one the
+ * public search reads — trainName / trainClass / from / to / departureTime —
+ * but nothing mapped the reverse, so reads returned the storage shape raw.
+ *
+ * The admin table asks for operatorName, type and departure.city; it got
+ * undefined for each and rendered "—" in the Operator, Type and Route columns
+ * for every train, including ones that had just been created successfully. The
+ * edit form has the same shape, so opening a train for editing showed empty
+ * city fields and could silently blank the route on save.
+ *
+ * Flights already do this (see flightAdminController.toClient). Trains were
+ * simply never given one.
+ *
+ * Both namings are returned rather than renaming outright: the storage names
+ * are what the public search and the seeders use, and dropping them here would
+ * break anything reading the canonical shape.
+ */
+const toClient = (doc) => ({
+  ...doc,
+  operatorName: doc.trainName ?? doc.operatorName ?? '',
+  type: doc.trainClass ?? doc.type ?? '',
+  departure: { city: doc.from ?? '', time: doc.departureTime ?? '' },
+  arrival: { city: doc.to ?? '', time: doc.arrivalTime ?? '' },
+  // The table shows "available/total"; only one number is stored, so the
+  // capacity is the total until a separate seat count exists.
+  seats: doc.seats ?? doc.seatsAvailable ?? 0,
+  duration: doc.durationMinutes ?? 0
+})
+
 const crud = createAdminCrud({
   collection: 'trains',
   label: 'Train',
   uniqueField: 'trainNumber',
   validate,
-  toStorage
+  toStorage,
+  toClient
 })
 
 export const createTrain = crud.create
