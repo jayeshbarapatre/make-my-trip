@@ -1,4 +1,5 @@
 import { db } from '../config/firebase.js'
+import { now, toMillis } from '../utils/time.js'
 import { cacheService } from '../services/cache/cacheService.js'
 import { respondIfDatastoreDown } from '../utils/datastoreErrors.js'
 
@@ -44,12 +45,46 @@ const buildFacets = async () => {
   }
 }
 
+// Where the built lists are kept between processes.
+//
+// `cacheService` is in-memory, so it dies with the process. Every restart — and
+// on serverless, every cold instance — rebuilt these lists by reading the whole
+// flights collection: 1,142 reads to populate a city dropdown, on a public
+// endpoint that fires as soon as a visitor focuses the search box. That single
+// path could exhaust a day's free-tier quota on its own.
+//
+// Persisting the result makes a rebuild cost one read for everyone rather than
+// a full scan for each. The scan still happens, but at most once per TTL across
+// the entire deployment instead of once per process.
+const FACET_DOC = () => db.collection('settings').doc('autocompleteFacets')
+
+// Inventory changes rarely; a stale city list for a few hours is harmless, and
+// an admin adding a route sees it after this expires.
+const PERSISTED_TTL_SECONDS = Number(process.env.AUTOCOMPLETE_FACET_TTL_SECONDS) || 21600
+
 const getFacets = async () => {
   const cached = cacheService.get(CACHE_KEY)
   if (cached) return cached
 
+  const snap = await FACET_DOC().get()
+  const stored = snap.exists ? snap.data() : null
+  const ageSeconds = stored?.updatedAt
+    ? (Date.now() - toMillis(stored.updatedAt)) / 1000
+    : Infinity
+
+  if (stored?.facets && ageSeconds < PERSISTED_TTL_SECONDS) {
+    cacheService.set(CACHE_KEY, stored.facets, FACET_TTL_SECONDS)
+    return stored.facets
+  }
+
   const facets = await buildFacets()
   cacheService.set(CACHE_KEY, facets, FACET_TTL_SECONDS)
+
+  // Best effort: a failure here costs the next caller a rebuild, nothing more.
+  await FACET_DOC().set({ facets, updatedAt: now() }).catch((err) =>
+    console.warn('⚠️ Could not persist autocomplete facets:', err.message)
+  )
+
   return facets
 }
 

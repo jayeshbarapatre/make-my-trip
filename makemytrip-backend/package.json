@@ -26,6 +26,7 @@
     "preview:email": "node scripts/previewEmails.js",
     "test:otp": "node scripts/testOtpNumbers.js",
     "migrate:roles": "node scripts/backfillUserRoles.js",
+    "migrate:created-at": "node scripts/backfillCreatedAt.js",
     "migrate:emails": "node scripts/normalizeUserEmails.js",
     "purge:sessions": "node scripts/purgeExpiredSessions.js",
     "admin:create": "node scripts/createAdmin.js",

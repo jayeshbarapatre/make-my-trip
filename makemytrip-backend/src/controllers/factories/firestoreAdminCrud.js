@@ -3,6 +3,7 @@ import { routeIndexFields } from '../../services/inventorySearch.js'
 import { db } from '../../config/firebase.js'
 import { now, toDate } from '../../utils/time.js'
 import { writeAuditLog, AuditAction } from '../../services/auditLog.js'
+import { cacheService } from '../../services/cache/cacheService.js'
 
 // Shared admin CRUD over a Firestore collection.
 //
@@ -34,6 +35,14 @@ export const createAdminCrud = ({
   uniqueField = null
 }) => {
   const listKey = `${collection}`
+
+  // Admin listings are read far more often than they are written, so the list
+  // is cached and every write path below drops it. The TTL is a backstop for
+  // changes made outside these handlers (a seed script, the vendor portal);
+  // without it a stale list could outlive the process that wrote it.
+  const cacheKey = `admin:list:${collection}`
+  const LIST_TTL_SECONDS = Number(process.env.ADMIN_LIST_TTL_SECONDS) || 120
+  const invalidate = () => cacheService.del(cacheKey)
 
   const findUnique = async (value, exceptDocId = null) => {
     if (!uniqueField || !value) return null
@@ -83,6 +92,7 @@ export const createAdminCrud = ({
         newValue: { [uniqueField ?? 'id']: payload[uniqueField] ?? ref.id }
       })
 
+      invalidate()
       res.status(201).json({
         message: `${label} created successfully`,
         data: { [label.toLowerCase()]: toClient({ id: ref.id, ...doc }) }
@@ -93,8 +103,30 @@ export const createAdminCrud = ({
     }
   }
 
+  /**
+   * Lists the collection.
+   *
+   * This read every document on every request: 1,146 document reads to render
+   * one screen of flights. Five screens and a dashboard exhausted a seventh of
+   * the free tier's daily allowance, and once that ran out every read failed —
+   * login and search included.
+   *
+   * Server-side pagination was the obvious fix and the wrong one: the admin UI
+   * paginates and searches in memory over the whole list, so returning a page
+   * would silently reduce search to whatever happened to be on screen. Slow is
+   * recoverable; a search box that quietly stops finding things is not.
+   *
+   * So the full list is still returned, and cached instead. Inventory changes
+   * only when an admin edits it, and every write path here clears the entry —
+   * so a repeat view costs nothing and an edit is visible immediately.
+   */
   const list = async (_req, res) => {
     try {
+      const cached = cacheService.get(cacheKey)
+      if (cached) {
+        return res.json({ data: { [listKey]: cached, pagination: { total: cached.length, page: 1, cached: true } } })
+      }
+
       const snap = await db.collection(collection).get()
 
       const items = snap.docs
@@ -102,6 +134,8 @@ export const createAdminCrud = ({
         .filter((x) => !x.isDeleted)
         .sort((a, b) => (toDate(b.createdAt)?.getTime() ?? 0) - (toDate(a.createdAt)?.getTime() ?? 0))
         .map(toClient)
+
+      cacheService.set(cacheKey, items, LIST_TTL_SECONDS)
 
       res.json({ data: { [listKey]: items, pagination: { total: items.length, page: 1 } } })
     } catch (err) {
@@ -166,6 +200,7 @@ export const createAdminCrud = ({
       })
 
       const fresh = await ref.get()
+      invalidate()
       res.json({
         message: `${label} updated successfully`,
         data: { [label.toLowerCase()]: toClient({ id: fresh.id, ...fresh.data() }) }
@@ -200,6 +235,7 @@ export const createAdminCrud = ({
         entityId: req.params.id
       })
 
+      invalidate()
       res.json({ message: `${label} deleted successfully` })
     } catch (err) {
       console.error(`Delete ${collection} error:`, err.message)
@@ -232,6 +268,7 @@ export const createAdminCrud = ({
       })
 
       const fresh = await ref.get()
+      invalidate()
       res.json({
         message: `${label} ${nextActive ? 'activated' : 'deactivated'}`,
         data: { [label.toLowerCase()]: toClient({ id: fresh.id, ...fresh.data() }) }

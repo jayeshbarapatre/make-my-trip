@@ -4,16 +4,52 @@ import { respondIfDatastoreDown } from '../utils/datastoreErrors.js'
 
 // Migrated from Prisma/MongoDB to Firestore.
 //
-// Firestore has no aggregate/group-by, so these handlers read the relevant
-// collections once and fold them in memory. The collections are small enough
-// for that; if they grow, the right move is a maintained counters document
-// rather than paging the whole collection here.
+// These handlers used to read every document in users, flights, hotels and
+// bookings and fold them in memory — 1,352 reads for a single dashboard load
+// against real data. Six such loads exhausted a tenth of the free tier's daily
+// allowance, and one working session exhausted the lot: the database then
+// refuses every read, so login and search stop too.
+//
+// Firestore does have aggregations (count/sum/average), despite what the note
+// here used to claim. A count costs one read regardless of how many documents
+// it spans, so the same figures now cost single digits.
+//
+// The arithmetic below reproduces the in-memory predicates exactly:
+//   nonDeleted = total − (isDeleted == true)
+//   active     = nonDeleted − (isActive == false AND isDeleted != true)
+// `== false` and `== true` are used rather than `!=` because a Firestore
+// inequality silently drops documents where the field is absent, and most of
+// these documents have neither flag set.
 
 const CANCELLED = new Set(['cancelled', 'refunded'])
 
 const countOf = async (collection) => {
   const snap = await db.collection(collection).count().get()
   return snap.data().count
+}
+
+/** Counts matching documents in one read, whatever the collection size. */
+const countWhere = async (collection, ...clauses) => {
+  let q = db.collection(collection)
+  for (const [field, op, value] of clauses) q = q.where(field, op, value)
+  return (await q.count().get()).data().count
+}
+
+/**
+ * Totals for one inventory collection, in four reads instead of one per row.
+ * Mirrors `activeDocs(...)` + `.filter(x => x.isActive !== false)`.
+ */
+const inventoryTotals = async (collection) => {
+  const [total, deleted, inactive, inactiveDeleted] = await Promise.all([
+    countOf(collection),
+    countWhere(collection, ['isDeleted', '==', true]),
+    countWhere(collection, ['isActive', '==', false]),
+    countWhere(collection, ['isActive', '==', false], ['isDeleted', '==', true])
+  ])
+
+  const live = total - deleted
+  const inactiveLive = inactive - inactiveDeleted
+  return { total: live, active: live - inactiveLive, inactive: inactiveLive }
 }
 
 const activeDocs = (snap) => snap.docs.map((d) => ({ id: d.id, ...d.data() })).filter((x) => !x.isDeleted)
@@ -23,19 +59,20 @@ const activeDocs = (snap) => snap.docs.map((d) => ({ id: d.id, ...d.data() })).f
 
 export const getDashboardStats = async (req, res) => {
   try {
-    const [usersSnap, flightsSnap, hotelsSnap, bookingsSnap] = await Promise.all([
-      db.collection('users').get(),
-      db.collection('flights').get(),
-      db.collection('hotels').get(),
+    // Inventory is counted, not read. Bookings are still read in full: the
+    // revenue total and the per-type breakdown need each row, and that
+    // collection is the one that stays small.
+    const [totalUsers, flightTotals, hotelTotals, bookingsSnap] = await Promise.all([
+      countOf('users'),
+      inventoryTotals('flights'),
+      inventoryTotals('hotels'),
       db.collection('bookings').get()
     ])
 
-    const flights = activeDocs(flightsSnap)
-    const hotels = activeDocs(hotelsSnap)
     const bookings = activeDocs(bookingsSnap)
 
-    const activeFlights = flights.filter((f) => f.isActive !== false).length
-    const activeHotels = hotels.filter((h) => h.isActive !== false).length
+    const activeFlights = flightTotals.active
+    const activeHotels = hotelTotals.active
 
     const breakdown = { flight: 0, hotel: 0, bus: 0, cab: 0, train: 0 }
     let totalRevenue = 0
@@ -50,17 +87,17 @@ export const getDashboardStats = async (req, res) => {
     res.json({
       data: {
         summary: {
-          totalUsers: usersSnap.size,
+          totalUsers,
           totalBookings: bookings.length,
-          totalFlights: flights.length,
-          totalHotels: hotels.length,
+          totalFlights: flightTotals.total,
+          totalHotels: hotelTotals.total,
           totalRevenue
         },
         active: {
           activeFlights,
-          inactiveFlights: flights.length - activeFlights,
+          inactiveFlights: flightTotals.inactive,
           activeHotels,
-          inactiveHotels: hotels.length - activeHotels
+          inactiveHotels: hotelTotals.inactive
         },
         bookingsBreakdown: breakdown
       }
