@@ -5,6 +5,7 @@ import '../styles/HotelReviewPage.css';
 import OtpLoginModal from '../components/Auth/OtpLoginModal'
 import { photo } from '../utils/images'
 import CheckoutStateLost from '../components/CheckoutStateLost'
+import { requestQuote } from '../services/checkout'
 
 function HotelReviewPage() {
   const location = useLocation();
@@ -47,14 +48,37 @@ function HotelReviewPage() {
   const bookEntireHotel = location.state?.bookEntireHotel || false;
   const rooms = bookEntireHotel ? 10 : (guestsObj.rooms || 1);
 
-  // Calculations matching MakeMyTrip Price Breakup
-  const basePrice = bookEntireHotel 
-    ? Math.round(hotel.price * ((hotel.rooms || 10) * 0.9) * nights)
-    : hotel.price * nights * rooms;
-  const discount = Math.round(basePrice * 0.15);       // 15% property discount
-  const priceAfterDiscount = basePrice - discount;
-  const taxes = Math.round(basePrice * 0.18);          // 18% GST on base price
-  const totalAmount = priceAfterDiscount + taxes;
+  // The server prices the stay; this page renders what it is told.
+  //
+  // It used to compute its own total from invented rules — 90% of the property's
+  // room count, a 15% "property discount" and 18% GST — none of which exist in
+  // pricingService. For a 10-room takeover at ₹20 a night it showed ₹927 while
+  // the payment page, which asks the server, charged ₹224. The customer
+  // reviewed one price and paid another, and the review step is precisely where
+  // that must not happen.
+  const [quote, setQuote] = useState(null);
+  const [quoteError, setQuoteError] = useState('');
+
+  useEffect(() => {
+    if (!hotel?.id) return;
+
+    let active = true;
+    requestQuote({ type: 'hotel', itemId: hotel.id, quantity: rooms, nights })
+      .then((q) => { if (active) { setQuote(q); setQuoteError(''); } })
+      .catch((err) => { if (active) { setQuote(null); setQuoteError(err.message); } });
+
+    return () => { active = false; };
+  }, [hotel?.id, rooms, nights]);
+
+  const basePrice = quote?.baseFare ?? null;
+  const discount = quote?.discount ?? 0;
+  const priceAfterDiscount = basePrice === null ? null : basePrice - discount;
+  const taxes = (quote?.taxes ?? 0) + (quote?.convenience ?? 0);
+  const totalAmount = quote?.totalAmount ?? null;
+  const quoteReady = Boolean(quote);
+
+  /** Renders an amount, or a dash while the server's quote is still in flight. */
+  const money = (n) => (typeof n === 'number' ? n.toLocaleString('en-IN') : '—');
 
   // Coupon state
   const [couponCode, setCouponCode] = useState('');
@@ -233,34 +257,34 @@ function HotelReviewPage() {
                 ) : (
                   <span>Base Price <br/><small>{rooms} Room{rooms !== 1 ? 's' : ''} x {nights} Night{nights !== 1 ? 's' : ''}</small></span>
                 )}
-                <span>₹ {basePrice.toLocaleString("en-IN")}</span>
+                <span>₹ {money(basePrice)}</span>
               </div>
 
               <div className="rev-price-row discount">
                 <span>Discount by Property</span>
-                <span>- ₹ {discount.toLocaleString("en-IN")}</span>
+                <span>- ₹ {money(discount)}</span>
               </div>
 
               <div className="rev-price-row after-disc">
                 <span>Price after Discount</span>
-                <span>₹ {priceAfterDiscount.toLocaleString("en-IN")}</span>
+                <span>₹ {money(priceAfterDiscount)}</span>
               </div>
 
               <div className="rev-price-row">
                 <span>Taxes &amp; Service Fees ⓘ</span>
-                <span>₹ {taxes.toLocaleString("en-IN")}</span>
+                <span>₹ {money(taxes)}</span>
               </div>
 
               {appliedDiscount > 0 && (
                 <div className="rev-price-row discount">
                   <span>Coupon Discount</span>
-                  <span>- ₹ {appliedDiscount.toLocaleString("en-IN")}</span>
+                  <span>- ₹ {money(appliedDiscount)}</span>
                 </div>
               )}
 
               <div className="rev-total-box">
                 <span>Total Amount to be paid</span>
-                <span>₹ {(totalAmount - appliedDiscount).toLocaleString("en-IN")}</span>
+                <span>₹ {money(quoteReady ? totalAmount - appliedDiscount : null)}</span>
               </div>
             </div>
 
@@ -296,9 +320,22 @@ function HotelReviewPage() {
             )}
 
             {/* Action Pay Button */}
-            <button className="rev-pay-btn" onClick={handleCompleteBooking}>
-              Pay Now
+            {/* Disabled until the server has priced the stay. Advancing without a
+                quote would carry a total this page never received, which is how
+                the review and payment screens disagreed in the first place. */}
+            <button
+              className="rev-pay-btn"
+              onClick={handleCompleteBooking}
+              disabled={!quoteReady}
+              style={!quoteReady ? { opacity: 0.6, cursor: 'not-allowed' } : undefined}
+            >
+              {quoteReady ? 'Pay Now' : (quoteError ? 'Price unavailable' : 'Getting price…')}
             </button>
+            {quoteError && (
+              <p style={{ margin: '10px 0 0', fontSize: '13px', color: 'hsl(var(--er))', textAlign: 'center' }}>
+                {quoteError}
+              </p>
+            )}
 
           </div>
 
