@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext'
 import CustomCalendarPicker from '../components/CustomCalendarPicker'
 import { searchHotels } from '../services/hotelService'
 import '../styles/UdaipurListing.css'
+import '../styles/CustomAlert.css'
 import OtpLoginModal from '../components/Auth/OtpLoginModal'
 import { photo } from '../utils/images'
 
