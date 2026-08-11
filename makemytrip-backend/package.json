@@ -8,7 +8,7 @@
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
     "emulator": "firebase emulators:start --only firestore --project makemytrip-d9272",
-    "test": "node --test tests/regression.test.mjs tests/auth.test.mjs tests/audit.test.mjs tests/infra.test.mjs tests/search.test.mjs tests/availability.test.mjs",
+    "test": "node --test tests/regression.test.mjs tests/auth.test.mjs tests/audit.test.mjs tests/infra.test.mjs tests/search.test.mjs tests/availability.test.mjs tests/searchDate.test.mjs",
     "test:security": "node --test tests/security.test.mjs",
     "test:buses": "node --experimental-test-module-mocks --test tests/busSearch.test.mjs",
     "test:webhook": "node --experimental-test-module-mocks --test tests/paymentWebhook.test.mjs",

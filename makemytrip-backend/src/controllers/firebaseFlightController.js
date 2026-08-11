@@ -1,5 +1,5 @@
 import { db } from '../config/firebase.js'
-import { parseSearchDate, istDayRangeUtc } from '../utils/searchDate.js'
+import { parseSearchDate, wallClockDayRange } from '../utils/searchDate.js'
 import { validatePageNumber, validatePageSize } from '../utils/validation.js'
 import { cityMatches } from '../utils/cities.js'
 import { fetchRouteCandidates, applySearchPipeline } from '../services/inventorySearch.js'
@@ -73,7 +73,7 @@ export const searchFlights = async (req, res) => {
           message: 'Provide the travel date as YYYY-MM-DD.'
         })
       }
-      departureWindow = istDayRangeUtc(parsedDate)
+      departureWindow = wallClockDayRange(parsedDate)
     }
 
     console.log(`✈️ Firebase Flight Search: from=${from}, to=${to}, date=${departureWindow ? date : 'any'}`)

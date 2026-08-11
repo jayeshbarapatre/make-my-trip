@@ -73,6 +73,34 @@ export const istDayRangeUtc = (dateStr) => {
   }
 }
 
+/**
+ * The UTC window covering one wall-clock day.
+ *
+ * Flight schedules are stored as wall-clock values at the airport: an admin
+ * entering "15 Aug, 20:00" is saved as 2026-08-15T20:00:00.000Z, and read back
+ * unchanged so the number typed is the number shown. See the note in
+ * flightAdminController.
+ *
+ * `istDayRangeUtc` treated those same values as true instants and shifted them
+ * into IST, which moved everything departing at or after 18:30 into the FOLLOWING
+ * day. A 20:00 departure on the 15th became 01:30 IST on the 16th and vanished
+ * from a search for its own date. Nothing caught it because the seeder only ever
+ * generates morning and afternoon departures — the first evening flight anyone
+ * created was the first to fall through.
+ *
+ * Comparing wall-clock to wall-clock keeps the write path and the read path
+ * speaking the same language.
+ */
+export const wallClockDayRange = (dateStr) => {
+  const valid = parseSearchDate(dateStr)
+  if (!valid) return null
+
+  return {
+    startIso: `${valid}T00:00:00.000Z`,
+    endIso: `${valid}T23:59:59.999Z`
+  }
+}
+
 /** Today's date in IST as YYYY-MM-DD. */
 export const todayIst = (now = new Date()) =>
   new Date(now.getTime() + IST_OFFSET_MINUTES * 60_000).toISOString().slice(0, 10)
@@ -87,4 +115,4 @@ export const isPastIstDate = (dateStr, now = new Date()) => {
   return valid < todayIst(now)
 }
 
-export default { parseSearchDate, istDayRangeUtc, todayIst, isPastIstDate }
+export default { parseSearchDate, istDayRangeUtc, wallClockDayRange, todayIst, isPastIstDate }
