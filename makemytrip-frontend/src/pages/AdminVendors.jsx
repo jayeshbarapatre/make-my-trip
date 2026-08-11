@@ -329,7 +329,7 @@ const AdminVendors = () => {
                         <tr key={vendor.id}>
                           <td>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                              <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'hsla(var(--p), 0.1)', color: 'hsl(var(--p))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 700 }}>
+                              <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'hsl(var(--p) / 0.1)', color: 'hsl(var(--p))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 700 }}>
                                 {vendor.name?.charAt(0).toUpperCase()}
                               </div>
                               <div>
@@ -355,7 +355,7 @@ const AdminVendors = () => {
                               <button className="btn btn-sm btn-secondary" onClick={() => handleViewHotels(vendor)}>
                                 <RiEyeLine /> View
                               </button>
-                              <button className="btn btn-sm btn-danger" style={{ background: 'hsla(var(--er), 0.1)', color: 'hsl(var(--er))', border: '1px solid transparent' }} onClick={() => handleDelete(vendor.id)}>
+                              <button className="btn btn-sm btn-danger" style={{ background: 'hsl(var(--er) / 0.1)', color: 'hsl(var(--er))', border: '1px solid transparent' }} onClick={() => handleDelete(vendor.id)}>
                                 <RiDeleteBinLine /> Delete
                               </button>
                             </div>

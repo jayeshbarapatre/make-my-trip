@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useVendor } from '../context/VendorContext'
 import { FaEnvelope, FaLock, FaArrowLeft, FaStore } from 'react-icons/fa'
+import DemoCredentials from '../components/DemoCredentials'
 import './VendorLoginPage.css'
 
 const VendorLoginPage = () => {
@@ -51,6 +52,13 @@ const VendorLoginPage = () => {
           <h1 className="login-title">MakeMyTrip Vendor</h1>
           <p className="login-subtitle">Vendor Portal</p>
         </div>
+
+        <DemoCredentials
+          label="Demo vendor account"
+          email={import.meta.env.VITE_DEMO_VENDOR_EMAIL}
+          password={import.meta.env.VITE_DEMO_VENDOR_PASSWORD}
+          onFill={(e, p) => { setEmail(e); setPassword(p); setLocalError('') }}
+        />
 
         {(error || localError) && (
           <div className="error-alert">

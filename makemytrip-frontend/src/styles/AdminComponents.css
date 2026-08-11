@@ -1,6 +1,29 @@
 /* Admin Components - Global Styles Based on Paces Design System */
 
 /* ============================================================================
+   PORTALLED OVERLAYS — surface tokens
+   Modals render into document.body via createPortal, so they sit outside
+   .admin-layout / .vendor-layout and inherit none of the surface tokens those
+   two blocks declare. The vendor modals carry the .admin-layout class to borrow
+   them, but AdminLayout.css is only imported by AdminLayout.jsx — on a /vendor
+   route that stylesheet is never loaded, every token resolves to nothing, and
+   the panel renders transparent with unreadable text.
+   Declared here instead: index.css imports this file on every route.
+   ============================================================================ */
+.modal-backdrop-overlay {
+  --surface: hsl(var(--b1));
+  --surface2: hsl(var(--b2));
+  --border: hsl(var(--b3));
+  --bg-body: hsl(var(--b2));
+  --bg-surface: hsl(var(--b1));
+  --bg-hover: hsl(var(--b3) / 0.5);
+  --text-primary: hsl(var(--bc));
+  --text-secondary: hsl(var(--bc) / 0.7);
+  --text-muted: hsl(var(--bc) / 0.5);
+  --shadow-xl: 0 12px 32px hsl(var(--bc) / 0.2);
+}
+
+/* ============================================================================
    BUTTONS — single source of truth
    Every button in the app inherits from these rules. Page CSS files must NOT
    re-declare .btn-primary / .btn-sm / .btn-edit etc.; they cascade-override and
@@ -501,7 +524,7 @@
   outline: none;
   border-color: hsl(var(--p));
   background: var(--bg-surface);
-  box-shadow: 0 0 0 4px hsla(var(--p), 0.15);
+  box-shadow: 0 0 0 4px hsl(var(--p) / 0.15);
 }
 
 .form-control:disabled {

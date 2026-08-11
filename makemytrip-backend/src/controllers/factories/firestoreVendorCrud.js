@@ -3,6 +3,32 @@ import { routeIndexFields } from '../../services/inventorySearch.js'
 import { now, toDate } from '../../utils/time.js'
 import { db } from '../../config/firebase.js'
 import { writeAuditLog, AuditAction } from '../../services/auditLog.js'
+import { contentStore } from '../../services/contentStore.js'
+
+const createApprovalNotification = async (collection, label, id, vendorId) => {
+  try {
+    const notifications = contentStore('notifications')
+    
+    // Fetch vendor details to make the message more informative
+    let vendorEmail = 'Vendor'
+    if (vendorId) {
+      const vendorDoc = await db.collection('users').doc(vendorId).get()
+      if (vendorDoc.exists) {
+        vendorEmail = vendorDoc.data().email || vendorDoc.data().name || 'Vendor'
+      }
+    }
+
+    await notifications.create({
+      title: `Pending ${label} Approval`,
+      message: `New ${label.toLowerCase()} listing from ${vendorEmail} is awaiting approval.`,
+      type: `${label.toLowerCase()}_approval`,
+      referenceId: id,
+      isRead: false
+    })
+  } catch (err) {
+    console.error('Failed to create approval notification:', err.message)
+  }
+}
 
 // Vendor-scoped CRUD over a Firestore collection.
 //
@@ -171,6 +197,7 @@ export const createVendorCrud = ({
         patch.submittedAt = new Date().toISOString()
         patch.approvedAt = null
         patch.approvedBy = null
+        await createApprovalNotification(collection, label, req.params.id, req.vendorId)
       } else if (found.data.listingStatus === ListingStatus.REJECTED) {
         // Acting on the feedback returns it to draft.
         patch.listingStatus = ListingStatus.DRAFT
@@ -244,6 +271,8 @@ export const createVendorCrud = ({
         updatedAt: now(),
         updatedBy: req.principal?.uid ?? null
       })
+
+      await createApprovalNotification(collection, label, req.params.id, req.vendorId)
 
       writeAuditLog({
         req,

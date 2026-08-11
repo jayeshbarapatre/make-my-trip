@@ -26,7 +26,8 @@ const VendorBusForm = ({ busId, onClose, onSuccess }) => {
     try {
       setLoading(true)
       const response = await vendorBusesService.getAll()
-      const bus = response.data.data.find(b => b._id === busId)
+      const busesList = response.data.data.buses || response.data.data || []
+      const bus = busesList.find(b => (b.id || b._id) === busId)
       if (bus) {
         setFormData(bus)
       } else {
@@ -125,7 +126,7 @@ const VendorBusForm = ({ busId, onClose, onSuccess }) => {
 
   return createPortal(
     <div 
-      className="admin-layout modal-backdrop-overlay" 
+      className="modal-backdrop-overlay"
       data-theme={theme}
       style={{
         position: 'fixed', inset: 0, zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -155,7 +156,7 @@ const VendorBusForm = ({ busId, onClose, onSuccess }) => {
       >
         <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--surface)' }}>
           <h2 style={{ fontSize: '20px', fontWeight: 600, margin: 0, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'hsla(var(--w), 0.15)', color: 'hsl(var(--w))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }}>
+            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'hsl(var(--w) / 0.15)', color: 'hsl(var(--w))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }}>
               <i className={isEditing ? 'fas fa-pen' : 'fas fa-bus'}></i>
             </div>
             {isEditing ? 'Edit Bus Details' : 'Add New Bus'}
@@ -250,7 +251,7 @@ const VendorBusForm = ({ busId, onClose, onSuccess }) => {
                   </div>
                   <div>
                     <label style={labelStyle}>Duration</label>
-                    <input type="text" value={`${hours}h ${minutes}m`} readOnly style={{ ...inputStyle, background: 'var(--bg-default)', opacity: 0.7, cursor: 'not-allowed' }} />
+                    <input type="text" value={`${hours}h ${minutes}m`} readOnly style={{ ...inputStyle, background: 'var(--surface2)', opacity: 0.7, cursor: 'not-allowed' }} />
                   </div>
                 </div>
               </div>

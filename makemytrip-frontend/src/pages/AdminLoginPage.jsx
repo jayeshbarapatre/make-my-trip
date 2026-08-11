@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAdmin } from '../context/AdminContext'
 import { FaEnvelope, FaLock, FaArrowLeft, FaUserShield } from 'react-icons/fa'
+import DemoCredentials from '../components/DemoCredentials'
 import './AdminLoginPage.css'
 
 const AdminLoginPage = () => {
@@ -51,6 +52,13 @@ const AdminLoginPage = () => {
           <h1 className="login-title">MakeMyTrip Admin</h1>
           <p className="login-subtitle">Admin Portal</p>
         </div>
+
+        <DemoCredentials
+          label="Demo admin account"
+          email={import.meta.env.VITE_DEMO_ADMIN_EMAIL}
+          password={import.meta.env.VITE_DEMO_ADMIN_PASSWORD}
+          onFill={(e, p) => { setEmail(e); setPassword(p); setLocalError('') }}
+        />
 
         {(error || localError) && (
           <div className="error-alert">

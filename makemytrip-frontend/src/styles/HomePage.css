@@ -9,7 +9,7 @@
   --hp-accent: hsl(var(--a));
   --hp-accent-2: hsl(var(--p));
   --hp-primary: hsl(var(--p));
-  --hp-primary-glow: hsla(var(--p), 0.35);
+  --hp-primary-glow: hsl(var(--p) / 0.35);
   --hp-muted: hsl(var(--bc) / 0.75);
   --hp-line: hsl(var(--b3));
   --hp-bg: hsl(var(--b1));
@@ -39,7 +39,7 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  background: hsla(var(--b1), 0.85);
+  background: hsl(var(--b1) / 0.85);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   color: hsl(var(--bc));
@@ -82,7 +82,7 @@
   font-size: 20px;
   letter-spacing: -1px;
   position: relative;
-  box-shadow: 0 6px 16px hsla(var(--p), 0.35);
+  box-shadow: 0 6px 16px hsl(var(--p) / 0.35);
 }
 
 .hp-logo-mark::after {
@@ -180,13 +180,13 @@
   font-weight: 800 !important;
   padding: 10px 20px !important;
   border-radius: 8px;
-  box-shadow: 0 6px 15px hsla(var(--p), 0.25);
+  box-shadow: 0 6px 15px hsl(var(--p) / 0.25);
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .hp-nav-cta:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 20px hsla(var(--p), 0.4);
+  box-shadow: 0 10px 20px hsl(var(--p) / 0.4);
 }
 
 .hp-flag {
@@ -215,11 +215,11 @@
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(3px 3px at 15% 20%, hsla(var(--bc), 0.7), transparent),
-    radial-gradient(2px 2px at 80% 30%, hsla(var(--bc), 0.5), transparent),
-    radial-gradient(2.5px 2.5px at 38% 12%, hsla(var(--bc), 0.6), transparent),
-    radial-gradient(2px 2px at 88% 18%, hsla(var(--bc), 0.65), transparent),
-    radial-gradient(3px 3px at 25% 35%, hsla(var(--a), 0.45), transparent);
+    radial-gradient(3px 3px at 15% 20%, hsl(var(--bc) / 0.7), transparent),
+    radial-gradient(2px 2px at 80% 30%, hsl(var(--bc) / 0.5), transparent),
+    radial-gradient(2.5px 2.5px at 38% 12%, hsl(var(--bc) / 0.6), transparent),
+    radial-gradient(2px 2px at 88% 18%, hsl(var(--bc) / 0.65), transparent),
+    radial-gradient(3px 3px at 25% 35%, hsl(var(--a) / 0.45), transparent);
 }
 
 .hp-plane {
@@ -286,7 +286,7 @@
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  filter: drop-shadow(0 4px 12px hsla(var(--a), 0.3));
+  filter: drop-shadow(0 4px 12px hsl(var(--a) / 0.3));
 }
 
 .hp-hero-sub {
@@ -545,7 +545,7 @@
   align-items: center;
   gap: 8px;
   justify-content: center;
-  box-shadow: 0 4px 16px hsla(var(--p), 0.35);
+  box-shadow: 0 4px 16px hsl(var(--p) / 0.35);
   white-space: nowrap;
   min-width: max-content;
   border-radius: 0 14px 14px 0;
@@ -553,7 +553,7 @@
 
 .hp-search-btn:hover {
   background: hsl(var(--p) / 0.9);
-  box-shadow: 0 6px 20px hsla(var(--p), 0.45);
+  box-shadow: 0 6px 20px hsl(var(--p) / 0.45);
   transform: translateY(-1px);
 }
 

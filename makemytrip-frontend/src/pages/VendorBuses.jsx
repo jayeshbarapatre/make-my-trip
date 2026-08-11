@@ -248,7 +248,7 @@ const VendorBuses = () => {
 
       {confirmDialog && createPortal(
         <div 
-          className="admin-layout modal-backdrop-overlay" 
+          className="modal-backdrop-overlay"
           data-theme={theme}
           style={{
             position: 'fixed', inset: 0, zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center',

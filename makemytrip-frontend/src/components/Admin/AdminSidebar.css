@@ -183,7 +183,7 @@
 }
 
 .nav-item:hover {
-  background: hsla(var(--p), 0.05);
+  background: hsl(var(--p) / 0.05);
   color: hsl(var(--p));
   transform: translateX(4px);
 }

@@ -10,21 +10,23 @@
   --surface2: hsl(var(--b2));
   --border: hsl(var(--b3));
   --ink: hsl(var(--bc));
-  --inkMuted: hsla(var(--bc), 0.7);
-  --inkLight: hsla(var(--bc), 0.5);
+  --inkMuted: hsl(var(--bc) / 0.7);
+  --inkLight: hsl(var(--bc) / 0.5);
 
   --bg-body: hsl(var(--b2));
   --bg-surface: hsl(var(--b1));
-  --bg-hover: hsla(var(--b3), 0.5);
+  --bg-hover: hsl(var(--b3) / 0.5);
   --text-primary: hsl(var(--bc));
-  --text-secondary: hsla(var(--bc), 0.7);
-  --text-muted: hsla(var(--bc), 0.5);
+  --text-secondary: hsl(var(--bc) / 0.7);
+  --text-muted: hsl(var(--bc) / 0.5);
 
-  /* Use DaisyUI semantic color variables */
-  --shadow-sm: 0 2px 4px hsla(var(--bc), 0.08);
-  --shadow-md: 0 4px 12px hsla(var(--bc), 0.12);
-  --shadow-lg: 0 8px 24px hsla(var(--bc), 0.15);
-  --shadow-xl: 0 12px 32px hsla(var(--bc), 0.2);
+  /* Slash-separated alpha. The theme vars hold a space-separated triplet, so
+     the legacy comma form parses as neither legacy nor modern hsl(), and the
+     whole declaration is dropped at computed-value time. */
+  --shadow-sm: 0 2px 4px hsl(var(--bc) / 0.08);
+  --shadow-md: 0 4px 12px hsl(var(--bc) / 0.12);
+  --shadow-lg: 0 8px 24px hsl(var(--bc) / 0.15);
+  --shadow-xl: 0 12px 32px hsl(var(--bc) / 0.2);
 
   background: var(--bg-body);
   color: var(--text-primary);

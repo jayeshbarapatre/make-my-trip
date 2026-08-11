@@ -24,7 +24,7 @@ export const adminAuthService = {
 }
 
 export const adminFlightsService = {
-  getAll: (params) => adminAPI.get('/flights', { params }),
+  getAll: (params) => adminAPI.get('/flights', { params: { limit: 1000, ...params } }),
   getById: (id) => adminAPI.get(`/flights/${id}`),
   create: (data) => adminAPI.post('/flights', data),
   update: (id, data) => adminAPI.put(`/flights/${id}`, data),
@@ -33,7 +33,7 @@ export const adminFlightsService = {
 }
 
 export const adminHotelsService = {
-  getAll: (params) => adminAPI.get('/hotels', { params }),
+  getAll: (params) => adminAPI.get('/hotels', { params: { limit: 1000, ...params } }),
   getById: (id) => adminAPI.get(`/hotels/${id}`),
   create: (data) => adminAPI.post('/hotels', data),
   update: (id, data) => adminAPI.put(`/hotels/${id}`, data),
@@ -42,7 +42,7 @@ export const adminHotelsService = {
 }
 
 export const adminBusesService = {
-  getAll: (params) => adminAPI.get('/buses', { params }),
+  getAll: (params) => adminAPI.get('/buses', { params: { limit: 1000, ...params } }),
   getById: (id) => adminAPI.get(`/buses/${id}`),
   create: (data) => adminAPI.post('/buses', data),
   update: (id, data) => adminAPI.put(`/buses/${id}`, data),
@@ -51,7 +51,7 @@ export const adminBusesService = {
 }
 
 export const adminCabsService = {
-  getAll: (params) => adminAPI.get('/cabs', { params }),
+  getAll: (params) => adminAPI.get('/cabs', { params: { limit: 1000, ...params } }),
   getById: (id) => adminAPI.get(`/cabs/${id}`),
   create: (data) => adminAPI.post('/cabs', data),
   update: (id, data) => adminAPI.put(`/cabs/${id}`, data),
@@ -60,7 +60,7 @@ export const adminCabsService = {
 }
 
 export const adminTrainsService = {
-  getAll: (params) => adminAPI.get('/trains', { params }),
+  getAll: (params) => adminAPI.get('/trains', { params: { limit: 1000, ...params } }),
   getById: (id) => adminAPI.get(`/trains/${id}`),
   create: (data) => adminAPI.post('/trains', data),
   update: (id, data) => adminAPI.put(`/trains/${id}`, data),

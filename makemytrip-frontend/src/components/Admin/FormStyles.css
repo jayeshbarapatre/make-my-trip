@@ -100,7 +100,7 @@
 .form-group select:focus {
   outline: none;
   border-color: hsl(var(--p));
-  box-shadow: 0 0 0 3px hsla(var(--p), 0.1);
+  box-shadow: 0 0 0 3px hsl(var(--p) / 0.1);
 }
 
 .form-group input:disabled,
