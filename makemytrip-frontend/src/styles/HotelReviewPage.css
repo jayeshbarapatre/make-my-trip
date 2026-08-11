@@ -507,12 +507,20 @@
   display: grid;
   grid-template-columns: 2fr 0.8fr 1fr;
   gap: 10px;
+  /* Grid children stretch to the tallest cell by default. The name and age
+     inputs sit in wrappers that grow when an error message appears beneath
+     them, so the gender <select> — a direct child with nothing below it —
+     stretched to match and rendered noticeably taller than the fields it sits
+     beside. Aligning to the start keeps every control its natural height and
+     lines their top edges up. */
+  align-items: start;
 }
 
 .rev-contact-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
+  align-items: start;
 }
 
 .rev-input {
@@ -521,6 +529,12 @@
   border-radius: 8px;
   font-size: 14px;
   font-family: inherit;
+  /* An <input> and a <select> with identical padding still render at different
+     heights — the select carries its own intrinsic line box for the arrow. Pin
+     both so the three controls in a row line up exactly. */
+  box-sizing: border-box;
+  line-height: 1.45;
+  height: 42px;
   border: 1px solid hsl(var(--bc) / 0.18);
   background: hsl(var(--b1));
   color: hsl(var(--bc));
