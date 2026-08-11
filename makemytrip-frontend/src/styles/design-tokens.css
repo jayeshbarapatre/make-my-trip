@@ -231,6 +231,11 @@
 
 :root {
   /* Global Raw HSL Value Overrides to Fix Broken hsl(var(--...)) Syntax System-wide */
+
+  /* The base palette here is light, so the browser's own controls default to
+     light with it. Each [data-theme] block overrides this; App.jsx always sets
+     the attribute, so in practice this only covers the moment before it does. */
+  color-scheme: light;
   --b1: 0 0% 100%;           /* base color 1 (white card surface) */
   --b2: 210 17% 98%;         /* base color 2 (light page background #F8F9FA) */
   --b3: 210 16% 93%;         /* base color 3 (light border/hover) */
@@ -249,6 +254,13 @@
   --wa: 42 100% 50%;         /* warning orange */
   --er: 358 100% 65%;        /* error red */
 
+  /* Scrims and shadows.
+     These were written as raw rgba() at every call site, which is how a colour
+     ends up unchangeable: 625 such values across 48 stylesheets, none of which
+     move when the theme does. Declared once here so they can. */
+  --scrim: 222 47% 6%;       /* behind dialogs */
+  --shadow: 222 47% 6%;      /* elevation */
+
   /* Foreground colours for the status backgrounds above.
      These were missing, so components fell back to --b1 — the PAGE background —
      for text sitting on a coloured button. That reads as dark-on-green in dark
@@ -262,6 +274,13 @@
 
 /* Robust explicit theme overrides to guarantee pixel-perfect theme rendering in all environments */
 [data-theme="light"] {
+  /* Tells the browser which way its OWN controls should render: the calendar
+     and clock buttons inside <input type="date"> and <input type="time">, the
+     scrollbars, checkboxes and the native date picker panel. Those are drawn by
+     the browser, not by us, so no stylesheet colour reaches them — in dark mode
+     they stayed near-black on a near-black field and looked missing. This is
+     the supported way to flip them, and it specifies no colour at all. */
+  color-scheme: light;
   --b1: 0 0% 100%;
   --b2: 210 17% 98%;
   --b3: 210 16% 93%;
@@ -272,6 +291,7 @@
   --clr-text-dark: hsl(222 47% 11% / 0.90);
 }
 [data-theme="dark"] {
+  color-scheme: dark;
   --b1: 222 39% 14%;
   --b2: 222 53% 10%;
   --b3: 222 39% 18%;
