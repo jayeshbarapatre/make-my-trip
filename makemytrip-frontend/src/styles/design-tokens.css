@@ -248,6 +248,16 @@
   --su: 147 66% 47%;         /* success green */
   --wa: 42 100% 50%;         /* warning orange */
   --er: 358 100% 65%;        /* error red */
+
+  /* Foreground colours for the status backgrounds above.
+     These were missing, so components fell back to --b1 — the PAGE background —
+     for text sitting on a coloured button. That reads as dark-on-green in dark
+     mode and light-on-green in light mode: legible in one theme by luck, not
+     design. --su/--wa/--er are the same value in every theme, so their contrast
+     colour is fixed too. */
+  --suc: 0 0% 100%;          /* on success  */
+  --wac: 0 0% 12%;           /* on warning — amber needs dark text */
+  --erc: 0 0% 100%;          /* on error    */
 }
 
 /* Robust explicit theme overrides to guarantee pixel-perfect theme rendering in all environments */

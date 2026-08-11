@@ -201,7 +201,11 @@ export const createVendorCrud = ({
       if (found.data.listingStatus === ListingStatus.APPROVED) {
         patch.listingStatus = ListingStatus.PENDING_APPROVAL
         patch.isActive = false
-        patch.submittedAt = new Date().toISOString()
+        // now(), not an ISO string. The submit path below writes a Timestamp,
+        // and Firestore orders by TYPE before value — a field holding both
+        // cannot be sorted or range-filtered, and the admin table could not
+        // parse whichever shape it got ("Invalid Date").
+        patch.submittedAt = now()
         patch.approvedAt = null
         patch.approvedBy = null
         await createApprovalNotification(collection, label, req.params.id, req.vendorId)

@@ -26,3 +26,34 @@ export const addDaysLocal = (days, from = new Date()) => {
 }
 
 export default { toLocalDateStr, todayLocal, addDaysLocal }
+
+/**
+ * Formats a date that may arrive in any of the shapes this API produces.
+ *
+ * Firestore Timestamps serialise to `{ _seconds, _nanoseconds }` over JSON, and
+ * `new Date({_seconds: …})` yields Invalid Date — which is exactly what the
+ * approval tables showed. Other records carry ISO strings, and a few carry
+ * epoch milliseconds, so a display helper has to accept all three rather than
+ * assume whichever one it happened to be handed.
+ *
+ * @returns {string} a localised date, or the fallback when there is nothing to show
+ */
+export const formatApiDate = (value, { fallback = 'N/A', withTime = false } = {}) => {
+  if (value === null || value === undefined || value === '') return fallback
+
+  let date
+
+  if (typeof value === 'object' && value !== null && typeof value._seconds === 'number') {
+    date = new Date(value._seconds * 1000)
+  } else if (typeof value === 'object' && value !== null && typeof value.seconds === 'number') {
+    date = new Date(value.seconds * 1000)
+  } else if (typeof value === 'number') {
+    date = new Date(value)
+  } else {
+    date = new Date(value)
+  }
+
+  if (Number.isNaN(date.getTime())) return fallback
+
+  return withTime ? date.toLocaleString() : date.toLocaleDateString()
+}

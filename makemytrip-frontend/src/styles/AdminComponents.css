@@ -113,7 +113,10 @@
 /* ── Success ── */
 .btn-success {
   background: hsl(var(--su));
-  color: hsl(var(--b1));
+  /* --b1 is the page background, not a contrast colour. Using it here made the
+     label dark-on-green in dark mode, which is why Bus and Cab approvals looked
+     wrong while Hotel — which carried an inline `color: white` patch — did not. */
+  color: hsl(var(--suc));
 }
 .btn-success:hover {
   background: hsl(var(--su) / 0.85);
@@ -125,7 +128,7 @@
 .btn-danger,
 .btn-error {
   background: hsl(var(--er));
-  color: hsl(var(--b1));
+  color: hsl(var(--erc));
 }
 .btn-danger:hover,
 .btn-error:hover {
@@ -143,7 +146,8 @@
 /* ── Warning ── */
 .btn-warning {
   background: hsl(var(--wa));
-  color: hsl(var(--b1));
+  /* Amber is light in both themes, so this one needs dark text, not white. */
+  color: hsl(var(--wac));
 }
 .btn-warning:hover {
   background: hsl(var(--wa) / 0.85);

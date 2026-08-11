@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { formatApiDate } from '../utils/date'
 import AdminLayout from '../components/Admin/AdminLayout'
 import { adminService } from '../services/adminService'
 import toast from 'react-hot-toast'
@@ -116,12 +117,11 @@ const AdminApprovals = () => {
                     <td>{hotel.city}</td>
                     <td>{hotel.vendor?.name || 'N/A'}</td>
                     <td>{hotel.vendor?.email || 'N/A'}</td>
-                    <td>{hotel.submittedAt ? new Date(hotel.submittedAt).toLocaleDateString() : 'N/A'}</td>
+                    <td>{formatApiDate(hotel.submittedAt)}</td>
                     <td>
                       <div style={{ display: 'flex', gap: '8px' }}>
                         <button
                           className="btn btn-sm btn-success"
-                          style={{ color: 'white' }}
                           onClick={() => setApprovingId(hotel.id)}
                           disabled={processing}
                         >
@@ -129,7 +129,6 @@ const AdminApprovals = () => {
                         </button>
                         <button
                           className="btn btn-sm btn-error"
-                          style={{ color: 'white' }}
                           onClick={() => setRejectingId(hotel.id)}
                           disabled={processing}
                         >

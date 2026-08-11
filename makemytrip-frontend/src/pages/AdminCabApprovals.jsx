@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { formatApiDate } from '../utils/date'
 import AdminLayout from '../components/Admin/AdminLayout'
 import { adminService } from '../services/adminService'
 import toast from 'react-hot-toast'
@@ -123,7 +124,7 @@ const AdminCabApprovals = () => {
                       <div style={{ fontSize: '12px', color: 'hsl(var(--bc) / 0.6)' }}>{cab.vendor?.email}</div>
                     </td>
                     <td>₹{cab.baseFare}</td>
-                    <td>{new Date(cab.submittedAt || cab.createdAt).toLocaleDateString()}</td>
+                    <td>{formatApiDate(cab.submittedAt || cab.createdAt)}</td>
                     <td>
                       {rejectingId === cab.id ? (
                         <div style={{ display: 'flex', gap: '8px', flexDirection: 'column' }}>
