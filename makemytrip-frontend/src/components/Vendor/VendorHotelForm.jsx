@@ -80,8 +80,8 @@ const VendorHotelForm = ({ hotelId, onClose, onSuccess }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!formData.name || !formData.city || !formData.pricePerNight || !formData.price) {
-      toast.error('Please fill in all required fields')
+    if (!formData.name || !formData.city || (!formData.pricePerNight && !formData.price)) {
+      toast.error('Please fill in all required fields (Hotel Name, City, and Price)')
       return
     }
 
@@ -90,7 +90,16 @@ const VendorHotelForm = ({ hotelId, onClose, onSuccess }) => {
       const imageArray = formData.imagesInput
         ? formData.imagesInput.split(/[\n,]+/).map(url => url.trim()).filter(url => url.length > 0)
         : []
-      const submitData = { ...formData, amenities: selectedAmenities, images: imageArray, roomTypes: selectedRoomTypes }
+      // Auto-sync pricePerNight and price if only one is provided
+      const resolvedPrice = Number(formData.pricePerNight || formData.price)
+      const submitData = {
+        ...formData,
+        pricePerNight: resolvedPrice,
+        price: resolvedPrice,
+        amenities: selectedAmenities,
+        images: imageArray,
+        roomTypes: selectedRoomTypes
+      }
       delete submitData.imagesInput
 
       if (isEditing) {
@@ -208,8 +217,8 @@ const VendorHotelForm = ({ hotelId, onClose, onSuccess }) => {
                   Hotel Images
                 </h3>
                 <div style={{ marginBottom: '16px' }}>
-                  <label htmlFor="image" style={labelStyle}>Primary Image URL <span style={{ color: 'hsl(var(--er))' }}>*</span></label>
-                  <input id="image" name="image" type="url" value={formData.image} onChange={handleInputChange} placeholder="Main thumbnail image URL" required style={inputStyle} />
+                  <label htmlFor="image" style={labelStyle}>Primary Image URL</label>
+                  <input id="image" name="image" type="url" value={formData.image} onChange={handleInputChange} placeholder="Main thumbnail image URL (optional)" style={inputStyle} />
                 </div>
                 <div>
                   <label htmlFor="imagesInput" style={labelStyle}>Additional Images (Bulk URLs)</label>

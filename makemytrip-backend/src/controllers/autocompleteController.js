@@ -1,5 +1,6 @@
 import { db } from '../config/firebase.js'
 import { cacheService } from '../services/cache/cacheService.js'
+import { respondIfDatastoreDown } from '../utils/datastoreErrors.js'
 
 // Autocomplete fires on every keystroke. Reading the whole flights collection
 // each time would dominate the Firestore read budget, so the derived facet
@@ -64,6 +65,7 @@ const respondWithFacet = (facet) => async (req, res) => {
 
     res.json({ data: filtered.slice(0, 50) })
   } catch (err) {
+    if (respondIfDatastoreDown(res, err, 'Autocomplete')) return
     console.error(`Autocomplete (${facet}) failed:`, err.message)
     res.status(500).json({ message: 'Failed to load suggestions' })
   }

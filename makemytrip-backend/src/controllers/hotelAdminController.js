@@ -2,6 +2,7 @@ import { db } from '../config/firebase.js'
 import { now } from '../utils/time.js'
 import { createAdminCrud } from './factories/firestoreAdminCrud.js'
 import { writeAuditLog, AuditAction } from '../services/auditLog.js'
+import { respondIfDatastoreDown } from '../utils/datastoreErrors.js'
 
 // Migrated from Prisma/MongoDB to Firestore. The stored shape already matches
 // what the admin form and public hotel search both use, so this is mostly
@@ -106,6 +107,7 @@ export const listAllHotels = async (_req, res) => {
 
     res.json({ data: hotels })
   } catch (err) {
+    if (respondIfDatastoreDown(res, err, 'Hotel list')) return
     console.error('List hotels error:', err.message)
     res.status(500).json({ message: 'Failed to load hotels' })
   }
@@ -148,6 +150,7 @@ export const updateHotelImages = async (req, res) => {
     const fresh = await ref.get()
     res.json({ message: 'Hotel images updated successfully', data: { hotel: { id: fresh.id, ...fresh.data() } } })
   } catch (err) {
+    if (respondIfDatastoreDown(res, err, 'Hotel list')) return
     console.error('Update hotel images error:', err.message)
     res.status(500).json({ message: 'Failed to update images' })
   }
@@ -165,6 +168,7 @@ export const getHotelImages = async (req, res) => {
 
     res.json({ data: { hotelId: snap.id, hotelName: h.name, images } })
   } catch (err) {
+    if (respondIfDatastoreDown(res, err, 'Hotel list')) return
     console.error('Get hotel images error:', err.message)
     res.status(500).json({ message: 'Failed to load images' })
   }

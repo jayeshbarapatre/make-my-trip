@@ -6,6 +6,7 @@ import { Role, AccountStatus, resolveRole, resolveAccountStatus } from '../confi
 import { writeAuditLog, AuditAction } from '../services/auditLog.js'
 import { normalizeEmail, findUserByEmail } from '../utils/identity.js'
 import { currentTokenVersion } from '../services/tokenService.js'
+import { respondIfDatastoreDown } from '../utils/datastoreErrors.js'
 
 // Migrated from Prisma/MongoDB to Firestore, mirroring the admin migration.
 //
@@ -129,6 +130,7 @@ export const vendorRegister = async (req, res) => {
       }
     })
   } catch (err) {
+    if (respondIfDatastoreDown(res, err, 'Vendor sign-in')) return
     console.error('Vendor register error:', err.message)
     res.status(500).json({ message: 'Registration failed' })
   }
@@ -190,6 +192,7 @@ export const vendorLogin = async (req, res) => {
       data: { vendor: publicVendor(user), token: signToken(user) }
     })
   } catch (err) {
+    if (respondIfDatastoreDown(res, err, 'Vendor sign-in')) return
     console.error('Vendor login error:', err.message)
     res.status(500).json({ message: 'Login failed' })
   }
@@ -203,6 +206,7 @@ export const getVendorProfile = async (req, res) => {
     }
     res.json({ data: { vendor: publicVendor(found.data) } })
   } catch (err) {
+    if (respondIfDatastoreDown(res, err, 'Vendor sign-in')) return
     console.error('Vendor profile error:', err.message)
     res.status(500).json({ message: 'Could not load profile' })
   }
@@ -252,6 +256,7 @@ export const changePassword = async (req, res) => {
 
     res.json({ message: 'Password updated successfully' })
   } catch (err) {
+    if (respondIfDatastoreDown(res, err, 'Vendor sign-in')) return
     console.error('Vendor change password error:', err.message)
     res.status(500).json({ message: 'Could not update password' })
   }

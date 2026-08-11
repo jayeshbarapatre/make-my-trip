@@ -34,12 +34,18 @@ export const authenticateAdmin = async (req, res, next) => {
   }
 
   try {
-    const snap = await db.collection('users').where('id', '==', decoded.id).limit(1).get()
-    if (snap.empty) {
+    // Users collection is keyed by email address — a direct doc fetch is
+    // O(1) and requires no index, unlike a .where('id', ...) collection scan.
+    const email = decoded.email
+    if (!email) {
+      return res.status(403).json({ message: 'Forbidden: Token missing email claim' })
+    }
+    const docSnap = await db.collection('users').doc(email.toLowerCase().trim()).get()
+    if (!docSnap.exists) {
       return res.status(403).json({ message: 'Forbidden: Admin access required' })
     }
 
-    const user = snap.docs[0].data()
+    const user = docSnap.data()
 
     // Same revocation signal as the customer guard, on the document this
     // handler already fetched. An admin whose access is pulled loses it on the

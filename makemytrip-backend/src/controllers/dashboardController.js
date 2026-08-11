@@ -1,5 +1,6 @@
 import { db } from '../config/firebase.js'
 import { toDate } from '../utils/time.js'
+import { respondIfDatastoreDown } from '../utils/datastoreErrors.js'
 
 // Migrated from Prisma/MongoDB to Firestore.
 //
@@ -65,6 +66,7 @@ export const getDashboardStats = async (req, res) => {
       }
     })
   } catch (err) {
+    if (respondIfDatastoreDown(res, err, 'Dashboard')) return
     console.error('Dashboard stats error:', err.message)
     res.status(500).json({ message: 'Failed to load dashboard statistics' })
   }
@@ -114,6 +116,7 @@ export const getRevenueData = async (req, res) => {
       data: { labels, revenues: [...revenueMap.values()], total, count }
     })
   } catch (err) {
+    if (respondIfDatastoreDown(res, err, 'Dashboard')) return
     console.error('Revenue data error:', err.message)
     res.status(500).json({ message: 'Failed to fetch revenue data' })
   }
@@ -143,6 +146,7 @@ export const getRecentBookings = async (req, res) => {
 
     res.json({ data: { bookings } })
   } catch (err) {
+    if (respondIfDatastoreDown(res, err, 'Dashboard')) return
     console.error('Recent bookings error:', err.message)
     res.status(500).json({ message: 'Failed to load recent bookings' })
   }
@@ -165,6 +169,7 @@ export const getAvailabilityStats = async (req, res) => {
 
     res.json({ data: { flights: { available, total } } })
   } catch (err) {
+    if (respondIfDatastoreDown(res, err, 'Dashboard')) return
     console.error('Availability stats error:', err.message)
     res.status(500).json({ message: 'Failed to load availability' })
   }

@@ -3,6 +3,7 @@ import { now, toDate } from '../utils/time.js'
 import { Role, resolveRole } from '../config/roles.js'
 import { writeAuditLog, AuditAction } from '../services/auditLog.js'
 import { revokeAllSessions } from '../services/tokenService.js'
+import { respondIfDatastoreDown } from '../utils/datastoreErrors.js'
 
 // Migrated from Prisma/MongoDB to Firestore.
 //
@@ -71,6 +72,7 @@ export const getAllUsers = async (req, res) => {
       }
     })
   } catch (err) {
+    if (respondIfDatastoreDown(res, err, 'User list')) return
     console.error('Get all users error:', err.message)
     res.status(500).json({ message: 'Failed to load users' })
   }
@@ -117,6 +119,7 @@ export const deleteUser = async (req, res) => {
 
     res.json({ success: true, message: 'User deleted successfully' })
   } catch (err) {
+    if (respondIfDatastoreDown(res, err, 'User list')) return
     console.error('Delete user error:', err.message)
     res.status(500).json({ message: 'Failed to delete user' })
   }
@@ -152,6 +155,7 @@ export const getUserDetails = async (req, res) => {
       data: { ...publicUser(u, bookings.length), bookings }
     })
   } catch (err) {
+    if (respondIfDatastoreDown(res, err, 'User list')) return
     console.error('Get user details error:', err.message)
     res.status(500).json({ message: 'Failed to load user' })
   }

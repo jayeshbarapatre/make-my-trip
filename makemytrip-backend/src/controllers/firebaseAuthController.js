@@ -16,6 +16,7 @@ import {
   listSessions,
   currentTokenVersion
 } from '../services/tokenService.js'
+import { respondIfDatastoreDown } from '../utils/datastoreErrors.js'
 
 if (!process.env.JWT_SECRET) {
   throw new Error('FATAL: JWT_SECRET is not set. Add it to makemytrip-backend/.env before starting the server.')
@@ -151,6 +152,7 @@ export const firebaseRegister = async (req, res) => {
       }
     })
   } catch (err) {
+    if (respondIfDatastoreDown(res, err, 'Sign-in')) return
     // The internal message is logged, never returned: it carries Firestore
     // paths, field names and index hints that describe the datastore to an
     // attacker.
@@ -224,6 +226,7 @@ export const firebaseLogin = async (req, res) => {
       }
     })
   } catch (err) {
+    if (respondIfDatastoreDown(res, err, 'Sign-in')) return
     console.error('Firebase Login error:', err.message)
     console.error('Stack:', err.stack)
     res.status(500).json({ message: 'Login failed. Please try again.' })
@@ -259,6 +262,7 @@ export const firebaseGetProfile = async (req, res) => {
       }
     })
   } catch (err) {
+    if (respondIfDatastoreDown(res, err, 'Sign-in')) return
     console.error('Get profile error:', err)
     res.status(500).json({ message: 'Could not load your profile. Please try again.' })
   }
@@ -289,6 +293,7 @@ export const firebaseLogout = async (req, res) => {
     await revokeSession({ userRef, decoded: req.user })
     res.json({ success: true, message: 'Logged out successfully' })
   } catch (err) {
+    if (respondIfDatastoreDown(res, err, 'Sign-in')) return
     console.error('Logout error:', err.message)
     res.status(500).json({ message: 'Logout failed. Please try again.' })
   }
@@ -337,6 +342,7 @@ export const firebaseRefresh = async (req, res) => {
       }
     })
   } catch (err) {
+    if (respondIfDatastoreDown(res, err, 'Sign-in')) return
     console.error('Refresh error:', err.message)
     res.status(500).json({ success: false, message: 'Could not refresh your session.' })
   }
@@ -360,6 +366,7 @@ export const firebaseListSessions = async (req, res) => {
       }))
     })
   } catch (err) {
+    if (respondIfDatastoreDown(res, err, 'Sign-in')) return
     console.error('List sessions error:', err.message)
     res.status(500).json({ success: false, message: 'Could not load your sessions.' })
   }
@@ -408,6 +415,7 @@ export const firebaseForgotPassword = async (req, res) => {
     console.log(`📧 Password reset OTP delivered to ${address}`)
     res.json({ ...genericResponse, data: { expiresInMinutes: ttlMinutes, resendAfterSeconds } })
   } catch (err) {
+    if (respondIfDatastoreDown(res, err, 'Sign-in')) return
     if (err.code === 'EOTPCOOLDOWN' || err.code === 'EOTPTHROTTLE') {
       return res.status(429).json({ success: false, message: err.message, retryAfter: err.retryAfter })
     }
@@ -465,6 +473,7 @@ export const firebaseResetPassword = async (req, res) => {
     console.log(`✅ Password reset successful for ${address}`)
     res.json({ success: true, message: 'Password reset successfully. Please log in with your new password.' })
   } catch (err) {
+    if (respondIfDatastoreDown(res, err, 'Sign-in')) return
     console.error('Reset password error:', err.message)
     res.status(500).json({ message: 'Failed to reset password.' })
   }
@@ -493,6 +502,7 @@ export const firebaseSendMobileOtp = async (req, res) => {
   try {
     issued = await otpService.issueOtp({ identifier: e164, channel: 'sms', purpose: 'login' })
   } catch (err) {
+    if (respondIfDatastoreDown(res, err, 'Sign-in')) return
     if (err.code === 'EOTPCOOLDOWN' || err.code === 'EOTPTHROTTLE') {
       return res.status(429).json({
         success: false,
@@ -523,6 +533,7 @@ export const firebaseSendMobileOtp = async (req, res) => {
       }
     })
   } catch (err) {
+    if (respondIfDatastoreDown(res, err, 'Sign-in')) return
     // No live code may outlive a failed delivery.
     await otpService.clearOtp({ identifier: e164, channel: 'sms', purpose: 'login' })
 
@@ -558,6 +569,7 @@ export const firebaseSendEmailOtp = async (req, res) => {
   try {
     issued = await otpService.issueOtp({ identifier: address, channel: 'email', purpose: 'login' })
   } catch (err) {
+    if (respondIfDatastoreDown(res, err, 'Sign-in')) return
     if (err.code === 'EOTPCOOLDOWN' || err.code === 'EOTPTHROTTLE') {
       return res.status(429).json({
         success: false,
@@ -787,6 +799,7 @@ export const firebaseVerifyOtp = async (req, res) => {
       }
     })
   } catch (err) {
+    if (respondIfDatastoreDown(res, err, 'Sign-in')) return
     console.error('Verify OTP error:', err.message)
     res.status(500).json({ success: false, message: 'Verification failed. Please try again.' })
   }

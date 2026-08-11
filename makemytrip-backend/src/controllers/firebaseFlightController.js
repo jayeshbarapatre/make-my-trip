@@ -3,6 +3,7 @@ import { parseSearchDate, istDayRangeUtc } from '../utils/searchDate.js'
 import { validatePageNumber, validatePageSize } from '../utils/validation.js'
 import { cityMatches } from '../utils/cities.js'
 import { fetchRouteCandidates, applySearchPipeline } from '../services/inventorySearch.js'
+import { respondIfDatastoreDown } from '../utils/datastoreErrors.js'
 
 const SORTERS = {
   price: (a, b) => (a.price ?? 0) - (b.price ?? 0),
@@ -122,6 +123,7 @@ export const searchFlights = async (req, res) => {
 
     res.json({ data: paged, pagination })
   } catch (err) {
+    if (respondIfDatastoreDown(res, err, 'Flight search')) return
     console.error('Firebase Flight Search error:', err.message)
     res.status(500).json({ message: 'Failed to search flights', error: err.message })
   }
@@ -135,6 +137,7 @@ export const getFlightById = async (req, res) => {
     }
     res.json({ data: normalizeFlight(doc.id, doc.data()) })
   } catch (err) {
+    if (respondIfDatastoreDown(res, err, 'Flight search')) return
     console.error('Get flight error:', err.message)
     res.status(500).json({ message: err.message })
   }
@@ -148,6 +151,7 @@ export const getAllFlights = async (req, res) => {
       .sort((a, b) => (a.price || 0) - (b.price || 0))
     res.json({ data: flights })
   } catch (err) {
+    if (respondIfDatastoreDown(res, err, 'Flight search')) return
     res.status(500).json({ message: err.message })
   }
 }

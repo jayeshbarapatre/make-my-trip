@@ -5,6 +5,7 @@ import { Role, AccountStatus, resolveRole, resolveAccountStatus } from '../confi
 import { writeAuditLog, AuditAction } from '../services/auditLog.js'
 import { normalizeEmail, findUserByEmail } from '../utils/identity.js'
 import { revokeAllSessions } from '../services/tokenService.js'
+import { respondIfDatastoreDown } from '../utils/datastoreErrors.js'
 
 // Migrated from Prisma/MongoDB to Firestore. Vendors are `users` documents with
 // role=vendor and a vendorId; inventory is scoped by that vendorId, not by the
@@ -66,6 +67,7 @@ export const getAllVendors = async (_req, res) => {
 
     res.json({ data: { vendors } })
   } catch (err) {
+    if (respondIfDatastoreDown(res, err, 'Vendor list')) return
     console.error('Get vendors error:', err.message)
     res.status(500).json({ message: 'Failed to load vendors' })
   }
@@ -102,6 +104,7 @@ export const getVendorHotels = async (req, res) => {
 
     res.json({ data: { hotels } })
   } catch (err) {
+    if (respondIfDatastoreDown(res, err, 'Vendor list')) return
     console.error('Get vendor hotels error:', err.message)
     res.status(500).json({ message: 'Failed to load vendor hotels' })
   }
@@ -159,6 +162,7 @@ export const createVendor = async (req, res) => {
 
     res.status(201).json({ message: 'Vendor created successfully', data: { vendor: publicVendor(doc) } })
   } catch (err) {
+    if (respondIfDatastoreDown(res, err, 'Vendor list')) return
     console.error('Create vendor error:', err.message)
     res.status(500).json({ message: 'Failed to create vendor' })
   }
@@ -198,6 +202,7 @@ export const deleteVendor = async (req, res) => {
 
     res.json({ success: true, message: 'Vendor deleted successfully' })
   } catch (err) {
+    if (respondIfDatastoreDown(res, err, 'Vendor list')) return
     console.error('Delete vendor error:', err.message)
     res.status(500).json({ message: 'Failed to delete vendor' })
   }
@@ -238,6 +243,7 @@ export const toggleVendorStatus = async (req, res) => {
       data: { vendor: publicVendor(fresh.data()) }
     })
   } catch (err) {
+    if (respondIfDatastoreDown(res, err, 'Vendor list')) return
     console.error('Toggle vendor error:', err.message)
     res.status(500).json({ message: 'Failed to update vendor' })
   }

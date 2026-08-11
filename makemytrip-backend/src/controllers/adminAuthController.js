@@ -7,6 +7,7 @@ import { writeAuditLog, AuditAction } from '../services/auditLog.js'
 import { describePasswordWeakness, validateEmail } from '../utils/validation.js'
 import { normalizeEmail, findUserByEmail } from '../utils/identity.js'
 import { currentTokenVersion } from '../services/tokenService.js'
+import { respondIfDatastoreDown } from '../utils/datastoreErrors.js'
 
 // Migrated from Prisma/MongoDB to Firestore.
 //
@@ -139,6 +140,7 @@ export const adminRegister = async (req, res) => {
       data: { admin: publicAdmin(doc) }
     })
   } catch (err) {
+    if (respondIfDatastoreDown(res, err, 'Admin sign-in')) return
     console.error('Admin register error:', err.message)
     res.status(500).json({ message: 'Registration failed' })
   }
@@ -183,6 +185,7 @@ export const adminLogin = async (req, res) => {
       data: { admin: publicAdmin(user), token: signToken(user) }
     })
   } catch (err) {
+    if (respondIfDatastoreDown(res, err, 'Admin sign-in')) return
     console.error('Admin login error:', err.message)
     res.status(500).json({ message: 'Login failed' })
   }
@@ -196,6 +199,7 @@ export const getAdminProfile = async (req, res) => {
     }
     res.json({ data: { admin: publicAdmin(found.data) } })
   } catch (err) {
+    if (respondIfDatastoreDown(res, err, 'Admin sign-in')) return
     console.error('Admin profile error:', err.message)
     res.status(500).json({ message: 'Could not load profile' })
   }
@@ -245,6 +249,7 @@ export const changePassword = async (req, res) => {
 
     res.json({ message: 'Password updated successfully' })
   } catch (err) {
+    if (respondIfDatastoreDown(res, err, 'Admin sign-in')) return
     console.error('Admin change password error:', err.message)
     res.status(500).json({ message: 'Could not update password' })
   }
