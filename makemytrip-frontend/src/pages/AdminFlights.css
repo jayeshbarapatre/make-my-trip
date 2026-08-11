@@ -44,8 +44,6 @@
 .modal-content {
   background: var(--bg-surface);
   border-radius: 0.75rem;
-  background: var(--bg-surface);
-  border-radius: 0.75rem;
   max-width: 600px;
   width: 100%;
   max-height: 90vh;
@@ -55,16 +53,12 @@
   animation: slideUp 0.3s ease;
 }
 
-.modal-content h2 {
-  margin: 0 0 1rem 0;
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  padding: 1.5rem;
-  box-shadow: var(--shadow-lg);
-  animation: slideUp 0.3s ease;
-}
-
+/* The dialog's own padding, box-shadow and animation had been pasted onto this
+   heading as well, so "Add New Flight" rendered 74px tall for a 20px font —
+   24px of padding above and below the text, plus a shadow and a slide-in on a
+   heading that is not a container. A duplicate copy of this rule followed it
+   with the correct declarations, which is the usual fingerprint of a block
+   pasted twice and edited once. */
 .modal-content h2 {
   margin: 0 0 1rem 0;
   font-size: 1.25rem;
@@ -72,7 +66,6 @@
   color: var(--text-primary);
 }
 
-/* Search Bar */
 /* Search Bar */
 .search-bar {
   display: flex;
@@ -238,19 +231,14 @@
   color: var(--danger);
 }
 
-.badge-pending {
-  background: rgba(255, 193, 7, 0.1);
-  color: #ffc107;
-  background: rgba(220, 53, 69, 0.1);
-  color: var(--danger);
-}
-
+/* Was three declarations deep: amber, then red overriding it, then a second
+   copy of the rule restoring amber. Amber won by being last, so it looked
+   right — but any edit to the first rule would have been silently discarded. */
 .badge-pending {
   background: rgba(255, 193, 7, 0.1);
   color: #ffc107;
 }
 
-/* Action Buttons */
 /* Action Buttons */
 .actions {
   white-space: nowrap;
