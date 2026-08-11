@@ -41,12 +41,31 @@ export const searchHotels = async (req, res) => {
 
     // Name and location stay a substring match: those are free text where a
     // literal match is what the user means.
-    const cityFiltered = indexed
-      ? docs
-      : docs.filter((h) =>
-          cityMatches(h.city, city) ||
-          h.name?.toLowerCase().includes(String(city ?? '').toLowerCase()) ||
-          h.location?.toLowerCase().includes(String(city ?? '').toLowerCase()))
+    const matchesFreeText = (h, q) => {
+      const needle = String(q ?? '').toLowerCase().trim()
+      if (!needle) return true
+      return cityMatches(h.city, q) ||
+        h.name?.toLowerCase().includes(needle) ||
+        h.location?.toLowerCase().includes(needle)
+    }
+
+    let cityFiltered = indexed ? docs : docs.filter((h) => matchesFreeText(h, city))
+
+    // The field is labelled "City, area or property", and customers type hotel
+    // names into it. The indexed lookup only knows cities, so a property name
+    // resolved to no city and returned an empty *indexed* result — which
+    // skipped the free-text branch above entirely and reported "no hotels
+    // found" for a property that exists and is bookable.
+    //
+    // Only reached when the city lookup found nothing, so an ordinary city
+    // search still costs one indexed query.
+    if (city && cityFiltered.length === 0) {
+      const { docs: all, read: scanned } = await fetchRouteCandidates('hotels', {})
+      cityFiltered = all.filter((h) => matchesFreeText(h, city))
+      if (cityFiltered.length > 0) {
+        console.log(`🔍 "${city}" matched ${cityFiltered.length} by name/area after ${scanned} reads`)
+      }
+    }
 
     let nightsCount = 0
     if (checkIn && checkOut) {
