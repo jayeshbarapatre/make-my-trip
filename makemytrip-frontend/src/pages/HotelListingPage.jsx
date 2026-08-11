@@ -45,10 +45,14 @@ function SearchBar({ onSearch, city, checkIn, checkOut, guests }) {
   const [cityInput, setCityInput] = useState(city || '');
   const [showCitySuggestions, setShowCitySuggestions] = useState(false);
 
+  // Follow the URL, so the fields show the search actually being displayed —
+  // including after a back/forward navigation, when the component is not
+  // remounted and would otherwise keep the previous text.
   useEffect(() => {
     setInDate(checkIn || '');
     setOutDate(checkOut || '');
-  }, [checkIn, checkOut]);
+    setCityInput(city || '');
+  }, [checkIn, checkOut, city]);
   const [showInCal, setShowInCal] = useState(false);
   const [showOutCal, setShowOutCal] = useState(false);
 
@@ -90,6 +94,15 @@ function SearchBar({ onSearch, city, checkIn, checkOut, guests }) {
             setShowCitySuggestions(true);
           }}
           onFocus={() => setShowCitySuggestions(true)}
+          onKeyDown={(e) => {
+            // Enter is what people press after typing a hotel name. Without
+            // this the only way to submit was the button.
+            if (e.key === 'Enter') {
+              e.preventDefault()
+              setShowCitySuggestions(false)
+              if (onSearch) onSearch(cityInput, inDate, outDate)
+            }
+          }}
           placeholder={city || "Udaipur"}
           style={{
             border: 'none',
@@ -163,7 +176,14 @@ function SearchBar({ onSearch, city, checkIn, checkOut, guests }) {
         <div className="sb-lbl">GUESTS</div>
         <div className="sb-val">{getGuestDisplay()}</div>
       </div>
-      <button className="sb-search" onClick={() => onSearch && onSearch(city, inDate, outDate)}>SEARCH</button>
+      {/* `cityInput`, not `city`. This passed the prop — the value already in the
+          URL — so pressing Search re-submitted whatever was searched last and
+          discarded what had just been typed. The URL never changed, so nothing
+          refetched and the button appeared dead. Picking a suggestion worked,
+          because that path passes the selected value; typing anything not in
+          the ten hardcoded suggestions left Search as the only route, and it
+          was broken. */}
+      <button className="sb-search" onClick={() => onSearch && onSearch(cityInput, inDate, outDate)}>SEARCH</button>
     </div>
   );
 }
