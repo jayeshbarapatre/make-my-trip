@@ -1,5 +1,5 @@
 import { db } from '../config/firebase.js'
-import { now } from '../utils/time.js'
+import { now, toDate } from '../utils/time.js'
 
 // Shared Firestore helpers for the CMS-style content collections (pages, FAQs,
 // jobs, inquiries, media, notifications, settings).
@@ -11,8 +11,16 @@ import { now } from '../utils/time.js'
 
 export const shape = (doc) => ({ id: doc.id, ...doc.data() })
 
-// Re-exported so existing importers keep working; the implementation is shared.
-export { toDate } from '../utils/time.js'
+// Re-exported so existing importers keep working.
+//
+// This was `export { toDate } from '../utils/time.js'`, which re-exports the
+// binding without introducing it into this module's own scope — so every call
+// to `toDate` below threw `toDate is not defined`. It took out sorting for
+// every content collection: notifications, CMS pages, FAQs, job positions and
+// applications, contact inquiries and the media library all returned 500.
+// The admin shell polls the unread notification count on every page, so the
+// panel showed a permanent failure.
+export { toDate }
 
 const stamp = (actorId) => ({
   updatedAt: now(),

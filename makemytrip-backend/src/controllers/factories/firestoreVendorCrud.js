@@ -9,12 +9,19 @@ const createApprovalNotification = async (collection, label, id, vendorId) => {
   try {
     const notifications = contentStore('notifications')
     
-    // Fetch vendor details to make the message more informative
-    let vendorEmail = 'Vendor'
+    // Name the vendor, so an admin can see who is waiting without opening the
+    // listing.
+    //
+    // `req.vendorId` is the tenant id (`vendor_…`), which is a FIELD on the user
+    // document — not the document's id (`user_…`). Looking it up as a doc id
+    // always missed, so every notification read "from Vendor" and the admin
+    // learned nothing from it.
+    let vendorEmail = 'a vendor'
     if (vendorId) {
-      const vendorDoc = await db.collection('users').doc(vendorId).get()
-      if (vendorDoc.exists) {
-        vendorEmail = vendorDoc.data().email || vendorDoc.data().name || 'Vendor'
+      const match = await db.collection('users').where('vendorId', '==', vendorId).limit(1).get()
+      if (!match.empty) {
+        const v = match.docs[0].data()
+        vendorEmail = v.vendorName || v.name || v.email || 'a vendor'
       }
     }
 
