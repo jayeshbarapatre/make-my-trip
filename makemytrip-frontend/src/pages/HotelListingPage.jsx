@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import Modal from '../components/Common/Modal'
 import { RESULTS_PER_REQUEST } from '../config/search.config'
 import { useWishlist } from '../hooks/useWishlist'
 import { useSearchParams, useNavigate } from 'react-router-dom'
@@ -7,7 +8,6 @@ import { useAuth } from '../context/AuthContext'
 import CustomCalendarPicker from '../components/CustomCalendarPicker'
 import { searchHotels } from '../services/hotelService'
 import '../styles/UdaipurListing.css'
-import '../styles/CustomAlert.css'
 import OtpLoginModal from '../components/Auth/OtpLoginModal'
 import { photo } from '../utils/images'
 
@@ -1243,32 +1243,20 @@ export default function HotelListingPage() {
         onSuccess={handleOtpLoginSuccess}
       />
 
-      {showCustomAlert && (
-        <div className="custom-modal-overlay" style={{ zIndex: 10000 }}>
-          <div className="custom-alert-card">
-            <div className="custom-alert-icon">⚠️</div>
-            <h3 className="custom-alert-title">Authentication Required</h3>
-            <p className="custom-alert-msg">{alertMsg}</p>
-            <div className="custom-alert-actions">
-              <button 
-                className="custom-alert-btn-cancel" 
-                onClick={() => setShowCustomAlert(false)}
-              >
-                CANCEL
-              </button>
-              <button 
-                className="custom-alert-btn-confirm" 
-                onClick={() => {
-                  setShowCustomAlert(false)
-                  setShowLoginModal(true)
-                }}
-              >
-                LOGIN NOW
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Modal
+        open={showCustomAlert}
+        icon="🔒"
+        tone="info"
+        title="Sign in to continue"
+        message={alertMsg}
+        cancelLabel="Not now"
+        confirmLabel="Log in"
+        onClose={() => setShowCustomAlert(false)}
+        onConfirm={() => {
+          setShowCustomAlert(false)
+          setShowLoginModal(true)
+        }}
+      />
     </div>
   );
 }
