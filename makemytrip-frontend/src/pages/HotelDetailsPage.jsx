@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { requestQuote } from '../services/checkout'
 import { useParams, useLocation, useNavigate } from 'react-router-dom'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Navigation, Thumbs, FreeMode, Autoplay } from 'swiper/modules'
@@ -165,14 +166,40 @@ export default function HotelDetailsPage() {
   const nights = calculateNights()
   const savedToWishlist = Boolean(hotel?.id) && isWishlisted(hotel.id)
   const totalHotelRooms = hotel?.rooms || 10;
-  const takeoverMultiplier = totalHotelRooms * 0.9;
-  const rooms = bookEntireHotel ? totalHotelRooms : (guestsObj.rooms || 1)
-  const basePriceForStay = hotel 
-    ? (bookEntireHotel ? Math.round(hotel.price * takeoverMultiplier * nights) : hotel.price * nights * (guestsObj.rooms || 1))
-    : 0
-  // Taxes = 18% of base price (GST standard rate)
-  const taxesForStay = Math.round(basePriceForStay * 0.18)
-  const totalForStay = basePriceForStay + taxesForStay
+
+  // The server refuses more than 10 rooms on one booking (MAX_UNITS in
+  // pricingService), so a takeover can only ever be that many. The page used to
+  // advertise "All 50 Rooms", price 45 room-nights, and then quietly hand the
+  // booking 10 — three different numbers for one stay.
+  const MAX_ROOMS_PER_BOOKING = 10
+  const takeoverRooms = Math.min(totalHotelRooms, MAX_ROOMS_PER_BOOKING)
+  const rooms = bookEntireHotel ? takeoverRooms : (guestsObj.rooms || 1)
+
+  // Priced by the server, like every other checkout screen. This page computed
+  // its own total from a 90%-of-rooms multiplier and 18% GST — neither exists in
+  // pricingService, whose hotel rate is 12% — so the detail page said ₹1,062 and
+  // the review page charged ₹224 for the same stay.
+  const [quote, setQuote] = useState(null)
+  const [quoteError, setQuoteError] = useState('')
+
+  useEffect(() => {
+    if (!hotel?.id || !nights) return
+
+    let active = true
+    requestQuote({ type: 'hotel', itemId: hotel.id, quantity: rooms, nights })
+      .then((q) => { if (active) { setQuote(q); setQuoteError('') } })
+      .catch((err) => { if (active) { setQuote(null); setQuoteError(err.message) } })
+
+    return () => { active = false }
+  }, [hotel?.id, rooms, nights])
+
+  const basePriceForStay = quote?.baseFare ?? null
+  const taxesForStay = (quote?.taxes ?? 0) + (quote?.convenience ?? 0)
+  const totalForStay = quote?.totalAmount ?? null
+  const quoteReady = Boolean(quote)
+
+  /** Amount, or a dash while the server's quote is still in flight. */
+  const money = (n) => (typeof n === 'number' ? n.toLocaleString('en-IN') : '—')
 
   // Auth Modal State for realistic booking simulation
   const [showLoginModal, setShowLoginModal] = useState(false)
@@ -227,7 +254,8 @@ export default function HotelDetailsPage() {
         checkIn,
         checkOut,
         guests: isEntire ? 'Entire Property Takeover' : guestsDisplay,
-        guestsObj: isEntire ? { adults: 20, rooms: 10 } : guestsObj,
+        // The count the quote was priced for — not a separate hardcoded 10.
+        guestsObj: isEntire ? { adults: guestsObj.adults || 2, rooms: takeoverRooms } : guestsObj,
         bookEntireHotel: isEntire
       }
     });
@@ -404,7 +432,7 @@ export default function HotelDetailsPage() {
                 </div>
                 <div className="hd-room-info">
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', flexWrap: 'wrap' }}>
-                    <h4 style={{ margin: 0, color: 'hsl(var(--a))' }}>👑 Entire Property Takeover (All {hotel?.rooms || 10} Rooms)</h4>
+                    <h4 style={{ margin: 0, color: 'hsl(var(--a))' }}>👑 Entire Property Takeover ({takeoverRooms} Rooms)</h4>
                     <span style={{ background: 'hsl(var(--a) / 0.15)', color: 'hsl(var(--a))', fontSize: '10px', fontWeight: 800, padding: '2px 8px', borderRadius: '4px', textTransform: 'uppercase' }}>Exclusive Takeover</span>
                   </div>
                   <div className="hd-room-tags">
@@ -422,6 +450,7 @@ export default function HotelDetailsPage() {
                   <button 
                     className="btn-primary hd-btn-compact" 
                     style={{ background: 'linear-gradient(135deg, hsl(var(--a)) 0%, hsl(var(--wa)) 100%)', color: 'white', border: 'none', boxShadow: '0 4px 12px rgba(251, 191, 36, 0.3)' }}
+                    disabled={!quoteReady}
                     onClick={() => {
                       setBookEntireHotel(true);
                       handleReserve("Entire Property Takeover (All Rooms)");
@@ -618,7 +647,7 @@ export default function HotelDetailsPage() {
                 <input 
                   type="text" 
                   className="hd-input-field" 
-                  value={bookEntireHotel ? `Entire Hotel (${hotel?.rooms || 10} Rooms, All Guests)` : guests} 
+                  value={bookEntireHotel ? `Entire Hotel (${takeoverRooms} Rooms)` : guests} 
                   onChange={(e) => setGuests(e.target.value)} 
                   disabled={bookEntireHotel}
                   style={{ cursor: bookEntireHotel ? 'not-allowed' : 'text' }}
@@ -631,32 +660,41 @@ export default function HotelDetailsPage() {
                 {bookEntireHotel ? (
                   <>
                     <span>🏢 Resort Takeover Rate × {nights} Night{nights !== 1 ? 's' : ''}</span>
-                    <span>₹ {basePriceForStay.toLocaleString("en-IN")}</span>
+                    <span>₹ {money(basePriceForStay)}</span>
                   </>
                 ) : (
                   <>
                     <span>₹ {hotel.price.toLocaleString("en-IN")} × {nights} night{nights !== 1 ? 's' : ''} × {rooms} room{rooms !== 1 ? 's' : ''}</span>
-                    <span>₹ {basePriceForStay.toLocaleString("en-IN")}</span>
+                    <span>₹ {money(basePriceForStay)}</span>
                   </>
                 )}
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: 'hsl(var(--bc) / 0.65)', marginBottom: '16px' }}>
                 <span>Taxes &amp; Service fees</span>
-                <span>₹ {taxesForStay.toLocaleString("en-IN")}</span>
+                <span>₹ {money(taxesForStay)}</span>
               </div>
               <div style={{ borderTop: '1px solid hsl(var(--b3))', paddingTop: '16px', display: 'flex', justifyContent: 'space-between', fontSize: '20px', fontWeight: 900, color: 'hsl(var(--bc))' }}>
                 <span>Total Billed</span>
-                <span>₹ {totalForStay.toLocaleString("en-IN")}</span>
+                <span>₹ {money(totalForStay)}</span>
               </div>
             </div>
 
+            {/* Gated on the quote. Reserving before the server has priced the
+                stay is what let this page hand the next one a total it had
+                invented. */}
             <button 
               className="hd-btn-primary btn-primary" 
-              style={{ padding: '16px', fontSize: '18px', width: '100%', borderRadius: '16px' }}
+              style={{ padding: '16px', fontSize: '18px', width: '100%', borderRadius: '16px', ...(quoteReady ? {} : { opacity: 0.6, cursor: 'not-allowed' }) }}
+              disabled={!quoteReady}
               onClick={() => handleReserve(bookEntireHotel ? 'Entire Property Takeover (All Rooms)' : hotel.roomType)}
             >
-              ⚡ Instant Reserve Now
+              {quoteReady ? '⚡ Instant Reserve Now' : (quoteError ? 'Price unavailable' : 'Getting price…')}
             </button>
+            {quoteError && (
+              <p style={{ margin: '10px 0 0', fontSize: '13px', color: 'hsl(var(--er))', textAlign: 'center' }}>
+                {quoteError}
+              </p>
+            )}
 
               <div className="hd-bc-footer">
                 <div className="hd-trust-badge">
