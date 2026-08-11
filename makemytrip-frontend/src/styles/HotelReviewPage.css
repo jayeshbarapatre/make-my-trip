@@ -497,3 +497,70 @@
 }
 
 
+
+/* ── Guest details form ──────────────────────────────────────────────────
+   Hotels previously took a booking without asking who was staying, so the
+   property had no name to check anyone in against. Styled from the design
+   tokens so it follows light and dark, rather than hardcoded colours. */
+
+.rev-guest-grid {
+  display: grid;
+  grid-template-columns: 2fr 0.8fr 1fr;
+  gap: 10px;
+}
+
+.rev-contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.rev-input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  border: 1px solid hsl(var(--bc) / 0.18);
+  background: hsl(var(--b1));
+  color: hsl(var(--bc));
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.rev-input:focus {
+  outline: none;
+  border-color: hsl(var(--p));
+  box-shadow: 0 0 0 3px hsl(var(--p) / 0.15);
+}
+
+.rev-input-err {
+  border-color: hsl(var(--er));
+}
+
+.rev-err {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: hsl(var(--er));
+}
+
+.rev-add-guest {
+  border: 1.5px dashed hsl(var(--p) / 0.5);
+  background: transparent;
+  color: hsl(var(--p));
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 120ms ease;
+}
+
+.rev-add-guest:hover:not(:disabled) { background: hsl(var(--p) / 0.08); }
+.rev-add-guest:disabled { opacity: 0.5; cursor: not-allowed; }
+
+@media (max-width: 640px) {
+  .rev-guest-grid,
+  .rev-contact-grid { grid-template-columns: 1fr; }
+}

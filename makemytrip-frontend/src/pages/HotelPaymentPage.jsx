@@ -49,6 +49,11 @@ export default function HotelPaymentPage() {
   const nights = location.state?.nights || 1;
   const rooms = location.state?.rooms || guestsObj.rooms || 1;
   const bookEntireHotel = location.state?.bookEntireHotel || false;
+  // Collected on the review step. Carried onto the booking so the property has
+  // names to check people in against, and so the confirmation reaches the
+  // address the customer actually gave.
+  const guestDetails = location.state?.guestDetails ?? [];
+  const contact = location.state?.contact ?? {};
 
   const [secureAdded, setSecureAdded] = useState(false);
   const [_selectedMethod, _setSelectedMethod] = useState('UPI');
@@ -126,8 +131,10 @@ export default function HotelPaymentPage() {
           nights,
           rooms,
           bookEntireHotel,
-          travellers: { guests, rooms, adults: guestsObj.adults, roomName, bookEntireHotel, nights },
-          userEmail: user?.email,
+          travellers: { guests: guestDetails, rooms, adults: guestsObj.adults, roomName, bookEntireHotel, nights, contact },
+          guestDetails,
+          contactPhone: contact.phone ?? null,
+          userEmail: contact.email || user?.email,
           userName: user?.name
         }
       });
@@ -190,8 +197,11 @@ export default function HotelPaymentPage() {
                     number, so every signed-out visitor was shown a stranger's
                     details as their own booking contact. */}
                 <span>
-                  {user?.name || 'Guest'}
-                  {user?.email ? ` (${user.email}${user.phone ? `, ${user.phone}` : ''})` : ''}
+                  {guestDetails[0]?.name || user?.name || 'Guest'}
+                  {(contact.email || user?.email)
+                    ? ` (${contact.email || user.email}${contact.phone ? `, ${contact.phone}` : ''})`
+                    : ''}
+                  {guestDetails.length > 1 && ` + ${guestDetails.length - 1} more`}
                 </span>
               </div>
             </div>

@@ -81,6 +81,93 @@ function HotelReviewPage() {
   const money = (n) => (typeof n === 'number' ? n.toLocaleString('en-IN') : '—');
 
   // Coupon state
+  // ── Guest details ───────────────────────────────────────────────────────
+  //
+  // Hotels were the only vertical that took a booking without asking who was
+  // staying: flights collect travellers and buses collect passengers, but a
+  // hotel booking went through with nothing but a room count. The property had
+  // no name to check anyone in against.
+  //
+  // The lead guest is pre-filled from the signed-in account, because that is
+  // whose card is paying and re-typing it is friction for no gain.
+  const MAX_GUESTS = 20
+
+  const [guestList, setGuestList] = useState(() => [
+    { name: user?.name ?? '', age: '', gender: '' }
+  ])
+  const [contact, setContact] = useState({
+    email: user?.email ?? '',
+    phone: user?.phone ?? ''
+  })
+  const [guestErrors, setGuestErrors] = useState({})
+
+  // Fill the lead guest once the session restores, without clobbering anything
+  // already typed.
+  useEffect(() => {
+    if (!user) return
+    setGuestList((prev) => {
+      if (prev[0]?.name) return prev
+      const next = [...prev]
+      next[0] = { ...next[0], name: user.name ?? '' }
+      return next
+    })
+    setContact((c) => ({
+      email: c.email || user.email || '',
+      phone: c.phone || user.phone || ''
+    }))
+  }, [user])
+
+  const addGuest = () => {
+    setGuestList((prev) => (prev.length >= MAX_GUESTS ? prev : [...prev, { name: '', age: '', gender: '' }]))
+  }
+
+  const removeGuest = (index) => {
+    // The lead guest cannot be removed — somebody has to hold the booking.
+    if (index === 0) return
+    setGuestList((prev) => prev.filter((_, i) => i !== index))
+    setGuestErrors({})
+  }
+
+  const updateGuest = (index, field, value) => {
+    setGuestList((prev) => prev.map((g, i) => (i === index ? { ...g, [field]: value } : g)))
+    setGuestErrors((e) => {
+      const next = { ...e }
+      delete next[`g_${index}_${field}`]
+      return next
+    })
+  }
+
+  const validateGuests = () => {
+    const errs = {}
+
+    if (!contact.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email)) {
+      errs.email = 'Enter a valid email address — the confirmation is sent here.'
+    }
+    if (!contact.phone || contact.phone.replace(/\D/g, '').length < 10) {
+      errs.phone = 'Enter a valid 10-digit mobile number.'
+    }
+
+    guestList.forEach((g, i) => {
+      if (!g.name.trim()) {
+        errs[`g_${i}_name`] = 'Name is required.'
+      } else if (g.name.trim().length < 2) {
+        errs[`g_${i}_name`] = 'Enter the full name.'
+      }
+
+      const age = Number(g.age)
+      if (!g.age) errs[`g_${i}_age`] = 'Age is required.'
+      else if (!Number.isFinite(age) || age < 0 || age > 120) errs[`g_${i}_age`] = 'Enter a valid age.'
+    })
+
+    // A hotel needs someone who can legally hold the room.
+    if (guestList.length && !guestList.some((g) => Number(g.age) >= 18)) {
+      errs.adult = 'At least one guest must be 18 or older.'
+    }
+
+    setGuestErrors(errs)
+    return Object.keys(errs).length === 0
+  }
+
   const [couponCode, setCouponCode] = useState('');
   const [appliedDiscount, setAppliedDiscount] = useState(0);
 
@@ -116,7 +203,12 @@ function HotelReviewPage() {
         nights,
         rooms,
         totalAmount: finalBilled,
-        bookEntireHotel
+        bookEntireHotel,
+        // Who is actually staying. Without this the booking recorded a room
+        // count and nothing else, so the property had no name to check anyone
+        // in against.
+        guestDetails: guestList,
+        contact
       }
     });
   };
@@ -126,6 +218,16 @@ function HotelReviewPage() {
       setShowLoginModal(true);
       return;
     }
+
+    // Validate before leaving this page. Catching a missing guest name on the
+    // payment screen — or worse, after the gateway has taken the money — is far
+    // more expensive than catching it here.
+    if (!validateGuests()) {
+      const firstError = document.querySelector('[data-guest-error="true"]');
+      firstError?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
     finalizeBooking();
   };
 
@@ -223,6 +325,109 @@ function HotelReviewPage() {
               <div className="rev-non-ref">Non-Refundable</div>
               <div className="rev-non-ref-sub">Refund is not applicable for this booking</div>
               <span className="rev-link" onClick={() => showNotify('Cancellation Policy', 'Refundable up to 24 hours before check-in. 100% penalty applies if cancelled within 24 hours of arrival.', 'success')}>Cancellation policy details</span>
+            </div>
+
+            {/* Guest Details */}
+            <div className="rev-card" data-guest-error={Object.keys(guestErrors).length > 0 ? 'true' : undefined}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+                <h3 className="rev-info-title" style={{ margin: 0 }}>Guest Details</h3>
+                <span style={{ fontSize: '13px', color: 'hsl(var(--bc) / 0.55)' }}>
+                  {guestList.length} guest{guestList.length !== 1 ? 's' : ''}
+                </span>
+              </div>
+              <p style={{ margin: '6px 0 18px', fontSize: '13px', color: 'hsl(var(--bc) / 0.6)' }}>
+                Names must match the ID each guest presents at check-in.
+              </p>
+
+              {guestList.map((g, i) => (
+                <div key={i} style={{ padding: '14px', marginBottom: '12px', borderRadius: '10px', border: '1px solid hsl(var(--bc) / 0.12)', background: 'hsl(var(--b2) / 0.4)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                    <strong style={{ fontSize: '13px' }}>{i === 0 ? 'Lead guest' : 'Guest ' + (i + 1)}</strong>
+                    {i > 0 && (
+                      <button type="button" onClick={() => removeGuest(i)} style={{ border: 0, background: 'transparent', cursor: 'pointer', color: 'hsl(var(--er))', fontSize: '13px', fontWeight: 700 }}>
+                        Remove
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="rev-guest-grid">
+                    <div>
+                      <input
+                        type="text"
+                        placeholder="Full name"
+                        value={g.name}
+                        onChange={(e) => updateGuest(i, 'name', e.target.value)}
+                        className={guestErrors['g_' + i + '_name'] ? 'rev-input rev-input-err' : 'rev-input'}
+                      />
+                      {guestErrors['g_' + i + '_name'] && <small className="rev-err">{guestErrors['g_' + i + '_name']}</small>}
+                    </div>
+
+                    <div>
+                      <input
+                        type="number"
+                        min="0"
+                        max="120"
+                        placeholder="Age"
+                        value={g.age}
+                        onChange={(e) => updateGuest(i, 'age', e.target.value)}
+                        className={guestErrors['g_' + i + '_age'] ? 'rev-input rev-input-err' : 'rev-input'}
+                      />
+                      {guestErrors['g_' + i + '_age'] && <small className="rev-err">{guestErrors['g_' + i + '_age']}</small>}
+                    </div>
+
+                    <select
+                      value={g.gender}
+                      onChange={(e) => updateGuest(i, 'gender', e.target.value)}
+                      className="rev-input"
+                    >
+                      <option value="">Gender</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                </div>
+              ))}
+
+              {guestErrors.adult && <p className="rev-err" style={{ marginBottom: '12px' }}>{guestErrors.adult}</p>}
+
+              <button
+                type="button"
+                onClick={addGuest}
+                disabled={guestList.length >= MAX_GUESTS}
+                className="rev-add-guest"
+              >
+                + Add another guest
+              </button>
+
+              <div style={{ marginTop: '20px', paddingTop: '18px', borderTop: '1px solid hsl(var(--bc) / 0.10)' }}>
+                <strong style={{ fontSize: '13px', display: 'block', marginBottom: '10px' }}>Contact details</strong>
+                <p style={{ margin: '0 0 10px', fontSize: '12.5px', color: 'hsl(var(--bc) / 0.6)' }}>
+                  The confirmation and PDF ticket are sent here.
+                </p>
+                <div className="rev-contact-grid">
+                  <div>
+                    <input
+                      type="email"
+                      placeholder="Email"
+                      value={contact.email}
+                      onChange={(e) => { setContact((c) => ({ ...c, email: e.target.value })); setGuestErrors((x) => { const n = { ...x }; delete n.email; return n; }); }}
+                      className={guestErrors.email ? 'rev-input rev-input-err' : 'rev-input'}
+                    />
+                    {guestErrors.email && <small className="rev-err">{guestErrors.email}</small>}
+                  </div>
+                  <div>
+                    <input
+                      type="tel"
+                      placeholder="Mobile number"
+                      value={contact.phone}
+                      onChange={(e) => { setContact((c) => ({ ...c, phone: e.target.value })); setGuestErrors((x) => { const n = { ...x }; delete n.phone; return n; }); }}
+                      className={guestErrors.phone ? 'rev-input rev-input-err' : 'rev-input'}
+                    />
+                    {guestErrors.phone && <small className="rev-err">{guestErrors.phone}</small>}
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Important Information Card */}

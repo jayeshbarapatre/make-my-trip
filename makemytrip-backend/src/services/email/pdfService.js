@@ -170,6 +170,28 @@ export const generateTicketPDF = async (booking) => {
           doc.text(value, 200, doc.y - 15, { width: 300 })
           doc.moveDown(0.8)
         })
+
+        // Who is checking in. A hotel ticket that names nobody is not much use
+        // at a reception desk, and until now the booking carried no names to
+        // print — only a room count.
+        const guests = booking.guestDetails ?? booking.travellers?.guests ?? []
+        if (Array.isArray(guests) && guests.length) {
+          doc.moveDown(0.5)
+          doc.fontSize(12).fillColor(BRAND_COLOR).text('Guests')
+          doc.moveDown(0.4)
+
+          guests.forEach((g, i) => {
+            const parts = [g.age ? `${g.age} yrs` : null, g.gender || null].filter(Boolean)
+            doc.fontSize(10).fillColor('black')
+            doc.text(
+              `${i + 1}. ${g.name || 'Guest'}${parts.length ? `  (${parts.join(', ')})` : ''}`,
+              50,
+              undefined,
+              { width: 450 }
+            )
+            doc.moveDown(0.5)
+          })
+        }
       } else if (booking.type === 'train') {
         doc.fontSize(14).fillColor(BRAND_COLOR).text('Train Details')
         doc.moveDown(0.5)
