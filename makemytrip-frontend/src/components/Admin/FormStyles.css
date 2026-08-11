@@ -93,6 +93,25 @@
   font-size: 14px;
   font-family: inherit;
   transition: all 0.2s ease;
+  /* Neither background nor colour was declared here, so these inherited a
+     near-white text colour from the dark theme while falling back to the
+     browser's white default for their own fill. */
+  background: hsl(var(--b1));
+  color: hsl(var(--bc));
+}
+
+/* The option list is a separate surface — it does not inherit the select's
+   background. Left undeclared it renders on white, so on a dark theme the
+   inherited near-white label sat on near-white and the choices were only
+   readable when highlighted. */
+.form-group select option {
+  background: hsl(var(--b1));
+  color: hsl(var(--bc));
+}
+
+/* Same for the datalist suggestions behind CityInput. */
+.form-group input::-webkit-calendar-picker-indicator {
+  cursor: pointer;
 }
 
 .form-group input:focus,

@@ -1,8 +1,8 @@
 import {useState, useMemo} from 'react'
 import { durationFromTimes } from '../../utils/duration'
+import CityInput from './CityInput'
 import './FormStyles.css'
 
-const cities = ['Delhi', 'Mumbai', 'Bangalore', 'Hyderabad', 'Chennai', 'Kolkata', 'Pune', 'Jaipur', 'Lucknow', 'Ahmedabad']
 const amenitiesList = ['WiFi', 'Charging Point', 'Blanket', 'Water Bottle', 'Movie']
 
 const BusForm = ({ bus, onSubmit, onClose }) => {
@@ -120,30 +120,20 @@ const BusForm = ({ bus, onSubmit, onClose }) => {
           <div className="form-row">
             <div className="form-group">
               <label>Departure City *</label>
-              <select
+              <CityInput
                 value={formData.departure.city}
-                onChange={(e) => handleNestedChange('departure', 'city', e.target.value)}
+                onChange={(v) => handleNestedChange('departure', 'city', v)}
                 required
-              >
-                <option value="">Select City</option>
-                {cities.map(city => (
-                  <option key={city} value={city}>{city}</option>
-                ))}
-              </select>
+              />
             </div>
 
             <div className="form-group">
               <label>Arrival City *</label>
-              <select
+              <CityInput
                 value={formData.arrival.city}
-                onChange={(e) => handleNestedChange('arrival', 'city', e.target.value)}
+                onChange={(v) => handleNestedChange('arrival', 'city', v)}
                 required
-              >
-                <option value="">Select City</option>
-                {cities.map(city => (
-                  <option key={city} value={city}>{city}</option>
-                ))}
-              </select>
+              />
             </div>
           </div>
         </div>
