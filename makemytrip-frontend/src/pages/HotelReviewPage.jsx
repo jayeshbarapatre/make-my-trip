@@ -90,7 +90,21 @@ function HotelReviewPage() {
   //
   // The lead guest is pre-filled from the signed-in account, because that is
   // whose card is paying and re-typing it is friction for no gain.
-  const MAX_GUESTS = 20
+  // Occupancy, per room: two adults and one child under 12.
+  //
+  // "Adult" here means occupancy, not legal capacity — a 12-year-old takes a
+  // full bed. The separate 18+ rule below is about who can hold the booking,
+  // and the two are deliberately different thresholds.
+  const CHILD_MAX_AGE = 12
+  const ADULTS_PER_ROOM = 2
+  const CHILDREN_PER_ROOM = 1
+
+  const maxAdults = rooms * ADULTS_PER_ROOM
+  const maxChildren = rooms * CHILDREN_PER_ROOM
+  const MAX_GUESTS = maxAdults + maxChildren
+
+  const isChild = (g) => g.age !== '' && Number(g.age) < CHILD_MAX_AGE
+  const isAdult = (g) => g.age !== '' && Number(g.age) >= CHILD_MAX_AGE
 
   const [guestList, setGuestList] = useState(() => [
     { name: user?.name ?? '', age: '', gender: '' }
@@ -159,9 +173,23 @@ function HotelReviewPage() {
       else if (!Number.isFinite(age) || age < 0 || age > 120) errs[`g_${i}_age`] = 'Enter a valid age.'
     })
 
-    // A hotel needs someone who can legally hold the room.
+    // A hotel needs someone who can legally hold the room. Deliberately 18,
+    // not the 12 used for occupancy above — a 12-year-old occupies a bed but
+    // cannot check in alone.
     if (guestList.length && !guestList.some((g) => Number(g.age) >= 18)) {
-      errs.adult = 'At least one guest must be 18 or older.'
+      errs.adult = 'At least one guest must be 18 or older to hold the booking.'
+    }
+
+    // Occupancy. Checked here rather than only when adding a guest, because
+    // ages are edited after the fact — turning an adult into a child, or the
+    // reverse, can breach the limit without anyone pressing "Add".
+    const adults = guestList.filter(isAdult).length
+    const children = guestList.filter(isChild).length
+
+    if (adults > maxAdults) {
+      errs.occupancy = `${rooms} room${rooms !== 1 ? 's' : ''} allows up to ${maxAdults} guest${maxAdults !== 1 ? 's' : ''} aged ${CHILD_MAX_AGE}+. You have ${adults}. Add a room or remove a guest.`
+    } else if (children > maxChildren) {
+      errs.occupancy = `${rooms} room${rooms !== 1 ? 's' : ''} allows up to ${maxChildren} child${maxChildren !== 1 ? 'ren' : ''} under ${CHILD_MAX_AGE}. You have ${children}.`
     }
 
     setGuestErrors(errs)
@@ -335,8 +363,19 @@ function HotelReviewPage() {
                   {guestList.length} guest{guestList.length !== 1 ? 's' : ''}
                 </span>
               </div>
-              <p style={{ margin: '6px 0 18px', fontSize: '13px', color: 'hsl(var(--bc) / 0.6)' }}>
+              <p style={{ margin: '6px 0 6px', fontSize: '13px', color: 'hsl(var(--bc) / 0.6)' }}>
                 Names must match the ID each guest presents at check-in.
+              </p>
+              {/* State the allowance up front. Discovering it as a validation
+                  error after filling in four people is the worst way to learn
+                  a room only sleeps two. */}
+              <p style={{ margin: '0 0 18px', fontSize: '13px', color: 'hsl(var(--bc) / 0.6)' }}>
+                {rooms} room{rooms !== 1 ? 's' : ''} — up to <strong>{maxAdults}</strong> guest{maxAdults !== 1 ? 's' : ''} aged {CHILD_MAX_AGE}+
+                {' '}and <strong>{maxChildren}</strong> child{maxChildren !== 1 ? 'ren' : ''} under {CHILD_MAX_AGE}.
+                {' '}
+                <span style={{ color: 'hsl(var(--bc) / 0.85)' }}>
+                  Added: {guestList.filter(isAdult).length}/{maxAdults} and {guestList.filter(isChild).length}/{maxChildren}.
+                </span>
               </p>
 
               {guestList.map((g, i) => (
@@ -390,6 +429,7 @@ function HotelReviewPage() {
               ))}
 
               {guestErrors.adult && <p className="rev-err" style={{ marginBottom: '12px' }}>{guestErrors.adult}</p>}
+              {guestErrors.occupancy && <p className="rev-err" style={{ marginBottom: '12px' }}>{guestErrors.occupancy}</p>}
 
               <button
                 type="button"
@@ -397,7 +437,9 @@ function HotelReviewPage() {
                 disabled={guestList.length >= MAX_GUESTS}
                 className="rev-add-guest"
               >
-                + Add another guest
+                {guestList.length >= MAX_GUESTS
+                  ? `${rooms} room${rooms !== 1 ? 's' : ''} is full — add a room to bring more guests`
+                  : '+ Add another guest'}
               </button>
 
               <div style={{ marginTop: '20px', paddingTop: '18px', borderTop: '1px solid hsl(var(--bc) / 0.10)' }}>
