@@ -46,6 +46,10 @@ const USER_ID = `${TAG}_user_${Date.now()}`
 const USER_EMAIL = `${TAG}_${Date.now()}@integration.test`
 const created = { payments: [], bookings: [], users: [] }
 
+// A fixed future date rather than a literal, so this script does not start
+// failing on whatever day the hardcoded one falls into the past.
+const TRAVEL_DATE = new Date(Date.now() + 14 * 864e5).toISOString().slice(0, 10)
+
 let pass = 0
 let fail = 0
 const failures = []
@@ -140,6 +144,13 @@ const runCase = async (spec) => {
   const availField = spec.type === 'hotel' ? 'roomsAvailable' : 'seatsAvailable'
   const before = detail.data()?.[availField]
 
+  // Bus, train and cab sell a seat on a specific day, so the payload has to name
+  // one. This used to be omitted entirely: bus and train still passed, because
+  // their seeded documents carry no `datedAvailability` flag and fall back to
+  // the legacy counter — so the dated path went unexercised — while cab, which
+  // is ALWAYS_DATED, failed outright with DATE_REQUIRED. Sending the date for
+  // all three fixes the cab run and makes the other two exercise dated
+  // inventory as soon as they are migrated.
   const payload = {
     type: spec.type,
     [spec.itemKey]: item.id,
@@ -147,6 +158,9 @@ const runCase = async (spec) => {
     userName: 'E2E Traveller',
     passengers: [{ firstName: 'Test', lastName: 'Traveller', type: 'adult', age: 30 }],
     ...(spec.type === 'hotel' ? { rooms: 1, nights: 2, checkIn: '2026-09-01', checkOut: '2026-09-03' } : {}),
+    ...(spec.type === 'bus' || spec.type === 'train' || spec.type === 'cab'
+      ? { travelDate: TRAVEL_DATE }
+      : {}),
     fromCity: spec.query.from ?? spec.query.city,
     toCity: spec.query.to ?? spec.query.city
   }
@@ -231,7 +245,14 @@ const cleanup = async () => {
     if (snap?.exists) {
       const b = snap.data()
       // Give the seat/room back so repeated runs do not drain dev inventory.
-      await releaseAvailability(b.type, resolveItemId(b), bookedQuantity(b.type, b)).catch(() => {})
+      //
+      // The stored booking is the fourth argument, exactly as the cancellation
+      // controller passes it: without it `travelDatesFor` has nothing to read,
+      // dated release bails out with MISSING_TRAVEL_DATES, and only the legacy
+      // counter is credited. That silently stranded a slot per run — invisible
+      // for a 40-seat bus, fatal for a cab, which has a dailyCapacity of 1 and
+      // so was permanently sold out on the test date after a single run.
+      await releaseAvailability(b.type, resolveItemId(b), bookedQuantity(b.type, b), b).catch(() => {})
     }
     await db.collection('bookings').doc(id).delete().catch(() => {})
   }

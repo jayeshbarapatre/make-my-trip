@@ -2,7 +2,7 @@
 // scope, so without this the suite dies on import rather than on assertion.
 import 'dotenv/config'
 
-import { test, describe } from 'node:test'
+import { test, describe, before, after } from 'node:test'
 import assert from 'node:assert/strict'
 import { requireFirestore } from './firestoreGuard.mjs'
 import { readFile, readdir, access } from 'node:fs/promises'
@@ -146,6 +146,40 @@ describe('date fields are a single indexable type', firestoreGate, () => {
   // sorted or filtered. Measured before the fix: 27 of 46 bookings and 12 of 26
   // payments held strings, which made the admin "recent bookings" list show the
   // newest bookings last and made "bookings today" permanently zero.
+
+  // Two of these tests assert that a range query and the admin list return
+  // something, which is only meaningful if a booking exists. They used to read
+  // whatever the database happened to hold, so on a fresh datastore — a new
+  // emulator, a clean CI project — they failed with "a range query must match
+  // something" and looked like the very defect they were written to catch.
+  // Seeding their own fixture makes the assertion mean what it says on any
+  // database, and pins the ordering deterministically rather than hoping the
+  // existing rows are in a revealing order.
+  const FIXTURE_IDS = ['infratest_booking_older', 'infratest_booking_newer']
+
+  before(async () => {
+    const base = Date.now()
+    const rows = [
+      { id: FIXTURE_IDS[0], offset: 2 * 86_400_000 },
+      { id: FIXTURE_IDS[1], offset: 60_000 }
+    ]
+    for (const { id, offset } of rows) {
+      await db.collection('bookings').doc(id).set({
+        bookingId: id,
+        userId: 'infratest_user',
+        bookingType: 'flight',
+        status: 'confirmed',
+        totalAmount: 1,
+        createdAt: new Date(base - offset)
+      })
+    }
+  })
+
+  after(async () => {
+    for (const id of FIXTURE_IDS) {
+      await db.collection('bookings').doc(id).delete().catch(() => {})
+    }
+  })
 
   test('toDate accepts every shape the codebase stores', () => {
     const iso = '2026-07-31T10:00:00.000Z'

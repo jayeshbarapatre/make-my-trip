@@ -7,8 +7,10 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
-    "emulator": "firebase emulators:start --only firestore --project makemytrip-d9272",
-    "test": "node --test tests/regression.test.mjs tests/auth.test.mjs tests/audit.test.mjs tests/infra.test.mjs tests/search.test.mjs tests/availability.test.mjs tests/searchDate.test.mjs",
+    "_comment_emulator": "--import/--export-on-exit are what make local accounts survive. Without them the emulator is purely in-memory: every restart silently wiped every user, admin and vendor, so logins that worked yesterday returned 'Invalid email or password' today and looked like an auth bug. The data lives next to firebase.json at the repo root. Stop the emulator with Ctrl+C, not by killing the window, or the export never runs.",
+    "emulator": "node -e \"require('fs').mkdirSync('../.emulator-data',{recursive:true})\" && firebase emulators:start --only firestore --project makemytrip-d9272 --import=../.emulator-data --export-on-exit=../.emulator-data",
+    "_comment_test_concurrency": "--test-concurrency=1 is load-bearing, not a preference. auth.test.mjs spawns a child process to prove the server refuses an over-long ACCESS_TOKEN_TTL; under Node 24 that corrupts the runner's V8-serialised result stream when files run in parallel ('Unable to deserialize cloned data'), which both fails the run and misreports unrelated passing tests as failures. Sequential file execution costs ~12s and removes it.",
+    "test": "node --test --test-concurrency=1 tests/regression.test.mjs tests/auth.test.mjs tests/audit.test.mjs tests/infra.test.mjs tests/search.test.mjs tests/availability.test.mjs tests/searchDate.test.mjs",
     "test:security": "node --test tests/security.test.mjs",
     "test:buses": "node --experimental-test-module-mocks --test tests/busSearch.test.mjs",
     "test:webhook": "node --experimental-test-module-mocks --test tests/paymentWebhook.test.mjs",

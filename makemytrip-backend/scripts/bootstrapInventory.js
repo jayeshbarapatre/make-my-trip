@@ -80,12 +80,19 @@ const STEPS = [
   }
 ]
 
+// The shell is for npm only. `npm` on Windows is a .cmd shim, which Node will
+// not execute without one — but routing node through the same shell broke every
+// step on a default Windows install, because `process.execPath` is
+// "C:\Program Files\nodejs\node.exe" and an unquoted shell command splits it at
+// the space ("'C:\Program' is not recognized"). node is a real executable, so
+// it is spawned directly and the path survives intact.
 const run = (step, args) => new Promise((resolve) => {
   const [cmd, argv] = step.npm
     ? [process.platform === 'win32' ? 'npm.cmd' : 'npm', ['run', step.npm]]
     : [process.execPath, [step.script, ...args]]
 
-  const child = spawn(cmd, argv, { stdio: 'inherit', shell: process.platform === 'win32' })
+  const useShell = Boolean(step.npm) && process.platform === 'win32'
+  const child = spawn(cmd, argv, { stdio: 'inherit', shell: useShell })
   child.on('close', (code) => resolve(code ?? 1))
   child.on('error', () => resolve(1))
 })

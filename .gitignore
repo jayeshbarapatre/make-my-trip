@@ -23,3 +23,9 @@ makemytrip-backend/.env.*
 !makemytrip-backend/.env.example
 serviceAccountKey.json
 *.log
+
+# Local Firestore emulator state. Written by `npm run emulator` so that local
+# accounts survive a restart; it is developer data, not source.
+.emulator-data/
+firebase-debug.log
+firestore-debug.log

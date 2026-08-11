@@ -349,11 +349,30 @@ describe('access-token lifetime is bounded', () => {
   // reading the legacy `JWT_EXPIRE` (documented as 7d), or someone setting a
   // long value directly. Both are refused at boot.
 
+  // Spawning a child from a test file is what makes this file the one that
+  // breaks the runner's stream when files execute concurrently, so it is kept
+  // as isolated as a child can be: the runner's own IPC descriptor and flags
+  // are stripped rather than inherited, and stdio is piped rather than shared.
+  //
+  // That hardening is correct on its own merits but it did NOT fix the
+  // corruption — "Unable to deserialize cloned data" survived it. The actual
+  // remedy is --test-concurrency=1 in the npm script; see the note there.
   const bootWith = (env) => new Promise((resolve) => {
+    const {
+      NODE_CHANNEL_FD: _fd,
+      NODE_OPTIONS: _opts,
+      NODE_UNIQUE_ID: _uid,
+      ...cleanEnv
+    } = process.env
+
     const child = spawn(
       process.execPath,
       ['-e', "import('./src/services/tokenService.js').then(()=>{console.log('LOADED');process.exit(0)}).catch(e=>{console.error(e.message);process.exit(1)})"],
-      { cwd: new URL('..', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1'), env: { ...process.env, ...env } }
+      {
+        cwd: new URL('..', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1'),
+        env: { ...cleanEnv, ...env },
+        stdio: ['ignore', 'pipe', 'pipe']
+      }
     )
     let out = ''
     child.stdout.on('data', (d) => { out += d })
@@ -408,11 +427,12 @@ describe('sessions do not accumulate forever', firestoreGate, () => {
       expiresAt: new Date(Date.now() - 86_400_000).toISOString()
     })
 
-    const result = await purgeDeadSessions({ userId: user.id })
-    assert.ok(result.deleted >= 1, 'an expired session must be deleted')
+    await purgeDeadSessions({ userId: user.id })
 
+    // Outcome, not attribution — see the long-revoked case below for why
+    // asserting `result.deleted` races issueSession's own background purge.
     const still = await db.collection(SESSIONS).doc(session.sid).get()
-    assert.equal(still.exists, false)
+    assert.equal(still.exists, false, 'an expired session must be deleted')
   })
 
   test('a live session is never purged', async () => {
@@ -454,8 +474,16 @@ describe('sessions do not accumulate forever', firestoreGate, () => {
       revokedAt: new Date(Date.now() - 3 * 86_400_000).toISOString()
     })
 
-    const result = await purgeDeadSessions({ userId: user.id })
-    assert.ok(result.deleted >= 1, 'a long-revoked session must be deleted')
+    await purgeDeadSessions({ userId: user.id })
+
+    // Asserts the outcome, not which call produced it. `issueSession` fires its
+    // own opportunistic purge without awaiting it, so that background call
+    // often deletes this session first and the explicit purge above then
+    // reports deleted:0 — a green product behaving exactly as designed, failing
+    // the suite intermittently. What matters is that a long-revoked session
+    // does not survive.
+    const still = await db.collection(SESSIONS).doc(session.sid).get()
+    assert.equal(still.exists, false, 'a long-revoked session must be deleted')
   })
 })
 
