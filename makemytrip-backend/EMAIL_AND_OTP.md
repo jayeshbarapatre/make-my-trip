@@ -1,6 +1,6 @@
 # Email & OTP
 
-Transactional email and OTP for the MakeMyTrip backend. Everything below sends
+Transactional email and OTP for the TripOra backend. Everything below sends
 through real providers — there are no simulated sends and no hardcoded codes.
 
 There are **no development fallbacks**. Every channel either delivers through a
@@ -55,7 +55,7 @@ SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=you@gmail.com
 SMTP_PASS=<16-character app password>
-SMTP_FROM_NAME=MakeMyTrip
+SMTP_FROM_NAME=TripOra
 SMTP_FROM_EMAIL=you@gmail.com
 ```
 

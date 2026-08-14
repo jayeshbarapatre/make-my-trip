@@ -27,7 +27,7 @@ export default function FaqPage() {
   };
 
   useEffect(() => {
-    document.title = 'Frequently Asked Questions - MakeMyTrip';
+    document.title = 'Frequently Asked Questions - TripOra';
     fetchFaqs();
   }, []);
 
@@ -39,7 +39,7 @@ export default function FaqPage() {
     { id: 'h2', category: 'Hotels', question: 'What documents are required at hotel check-in?', answer: 'All adult guests must show a government-issued photo ID (Aadhaar card, Passport, Driving License, Voter ID) at check-in. PAN cards are generally not accepted as identity proof by hotels.' },
     { id: 'b1', category: 'Bookings', question: 'Where can I find my travel tickets?', answer: 'Once your booking is confirmed, travel tickets are instantly sent to your registered email and mobile number. You can also view, download PDF vouchers, or cancel tickets directly under the "My Trips" profile tab.' },
     { id: 'b2', category: 'Bookings', question: 'Can I change my passenger details after booking?', answer: 'Minor spelling corrections in names are supported depending on airline/hotel policies. Please call our 24/7 customer support center or submit an inquiry via the "Contact Us" form to request corrections.' },
-    { id: 'p1', category: 'Payments', question: 'What payment options does MakeMyTrip support?', answer: 'We accept Credit/Debit cards (Visa, MasterCard, RuPay), UPI (PhonePe, GPay, Paytm), NetBanking, and major mobile wallets. All transactions are fully encrypted.' }
+    { id: 'p1', category: 'Payments', question: 'What payment options does TripOra support?', answer: 'We accept Credit/Debit cards (Visa, MasterCard, RuPay), UPI (PhonePe, GPay, Paytm), NetBanking, and major mobile wallets. All transactions are fully encrypted.' }
   ];
 
   // Merge database FAQs if they exist, or use default fallback FAQs

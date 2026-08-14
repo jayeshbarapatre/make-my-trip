@@ -297,7 +297,7 @@ export default function BookingDetailsPage() {
 
           {/* Footer */}
           <div style={{ background: 'hsl(var(--b2))', borderTop: '1px solid hsl(var(--b3))', padding: '16px 24px', textAlign: 'center', fontSize: '12px', color: 'hsl(var(--bc) / 0.55))' }}>
-            Booked on {new Date(booking.createdAt).toLocaleString('en-IN')} | Need help? contact support@makemytrip.com
+            Booked on {new Date(booking.createdAt).toLocaleString('en-IN')} | Need help? contact support@tripora.com
           </div>
         </div>
       </div>

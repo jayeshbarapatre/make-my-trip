@@ -1,4 +1,4 @@
-# Render Blueprint — MakeMyTrip production deployment
+# Render Blueprint — TripOra production deployment
 #
 # Two services:
 #   1. backend  — Node.js Web Service (Express API + Firebase Admin SDK)

@@ -72,8 +72,8 @@ export default function Footer() {
         <div className="hp-ft-grid">
           <div className="hp-ft-brand">
             <h3>
-              <span className="hp-ft-mark">My</span>
-              MakeMyTrip
+              <span className="hp-ft-mark">To</span>
+              TripOra
             </h3>
             <p>India's leading online travel company since 2000 — bringing flights, stays, and experiences to over 50 million travellers.</p>
             <div className="hp-ft-social">
@@ -101,7 +101,7 @@ export default function Footer() {
 
         <div className="hp-ft-bottom">
           <DemoNotice variant="line" />
-          <div>© 2026 MakeMyTrip Pvt Ltd · All rights reserved</div>
+          <div>© 2026 TripOra Pvt Ltd · All rights reserved</div>
           <div className="hp-ft-pay">
             {['VISA', 'MasterCard', 'RuPay', 'UPI', 'NetBanking'].map(p => (
               <span key={p}>{p}</span>

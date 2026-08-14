@@ -104,8 +104,8 @@ export const processPayment = async (amount, bookingData, onHandler) => {
     amount: order.amount,
     currency: order.currency,
     order_id: order.orderId,
-    name: 'MakeMyTrip',
-    description: bookingData.description || 'MakeMyTrip Booking',
+    name: 'TripOra',
+    description: bookingData.description || 'TripOra Booking',
     image: `${window.location.origin}${photo('state-success', 400)}`,
     prefill: {
       name: bookingData.userName || '',

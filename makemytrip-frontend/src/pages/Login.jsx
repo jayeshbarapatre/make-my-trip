@@ -147,7 +147,7 @@ export default function Login({ onSwitchTab, onForgotPassword }) {
       </form>
 
       <p className="form-footer-action">
-        New to MakeMyTrip?
+        New to TripOra?
         <button className="form-footer-switch-btn" onClick={() => onSwitchTab('Register')}>
           Create an Account
         </button>

@@ -4,6 +4,20 @@
 
 import { randomInt } from 'crypto'
 
+/**
+ * The brand namespace on a customer-facing booking reference.
+ *
+ * Renaming the product changes *new* references only. Every booking already
+ * issued keeps its `MMT-` id, because that string is printed on tickets, quoted
+ * in confirmation emails, stored on payment records and is what a customer
+ * reads out to support. A reference that changes after the fact is far worse
+ * than two formats coexisting, so nothing rewrites the old ones.
+ *
+ * Nothing parses this prefix — it is only ever displayed — which is what makes
+ * changing it safe. `bookingIdFormat.test.mjs` pins that.
+ */
+const BOOKING_NAMESPACE = process.env.BOOKING_ID_PREFIX || 'TRP'
+
 const BOOKING_PREFIX = { hotel: 'HT', cab: 'CB', bus: 'BS', train: 'TR', flight: 'FL' }
 const PNR_PREFIX = { hotel: 'HTL', cab: 'CAB', bus: 'BUS', train: 'TRN', flight: 'PNR' }
 
@@ -18,7 +32,7 @@ const randomToken = (length) => {
 }
 
 export const generateBookingId = (type = 'flight') =>
-  `MMT-${BOOKING_PREFIX[type] || BOOKING_PREFIX.flight}-${randomToken(8)}`
+  `${BOOKING_NAMESPACE}-${BOOKING_PREFIX[type] || BOOKING_PREFIX.flight}-${randomToken(8)}`
 
 export const generatePNR = (type = 'flight') =>
   `${PNR_PREFIX[type] || PNR_PREFIX.flight}-${randomToken(6)}`

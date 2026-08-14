@@ -273,7 +273,7 @@ export default function EnhancedBookingDetailsModal({ booking, onClose }) {
         {/* Footer */}
         <div style={{ background: 'hsl(var(--b2))', borderTop: '1px solid hsl(var(--b3))', padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexShrink: 0, flexWrap: 'wrap' }}>
           <div style={{ fontSize: '11px', color: 'hsl(var(--bc) / 0.55))' }}>
-            support@makemytrip.com
+            support@tripora.com
           </div>
           <button
             onClick={handleDownloadPDF}

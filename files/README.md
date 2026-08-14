@@ -1,8 +1,8 @@
-# 🚀 MakeMyTrip Clone - Complete Documentation Bundle
+# 🚀 TripOra Clone - Complete Documentation Bundle
 
 ## 📋 What You Have
 
-You now have a **complete, production-ready documentation package** for building a MakeMyTrip clone with **React 18 + Vite frontend** and your choice of backend technologies.
+You now have a **complete, production-ready documentation package** for building TripOra with **React 18 + Vite frontend** and your choice of backend technologies.
 
 ---
 
@@ -515,13 +515,13 @@ This is a **complete, production-ready package** with:
 - ✅ Deployment guides
 - ✅ Troubleshooting help
 
-Everything you need to build a professional, scalable MakeMyTrip clone is here.
+Everything you need to build a professional, scalable TripOra is here.
 
 **Happy coding! 🚀**
 
 ---
 
 **Created**: May 2026  
-**Purpose**: Complete MakeMyTrip Clone Development Guide  
+**Purpose**: Complete TripOra Clone Development Guide  
 **Status**: Production Ready  
 **Difficulty**: Beginner to Intermediate

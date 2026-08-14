@@ -12,6 +12,28 @@ import '../styles/ConfirmationTicket.css'
 import '../styles/BusBookingFlow.css'
 import OtpLoginModal from '../components/Auth/OtpLoginModal'
 
+/**
+ * One definition for every field on this page, because they had already drifted
+ * into three different answers.
+ *
+ * The inputs drew a `--b2` border while sitting on a `--b2` panel — the border
+ * was the same colour as the surface behind it, so it could never be seen in any
+ * theme. The gender select escaped that only by hardcoding #ddd, which ignores
+ * the theme entirely and reads as a bright line on a dark background. Neither
+ * set a background or text colour, so the fields fell back to the browser's own
+ * and stopped matching the page.
+ *
+ * `--b3` is the border token; `--b1` is the raised surface that sits on `--b2`.
+ */
+const fieldStyle = (invalid = false) => ({
+  width: '100%',
+  padding: '0.5rem',
+  border: `1px solid ${invalid ? 'hsl(var(--er))' : 'hsl(var(--b3))'}`,
+  borderRadius: '0.375rem',
+  background: 'hsl(var(--b1))',
+  color: 'hsl(var(--bc))'
+})
+
 const fmtTime = (val) => {
   if (!val) return 'N/A'
   if (typeof val === 'object' && val.time) return val.time
@@ -485,12 +507,7 @@ export default function BusBookingPage() {
                     value={contact.email}
                     onChange={(e) => setContact({ ...contact, email: e.target.value })}
                     id="email"
-                    style={{
-                      width: '100%',
-                      padding: '0.5rem',
-                      border: `1px solid ${errors.email ? 'hsl(var(--er))' : 'hsl(var(--b2))'}`,
-                      borderRadius: '0.375rem'
-                    }}
+                    style={fieldStyle(Boolean(errors.email))}
                     placeholder="your@email.com"
                   />
                   {errors.email && <p style={{ color: 'hsl(var(--er))', fontSize: '0.875rem', marginTop: '0.25rem' }}>{errors.email}</p>}
@@ -502,12 +519,7 @@ export default function BusBookingPage() {
                     value={contact.phone}
                     onChange={(e) => setContact({ ...contact, phone: e.target.value })}
                     id="phone"
-                    style={{
-                      width: '100%',
-                      padding: '0.5rem',
-                      border: `1px solid ${errors.phone ? 'hsl(var(--er))' : 'hsl(var(--b2))'}`,
-                      borderRadius: '0.375rem'
-                    }}
+                    style={fieldStyle(Boolean(errors.phone))}
                     placeholder="10-digit number"
                     maxLength={10}
                   />
@@ -531,12 +543,7 @@ export default function BusBookingPage() {
                         setPassengerDetails(updated)
                       }}
                       id={`p_${i}_name`}
-                      style={{
-                        width: '100%',
-                        padding: '0.5rem',
-                        border: `1px solid ${errors[`p_${i}_name`] ? 'hsl(var(--er))' : 'hsl(var(--b2))'}`,
-                        borderRadius: '0.375rem'
-                      }}
+                      style={fieldStyle(Boolean(errors[`p_${i}_name`]))}
                       placeholder="Full name"
                     />
                     {errors[`p_${i}_name`] && <p style={{ color: 'hsl(var(--er))', fontSize: '0.875rem', marginTop: '0.25rem' }}>{errors[`p_${i}_name`]}</p>}
@@ -552,12 +559,7 @@ export default function BusBookingPage() {
                         setPassengerDetails(updated)
                       }}
                       id={`p_${i}_age`}
-                      style={{
-                        width: '100%',
-                        padding: '0.5rem',
-                        border: `1px solid ${errors[`p_${i}_age`] ? 'hsl(var(--er))' : 'hsl(var(--b2))'}`,
-                        borderRadius: '0.375rem'
-                      }}
+                      style={fieldStyle(Boolean(errors[`p_${i}_age`]))}
                       placeholder="Age"
                       min="1"
                       max="120"
@@ -573,12 +575,7 @@ export default function BusBookingPage() {
                         updated[i].gender = e.target.value
                         setPassengerDetails(updated)
                       }}
-                      style={{
-                        width: '100%',
-                        padding: '0.5rem',
-                        border: '1px solid #ddd',
-                        borderRadius: '0.375rem'
-                      }}
+                      style={fieldStyle()}
                     >
                       <option>Male</option>
                       <option>Female</option>
@@ -625,7 +622,7 @@ export default function BusBookingPage() {
                   <label style={{
                     padding: '1rem',
                     borderRadius: '0.5rem',
-                    border: '1px solid hsl(var(--b2))',
+                    border: '1px solid hsl(var(--b3))',
                     background: 'hsl(var(--b1))',
                     cursor: 'pointer',
                     display: 'flex',
@@ -639,7 +636,7 @@ export default function BusBookingPage() {
                   <label style={{
                     padding: '1rem',
                     borderRadius: '0.5rem',
-                    border: '1px solid hsl(var(--b2))',
+                    border: '1px solid hsl(var(--b3))',
                     background: 'hsl(var(--b1))',
                     cursor: 'pointer',
                     display: 'flex',
@@ -655,7 +652,7 @@ export default function BusBookingPage() {
                     <button type="button" onClick={() => setStep(2)} style={{
                       padding: '0.75rem',
                       borderRadius: '0.5rem',
-                      border: '1px solid hsl(var(--b2))',
+                      border: '1px solid hsl(var(--b3))',
                       background: 'hsl(var(--b1))',
                       color: 'hsl(var(--bc))',
                       fontWeight: 600,
@@ -669,7 +666,7 @@ export default function BusBookingPage() {
               </div>
 
               {/* Center Column: Payment Interface */}
-              <div style={{ background: 'hsl(var(--b1))', padding: '2rem', borderRadius: '0.75rem', border: '1px solid hsl(var(--b2))' }}>
+              <div style={{ background: 'hsl(var(--b1))', padding: '2rem', borderRadius: '0.75rem', border: '1px solid hsl(var(--b3))' }}>
                 <h3 style={{ marginTop: 0, marginBottom: '1.5rem', fontSize: '0.95rem', fontWeight: 700, color: 'hsl(var(--bc))' }}>PAY USING UNIFIED PAYMENTS INTERFACE</h3>
 
                 <div style={{ background: 'hsl(var(--b2))', padding: '1.5rem', borderRadius: '0.5rem', marginBottom: '1.5rem', textAlign: 'center' }}>
@@ -681,7 +678,7 @@ export default function BusBookingPage() {
                       width: '100%',
                       padding: '0.75rem',
                       borderRadius: '0.5rem',
-                      border: '1px solid hsl(var(--b2))',
+                      border: '1px solid hsl(var(--b3))',
                       background: 'hsl(var(--b1))',
                       color: 'hsl(var(--bc))',
                       fontSize: '0.875rem',
@@ -701,7 +698,7 @@ export default function BusBookingPage() {
               </div>
 
               {/* Right Sidebar: Booking Summary */}
-              <div style={{ background: 'hsl(var(--b1))', padding: '1.5rem', borderRadius: '0.75rem', border: '1px solid hsl(var(--b2))', height: 'fit-content', position: 'sticky', top: '20px' }}>
+              <div style={{ background: 'hsl(var(--b1))', padding: '1.5rem', borderRadius: '0.75rem', border: '1px solid hsl(var(--b3))', height: 'fit-content', position: 'sticky', top: '20px' }}>
                 <h3 style={{ marginTop: 0, marginBottom: '1.5rem', fontSize: '0.95rem', fontWeight: 700, color: 'hsl(var(--bc))' }}>BOOKING SUMMARY</h3>
 
                 {/* Bus Details Card */}
@@ -713,7 +710,7 @@ export default function BusBookingPage() {
                 </div>
 
                 {/* Price Breakdown */}
-                <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px solid hsl(var(--b2))' }}>
+                <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px solid hsl(var(--b3))' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.875rem', color: 'hsl(var(--nc))' }}>
                     <span>Base Charge ({passengerCount} × {fmtPrice(bus.price)})</span>
                     <span>{fmtPrice(basePrice)}</span>
@@ -744,7 +741,7 @@ export default function BusBookingPage() {
                 </div>
 
                 {/* Passengers */}
-                <div style={{ marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid hsl(var(--b2))' }}>
+                <div style={{ marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid hsl(var(--b3))' }}>
                   <div style={{ fontSize: '0.75rem', fontWeight: 700, marginBottom: '0.5rem', color: 'hsl(var(--nc))' }}>PASSENGERS</div>
                   <div style={{ display: 'grid', gap: '0.5rem', fontSize: '0.8rem' }}>
                     {passengerDetails.slice(0, 3).map((p, i) => (

@@ -69,7 +69,45 @@ const VendorCabs = () => {
       fetchCabs()
       setConfirmDialog(null)
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Action failed')
+      const data = err.response?.data
+      const problems = Array.isArray(data?.problems) ? data.problems : []
+
+      // The server replies with the exact list of what is missing. Showing only
+      // the headline — "This cab is not ready for approval yet" — told the
+      // vendor there was a problem while withholding the one thing they needed:
+      // which problem.
+      if (problems.length) {
+        toast.error(
+          (t) => (
+            <div style={{ display: 'grid', gap: '6px' }}>
+              <strong>{data.message}</strong>
+              <ul style={{ margin: 0, paddingLeft: '18px', display: 'grid', gap: '4px' }}>
+                {problems.map((p) => <li key={p}>{p}</li>)}
+              </ul>
+              <button
+                onClick={() => toast.dismiss(t.id)}
+                style={{
+                  justifySelf: 'start', marginTop: '4px', padding: '4px 10px',
+                  borderRadius: '6px', border: '1px solid currentColor',
+                  background: 'transparent', color: 'inherit',
+                  fontSize: '12px', fontWeight: 700, cursor: 'pointer'
+                }}
+              >
+                Got it
+              </button>
+            </div>
+          ),
+          // A checklist takes longer to read than a one-line failure, and it is
+          // dismissible so it never traps the screen.
+          { duration: 12000 }
+        )
+      } else {
+        toast.error(data?.message || 'Action failed')
+      }
+
+      // Closed on failure too: leaving it open behind the message made it look
+      // as though the action were still in progress.
+      setConfirmDialog(null)
     } finally {
       setProcessingId(null)
     }

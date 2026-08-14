@@ -18,7 +18,7 @@ echo
 
 echo "✓ FRONTEND STATUS"
 echo "────────────────────────────────────────────────────────────"
-FRONTEND_CHECK=$(curl -s "http://localhost:5173" | grep "MakeMyTrip" | wc -l)
+FRONTEND_CHECK=$(curl -s "http://localhost:5173" | grep "TripOra" | wc -l)
 if [ $FRONTEND_CHECK -gt 0 ]; then
   echo "Frontend: Running on http://localhost:5173"
 else

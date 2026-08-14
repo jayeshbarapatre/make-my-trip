@@ -15,6 +15,7 @@ import { db } from '../src/config/firebase.js'
 import { Role, AccountStatus } from '../src/config/roles.js'
 import { describePasswordWeakness } from '../src/utils/validation.js'
 import { normalizeEmail, findUserByEmail } from '../src/utils/identity.js'
+import { now } from '../src/utils/time.js'
 
 const arg = (name) => {
   const i = process.argv.indexOf(`--${name}`)
@@ -49,7 +50,7 @@ const run = async () => {
       role,
       is_admin: true,
       accountStatus: AccountStatus.ACTIVE,
-      updatedAt: new Date().toISOString()
+      updatedAt: now()
     }
     if (password) {
       const weakness = describePasswordWeakness(password, { strict: true })
@@ -78,8 +79,9 @@ const run = async () => {
     role,
     accountStatus: AccountStatus.ACTIVE,
     is_admin: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    // Timestamps, not ISO strings — see the same note in createVendor.js.
+    createdAt: now(),
+    updatedAt: now(),
     isDeleted: false
   })
 

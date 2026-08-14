@@ -37,7 +37,7 @@ const PaymentButton = ({
         amount: orderResponse.data.amount,
         currency: orderResponse.data.currency,
         order_id: orderResponse.data.orderId,
-        name: 'MakeMyTrip',
+        name: 'TripOra',
         description: `Payment for ${bookingDetails.type || 'flight'} booking`,
         handler: async (response) => {
           try {

@@ -38,7 +38,7 @@ export default function HotelSuccessPage() {
       bookingId={bookingId}
       printableId="hotel-ticket-content"
       totalAmount={totalAmount}
-      footnote={`* Please present this voucher at the time of check-in.\nPayment: ${paymentMethod} · Support: 1800 102 8747 | support@makemytrip.com`}
+      footnote={`* Please present this voucher at the time of check-in.\nPayment: ${paymentMethod} · Support: 1800 102 8747 | support@tripora.com`}
       downloadLabel="📥 DOWNLOAD PDF VOUCHER"
       onDownloadPDF={handleDownloadPDF}
       onMyTrips={() => navigate('/my-trips')}

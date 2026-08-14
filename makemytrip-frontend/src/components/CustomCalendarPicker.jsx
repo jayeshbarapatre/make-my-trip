@@ -3,7 +3,7 @@ import './CustomCalendarPicker.css';
 
 /**
  * Custom Calendar Picker Component
- * Replicates the premium MakeMyTrip double-month calendar overlay with live pricing
+ * Replicates the premium TripOra double-month calendar overlay with live pricing
  */
 export default function CustomCalendarPicker({
   value, // Format: 'YYYY-MM-DD'

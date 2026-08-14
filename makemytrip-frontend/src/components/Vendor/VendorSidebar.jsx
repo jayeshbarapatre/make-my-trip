@@ -43,9 +43,9 @@ const VendorSidebar = ({ isOpen, toggleSidebar }) => {
       <aside className={`vendor-sidebar ${isOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
           <div className="sidebar-title">
-            <div className="vendor-logo-badge">My</div>
+            <div className="vendor-logo-badge">To</div>
             <div className="vendor-logo-text">
-              <span className="vendor-logo-brand">MakeMyTrip</span>
+              <span className="vendor-logo-brand">TripOra</span>
               <span className="vendor-logo-sub">Vendor</span>
             </div>
           </div>

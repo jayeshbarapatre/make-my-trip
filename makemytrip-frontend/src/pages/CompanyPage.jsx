@@ -28,7 +28,7 @@ export default function CompanyPage() {
   }, []);
 
   // Harmonized defaults (matching loaded seed data)
-  const defaultTitle = 'About MakeMyTrip';
+  const defaultTitle = 'About TripOra';
   const defaultSubtitle = 'India\'s #1 Travel Company | Empowering Millions to Travel the World';
   
   const stats = [
@@ -112,18 +112,18 @@ export default function CompanyPage() {
           <div className="company-story-content" data-aos="fade-right">
             <h2>Our Story</h2>
             <p>
-              Founded in 2000, MakeMyTrip revolutionized travel in India by making it easier, more affordable, and more accessible to millions.
+              Founded in 2000, TripOra revolutionized travel in India by making it easier, more affordable, and more accessible to millions.
               From humble beginnings, we've grown to become India's most trusted online travel platform, serving travelers across the globe.
             </p>
             <p>
-              Today, MakeMyTrip is a one-stop destination for all travel needs - flights, hotels, trains, buses, holiday packages, and much more.
+              Today, TripOra is a one-stop destination for all travel needs - flights, hotels, trains, buses, holiday packages, and much more.
               Our mission is simple: to inspire and empower people to discover the world with confidence and convenience.
             </p>
           </div>
           <div className="company-story-img" data-aos="fade-left">
             <img 
               src={photo('state-empty-trips')} loading="lazy" decoding="async" 
-              alt="MakeMyTrip Story Journey"
+              alt="TripOra Story Journey"
               onError={(e) => {
                 e.target.src = '/assets/img/logo/logo.png';
               }}
@@ -183,7 +183,7 @@ export default function CompanyPage() {
       {/* Why Choose Us Section */}
       <div className="company-container">
         <section className="company-why-sec" data-aos="fade-up">
-          <h2 className="company-sec-title">Why Choose MakeMyTrip?</h2>
+          <h2 className="company-sec-title">Why Choose TripOra?</h2>
           <ul className="company-why-list">
             {benefits.map((item, idx) => {
               const parts = item.split(':');
@@ -204,7 +204,7 @@ export default function CompanyPage() {
       <div className="company-container">
         <section className="company-cta-sec" data-aos="zoom-in">
           <h2>Ready to Explore the World?</h2>
-          <p>Join millions of travelers who trust MakeMyTrip for their travel needs.</p>
+          <p>Join millions of travelers who trust TripOra for their travel needs.</p>
           <a href="/" className="company-cta-btn">Start Your Journey Now</a>
         </section>
       </div>

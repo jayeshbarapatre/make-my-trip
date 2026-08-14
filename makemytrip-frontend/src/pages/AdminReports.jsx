@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
 import AdminLayout from '../components/Admin/AdminLayout'
 import DataPanel from '../components/Admin/DataPanel'
 import { reportsService } from '../services/platformAdminService'
+import { cellValue, filterRows, paginate } from './reportTable'
 import './AdminFlights.css'
 
 const REPORTS = [
@@ -16,21 +17,43 @@ const REPORTS = [
 
 const FORMATS = ['csv', 'xlsx', 'pdf']
 
+const PAGE_SIZES = [25, 50, 100]
+
 const inr = (n) => `₹${Number(n || 0).toLocaleString('en-IN')}`
 
-const cellValue = (v) => {
-  if (v === null || v === undefined || v === '') return '—'
-  // Firestore timestamps arrive as { _seconds, _nanoseconds }.
-  if (typeof v === 'object' && v._seconds) return new Date(v._seconds * 1000).toLocaleString('en-IN')
-  if (typeof v === 'object') return JSON.stringify(v)
-  return String(v)
-}
+const pagerStyle = (disabled) => ({
+  padding: '7px 14px',
+  borderRadius: '8px',
+  border: '1px solid hsl(var(--b3))',
+  background: disabled ? 'transparent' : 'hsl(var(--b2))',
+  color: disabled ? 'hsl(var(--bc) / 0.35)' : 'hsl(var(--bc))',
+  fontWeight: 700,
+  fontSize: '12.5px',
+  cursor: disabled ? 'not-allowed' : 'pointer'
+})
 
 export default function AdminReports() {
   const [kind, setKind] = useState('bookings')
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
   const [downloading, setDownloading] = useState(null)
+  const [search, setSearch] = useState('')
+  const [query, setQuery] = useState('')
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(25)
+
+  // Typing re-filters every row on the page, so the work is deferred until the
+  // user stops rather than run on each keystroke.
+  useEffect(() => {
+    const t = setTimeout(() => setQuery(search), 300)
+    return () => clearTimeout(t)
+  }, [search])
+
+  // Every control that changes which rows are listed goes through here, because
+  // narrowing a 400-row report while on page 9 would otherwise land on a page
+  // that no longer exists and read as an empty table. Done in the handlers
+  // rather than an effect so there is no second render to correct the first.
+  const reset = (apply) => (value) => { apply(value); setPage(1) }
 
   const range = {}
   if (from) range.from = from
@@ -46,8 +69,11 @@ export default function AdminReports() {
     queryFn: () => reportsService.get(kind, range)
   })
 
-  const rows = report.data?.data ?? []
-  const columns = rows.length ? Object.keys(rows[0]) : []
+  const rows = useMemo(() => report.data?.data ?? [], [report.data])
+  const columns = useMemo(() => (rows.length ? Object.keys(rows[0]) : []), [rows])
+
+  const filtered = useMemo(() => filterRows(rows, columns, query), [rows, columns, query])
+  const { currentPage, totalPages, start, visible } = paginate(filtered, page, pageSize)
 
   const handleDownload = async (format) => {
     setDownloading(format)
@@ -96,23 +122,34 @@ export default function AdminReports() {
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'flex-end', marginBottom: '18px' }}>
           <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '12px', fontWeight: 700, color: 'hsl(var(--bc) / 0.6)' }}>
             REPORT
-            <select value={kind} onChange={(e) => setKind(e.target.value)} style={{ padding: '8px 10px', borderRadius: '8px', border: '1px solid hsl(var(--b3))', background: 'hsl(var(--b1))', color: 'hsl(var(--bc))', minWidth: '150px' }}>
+            <select value={kind} onChange={(e) => reset(setKind)(e.target.value)} style={{ padding: '8px 10px', borderRadius: '8px', border: '1px solid hsl(var(--b3))', background: 'hsl(var(--b1))', color: 'hsl(var(--bc))', minWidth: '150px' }}>
               {REPORTS.map((r) => <option key={r.kind} value={r.kind}>{r.label}</option>)}
             </select>
           </label>
 
           <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '12px', fontWeight: 700, color: 'hsl(var(--bc) / 0.6)' }}>
             FROM
-            <input type="date" value={from} max={to || undefined} onChange={(e) => setFrom(e.target.value)} style={{ padding: '8px 10px', borderRadius: '8px', border: '1px solid hsl(var(--b3))', background: 'hsl(var(--b1))', color: 'hsl(var(--bc))' }} />
+            <input type="date" value={from} max={to || undefined} onChange={(e) => reset(setFrom)(e.target.value)} style={{ padding: '8px 10px', borderRadius: '8px', border: '1px solid hsl(var(--b3))', background: 'hsl(var(--b1))', color: 'hsl(var(--bc))' }} />
           </label>
 
           <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '12px', fontWeight: 700, color: 'hsl(var(--bc) / 0.6)' }}>
             TO
-            <input type="date" value={to} min={from || undefined} onChange={(e) => setTo(e.target.value)} style={{ padding: '8px 10px', borderRadius: '8px', border: '1px solid hsl(var(--b3))', background: 'hsl(var(--b1))', color: 'hsl(var(--bc))' }} />
+            <input type="date" value={to} min={from || undefined} onChange={(e) => reset(setTo)(e.target.value)} style={{ padding: '8px 10px', borderRadius: '8px', border: '1px solid hsl(var(--b3))', background: 'hsl(var(--b1))', color: 'hsl(var(--bc))' }} />
           </label>
 
-          {(from || to) && (
-            <button onClick={() => { setFrom(''); setTo('') }} style={{ padding: '9px 14px', borderRadius: '8px', border: '1px solid hsl(var(--b3))', background: 'transparent', color: 'hsl(var(--bc))', cursor: 'pointer', fontWeight: 600 }}>
+          <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '12px', fontWeight: 700, color: 'hsl(var(--bc) / 0.6)' }}>
+            SEARCH
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => reset(setSearch)(e.target.value)}
+              placeholder="Name, email, booking ID, city…"
+              style={{ padding: '8px 10px', borderRadius: '8px', border: '1px solid hsl(var(--b3))', background: 'hsl(var(--b1))', color: 'hsl(var(--bc))', minWidth: '230px' }}
+            />
+          </label>
+
+          {(from || to || search) && (
+            <button onClick={() => { setFrom(''); setTo(''); setSearch(''); setPage(1) }} style={{ padding: '9px 14px', borderRadius: '8px', border: '1px solid hsl(var(--b3))', background: 'transparent', color: 'hsl(var(--bc))', cursor: 'pointer', fontWeight: 600 }}>
               Clear
             </button>
           )}
@@ -137,13 +174,24 @@ export default function AdminReports() {
           </div>
         </div>
 
+        {/* The export runs on the server from the date range alone; the search
+            is applied in the browser to rows already fetched. Saying so beats
+            handing someone a CSV that quietly contains more than they filtered
+            down to. */}
+        {query && filtered.length !== rows.length && (
+          <p style={{ margin: '-6px 0 16px', fontSize: '12.5px', color: 'hsl(var(--bc) / 0.6)' }}>
+            The search filters this table only — CSV, Excel and PDF exports still cover all {rows.length} rows for the selected dates.
+          </p>
+        )}
+
         <div style={{ background: 'hsl(var(--b1))', border: '1px solid hsl(var(--b3))', borderRadius: '12px', overflow: 'hidden' }}>
           <DataPanel
             loading={report.isPending}
             error={report.error?.message}
             onRetry={report.refetch}
-            isEmpty={rows.length === 0}
-            emptyText="No records for the selected period."
+            isEmpty={filtered.length === 0}
+            emptyText={query ? `Nothing matches “${query}”.` : 'No records for the selected period.'}
+            emptyHint={query ? 'The search looks across every column of this report. Try a shorter term, or clear it.' : undefined}
           >
             {/* Wide tables scroll inside their own container so the page never
                 scrolls horizontally. */}
@@ -157,8 +205,8 @@ export default function AdminReports() {
                   </tr>
                 </thead>
                 <tbody>
-                  {rows.slice(0, 200).map((row, i) => (
-                    <tr key={row.bookingId || row.refundId || row.userId || row.vendorId || i} style={{ borderTop: '1px solid hsl(var(--b3))' }}>
+                  {visible.map((row, i) => (
+                    <tr key={row.bookingId || row.refundId || row.userId || row.vendorId || start + i} style={{ borderTop: '1px solid hsl(var(--b3))' }}>
                       {columns.map((c) => (
                         <td key={c} style={{ padding: '10px 14px', color: 'hsl(var(--bc) / 0.85)', whiteSpace: 'nowrap' }}>{cellValue(row[c])}</td>
                       ))}
@@ -167,11 +215,44 @@ export default function AdminReports() {
                 </tbody>
               </table>
             </div>
-            {rows.length > 200 && (
-              <p style={{ margin: 0, padding: '10px 14px', fontSize: '12px', color: 'hsl(var(--bc) / 0.55)', borderTop: '1px solid hsl(var(--b3))' }}>
-                Showing the first 200 of {rows.length} rows — export for the full set.
-              </p>
-            )}
+
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '12px', padding: '12px 14px', borderTop: '1px solid hsl(var(--b3))' }}>
+              <span style={{ fontSize: '12.5px', color: 'hsl(var(--bc) / 0.6)' }}>
+                Showing {start + 1}–{start + visible.length} of {filtered.length}
+                {query && rows.length !== filtered.length ? ` (filtered from ${rows.length})` : ''}
+              </span>
+
+              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12.5px', color: 'hsl(var(--bc) / 0.6)' }}>
+                Rows
+                <select
+                  value={pageSize}
+                  onChange={(e) => reset(setPageSize)(Number(e.target.value))}
+                  style={{ padding: '5px 8px', borderRadius: '6px', border: '1px solid hsl(var(--b3))', background: 'hsl(var(--b1))', color: 'hsl(var(--bc))' }}
+                >
+                  {PAGE_SIZES.map((n) => <option key={n} value={n}>{n}</option>)}
+                </select>
+              </label>
+
+              <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <button
+                  onClick={() => setPage(currentPage - 1)}
+                  disabled={currentPage <= 1}
+                  style={pagerStyle(currentPage <= 1)}
+                >
+                  Previous
+                </button>
+                <span style={{ fontSize: '12.5px', fontWeight: 700, color: 'hsl(var(--bc) / 0.75)' }}>
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button
+                  onClick={() => setPage(currentPage + 1)}
+                  disabled={currentPage >= totalPages}
+                  style={pagerStyle(currentPage >= totalPages)}
+                >
+                  Next
+                </button>
+              </div>
+            </div>
           </DataPanel>
         </div>
       </div>

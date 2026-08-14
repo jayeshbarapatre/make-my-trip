@@ -1,8 +1,8 @@
-# MakeMyTrip Website - Architecture Documentation (Frontend/Website Only)
+# TripOra Website - Architecture Documentation (Frontend/Website Only)
 
 ## Website Architecture Overview
 
-MakeMyTrip's website is built as a modern, responsive Single Page Application (SPA) with a component-driven architecture optimized for real-time search, booking flows, and personalized user experiences. The frontend uses React with a custom design system (Cosmos) and communicates with backend APIs through a well-defined REST/GraphQL interface.
+TripOra's website is built as a modern, responsive Single Page Application (SPA) with a component-driven architecture optimized for real-time search, booking flows, and personalized user experiences. The frontend uses React with a custom design system (Cosmos) and communicates with backend APIs through a well-defined REST/GraphQL interface.
 
 ---
 

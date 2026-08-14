@@ -369,7 +369,7 @@ export default function CabsPage() {
       {/* Why Book Cab with MMT Section */}
       <section className="inner-page-section" style={{ paddingTop: 0 }}>
         <div className="inner-sec-header">
-          <h2 className="inner-sec-title">Why book a cab with MakeMyTrip?</h2>
+          <h2 className="inner-sec-title">Why book a cab with TripOra?</h2>
         </div>
 
         <div className="cabs-why-grid">

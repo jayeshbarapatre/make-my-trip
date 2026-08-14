@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
 import AdminLayout from '../components/Admin/AdminLayout'
 import DataPanel from '../components/Admin/DataPanel'
-import { vendorRequestsService } from '../services/platformAdminService'
+import { vendorRequestsService, vendorsAdminService } from '../services/platformAdminService'
 import './AdminFlights.css'
 import { useConfirm } from '../context/ConfirmContext'
 
@@ -35,6 +35,7 @@ export default function AdminVendorRequests() {
   const confirm = useConfirm()
   const [status, setStatus] = useState('pending')
   const [busyId, setBusyId] = useState(null)
+  const [vendorBusyId, setVendorBusyId] = useState(null)
   const queryClient = useQueryClient()
 
   const { data, isPending, error, refetch } = useQuery({
@@ -43,6 +44,60 @@ export default function AdminVendorRequests() {
   })
 
   const requests = data?.data ?? []
+
+  // The approved vendors themselves. Kept in its own query so a failure to load
+  // the roster still leaves the applications above reviewable.
+  const vendorsQuery = useQuery({
+    queryKey: ['admin-vendors'],
+    queryFn: () => vendorsAdminService.list()
+  })
+
+  const vendors = vendorsQuery.data?.data?.vendors ?? []
+
+  const toggleVendor = async (vendor) => {
+    const suspending = vendor.isActive
+    if (suspending) {
+      const ok = await confirm({
+        title: 'Suspend vendor',
+        message: `${vendor.name || vendor.email} will lose access immediately, and their listings are taken off sale. You can re-activate them later.`,
+        confirmLabel: 'Suspend',
+        tone: 'danger'
+      })
+      if (!ok) return
+    }
+
+    setVendorBusyId(vendor.id)
+    try {
+      const res = await vendorsAdminService.toggle(vendor.id)
+      await queryClient.invalidateQueries({ queryKey: ['admin-vendors'] })
+      toast.success(res?.message || (suspending ? 'Vendor suspended' : 'Vendor activated'))
+    } catch (err) {
+      toast.error(err.message || 'Could not update this vendor')
+    } finally {
+      setVendorBusyId(null)
+    }
+  }
+
+  const removeVendor = async (vendor) => {
+    const ok = await confirm({
+      title: 'Delete vendor',
+      message: `${vendor.name || vendor.email} will be removed and their listings taken off sale. Bookings already made are kept.`,
+      confirmLabel: 'Delete',
+      tone: 'danger'
+    })
+    if (!ok) return
+
+    setVendorBusyId(vendor.id)
+    try {
+      await vendorsAdminService.remove(vendor.id)
+      await queryClient.invalidateQueries({ queryKey: ['admin-vendors'] })
+      toast.success('Vendor deleted')
+    } catch (err) {
+      toast.error(err.message || 'Could not delete this vendor')
+    } finally {
+      setVendorBusyId(null)
+    }
+  }
 
   const decide = async (req, decision) => {
     let note
@@ -157,6 +212,76 @@ export default function AdminVendorRequests() {
                 </div>
               </div>
             ))}
+          </div>
+        </DataPanel>
+
+        <div className="page-header" style={{ marginTop: '34px' }}>
+          <div>
+            <h1 style={{ fontSize: '20px' }}>Registered vendors</h1>
+            <p>
+              Vendors whose application was approved. Suspending one pulls their listings off sale
+              immediately; passwords are stored hashed and cannot be displayed or recovered.
+            </p>
+          </div>
+        </div>
+
+        <DataPanel
+          loading={vendorsQuery.isPending}
+          error={vendorsQuery.error?.message}
+          onRetry={vendorsQuery.refetch}
+          isEmpty={vendors.length === 0}
+          emptyText="No vendors yet."
+          emptyHint="Approve an application above and the vendor will appear here."
+        >
+          <div className="table-container">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Vendor</th>
+                  <th>Type</th>
+                  <th>Status</th>
+                  <th>Listings</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {vendors.map((v) => (
+                  <tr key={v.id}>
+                    <td>
+                      <span className="font-bold">{v.vendorName || v.name || '—'}</span>
+                      <div style={{ fontSize: '12.5px', color: 'hsl(var(--bc) / 0.6)' }}>{v.email || '—'}</div>
+                    </td>
+                    <td style={{ textTransform: 'capitalize' }}>{v.vendorType || '—'}</td>
+                    <td>
+                      <span className={v.isActive ? 'badge badge-active' : 'badge badge-inactive'}>
+                        {v.isActive ? 'Active' : 'Suspended'}
+                      </span>
+                    </td>
+                    <td>{v._count?.hotels ?? 0}</td>
+                    <td>
+                      <div className="actions">
+                        <button
+                          className="btn-sm btn-toggle"
+                          onClick={() => toggleVendor(v)}
+                          disabled={vendorBusyId === v.id}
+                          style={{ opacity: vendorBusyId === v.id ? 0.5 : 1 }}
+                        >
+                          {vendorBusyId === v.id ? '…' : v.isActive ? 'Suspend' : 'Activate'}
+                        </button>
+                        <button
+                          className="btn-sm btn-delete"
+                          onClick={() => removeVendor(v)}
+                          disabled={vendorBusyId === v.id}
+                          style={{ opacity: vendorBusyId === v.id ? 0.5 : 1 }}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </DataPanel>
       </div>

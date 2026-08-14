@@ -1,7 +1,7 @@
-# Hotel & Flight Booking System - Implementation Guide for MakeMyTrip
+# Hotel & Flight Booking System - Implementation Guide for TripOra
 
 ## Overview
-This guide maps the comprehensive system architecture to your existing MakeMyTrip backend and frontend structure.
+This guide maps the comprehensive system architecture to your existing TripOra backend and frontend structure.
 
 ---
 
@@ -457,7 +457,7 @@ export const sendCredentialsEmail = async (email, role, tempPassword) => {
     : `${process.env.FRONTEND_URL}/vendor/airline/login`;
 
   const html = `
-    <h1>Welcome to MakeMyTrip!</h1>
+    <h1>Welcome to TripOra!</h1>
     <p>Your account has been created.</p>
     <p><strong>Email:</strong> ${email}</p>
     <p><strong>Temporary Password:</strong> ${tempPassword}</p>
@@ -467,7 +467,7 @@ export const sendCredentialsEmail = async (email, role, tempPassword) => {
 
   return transporter.sendMail({
     to: email,
-    subject: 'Your MakeMyTrip Vendor Account Credentials',
+    subject: 'Your TripOra Vendor Account Credentials',
     html
   });
 };
@@ -1081,7 +1081,7 @@ export const HotelVendorDashboard = () => {
 
 ---
 
-## Part 3: Integration with Existing MakeMyTrip
+## Part 3: Integration with Existing TripOra
 
 ### Update App.jsx
 
@@ -1297,4 +1297,4 @@ npx sequelize-cli db:migrate
 
 ---
 
-This guide provides a complete roadmap for implementing the Hotel & Flight Booking System with your existing MakeMyTrip infrastructure.
+This guide provides a complete roadmap for implementing the Hotel & Flight Booking System with your existing TripOra infrastructure.

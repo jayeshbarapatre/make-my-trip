@@ -131,7 +131,7 @@ const ContactPage = () => {
           <div className="info-card">
             <h3>📧 Email</h3>
             <p>
-              <a href="mailto:support@makemytrip.com">support@makemytrip.com</a>
+              <a href="mailto:support@tripora.com">support@tripora.com</a>
             </p>
           </div>
 
@@ -154,7 +154,7 @@ const ContactPage = () => {
           <div className="info-card">
             <h3>📍 Location</h3>
             <p>
-              MakeMyTrip<br />
+              TripOra<br />
               New Delhi, India
             </p>
           </div>

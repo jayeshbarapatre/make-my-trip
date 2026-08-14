@@ -16,6 +16,10 @@ const validate = (body, { partial = false } = {}) => {
   if (!partial) {
     if (!(body.type ?? body.cabType)?.trim?.()) errors.type = 'Cab type is required'
     if (num(body.price ?? body.baseFare) === null) errors.price = 'Fare is required'
+    // Both ends are required for the same reason as in vendorCabController: a
+    // cab with no destination cannot be found by a route search.
+    if (!(body.from ?? body.currentCity)?.trim?.()) errors.from = 'Pickup city is required'
+    if (!body.to?.trim?.()) errors.to = 'Drop-off city is required'
   }
 
   const price = num(body.price ?? body.baseFare)

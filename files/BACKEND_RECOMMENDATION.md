@@ -1,4 +1,4 @@
-# Backend Technology Recommendation for MakeMyTrip Clone
+# Backend Technology Recommendation for TripOra Clone
 
 ## 🎯 EXECUTIVE SUMMARY
 

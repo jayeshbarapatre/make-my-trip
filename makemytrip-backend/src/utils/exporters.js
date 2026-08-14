@@ -35,7 +35,7 @@ export const toCsv = (rows, columns) => {
 
 export const toXlsx = async (rows, columns, { sheetName = 'Report', title = null } = {}) => {
   const workbook = new ExcelJS.Workbook()
-  workbook.creator = 'MakeMyTrip Platform'
+  workbook.creator = 'TripOra Platform'
   workbook.created = new Date()
 
   // Excel rejects these characters in a sheet name and caps it at 31 chars.

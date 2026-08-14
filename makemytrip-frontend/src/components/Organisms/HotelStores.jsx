@@ -7,7 +7,7 @@ export default function HotelStores() {
   return (
     <section className="hotelbrands-section">
       <div className="hotelbrands-inner">
-        <SectionHeader title="Flagship Hotel Stores on MakeMyTrip" />
+        <SectionHeader title="Flagship Hotel Stores on TripOra" />
         <div className="hotelbrands-grid">
           {HOTEL_BRANDS.map((h) => (
             <ImageCard

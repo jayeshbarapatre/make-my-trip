@@ -24,7 +24,7 @@ export default function CareersPage() {
   };
 
   useEffect(() => {
-    document.title = 'Careers - MakeMyTrip';
+    document.title = 'Careers - TripOra';
     fetchJobs();
   }, []);
 
@@ -69,7 +69,7 @@ export default function CareersPage() {
         
         {/* Header Hero Banner */}
         <header className="careers-hero-banner" data-aos="fade-up">
-          <h1 className="careers-hero-title">Careers at MakeMyTrip</h1>
+          <h1 className="careers-hero-title">Careers at TripOra</h1>
           <p className="careers-hero-sub">Join our high-performing team and build the future of travel tech.</p>
         </header>
 

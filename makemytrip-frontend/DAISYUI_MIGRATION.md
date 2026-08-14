@@ -1,7 +1,7 @@
 # DaisyUI Migration Guide
 
 ## 📋 Overview
-This document guides you through migrating the MakeMyTrip UI from custom CSS to **DaisyUI with Tailwind CSS**. The migration uses the **"business"** theme, which is professional and matches your design system.
+This document guides you through migrating the TripOra UI from custom CSS to **DaisyUI with Tailwind CSS**. The migration uses the **"business"** theme, which is professional and matches your design system.
 
 ---
 

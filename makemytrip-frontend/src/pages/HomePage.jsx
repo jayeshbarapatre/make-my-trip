@@ -975,7 +975,7 @@ export default function HomePage() {
           <div className="hp-app-banner" data-aos="fade-up">
             <div className="hp-app-text">
               <h2>The whole trip in your <span>pocket.</span></h2>
-              <p>Download the MakeMyTrip app for exclusive in-app deals, faster check-in, and 24×7 trip support — wherever you go.</p>
+              <p>Download the TripOra app for exclusive in-app deals, faster check-in, and 24×7 trip support — wherever you go.</p>
               <div className="hp-app-input">
                 <span className="hp-app-cc">
                   <span className="hp-flag" style={{ width: 20, height: 14 }}></span>

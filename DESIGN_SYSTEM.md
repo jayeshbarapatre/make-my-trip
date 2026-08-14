@@ -4,7 +4,7 @@
 
 ### Colors
 ```
-Primary: #003580 (MakeMyTrip Blue)
+Primary: #003580 (TripOra Blue)
 Secondary: #1a73e8 (Google Blue)
 Success: #28a745 (Green)
 Warning: #ffc107 (Yellow/Orange)

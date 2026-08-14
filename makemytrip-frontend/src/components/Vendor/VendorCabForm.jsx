@@ -18,7 +18,13 @@ const VendorCabForm = ({ cabId, onClose, onSuccess }) => {
     baseFare: '',
     perKmRate: '',
     perMinuteRate: '',
-    currentCity: '',
+    // A cab is sold as a route, the same as a bus: customers search "from X to
+    // Y". This form only ever asked for one city, which the backend stored as
+    // the origin, so every cab listed here had no destination and could not be
+    // found by any search that named one. `from`/`to` are the fields the search
+    // actually matches on.
+    from: '',
+    to: '',
     cabs: 20
   })
 
@@ -35,7 +41,10 @@ const VendorCabForm = ({ cabId, onClose, onSuccess }) => {
           baseFare: cab.baseFare,
           perKmRate: cab.perKmRate,
           perMinuteRate: cab.perMinuteRate,
-          currentCity: cab.currentCity || '',
+          // Cabs listed before this form had a destination stored their origin
+          // as currentCity, so an edit carries it over rather than blanking it.
+          from: cab.from || cab.currentCity || '',
+          to: cab.to || '',
           cabs: cab.cabs
         })
       } else {
@@ -206,10 +215,21 @@ const VendorCabForm = ({ cabId, onClose, onSuccess }) => {
                   </div>
                 </div>
 
-                <div style={{ width: '100%' }}>
-                  <label style={labelStyle}>Base City <span style={{ color: 'hsl(var(--er))' }}>*</span></label>
-                  <input name="currentCity" type="text" value={formData.currentCity} onChange={handleChange} placeholder="e.g. Mumbai" required style={inputStyle} />
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <div>
+                    <label style={labelStyle}>From City <span style={{ color: 'hsl(var(--er))' }}>*</span></label>
+                    <input name="from" type="text" value={formData.from} onChange={handleChange} placeholder="e.g. Kathmandu" required style={inputStyle} />
+                  </div>
+                  <div>
+                    <label style={labelStyle}>To City <span style={{ color: 'hsl(var(--er))' }}>*</span></label>
+                    <input name="to" type="text" value={formData.to} onChange={handleChange} placeholder="e.g. Ahmedabad" required style={inputStyle} />
+                  </div>
                 </div>
+
+                <p style={{ margin: '10px 0 0', fontSize: '12.5px', color: 'var(--text-secondary)' }}>
+                  Customers search cabs by city, so enter the city here — not the
+                  locality. A trip from Maninagar is found by searching Ahmedabad.
+                </p>
               </div>
 
             </div>

@@ -1,4 +1,4 @@
-# 🎨 MakeMyTrip → DaisyUI Migration
+# 🎨 TripOra → DaisyUI Migration
 
 **Status**: ✅ Setup Complete | Ready to Start Converting
 

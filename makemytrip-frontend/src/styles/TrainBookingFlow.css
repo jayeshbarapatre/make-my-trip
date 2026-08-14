@@ -372,8 +372,9 @@
   margin-bottom: 6px;
 }
 
+/* Border token, not a surface — see the note on .bus-input. */
 .train-input {
-  border: 1px solid hsl(var(--b2));
+  border: 1px solid hsl(var(--b3));
   border-radius: 6px;
   padding: 10px 14px;
   font-size: 14px;

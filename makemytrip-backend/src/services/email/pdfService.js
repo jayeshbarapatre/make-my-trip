@@ -22,7 +22,7 @@ const addHeader = (doc, title) => {
   doc.rect(0, 0, doc.page.width, 80).fill(BRAND_COLOR)
   doc.font('Helvetica-Bold', 24)
   doc.fillColor('white')
-  doc.text('MakeMyTrip', 50, 20)
+  doc.text('TripOra', 50, 20)
   doc.font('Helvetica', 12)
   doc.text(title, 50, 50, { width: 300 })
   doc.fillColor('black')
@@ -63,7 +63,7 @@ const addFooter = (doc) => {
     doc.fontSize(10)
   }
 
-  doc.text('© 2024 MakeMyTrip. All rights reserved.', 50, doc.page.height - 30, { align: 'center' })
+  doc.text('© 2024 TripOra. All rights reserved.', 50, doc.page.height - 30, { align: 'center' })
   doc.text('This is an automated document. Please keep for your records.', 50, doc.page.height - 15, { align: 'center' })
 }
 
@@ -306,7 +306,7 @@ export const generateInvoicePDF = async (booking, invoiceNumber) => {
       doc.rect(0, 0, doc.page.width, 80).fill(BRAND_COLOR)
       doc.font('Helvetica-Bold', 24)
       doc.fillColor('white')
-      doc.text('MakeMyTrip', 50, 20)
+      doc.text('TripOra', 50, 20)
       doc.font('Helvetica', 14)
       doc.text('INVOICE', 50, 50)
       doc.fillColor('black')

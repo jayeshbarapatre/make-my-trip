@@ -27,7 +27,7 @@ export default function SupportPage() {
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    document.title = 'Customer Support & Help Center - MakeMyTrip';
+    document.title = 'Customer Support & Help Center - TripOra';
     window.scrollTo(0, 0);
   }, []);
 

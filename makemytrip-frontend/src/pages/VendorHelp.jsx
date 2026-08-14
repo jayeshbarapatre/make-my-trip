@@ -10,7 +10,7 @@ const VendorHelp = () => {
   const faqs = [
     { q: 'How long does hotel listing approval take?', a: 'Standard listings are audited and authorized by system admins within 12-24 hours. You will receive an alert as soon as the status shifts to APPROVED.' },
     { q: 'Can I add multiple room configurations?', a: 'Yes. Locate your listing in "My Hotels", click the Rooms option, and select "Add Room Type" to configure separate occupancies, prices, and amenities.' },
-    { q: 'What is the platform commission rate?', a: 'MakeMyTrip Vendor platform commission defaults to a flat 10% per completed reservation transaction, settled automatically at checkout.' },
+    { q: 'What is the platform commission rate?', a: 'TripOra Vendor platform commission defaults to a flat 10% per completed reservation transaction, settled automatically at checkout.' },
     { q: 'How do I edit active calendar blockouts?', a: 'Open the specific hotel rooms list, select manage availability, and toggle dates on the calendar timeline to manually restrict/blockout bookings.' }
   ]
 

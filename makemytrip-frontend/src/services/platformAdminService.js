@@ -90,4 +90,13 @@ export const vendorRequestsService = {
   decide: (id, decision, note) => platformAPI.patch(`/vendor-requests/${id}/${decision}`, { note })
 }
 
+// Approved vendors, as opposed to the applications above. `toggle` flips the
+// account between active and suspended; the backend also pulls a suspended
+// vendor's inventory off sale, so this is not a cosmetic flag.
+export const vendorsAdminService = {
+  list: () => platformAPI.get('/admin/vendors'),
+  toggle: (id) => platformAPI.patch(`/admin/vendors/${id}/toggle`),
+  remove: (id) => platformAPI.delete(`/admin/vendors/${id}`)
+}
+
 export default platformAPI

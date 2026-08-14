@@ -1,8 +1,8 @@
-# MakeMyTrip Website - Design System & UI/UX Documentation
+# TripOra Website - Design System & UI/UX Documentation
 
 ## Design System Overview
 
-MakeMyTrip employs an immersive, scalable design system built on the **Cosmos Philosophy**—a foundational framework that guides all product design and feature development. The system prioritizes **clarity, context, continuity, and confidence** while maintaining consistency across web, mobile, and tablet experiences.
+TripOra employs an immersive, scalable design system built on the **Cosmos Philosophy**—a foundational framework that guides all product design and feature development. The system prioritizes **clarity, context, continuity, and confidence** while maintaining consistency across web, mobile, and tablet experiences.
 
 ## Core Design Principles
 

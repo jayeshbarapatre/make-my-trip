@@ -18,7 +18,7 @@ import { test, expect } from '@playwright/test'
 test.describe('home page', () => {
   test('renders and offers a search', async ({ page }) => {
     await page.goto('/')
-    await expect(page).toHaveTitle(/MakeMyTrip/i)
+    await expect(page).toHaveTitle(/TripOra/i)
     await expect(page.getByRole('button', { name: /search/i }).first()).toBeVisible()
   })
 

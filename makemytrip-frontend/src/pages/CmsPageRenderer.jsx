@@ -59,7 +59,7 @@ export default function CmsPageRenderer({ slug: propsSlug }) {
 
       case 'foundation':
         return {
-          title: 'MakeMyTrip Foundation',
+          title: 'TripOra Foundation',
           subtitle: 'Empowering local communities, restoring cultural heritage, and driving eco-friendly tourism.',
           stats: [
             { num: '100K+', label: 'Trees Planted' },
@@ -83,7 +83,7 @@ export default function CmsPageRenderer({ slug: propsSlug }) {
           cardsTitle: 'Latest Press Releases',
           cards: [
             { icon: '🤖', title: 'MMT Launches Gen-AI Travel Guide', desc: 'Introducing dynamic voice-assisted travel planners powered by Google Cloud Gemini models.', meta: 'Published June 2, 2026' },
-            { icon: '🚢', title: 'Cruises Module Added to Search', desc: 'Users can now book over 100 global cruise liners directly on the MakeMyTrip dashboard.', meta: 'Published May 28, 2026' },
+            { icon: '🚢', title: 'Cruises Module Added to Search', desc: 'Users can now book over 100 global cruise liners directly on the TripOra dashboard.', meta: 'Published May 28, 2026' },
             { icon: '🌿', title: 'Partnership for Green Hotels', desc: 'Certifying over 2,000 properties across India with verified eco-badges for responsible stays.', meta: 'Published May 15, 2026' },
             { icon: '💼', title: 'Enterprise Booking Suite Upgraded', desc: 'A major redesign of corporate booking platforms with instant approvals and smart calculators.', meta: 'Published May 08, 2026' }
           ]
@@ -107,19 +107,19 @@ export default function CmsPageRenderer({ slug: propsSlug }) {
           subtitle: 'How we collect, protect, and handle your personal and financial information.',
           sections: [
             { id: 'section1', label: '1. Information Collection', content: 'We collect information you provide directly, such as passenger details, emails, contact numbers, and travel documents when booking tickets. We also capture browsing information via cookies to customize layouts and flights search.' },
-            { id: 'section2', label: '2. Payment Security', content: 'All financial bookings, transaction cards, and UPI transfers are processed using PCI-DSS compliant secure vaults. MakeMyTrip does not store raw credit card CVV numbers.' },
+            { id: 'section2', label: '2. Payment Security', content: 'All financial bookings, transaction cards, and UPI transfers are processed using PCI-DSS compliant secure vaults. TripOra does not store raw credit card CVV numbers.' },
             { id: 'section3', label: '3. Data Sharing', content: 'To fulfill bookings, passenger manifests must be shared with respective airlines, hotels, train operators, or bus agencies. We do not sell user travel behavior profiles to third-party advertisers.' },
-            { id: 'section4', label: '4. Your User Rights', content: 'You can modify passenger listings, delete saved cards, or deactivate your MakeMyTrip profile directly inside user settings, or request full account deletion via privacy support.' }
+            { id: 'section4', label: '4. Your User Rights', content: 'You can modify passenger listings, delete saved cards, or deactivate your TripOra profile directly inside user settings, or request full account deletion via privacy support.' }
           ]
         };
 
       case 'terms-of-service':
         return {
           title: 'Terms of Service',
-          subtitle: 'Legal agreement governing your use of the MakeMyTrip platform.',
+          subtitle: 'Legal agreement governing your use of the TripOra platform.',
           sections: [
-            { id: 'section1', label: '1. Acceptance of Terms', content: 'By opening an account, search routing flights, booking hotels, or using MakeMyTrip API engines, you fully accept these platform terms of service without conditions.' },
-            { id: 'section2', label: '2. Booking Contracts', content: 'MakeMyTrip acts as a booking agent connecting travelers with airlines, hotels, bus operators, and cab drivers. The primary contract of transport resides with the service provider.' },
+            { id: 'section1', label: '1. Acceptance of Terms', content: 'By opening an account, search routing flights, booking hotels, or using TripOra API engines, you fully accept these platform terms of service without conditions.' },
+            { id: 'section2', label: '2. Booking Contracts', content: 'TripOra acts as a booking agent connecting travelers with airlines, hotels, bus operators, and cab drivers. The primary contract of transport resides with the service provider.' },
             { id: 'section3', label: '3. Booking Accuracy', content: 'Travelers are responsible for matching government-issued ID card details with names entered during ticket checkout. Misaligned documentation may result in denied entry.' },
             { id: 'section4', label: '4. Dispute Governance', content: 'All user disputes, billing issues, claims, or liability concerns shall be governed under the legal jurisdiction of the courts of New Delhi, India.' }
           ]
@@ -145,7 +145,7 @@ export default function CmsPageRenderer({ slug: propsSlug }) {
             { id: 'section1', label: '1. Verified Partners Only', content: 'We run security, regulatory, and quality checks on hotels, cab vendors, and bus operators before listing them in search results.' },
             { id: 'section2', label: '2. Secure Authentication', content: 'Login checks use one-time mobile OTP verifications to safeguard your account against unauthorized logins.' },
             { id: 'section3', label: '3. 24/7 Safety Support', content: 'Our safety support line remains active round-the-clock for travelers facing road emergencies, booking denials, or cancellation issues.' },
-            { id: 'section4', label: '4. Scam Protection', content: 'Never share passwords or OTP codes with external support callers. MakeMyTrip personnel will never request transaction passwords over phone.' }
+            { id: 'section4', label: '4. Scam Protection', content: 'Never share passwords or OTP codes with external support callers. TripOra personnel will never request transaction passwords over phone.' }
           ]
         };
 

@@ -453,7 +453,7 @@ export default function MyTrips() {
               />
             </div>
             <h3 style={{ margin: '0 0 8px', fontSize: '22px', fontWeight: 800, color: 'hsl(var(--bc))' }}>No bookings found</h3>
-            <p style={{ margin: 0, color: 'hsl(var(--bc) / 0.55)', fontSize: '15px' }}>{searchQuery || dateRangeStart ? 'Try adjusting your search filters or plan your next vacation from the MakeMyTrip homepage.' : 'Plan your next vacation or flight search from the MakeMyTrip homepage.'}</p>
+            <p style={{ margin: 0, color: 'hsl(var(--bc) / 0.55)', fontSize: '15px' }}>{searchQuery || dateRangeStart ? 'Try adjusting your search filters or plan your next vacation from the TripOra homepage.' : 'Plan your next vacation or flight search from the TripOra homepage.'}</p>
           </div>
         ) : (
           sortedBookings.map(b => (

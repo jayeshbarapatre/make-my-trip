@@ -10,7 +10,7 @@ export default function Navbar() {
   return (
     <div className="navbar bg-base-100 sticky top-0 z-40 shadow">
       <div className="flex-1">
-        <a className="text-xl font-bold text-primary">MakeMyTrip</a>
+        <a className="text-xl font-bold text-primary">TripOra</a>
       </div>
       <div className="flex-none gap-2">
         {/* Your nav links here */}

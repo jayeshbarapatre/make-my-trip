@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "title": "MakeMyTrip Frontend - Hardcoded Color to DaisyUI Migration Map",
+    "title": "TripOra Frontend - Hardcoded Color to DaisyUI Migration Map",
     "date": "2026-07-27",
     "description": "Complete mapping of all hardcoded hex colors (#XXXXXX) in CSS and JSX files to recommended DaisyUI CSS variables",
     "total_colors_found": 87,

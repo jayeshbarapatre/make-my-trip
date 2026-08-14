@@ -122,7 +122,7 @@ export const sendSms = async (phone, body) => {
 }
 
 export const sendOtpSms = async (phone, otp, ttlMinutes = 5) => {
-  const brandName = process.env.BRAND_NAME || 'MakeMyTrip'
+  const brandName = process.env.BRAND_NAME || 'TripOra'
   const body = `${otp} is your ${brandName} verification code. It is valid for ${ttlMinutes} minutes. Do not share it with anyone.`
   return sendSms(phone, body)
 }

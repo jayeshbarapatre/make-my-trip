@@ -1311,7 +1311,7 @@ export default function BookingPage() {
 
                   <div style={s.ticketFooter}>
                     <div style={s.tfContact}>
-                      <strong>Support:</strong> 1800 102 8747 | <strong>Email:</strong> support@makemytrip.com
+                      <strong>Support:</strong> 1800 102 8747 | <strong>Email:</strong> support@tripora.com
                     </div>
                     <p style={s.tfNote}>
                       * Please carry a valid Photo ID for airport entry. Gate closes 45 mins before departure.

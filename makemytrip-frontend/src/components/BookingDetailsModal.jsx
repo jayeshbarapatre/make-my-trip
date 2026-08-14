@@ -338,7 +338,7 @@ export default function BookingDetailsModal({ booking, onClose }) {
         {/* Footer */}
         <div style={{ background: 'hsl(var(--b2))', borderTop: '1px solid hsl(var(--b3))', padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexShrink: 0, flexWrap: 'wrap' }}>
           <div style={{ fontSize: '13px', color: 'hsl(var(--bc) / 0.6))' }}>
-            Need help? <strong>support@makemytrip.com</strong>
+            Need help? <strong>support@tripora.com</strong>
           </div>
           <button
             onClick={handleDownloadPDF}

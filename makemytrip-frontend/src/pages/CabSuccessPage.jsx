@@ -33,7 +33,7 @@ export default function CabSuccessPage() {
       bookingId={bookingId}
       printableId="cab-ticket-content"
       totalAmount={totalAmount}
-      footnote={'* Driver will contact you shortly. Keep your phone on for driver updates.\nSupport: 1800 102 8747 | support@makemytrip.com'}
+      footnote={'* Driver will contact you shortly. Keep your phone on for driver updates.\nSupport: 1800 102 8747 | support@tripora.com'}
       downloadLabel="📥 DOWNLOAD RECEIPT"
       onDownloadPDF={handleDownloadPDF}
       onMyTrips={() => navigate('/my-trips')}

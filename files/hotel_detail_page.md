@@ -1,6 +1,6 @@
 # Hotel Details Page Specification & Architecture
 
-This document outlines the architecture, features, data model, and component hierarchy of the **Hotel Details Page (`HotelDetailsPage.jsx`)** implemented within the MakeMyTrip SaaS platform.
+This document outlines the architecture, features, data model, and component hierarchy of the **Hotel Details Page (`HotelDetailsPage.jsx`)** implemented within the TripOra SaaS platform.
 
 ---
 
@@ -23,7 +23,7 @@ navigate(`/hotels/detail/${hotel.id}`, { state: { hotel } })
 
 ## 2. Component Layout & Visual Structure
 
-The page follows a modern, premium MakeMyTrip design language structured around a 1200px container grid.
+The page follows a modern, premium TripOra design language structured around a 1200px container grid.
 
 ```
 ┌──────────────────────────────────────────────────────────┐

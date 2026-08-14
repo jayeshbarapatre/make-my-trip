@@ -1,12 +1,12 @@
-# MakeMyTrip Premium Portal - Service Categories Architecture & Specification
+# TripOra Premium Portal - Service Categories Architecture & Specification
 
-This document outlines the complete architectural specifications, user experience patterns, component design, and animation integration across all 12 core travel service categories within the MakeMyTrip platform.
+This document outlines the complete architectural specifications, user experience patterns, component design, and animation integration across all 12 core travel service categories within the TripOra platform.
 
 ---
 
 ## 1. Executive Overview
 
-The MakeMyTrip platform operates as an integrated multi-service travel portal. Every service category is engineered to function as a fully featured, state-driven search and discovery experience while maintaining absolute visual consistency under the overarching Awwwards-grade luxury dark theme design system.
+The TripOra platform operates as an integrated multi-service travel portal. Every service category is engineered to function as a fully featured, state-driven search and discovery experience while maintaining absolute visual consistency under the overarching Awwwards-grade luxury dark theme design system.
 
 ```mermaid
 graph TD
@@ -48,7 +48,7 @@ Every category page follows a standardized, responsive 4-tier structural layout 
    - Staggered entry animation on scroll.
 
 4. **Trust & Value Prop Section (`cabs-why-grid`, `homestays-why-grid`)**:
-   - 4-column feature grids detailing MakeMyTrip specific guarantees, verified host programs, and 24/7 support channels.
+   - 4-column feature grids detailing TripOra specific guarantees, verified host programs, and 24/7 support channels.
 
 ---
 

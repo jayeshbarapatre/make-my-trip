@@ -106,9 +106,11 @@ export default function Header() {
         
         {/* image1 style premium logo branding */}
         <Link to="/" className="common-header-logo">
-          <div className="mmt-logo-badge">My</div>
+          {/* Two glyphs, as "My" was: the badge is a fixed 40px square whose
+              font size was chosen around a two-character mark. */}
+          <div className="mmt-logo-badge">To</div>
           <div className="mmt-logo-text">
-            <span className="mmt-logo-brand">MakeMyTrip</span>
+            <span className="mmt-logo-brand">TripOra</span>
             <span className="mmt-logo-sub">India's No. 1 Travel Co.</span>
           </div>
         </Link>

@@ -121,7 +121,7 @@ const main = async () => {
   // ── 4. Send ─────────────────────────────────────────────────────────────
   console.log('\n  delivery')
   const info = await transporter.sendMail({
-    from: `"${process.env.SMTP_FROM_NAME || 'MakeMyTrip'}" <${process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER || 'no-reply@example.com'}>`,
+    from: `"${process.env.SMTP_FROM_NAME || 'TripOra'}" <${process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER || 'no-reply@example.com'}>`,
     to: recipient,
     subject: `Flight Booking Confirmed — ${BOOKING.bookingId}`,
     html,

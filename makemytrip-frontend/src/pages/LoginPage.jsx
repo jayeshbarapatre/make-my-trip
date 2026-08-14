@@ -258,7 +258,7 @@ export default function LoginPage() {
           <div className="form-header-box">
             <h1 className="form-main-title">
               {view === 'Login'    && 'Welcome Back ✈'}
-              {view === 'Register' && 'Join MakeMyTrip 🌍'}
+              {view === 'Register' && 'Join TripOra 🌍'}
               {view === 'Forgot'   && 'Reset Password 🔑'}
             </h1>
             <p className="form-sub-title">
@@ -306,12 +306,12 @@ export default function LoginPage() {
 
           {/* Secure encrypted badge */}
           <div className="form-secure-badge">
-            🔒 256-bit SSL Encrypted · Secured by MakeMyTrip
+            🔒 256-bit SSL Encrypted · Secured by TripOra
           </div>
 
           {/* Legal */}
           <p className="form-legal-notice">
-            By continuing, you agree to MakeMyTrip's{' '}
+            By continuing, you agree to TripOra's{' '}
             <span className="legal-highlight-link">Terms of Use</span> and{' '}
             <span className="legal-highlight-link">Privacy Policy</span>.
           </p>

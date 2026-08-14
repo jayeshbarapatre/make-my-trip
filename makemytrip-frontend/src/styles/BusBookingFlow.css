@@ -289,8 +289,11 @@
   letter-spacing: 0.5px;
 }
 
+/* --b3 is the border token; --b2 is a surface. Bordering a --b1 field with --b2
+   left a 2% edge in light mode and, in dark mode, an edge *darker* than the
+   field it outlined — so the input read as having no border at all. */
 .bus-input {
-  border: 1px solid hsl(var(--b2));
+  border: 1px solid hsl(var(--b3));
   border-radius: 6px;
   padding: 10px 14px;
   font-size: 14px;
@@ -310,7 +313,7 @@
 }
 
 .bus-input-grp select {
-  border: 1px solid hsl(var(--b2));
+  border: 1px solid hsl(var(--b3));
   border-radius: 6px;
   padding: 10px 14px;
   font-size: 14px;

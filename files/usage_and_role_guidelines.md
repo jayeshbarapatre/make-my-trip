@@ -1,6 +1,6 @@
 # Antigravity Tool & Platform - Usage & Role Guidelines
 
-This document provides a comprehensive yet concise set of rules, standards, and practical workflows for engineering and design teams working on the modern SaaS product **"Antigravity Tool"** and the integrated **MakeMyTrip Premium Portal**.
+This document provides a comprehensive yet concise set of rules, standards, and practical workflows for engineering and design teams working on the modern SaaS product **"Antigravity Tool"** and the integrated **TripOra Premium Portal**.
 
 ---
 
@@ -134,7 +134,7 @@ graph LR
 
 ## FINAL GOAL
 
-Create a well-structured, scalable, and high-performance product (**Antigravity Tool** & **MakeMyTrip Premium Portal**) where:
+Create a well-structured, scalable, and high-performance product (**Antigravity Tool** & **TripOra Premium Portal**) where:
 * **UI is clean and intuitive**
 * **Code is maintainable and efficient**
 * **Teams collaborate smoothly**

@@ -28,7 +28,7 @@ All installed with `--legacy-peer-deps` to handle React 19 compatibility.
 
 #### Updated `index.html`
 - Added `data-theme="business"` to `<html>` tag
-- Updated title to "MakeMyTrip - Travel Made Easy"
+- Updated title to "TripOra - Travel Made Easy"
 
 #### Updated `src/index.css`
 - Added Tailwind directives: `@tailwind base/components/utilities`

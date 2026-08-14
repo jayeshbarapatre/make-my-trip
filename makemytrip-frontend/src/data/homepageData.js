@@ -171,15 +171,15 @@ export const INFO_CARDS = [
 // ─── SEO Text Block Data ─────────────────────────────────────────────────────
 export const SEO_SECTIONS = [
   {
-    title: 'Why MakeMyTrip?',
-    content: 'Established in 2000, MakeMyTrip has since positioned itself as one of the leading online travel companies in India. Providing great offers, competitive airfares, exclusive discounts, and a seamless online booking experience to many of its customers. Over the years, MakeMyTrip has revolutionized the Indian travel industry by introducing innovative, user-friendly booking technologies and building an extensive network of flights, hotels, and holiday partners. Whether you are planning a domestic weekend getaway or a long international holiday, MakeMyTrip makes trip planning simpler and more affordable.'
+    title: 'Why TripOra?',
+    content: 'Established in 2000, TripOra has since positioned itself as one of the leading online travel companies in India. Providing great offers, competitive airfares, exclusive discounts, and a seamless online booking experience to many of its customers. Over the years, TripOra has revolutionized the Indian travel industry by introducing innovative, user-friendly booking technologies and building an extensive network of flights, hotels, and holiday partners. Whether you are planning a domestic weekend getaway or a long international holiday, TripOra makes trip planning simpler and more affordable.'
   },
   {
-    title: 'Booking Flights with MakeMyTrip',
-    content: 'At MakeMyTrip, you can find low-cost air tickets for all major airlines operating globally. We bring you real-time seat availability, flight status tracking, multi-city route options, and unique features like Zero Cancellation and Instant Refunds. With our smart calendar tool, you can compare flight prices across different dates to locate the cheapest flights easily. Enjoy extra benefits such as extra baggage allowances, meal selections, and special student or senior citizen discount fares to secure maximum value on every booking.'
+    title: 'Booking Flights with TripOra',
+    content: 'At TripOra, you can find low-cost air tickets for all major airlines operating globally. We bring you real-time seat availability, flight status tracking, multi-city route options, and unique features like Zero Cancellation and Instant Refunds. With our smart calendar tool, you can compare flight prices across different dates to locate the cheapest flights easily. Enjoy extra benefits such as extra baggage allowances, meal selections, and special student or senior citizen discount fares to secure maximum value on every booking.'
   },
   {
-    title: 'Domestic Flights with MakeMyTrip',
-    content: 'MakeMyTrip connects you to over 100 domestic destinations within India, covering both busy metros and offbeat regions. Book direct or connection flights with IndiGo, Air India, SpiceJet, Akasa Air, and more. From popular tourist corridors like Delhi to Goa or Mumbai to Bengaluru, to lesser-known local travel routes, find flights with detailed itinerary options. You can easily sort and filter flights by departure timings, layovers, duration, prices, and carrier preferences for a tailored travel planning experience.'
+    title: 'Domestic Flights with TripOra',
+    content: 'TripOra connects you to over 100 domestic destinations within India, covering both busy metros and offbeat regions. Book direct or connection flights with IndiGo, Air India, SpiceJet, Akasa Air, and more. From popular tourist corridors like Delhi to Goa or Mumbai to Bengaluru, to lesser-known local travel routes, find flights with detailed itinerary options. You can easily sort and filter flights by departure timings, layovers, duration, prices, and carrier preferences for a tailored travel planning experience.'
   }
 ]

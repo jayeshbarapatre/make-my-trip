@@ -1,4 +1,4 @@
-# MakeMyTrip Clone - Complete Development Prompt & Setup Guide
+# TripOra Clone - Complete Development Prompt & Setup Guide
 
 ## 🚀 PART 1: FRONTEND SETUP PROMPT (React 18 + Vite)
 
@@ -287,7 +287,7 @@ export default {
 ```bash
 VITE_API_URL=http://localhost:5000/api
 VITE_API_TIMEOUT=10000
-VITE_APP_NAME=MakeMyTrip Clone
+VITE_APP_NAME=TripOra Clone
 VITE_APP_VERSION=1.0.0
 
 # Auth
@@ -821,7 +821,7 @@ mkdir -p src/{routes,controllers,models,middleware,services,utils,config}
 {
   "name": "makemytrip-backend",
   "version": "1.0.0",
-  "description": "MakeMyTrip Clone Backend",
+  "description": "TripOra Clone Backend",
   "main": "src/index.js",
   "type": "module",
   "scripts": {

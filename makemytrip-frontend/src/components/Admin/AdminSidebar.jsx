@@ -60,9 +60,9 @@ const AdminSidebar = ({ isOpen, toggleSidebar }) => {
       <aside className={`admin-sidebar ${isOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
           <div className="sidebar-title">
-            <div className="admin-logo-badge">My</div>
+            <div className="admin-logo-badge">To</div>
             <div className="admin-logo-text">
-              <span className="admin-logo-brand">MakeMyTrip</span>
+              <span className="admin-logo-brand">TripOra</span>
               <span className="admin-logo-sub">Admin</span>
             </div>
           </div>

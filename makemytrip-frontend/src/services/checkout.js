@@ -78,8 +78,8 @@ export const payAndBook = async ({ quote, bookingData, prefill = {}, description
       order_id: order.orderId,
       amount: order.amount,
       currency: order.currency,
-      name: 'MakeMyTrip',
-      description: description || 'MakeMyTrip Booking',
+      name: 'TripOra',
+      description: description || 'TripOra Booking',
       prefill: {
         name: prefill.name || '',
         email: prefill.email || '',

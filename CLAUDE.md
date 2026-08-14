@@ -3,7 +3,7 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
-Full-stack travel platform (MakeMyTrip clone) supporting flights, hotels, buses, cabs, trains, and more. Built with React 18 + Vite (frontend) and Node.js + Express + **Firebase/Firestore as the only database and source of truth** (backend). Includes complete user booking system and admin panel for content management.
+Full-stack travel platform (TripOra) supporting flights, hotels, buses, cabs, trains, and more. Built with React 18 + Vite (frontend) and Node.js + Express + **Firebase/Firestore as the only database and source of truth** (backend). Includes complete user booking system and admin panel for content management.
 
 **IMPORTANT — Database policy:** Firestore is the **only** database. There is no MongoDB, no Mongoose, no Prisma and no Postgres anywhere in this repository — the ORM layer was fully removed, including `src/models/`, `src/config/db.js`, `src/config/prismaClient.js` and every Prisma-backed seed script. Do not reintroduce any of them. Use the `firebase*Controller.js` controllers; admin and vendor paths use the Firestore CRUD factories in `src/controllers/factories/`.
 

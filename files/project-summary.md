@@ -1,8 +1,8 @@
-# MakeMyTrip Website - Project Summary
+# TripOra Website - Project Summary
 
 ## Project Overview
 
-**MakeMyTrip (MMT)** is one of India's largest and most successful online travel platforms, serving millions of users across flights, hotels, trains, buses, holiday packages, visa services, and cabs. With over 21 years of market presence, MMT has grown from a traditional OTA (Online Travel Agency) to a comprehensive travel ecosystem with a strong focus on personalization and user-centric design.
+**TripOra (MMT)** is one of India's largest and most successful online travel platforms, serving millions of users across flights, hotels, trains, buses, holiday packages, visa services, and cabs. With over 21 years of market presence, MMT has grown from a traditional OTA (Online Travel Agency) to a comprehensive travel ecosystem with a strong focus on personalization and user-centric design.
 
 ## Project Objectives
 
@@ -295,7 +295,7 @@
 
 ## Conclusion
 
-MakeMyTrip represents a mature, well-architected travel platform that has evolved from a traditional OTA to a personalized, mobile-first, multi-vertical ecosystem. The Project Cosmos initiative demonstrates sophisticated use of real-time personalization and data science to drive conversions and user engagement. The platform's design philosophy prioritizes clarity, context, continuity, and confidence—principles that resonate strongly with Indian consumers making high-value travel decisions.
+TripOra represents a mature, well-architected travel platform that has evolved from a traditional OTA to a personalized, mobile-first, multi-vertical ecosystem. The Project Cosmos initiative demonstrates sophisticated use of real-time personalization and data science to drive conversions and user engagement. The platform's design philosophy prioritizes clarity, context, continuity, and confidence—principles that resonate strongly with Indian consumers making high-value travel decisions.
 
 The success of MMT lies in its ability to balance complexity (multiple verticals, payment systems, personalization engines) with simplicity (clean UI, reduced friction, mobile optimization). As travel behavior continues to evolve and technology advances, MMT's foundation positions it well for continued innovation in personalized travel experiences.
 

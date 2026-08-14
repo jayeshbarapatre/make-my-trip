@@ -49,7 +49,7 @@ const VendorLoginPage = () => {
           <div className="portal-icon-wrapper">
             <FaStore className="portal-icon" />
           </div>
-          <h1 className="login-title">MakeMyTrip Vendor</h1>
+          <h1 className="login-title">TripOra Vendor</h1>
           <p className="login-subtitle">Vendor Portal</p>
         </div>
 

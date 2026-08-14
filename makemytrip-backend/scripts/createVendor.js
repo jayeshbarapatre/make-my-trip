@@ -11,6 +11,7 @@ import bcrypt from 'bcryptjs'
 import { db } from '../src/config/firebase.js'
 import { Role, AccountStatus } from '../src/config/roles.js'
 import { normalizeEmail, findUserByEmail } from '../src/utils/identity.js'
+import { now } from '../src/utils/time.js'
 
 const arg = (name) => {
   const i = process.argv.indexOf(`--${name}`)
@@ -46,7 +47,7 @@ const run = async () => {
       vendorType,
       vendorName: name !== 'Vendor' ? name : (existingData?.vendorName ?? existingData?.name ?? name),
       is_vendor: true,
-      updatedAt: new Date().toISOString()
+      updatedAt: now()
     }
     if (password) {
       patch.password = await bcrypt.hash(password, 10)
@@ -75,8 +76,13 @@ const run = async () => {
     vendorType,
     vendorName: name,
     is_vendor: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    // Timestamps, not ISO strings. Firestore orders by type before value and a
+    // range filter never matches across types, so an account written as a string
+    // is invisible to every dated query and sorts as a separate group. Accounts
+    // created here used to be exactly that, until the next migrate:timestamps
+    // run happened to rescue them.
+    createdAt: now(),
+    updatedAt: now(),
     isDeleted: false
   })
 

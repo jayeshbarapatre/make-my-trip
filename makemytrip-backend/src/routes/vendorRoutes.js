@@ -10,8 +10,12 @@ import {
   getMyBuses, createBus, updateBus, deleteBus, submitBusForApproval
 } from '../controllers/vendorBusController.js'
 import {
-  getMyCabs, createCab, updateCab, deleteCab, submitCabForApproval
+  getMyCabs, createCab, getMyCabById, updateCab, deleteCab, submitCabForApproval,
+  toggleCabStatus, getCabStats
 } from '../controllers/vendorCabController.js'
+import {
+  listDrivers, createDriver, updateDriver, deleteDriver
+} from '../controllers/vendorDriverController.js'
 import { authenticateVendor, vendorOnly } from '../middleware/vendorAuth.js'
 import { authLimiter, generalLimiter } from '../middleware/rateLimiter.js'
 
@@ -49,11 +53,21 @@ router.put('/buses/:id', authenticateVendor, vendorOnly, updateBus)
 router.delete('/buses/:id', authenticateVendor, vendorOnly, deleteBus)
 router.patch('/buses/:id/submit', authenticateVendor, vendorOnly, submitBusForApproval)
 
+// The driver roster is mounted before /cabs/:id so "drivers" is never captured
+// as a cab id.
+router.get('/cab-drivers', authenticateVendor, vendorOnly, listDrivers)
+router.post('/cab-drivers', authenticateVendor, vendorOnly, createDriver)
+router.put('/cab-drivers/:id', authenticateVendor, vendorOnly, updateDriver)
+router.delete('/cab-drivers/:id', authenticateVendor, vendorOnly, deleteDriver)
+
+router.get('/cabs/stats', authenticateVendor, vendorOnly, getCabStats)
 router.post('/cabs', authenticateVendor, vendorOnly, createCab)
 router.get('/cabs', authenticateVendor, vendorOnly, getMyCabs)
+router.get('/cabs/:id', authenticateVendor, vendorOnly, getMyCabById)
 router.put('/cabs/:id', authenticateVendor, vendorOnly, updateCab)
 router.delete('/cabs/:id', authenticateVendor, vendorOnly, deleteCab)
 router.patch('/cabs/:id/submit', authenticateVendor, vendorOnly, submitCabForApproval)
+router.patch('/cabs/:id/toggle', authenticateVendor, vendorOnly, toggleCabStatus)
 
 
 export default router

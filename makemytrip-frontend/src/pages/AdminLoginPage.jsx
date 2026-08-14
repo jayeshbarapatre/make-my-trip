@@ -49,7 +49,7 @@ const AdminLoginPage = () => {
           <div className="portal-icon-wrapper">
             <FaUserShield className="portal-icon" />
           </div>
-          <h1 className="login-title">MakeMyTrip Admin</h1>
+          <h1 className="login-title">TripOra Admin</h1>
           <p className="login-subtitle">Admin Portal</p>
         </div>
 

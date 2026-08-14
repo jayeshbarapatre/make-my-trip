@@ -59,7 +59,7 @@ export const DEFAULT_TEMPLATES = {
     htmlBody: `
 <div style="max-width: 600px; margin: 0 auto; ${BASE_STYLES}">
   <div style="${HEADER_STYLE}">
-    <h1 style="margin: 0;">MakeMyTrip</h1>
+    <h1 style="margin: 0;">TripOra</h1>
     <p style="margin: 10px 0 0 0;">Flight Booking Confirmed ✓</p>
   </div>
 
@@ -125,7 +125,7 @@ export const DEFAULT_TEMPLATES = {
     </div>
 
     <div style="text-align: center; margin: 20px 0;">
-      <a href="${process.env.APP_BASE_URL || 'https://makemytrip.com'}/bookings" style="${BUTTON_STYLE}">View Booking</a>
+      <a href="${process.env.APP_BASE_URL || 'https://tripora.com'}/bookings" style="${BUTTON_STYLE}">View Booking</a>
     </div>
 
     <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0;">
@@ -134,7 +134,7 @@ export const DEFAULT_TEMPLATES = {
   </div>
 
   <div style="${FOOTER_STYLE}">
-    <p style="margin: 0;">© 2024 MakeMyTrip. All rights reserved.</p>
+    <p style="margin: 0;">© 2024 TripOra. All rights reserved.</p>
     <p style="margin: 5px 0 0 0;">This is an automated email. Please do not reply.</p>
   </div>
 </div>
@@ -150,7 +150,7 @@ export const DEFAULT_TEMPLATES = {
     htmlBody: `
 <div style="max-width: 600px; margin: 0 auto; ${BASE_STYLES}">
   <div style="${HEADER_STYLE}">
-    <h1 style="margin: 0;">MakeMyTrip</h1>
+    <h1 style="margin: 0;">TripOra</h1>
     <p style="margin: 10px 0 0 0;">Hotel Booking Confirmed ✓</p>
   </div>
 
@@ -216,7 +216,7 @@ export const DEFAULT_TEMPLATES = {
     </div>
 
     <div style="text-align: center; margin: 20px 0;">
-      <a href="${process.env.APP_BASE_URL || 'https://makemytrip.com'}/bookings" style="${BUTTON_STYLE}">View Reservation</a>
+      <a href="${process.env.APP_BASE_URL || 'https://tripora.com'}/bookings" style="${BUTTON_STYLE}">View Reservation</a>
     </div>
 
     <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0;">
@@ -225,7 +225,7 @@ export const DEFAULT_TEMPLATES = {
   </div>
 
   <div style="${FOOTER_STYLE}">
-    <p style="margin: 0;">© 2024 MakeMyTrip. All rights reserved.</p>
+    <p style="margin: 0;">© 2024 TripOra. All rights reserved.</p>
     <p style="margin: 5px 0 0 0;">This is an automated email. Please do not reply.</p>
   </div>
 </div>
@@ -241,7 +241,7 @@ export const DEFAULT_TEMPLATES = {
     htmlBody: `
 <div style="max-width: 600px; margin: 0 auto; ${BASE_STYLES}">
   <div style="${HEADER_STYLE}">
-    <h1 style="margin: 0;">MakeMyTrip</h1>
+    <h1 style="margin: 0;">TripOra</h1>
     <p style="margin: 10px 0 0 0;">Bus Ticket Confirmed ✓</p>
   </div>
 
@@ -281,7 +281,7 @@ export const DEFAULT_TEMPLATES = {
     </div>
 
     <div style="text-align: center; margin: 20px 0;">
-      <a href="${process.env.APP_BASE_URL || 'https://makemytrip.com'}/bookings" style="${BUTTON_STYLE}">Download Ticket</a>
+      <a href="${process.env.APP_BASE_URL || 'https://tripora.com'}/bookings" style="${BUTTON_STYLE}">Download Ticket</a>
     </div>
 
     <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0;">
@@ -290,7 +290,7 @@ export const DEFAULT_TEMPLATES = {
   </div>
 
   <div style="${FOOTER_STYLE}">
-    <p style="margin: 0;">© 2024 MakeMyTrip. All rights reserved.</p>
+    <p style="margin: 0;">© 2024 TripOra. All rights reserved.</p>
   </div>
 </div>
     `,
@@ -305,7 +305,7 @@ export const DEFAULT_TEMPLATES = {
     htmlBody: `
 <div style="max-width: 600px; margin: 0 auto; ${BASE_STYLES}">
   <div style="${HEADER_STYLE}">
-    <h1 style="margin: 0;">MakeMyTrip</h1>
+    <h1 style="margin: 0;">TripOra</h1>
     <p style="margin: 10px 0 0 0;">Cab Ride Confirmed ✓</p>
   </div>
 
@@ -341,12 +341,12 @@ export const DEFAULT_TEMPLATES = {
     </div>
 
     <div style="text-align: center; margin: 20px 0;">
-      <a href="${process.env.APP_BASE_URL || 'https://makemytrip.com'}/bookings" style="${BUTTON_STYLE}">Track Ride</a>
+      <a href="${process.env.APP_BASE_URL || 'https://tripora.com'}/bookings" style="${BUTTON_STYLE}">Track Ride</a>
     </div>
   </div>
 
   <div style="${FOOTER_STYLE}">
-    <p style="margin: 0;">© 2024 MakeMyTrip. All rights reserved.</p>
+    <p style="margin: 0;">© 2024 TripOra. All rights reserved.</p>
   </div>
 </div>
     `,
@@ -361,7 +361,7 @@ export const DEFAULT_TEMPLATES = {
     htmlBody: `
 <div style="max-width: 600px; margin: 0 auto; ${BASE_STYLES}">
   <div style="${HEADER_STYLE}">
-    <h1 style="margin: 0;">MakeMyTrip</h1>
+    <h1 style="margin: 0;">TripOra</h1>
     <p style="margin: 10px 0 0 0;">Train Ticket Confirmed ✓</p>
   </div>
 
@@ -409,7 +409,7 @@ export const DEFAULT_TEMPLATES = {
     </div>
 
     <div style="text-align: center; margin: 20px 0;">
-      <a href="${process.env.APP_BASE_URL || 'https://makemytrip.com'}/bookings" style="${BUTTON_STYLE}">View E-Ticket</a>
+      <a href="${process.env.APP_BASE_URL || 'https://tripora.com'}/bookings" style="${BUTTON_STYLE}">View E-Ticket</a>
     </div>
 
     <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0;">
@@ -418,7 +418,7 @@ export const DEFAULT_TEMPLATES = {
   </div>
 
   <div style="${FOOTER_STYLE}">
-    <p style="margin: 0;">© 2024 MakeMyTrip. All rights reserved.</p>
+    <p style="margin: 0;">© 2024 TripOra. All rights reserved.</p>
   </div>
 </div>
     `,
@@ -429,11 +429,11 @@ export const DEFAULT_TEMPLATES = {
     key: 'welcome',
     name: 'Welcome Email',
     module: 'system',
-    subject: 'Welcome to MakeMyTrip!',
+    subject: 'Welcome to TripOra!',
     htmlBody: `
 <div style="max-width: 600px; margin: 0 auto; ${BASE_STYLES}">
   <div style="${HEADER_STYLE}">
-    <h1 style="margin: 0;">Welcome to MakeMyTrip!</h1>
+    <h1 style="margin: 0;">Welcome to TripOra!</h1>
   </div>
 
   <div style="padding: 20px; background: white; border: 1px solid #eee;">
@@ -451,7 +451,7 @@ export const DEFAULT_TEMPLATES = {
     </ul>
 
     <div style="text-align: center; margin: 20px 0;">
-      <a href="${process.env.APP_BASE_URL || 'https://makemytrip.com'}" style="${BUTTON_STYLE}">Start Exploring</a>
+      <a href="${process.env.APP_BASE_URL || 'https://tripora.com'}" style="${BUTTON_STYLE}">Start Exploring</a>
     </div>
 
     <div style="background: #e8f5e9; border-left: 4px solid #4CAF50; padding: 15px; margin: 20px 0;">
@@ -460,7 +460,7 @@ export const DEFAULT_TEMPLATES = {
   </div>
 
   <div style="${FOOTER_STYLE}">
-    <p style="margin: 0;">© 2024 MakeMyTrip. All rights reserved.</p>
+    <p style="margin: 0;">© 2024 TripOra. All rights reserved.</p>
   </div>
 </div>
     `,
@@ -471,11 +471,11 @@ export const DEFAULT_TEMPLATES = {
     key: 'otp_verification',
     name: 'OTP Verification',
     module: 'system',
-    subject: 'Your MakeMyTrip Verification Code',
+    subject: 'Your TripOra Verification Code',
     htmlBody: `
 <div style="max-width: 600px; margin: 0 auto; ${BASE_STYLES}">
   <div style="${HEADER_STYLE}">
-    <h1 style="margin: 0;">MakeMyTrip</h1>
+    <h1 style="margin: 0;">TripOra</h1>
     <p style="margin: 10px 0 0 0;">Verification Code</p>
   </div>
 
@@ -497,7 +497,7 @@ export const DEFAULT_TEMPLATES = {
   </div>
 
   <div style="${FOOTER_STYLE}">
-    <p style="margin: 0;">© 2024 MakeMyTrip. All rights reserved.</p>
+    <p style="margin: 0;">© 2024 TripOra. All rights reserved.</p>
   </div>
 </div>
     `,
@@ -512,7 +512,7 @@ export const DEFAULT_TEMPLATES = {
     htmlBody: `
 <div style="max-width: 600px; margin: 0 auto; ${BASE_STYLES}">
   <div style="${HEADER_STYLE}">
-    <h1 style="margin: 0;">MakeMyTrip</h1>
+    <h1 style="margin: 0;">TripOra</h1>
     <p style="margin: 10px 0 0 0;">Payment Receipt</p>
   </div>
 
@@ -551,7 +551,7 @@ export const DEFAULT_TEMPLATES = {
     </table>
 
     <div style="text-align: center; margin: 20px 0;">
-      <a href="${process.env.APP_BASE_URL || 'https://makemytrip.com'}/bookings" style="${BUTTON_STYLE}">View Booking</a>
+      <a href="${process.env.APP_BASE_URL || 'https://tripora.com'}/bookings" style="${BUTTON_STYLE}">View Booking</a>
     </div>
 
     <div style="background: #e8f5e9; border-left: 4px solid #4CAF50; padding: 15px; margin: 20px 0;">
@@ -561,7 +561,7 @@ export const DEFAULT_TEMPLATES = {
 
   <div style="${FOOTER_STYLE}">
     <p style="margin: 0;">Keep this receipt for your records.</p>
-    <p style="margin: 5px 0 0 0;">© 2024 MakeMyTrip. All rights reserved.</p>
+    <p style="margin: 5px 0 0 0;">© 2024 TripOra. All rights reserved.</p>
   </div>
 </div>
     `,
@@ -576,7 +576,7 @@ export const DEFAULT_TEMPLATES = {
     htmlBody: `
 <div style="max-width: 600px; margin: 0 auto; ${BASE_STYLES}">
   <div style="${HEADER_STYLE}">
-    <h1 style="margin: 0;">MakeMyTrip</h1>
+    <h1 style="margin: 0;">TripOra</h1>
     <p style="margin: 10px 0 0 0;">Booking Cancelled</p>
   </div>
 
@@ -608,7 +608,7 @@ export const DEFAULT_TEMPLATES = {
     </div>
 
     <div style="text-align: center; margin: 20px 0;">
-      <a href="${process.env.APP_BASE_URL || 'https://makemytrip.com'}" style="${BUTTON_STYLE}">New Booking</a>
+      <a href="${process.env.APP_BASE_URL || 'https://tripora.com'}" style="${BUTTON_STYLE}">New Booking</a>
     </div>
 
     <div style="background: #e3f2fd; border-left: 4px solid #2196F3; padding: 15px; margin: 20px 0;">
@@ -617,7 +617,7 @@ export const DEFAULT_TEMPLATES = {
   </div>
 
   <div style="${FOOTER_STYLE}">
-    <p style="margin: 0;">© 2024 MakeMyTrip. All rights reserved.</p>
+    <p style="margin: 0;">© 2024 TripOra. All rights reserved.</p>
   </div>
 </div>
     `,
@@ -632,7 +632,7 @@ export const DEFAULT_TEMPLATES = {
     htmlBody: `
 <div style="max-width: 600px; margin: 0 auto; ${BASE_STYLES}">
   <div style="${HEADER_STYLE}">
-    <h1 style="margin: 0;">MakeMyTrip</h1>
+    <h1 style="margin: 0;">TripOra</h1>
     <p style="margin: 10px 0 0 0;">Refund Processing</p>
   </div>
 
@@ -668,12 +668,12 @@ export const DEFAULT_TEMPLATES = {
     </div>
 
     <div style="text-align: center; margin: 20px 0;">
-      <a href="${process.env.APP_BASE_URL || 'https://makemytrip.com'}/support" style="${BUTTON_STYLE}">Track Refund</a>
+      <a href="${process.env.APP_BASE_URL || 'https://tripora.com'}/support" style="${BUTTON_STYLE}">Track Refund</a>
     </div>
   </div>
 
   <div style="${FOOTER_STYLE}">
-    <p style="margin: 0;">© 2024 MakeMyTrip. All rights reserved.</p>
+    <p style="margin: 0;">© 2024 TripOra. All rights reserved.</p>
   </div>
 </div>
     `,
@@ -688,7 +688,7 @@ export const DEFAULT_TEMPLATES = {
     htmlBody: `
 <div style="max-width: 600px; margin: 0 auto; ${BASE_STYLES}">
   <div style="${HEADER_STYLE}">
-    <h1 style="margin: 0;">MakeMyTrip</h1>
+    <h1 style="margin: 0;">TripOra</h1>
     <p style="margin: 10px 0 0 0;">Refund Completed ✓</p>
   </div>
 
@@ -724,7 +724,7 @@ export const DEFAULT_TEMPLATES = {
     </div>
 
     <div style="text-align: center; margin: 20px 0;">
-      <a href="${process.env.APP_BASE_URL || 'https://makemytrip.com'}" style="${BUTTON_STYLE}">Book Again</a>
+      <a href="${process.env.APP_BASE_URL || 'https://tripora.com'}" style="${BUTTON_STYLE}">Book Again</a>
     </div>
 
     <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0;">
@@ -733,8 +733,8 @@ export const DEFAULT_TEMPLATES = {
   </div>
 
   <div style="${FOOTER_STYLE}">
-    <p style="margin: 0;">Thank you for choosing MakeMyTrip!</p>
-    <p style="margin: 5px 0 0 0;">© 2024 MakeMyTrip. All rights reserved.</p>
+    <p style="margin: 0;">Thank you for choosing TripOra!</p>
+    <p style="margin: 5px 0 0 0;">© 2024 TripOra. All rights reserved.</p>
   </div>
 </div>
     `,
@@ -749,7 +749,7 @@ export const DEFAULT_TEMPLATES = {
     htmlBody: `
 <div style="max-width: 600px; margin: 0 auto; ${BASE_STYLES}">
   <div style="${HEADER_STYLE}">
-    <h1 style="margin: 0;">MakeMyTrip</h1>
+    <h1 style="margin: 0;">TripOra</h1>
     <p style="margin: 10px 0 0 0;">Your Trip is Coming Up!</p>
   </div>
 
@@ -791,7 +791,7 @@ export const DEFAULT_TEMPLATES = {
     </div>
 
     <div style="text-align: center; margin: 20px 0;">
-      <a href="${process.env.APP_BASE_URL || 'https://makemytrip.com'}/bookings" style="${BUTTON_STYLE}">View Ticket</a>
+      <a href="${process.env.APP_BASE_URL || 'https://tripora.com'}/bookings" style="${BUTTON_STYLE}">View Ticket</a>
     </div>
 
     <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0;">
@@ -801,7 +801,7 @@ export const DEFAULT_TEMPLATES = {
 
   <div style="${FOOTER_STYLE}">
     <p style="margin: 0;">Have a great trip!</p>
-    <p style="margin: 5px 0 0 0;">© 2024 MakeMyTrip. All rights reserved.</p>
+    <p style="margin: 5px 0 0 0;">© 2024 TripOra. All rights reserved.</p>
   </div>
 </div>
     `,
@@ -816,7 +816,7 @@ export const DEFAULT_TEMPLATES = {
     htmlBody: `
 <div style="max-width: 600px; margin: 0 auto; ${BASE_STYLES}">
   <div style="${HEADER_STYLE}">
-    <h1 style="margin: 0;">MakeMyTrip</h1>
+    <h1 style="margin: 0;">TripOra</h1>
     <p style="margin: 10px 0 0 0;">Hotel Check-in Reminder</p>
   </div>
 
@@ -862,7 +862,7 @@ export const DEFAULT_TEMPLATES = {
     </div>
 
     <div style="text-align: center; margin: 20px 0;">
-      <a href="${process.env.APP_BASE_URL || 'https://makemytrip.com'}/bookings" style="${BUTTON_STYLE}">View Booking</a>
+      <a href="${process.env.APP_BASE_URL || 'https://tripora.com'}/bookings" style="${BUTTON_STYLE}">View Booking</a>
     </div>
 
     <div style="background: #e3f2fd; border-left: 4px solid #2196F3; padding: 15px; margin: 20px 0;">
@@ -876,7 +876,7 @@ export const DEFAULT_TEMPLATES = {
 
   <div style="${FOOTER_STYLE}">
     <p style="margin: 0;">Enjoy your stay!</p>
-    <p style="margin: 5px 0 0 0;">© 2024 MakeMyTrip. All rights reserved.</p>
+    <p style="margin: 5px 0 0 0;">© 2024 TripOra. All rights reserved.</p>
   </div>
 </div>
     `,

@@ -21,9 +21,9 @@ const cmsPages = [
   {
     title: 'About Company',
     slug: 'company',
-    metaTitle: 'About MakeMyTrip - Company',
-    metaDescription: 'Learn about MakeMyTrip, India\'s leading online travel company',
-    metaKeywords: 'about, company, travel, makemytrip',
+    metaTitle: 'About TripOra - Company',
+    metaDescription: 'Learn about TripOra, India\'s leading online travel company',
+    metaKeywords: 'about, company, travel, tripora',
     shortDescription: 'India\'s leading online travel company since 2000',
     content: `
       <style>
@@ -216,7 +216,7 @@ const cmsPages = [
       </style>
 
       <div class="company-hero">
-        <h1>Welcome to MakeMyTrip</h1>
+        <h1>Welcome to TripOra</h1>
         <p>India's #1 Travel Company | Empowering Millions to Travel the World</p>
       </div>
 
@@ -242,11 +242,11 @@ const cmsPages = [
       <div class="company-section">
         <h2>Our Story</h2>
         <p>
-          Founded in 2000, MakeMyTrip revolutionized travel in India by making it easier, more affordable, and more accessible to millions.
+          Founded in 2000, TripOra revolutionized travel in India by making it easier, more affordable, and more accessible to millions.
           From humble beginnings, we've grown to become India's most trusted online travel platform, serving travelers across the globe.
         </p>
         <p>
-          Today, MakeMyTrip is a one-stop destination for all travel needs - flights, hotels, trains, buses, holiday packages, and much more.
+          Today, TripOra is a one-stop destination for all travel needs - flights, hotels, trains, buses, holiday packages, and much more.
           Our mission is simple: to inspire and empower people to discover the world with confidence and convenience.
         </p>
       </div>
@@ -341,12 +341,12 @@ const cmsPages = [
 
       <div class="cta-section">
         <h2>Ready to Explore the World?</h2>
-        <p>Join millions of travelers who trust MakeMyTrip for their travel needs.</p>
+        <p>Join millions of travelers who trust TripOra for their travel needs.</p>
         <a href="/" class="cta-btn">Start Your Journey Now</a>
       </div>
 
       <div class="company-section">
-        <h2>Why Choose MakeMyTrip?</h2>
+        <h2>Why Choose TripOra?</h2>
         <ul>
           <li><strong>Best Prices Guaranteed:</strong> We offer competitive pricing with price match assurance</li>
           <li><strong>Verified Reviews:</strong> Real reviews from real travelers to help you make informed decisions</li>
@@ -364,7 +364,7 @@ const cmsPages = [
   {
     title: 'Privacy Policy',
     slug: 'privacy-policy',
-    metaTitle: 'Privacy Policy - MakeMyTrip',
+    metaTitle: 'Privacy Policy - TripOra',
     metaDescription: 'Read our privacy policy to understand how we protect your data',
     metaKeywords: 'privacy, policy, data protection',
     shortDescription: 'How we protect your personal data',
@@ -387,21 +387,21 @@ const cmsPages = [
   {
     title: 'Terms of Service',
     slug: 'terms-of-service',
-    metaTitle: 'Terms of Service - MakeMyTrip',
-    metaDescription: 'Read the terms and conditions for using MakeMyTrip',
+    metaTitle: 'Terms of Service - TripOra',
+    metaDescription: 'Read the terms and conditions for using TripOra',
     metaKeywords: 'terms, conditions, service agreement',
     shortDescription: 'Our terms and conditions',
     content: `
       <h1>Terms of Service</h1>
       <p>Last updated: June 2026</p>
       <h2>1. Acceptance of Terms</h2>
-      <p>By using MakeMyTrip, you agree to comply with these terms and conditions.</p>
+      <p>By using TripOra, you agree to comply with these terms and conditions.</p>
       <h2>2. Use License</h2>
       <p>Permission is granted to temporarily download one copy of the materials for personal, non-commercial transitory viewing only.</p>
       <h2>3. Disclaimer</h2>
-      <p>The materials on MakeMyTrip are provided on an 'as is' basis. MakeMyTrip makes no warranties, expressed or implied.</p>
+      <p>The materials on TripOra are provided on an 'as is' basis. TripOra makes no warranties, expressed or implied.</p>
       <h2>4. Limitations</h2>
-      <p>In no event shall MakeMyTrip or its suppliers be liable for any damages arising out of the use of MakeMyTrip.</p>
+      <p>In no event shall TripOra or its suppliers be liable for any damages arising out of the use of TripOra.</p>
       <h2>5. Governing Law</h2>
       <p>These terms are governed by and construed in accordance with the laws of India.</p>
     `,
@@ -410,8 +410,8 @@ const cmsPages = [
   {
     title: 'Cookie Policy',
     slug: 'cookie-policy',
-    metaTitle: 'Cookie Policy - MakeMyTrip',
-    metaDescription: 'Learn how MakeMyTrip uses cookies',
+    metaTitle: 'Cookie Policy - TripOra',
+    metaDescription: 'Learn how TripOra uses cookies',
     metaKeywords: 'cookies, policy, tracking',
     shortDescription: 'How we use cookies',
     content: `
@@ -433,22 +433,22 @@ const cmsPages = [
   {
     title: 'Trust & Safety',
     slug: 'trust-safety',
-    metaTitle: 'Trust & Safety - MakeMyTrip',
-    metaDescription: 'MakeMyTrip commitment to trust and safety',
+    metaTitle: 'Trust & Safety - TripOra',
+    metaDescription: 'TripOra commitment to trust and safety',
     metaKeywords: 'trust, safety, security',
     shortDescription: 'Your safety is our priority',
     content: `
       <h1>Trust & Safety</h1>
       <h2>Secure Payments</h2>
-      <p>All transactions on MakeMyTrip are encrypted and protected by industry-standard security protocols.</p>
+      <p>All transactions on TripOra are encrypted and protected by industry-standard security protocols.</p>
       <h2>Verified Partners</h2>
       <p>We only work with verified and trusted travel partners to ensure quality service.</p>
       <h2>Customer Protection</h2>
-      <p>MakeMyTrip offers comprehensive protection for all bookings made through our platform.</p>
+      <p>TripOra offers comprehensive protection for all bookings made through our platform.</p>
       <h2>Fraud Prevention</h2>
       <p>We employ advanced fraud detection systems to protect our customers from unauthorized transactions.</p>
       <h2>Report Issues</h2>
-      <p>If you encounter any suspicious activity, please report it immediately to our support team at support@makemytrip.com</p>
+      <p>If you encounter any suspicious activity, please report it immediately to our support team at support@tripora.com</p>
     `,
     status: 'active',
   },

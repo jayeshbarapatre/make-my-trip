@@ -1,5 +1,5 @@
 # =============================================================================
-# MakeMyTrip — PRODUCTION docker compose
+# TripOra — PRODUCTION docker compose
 # -----------------------------------------------------------------------------
 # Services:
 #   frontend  builds the Vite SPA (artifacts only)

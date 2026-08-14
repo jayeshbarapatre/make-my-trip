@@ -1,4 +1,4 @@
-# MakeMyTrip — full-stack travel booking platform
+# TripOra — full-stack travel booking platform
 
 React 18 + Vite frontend, Node/Express + Firestore backend. Five verticals book
 end to end — flights, hotels, buses, trains and cabs — with server-side pricing,
