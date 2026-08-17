@@ -42,6 +42,18 @@ export default function CabPaymentPage() {
   const [quote, setQuote] = useState(null);
   const [quoteError, setQuoteError] = useState('');
 
+  const [travellerName, setTravellerName] = useState('');
+  const [travellerEmail, setTravellerEmail] = useState('');
+  const [travellerPhone, setTravellerPhone] = useState('');
+
+  useEffect(() => {
+    if (user && !travellerName) {
+      setTravellerName(user.name || '');
+      setTravellerEmail(user.email || '');
+      setTravellerPhone(user.phone || '');
+    }
+  }, [user]);
+
   useEffect(() => {
     if (!cab?.id) return;
 
@@ -62,6 +74,12 @@ export default function CabPaymentPage() {
   const handleProcessPayment = async (_methodName) => {
     if (!user) {
       setToastMessage('Please login to continue booking');
+      setTimeout(() => setToastMessage(''), 3500);
+      return;
+    }
+
+    if (!travellerName || !travellerEmail || !travellerPhone) {
+      setToastMessage('Please fill in all traveller details');
       setTimeout(() => setToastMessage(''), 3500);
       return;
     }
@@ -88,9 +106,9 @@ export default function CabPaymentPage() {
         quote,
         description: cab.type + ' - ' + pickupLocation + ' to ' + dropLocation,
         prefill: {
-          name: user?.name || 'Guest User',
-          email: user?.email || '',
-          contact: user?.phone || ''
+          name: travellerName || 'Guest User',
+          email: travellerEmail || '',
+          contact: travellerPhone || ''
         },
         bookingData: {
           type: 'cab',
@@ -109,8 +127,14 @@ export default function CabPaymentPage() {
           toCity: dropLocation,
           distance,
           estimatedTime,
-          userEmail: user?.email,
-          userName: user?.name
+          userEmail: travellerEmail,
+          userName: travellerName,
+          userPhone: travellerPhone,
+          contact: {
+            name: travellerName,
+            email: travellerEmail,
+            phone: travellerPhone
+          }
         }
       });
 
@@ -234,6 +258,24 @@ export default function CabPaymentPage() {
 
           {/* Center Column: Cab Details */}
           <div style={{ background: 'hsl(var(--b1))', padding: '2rem', borderRadius: '0.75rem', border: '1px solid hsl(var(--b2))' }}>
+            <h3 style={{ marginTop: 0, marginBottom: '1.5rem', fontSize: '0.95rem', fontWeight: 700, color: 'hsl(var(--bc))' }}>TRAVELLER DETAILS</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'hsl(var(--nc))', marginBottom: '0.5rem' }}>Full Name</label>
+                <input type="text" value={travellerName} onChange={e => setTravellerName(e.target.value)} required style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid hsl(var(--b2))', background: 'hsl(var(--b2))', color: 'hsl(var(--bc))', outline: 'none' }} />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'hsl(var(--nc))', marginBottom: '0.5rem' }}>Email</label>
+                  <input type="email" value={travellerEmail} onChange={e => setTravellerEmail(e.target.value)} required style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid hsl(var(--b2))', background: 'hsl(var(--b2))', color: 'hsl(var(--bc))', outline: 'none' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'hsl(var(--nc))', marginBottom: '0.5rem' }}>Phone</label>
+                  <input type="tel" value={travellerPhone} onChange={e => setTravellerPhone(e.target.value)} required style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid hsl(var(--b2))', background: 'hsl(var(--b2))', color: 'hsl(var(--bc))', outline: 'none' }} />
+                </div>
+              </div>
+            </div>
+
             <h3 style={{ marginTop: 0, marginBottom: '1.5rem', fontSize: '0.95rem', fontWeight: 700, color: 'hsl(var(--bc))' }}>CAB BOOKING DETAILS</h3>
 
             <div style={{ background: 'hsl(var(--b2))', padding: '1.5rem', borderRadius: '0.5rem', marginBottom: '1.5rem' }}>
@@ -352,7 +394,7 @@ export default function CabPaymentPage() {
       {toastMessage && (
         <div style={{
           position: 'fixed', bottom: '24px', right: '24px', zIndex: 9999,
-          background: 'hsl(var(--n))', color: 'hsl(var(--nc))',
+          background: 'hsl(var(--bc))', color: 'hsl(var(--b1))',
           padding: '12px 20px', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
           fontSize: '14px', fontWeight: 600, maxWidth: '340px'
         }}>

@@ -369,7 +369,7 @@ export default function HotelPaymentPage() {
       {toastMessage && (
         <div style={{
           position: 'fixed', bottom: '24px', right: '24px', zIndex: 9999,
-          background: 'hsl(var(--n))', color: 'hsl(var(--nc))',
+          background: 'hsl(var(--bc))', color: 'hsl(var(--b1))',
           padding: '12px 20px', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
           fontSize: '14px', fontWeight: 600, maxWidth: '340px'
         }}>

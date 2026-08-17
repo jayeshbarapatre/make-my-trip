@@ -464,7 +464,17 @@ export const createBookingForPayment = async ({
 }) => {
   const type = BOOKING_TYPES.has(payload.type) ? payload.type : 'flight'
   const details = sanitizeBookingDetails(payload)
-  const breakdown = reconcileBreakdown(payload, authority.amount)
+  let breakdown = reconcileBreakdown(payload, authority.amount)
+  
+  if (!breakdown && quote) {
+    breakdown = {
+      baseFare: quote.baseFare || 0,
+      taxes: quote.taxes || 0,
+      convenience: quote.convenience || 0,
+      gst: quote.gst || 0,
+      discount: quote.discount || 0
+    }
+  }
 
   const key = authority.paymentId ?? authority.orderId
   const bookingRef = db.collection('bookings').doc(`pay_${key}`)

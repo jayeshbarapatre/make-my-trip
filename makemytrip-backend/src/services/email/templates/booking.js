@@ -27,6 +27,8 @@ const normalise = (b = {}) => {
     Array.isArray(b.passengers) ? b.passengers : null,
     Array.isArray(travellers.passengers) ? travellers.passengers : null,
     Array.isArray(b.guests) ? b.guests : null,
+    Array.isArray(b.guestDetails) ? b.guestDetails : null,
+    Array.isArray(travellers.guests) ? travellers.guests : null,
     []
   )
 
@@ -44,7 +46,7 @@ const normalise = (b = {}) => {
     status: first(b.status, 'confirmed'),
     bookedAt: first(b.createdAt, new Date().toISOString()),
 
-    customerName: first(b.userName, people[0]?.name, people[0]?.firstName, b.contact?.name, 'Guest'),
+    customerName: first(b.contact?.name, people[0]?.name, people[0]?.firstName, b.userName, 'Guest'),
     customerEmail: first(b.userEmail, b.email, b.contact?.email, ''),
     customerPhone: first(b.userPhone, b.phone, b.contact?.phone, travellers.contact?.phone, ''),
 

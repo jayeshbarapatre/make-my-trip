@@ -5,6 +5,7 @@ import { renderLayout, heroBanner, card, row, esc } from './email/layout.js'
 import { brand } from './email/brand.js'
 import * as emailLogService from './email/emailLogService.js'
 import { validateEmail } from '../utils/validation.js'
+import { generateTicketPDF, generateInvoicePDF } from './email/pdfService.js'
 
 export { validateEmail, verifyConnection, isConfigured }
 
@@ -56,6 +57,32 @@ export const sendBookingConfirmationEmail = async (booking, opts = {}) => {
   const to = booking?.userEmail || booking?.email || booking?.contact?.email
   const rendered = renderBookingConfirmation(booking, opts)
 
+  const attachments = [...(opts.attachments || [])]
+
+  try {
+    const typeCode = (booking.type || 'booking').toUpperCase().substring(0, 2)
+    const ticketId = `TRP-${typeCode}-${booking.bookingId || Date.now().toString().slice(-6)}`
+    
+    const [ticketPdf, invoicePdf] = await Promise.all([
+      generateTicketPDF(booking),
+      generateInvoicePDF(booking, `INV-${ticketId}`)
+    ])
+
+    attachments.push({
+      filename: `Ticket-${ticketId}.pdf`,
+      content: ticketPdf,
+      contentType: 'application/pdf'
+    })
+    
+    attachments.push({
+      filename: `Invoice-INV-${ticketId}.pdf`,
+      content: invoicePdf,
+      contentType: 'application/pdf'
+    })
+  } catch (err) {
+    console.error('Failed to generate PDF attachments:', err.message)
+  }
+
   return deliver({
     to,
     rendered,
@@ -70,7 +97,7 @@ export const sendBookingConfirmationEmail = async (booking, opts = {}) => {
       totalAmount: booking?.totalAmount,
       status: booking?.status
     },
-    attachments: opts.attachments
+    attachments
   })
 }
 

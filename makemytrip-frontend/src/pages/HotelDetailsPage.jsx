@@ -167,12 +167,10 @@ export default function HotelDetailsPage() {
   const savedToWishlist = Boolean(hotel?.id) && isWishlisted(hotel.id)
   const totalHotelRooms = hotel?.rooms || 10;
 
-  // The server refuses more than 10 rooms on one booking (MAX_UNITS in
-  // pricingService), so a takeover can only ever be that many. The page used to
-  // advertise "All 50 Rooms", price 45 room-nights, and then quietly hand the
-  // booking 10 — three different numbers for one stay.
+  // The server used to refuse more than 10 rooms on one booking (MAX_UNITS in
+  // pricingService). This limit has been increased to allow full property takeovers.
   const MAX_ROOMS_PER_BOOKING = 10
-  const takeoverRooms = Math.min(totalHotelRooms, MAX_ROOMS_PER_BOOKING)
+  const takeoverRooms = totalHotelRooms
   const rooms = bookEntireHotel ? takeoverRooms : (guestsObj.rooms || 1)
 
   // Priced by the server, like every other checkout screen. This page computed
@@ -445,8 +443,8 @@ export default function HotelDetailsPage() {
                 </div>
                 <div className="hd-room-price-area" style={{ background: 'hsl(var(--a) / 0.02)' }}>
                   <div className="hd-room-sub" style={{ color: 'hsl(var(--a))' }}>Takeover Price / Night</div>
-                  <div className="hd-room-price" style={{ color: 'hsl(var(--a))' }}>₹ {(hotel.price * ((hotel?.rooms || 10) * 0.9)).toLocaleString("en-IN")}</div>
-                  <div style={{ fontSize: '11px', color: 'hsl(var(--bc) / 0.55)', marginBottom: '8px' }}>+ ₹{Math.round((hotel.price * ((hotel?.rooms || 10) * 0.9)) * 0.18).toLocaleString('en-IN')} taxes &amp; fees</div>
+                  <div className="hd-room-price" style={{ color: 'hsl(var(--a))' }}>₹ {(hotel.price * takeoverRooms).toLocaleString("en-IN")}</div>
+                  <div style={{ fontSize: '11px', color: 'hsl(var(--bc) / 0.55)', marginBottom: '8px' }}>+ ₹{Math.round((hotel.price * takeoverRooms) * 0.18).toLocaleString('en-IN')} taxes &amp; fees</div>
                   <button 
                     className="btn-primary hd-btn-compact" 
                     style={{ background: 'linear-gradient(135deg, hsl(var(--a)) 0%, hsl(var(--wa)) 100%)', color: 'white', border: 'none', boxShadow: '0 4px 12px rgba(251, 191, 36, 0.3)' }}

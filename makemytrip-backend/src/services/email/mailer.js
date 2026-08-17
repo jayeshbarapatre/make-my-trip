@@ -87,6 +87,10 @@ export const sendMail = async ({ to, subject, html, text, attachments = [], repl
       })
 
       console.log(`✅ Email sent → ${recipient} | "${subject}" | id=${info.messageId}`)
+      const previewUrl = nodemailer.getTestMessageUrl(info);
+      if (previewUrl) {
+        console.log(`🔗 Preview URL: ${previewUrl}`);
+      }
       return {
         success: true,
         messageId: info.messageId,

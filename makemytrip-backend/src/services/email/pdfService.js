@@ -5,10 +5,9 @@ const BRAND_COLOR = '#003580'
 const ACCENT_COLOR = '#e63946'
 
 const formatCurrency = (amount) => {
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-    minimumFractionDigits: 0
+  return 'Rs. ' + new Intl.NumberFormat('en-IN', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2
   }).format(amount)
 }
 
@@ -54,17 +53,20 @@ const addFooter = (doc) => {
   doc.fontSize(10)
   doc.fillColor('#666')
 
+  const footerY = doc.page.height - 50;
+
   if (DEMO_MODE) {
     doc.fontSize(7)
-    doc.text(DEMO_NOTICE, 50, doc.page.height - 58, {
+    doc.text(DEMO_NOTICE, 50, footerY - 20, {
       align: 'center',
-      width: doc.page.width - 100
+      width: doc.page.width - 100,
+      lineBreak: false
     })
     doc.fontSize(10)
   }
 
-  doc.text('© 2024 TripOra. All rights reserved.', 50, doc.page.height - 30, { align: 'center' })
-  doc.text('This is an automated document. Please keep for your records.', 50, doc.page.height - 15, { align: 'center' })
+  doc.text('© 2024 TripOra. All rights reserved.', 50, footerY, { align: 'center', lineBreak: false })
+  doc.text('This is an automated document. Please keep for your records.', 50, footerY + 15, { align: 'center', lineBreak: false })
 }
 
 const addTable = (doc, rows, options = {}) => {
@@ -323,7 +325,8 @@ export const generateInvoicePDF = async (booking, invoiceNumber) => {
       // Bill To
       doc.fontSize(12).fillColor(BRAND_COLOR).text('Bill To:')
       doc.fontSize(10).fillColor('black')
-      doc.text('Customer')
+      const customerName = booking.guestDetails?.[0]?.name || booking.userName || booking.contact?.name || 'Customer'
+      doc.text(customerName)
       doc.text(`Email: ${booking.userEmail || 'N/A'}`)
       doc.moveDown(1)
 
@@ -334,13 +337,14 @@ export const generateInvoicePDF = async (booking, invoiceNumber) => {
       const col2 = 100
       const col3 = 150
 
-      doc.rect(itemsTableX, doc.y, itemsWidth, 25).fill('#f0f0f0')
+      const headerY = doc.y;
+      doc.rect(itemsTableX, headerY, itemsWidth, 25).fill('#f0f0f0')
       doc.fillColor('black').fontSize(11).font('Helvetica-Bold')
-      doc.text('Description', itemsTableX + 10, doc.y + 5, { width: col1 - 20 })
-      doc.text('Qty', itemsTableX + col1 + 10, doc.y - 20, { width: col2 - 20 })
-      doc.text('Amount', itemsTableX + col1 + col2 + 10, doc.y - 20, { width: col3 - 20 })
+      doc.text('Description', itemsTableX + 10, headerY + 8, { width: col1 - 20, lineBreak: false })
+      doc.text('Qty', itemsTableX + col1 + 10, headerY + 8, { width: col2 - 20, lineBreak: false })
+      doc.text('Amount', itemsTableX + col1 + col2 + 10, headerY + 8, { width: col3 - 20, lineBreak: false })
 
-      doc.moveDown(2)
+      doc.y = headerY + 25 + 10;
 
       // Items
       const items = [
@@ -348,22 +352,24 @@ export const generateInvoicePDF = async (booking, invoiceNumber) => {
       ]
 
       items.forEach(([desc, qty, amount]) => {
-        doc.rect(itemsTableX, doc.y, itemsWidth, 20).stroke()
+        const itemY = doc.y;
+        doc.rect(itemsTableX, itemY, itemsWidth, 20).stroke()
         doc.fontSize(10).fillColor('black').font('Helvetica')
-        doc.text(desc, itemsTableX + 10, doc.y + 3, { width: col1 - 20 })
-        doc.text(qty, itemsTableX + col1 + 10, doc.y - 17, { width: col2 - 20 })
-        doc.text(amount, itemsTableX + col1 + col2 + 10, doc.y - 17, { width: col3 - 20 })
-        doc.moveDown(1.5)
+        doc.text(desc, itemsTableX + 10, itemY + 5, { width: col1 - 20, lineBreak: false })
+        doc.text(qty, itemsTableX + col1 + 10, itemY + 5, { width: col2 - 20, lineBreak: false })
+        doc.text(amount, itemsTableX + col1 + col2 + 10, itemY + 5, { width: col3 - 20, lineBreak: false })
+        doc.y = itemY + 20 + 5;
       })
 
       doc.moveDown(1)
 
       // Totals Section
-      doc.rect(itemsTableX + col1, doc.y, col2 + col3, 20).fill('#f0f0f0')
+      const totalStartY = doc.y;
+      doc.rect(itemsTableX + col1, totalStartY, col2 + col3, 20).fill('#f0f0f0')
       doc.fillColor('black').fontSize(11).font('Helvetica-Bold')
-      doc.text('Subtotal', itemsTableX + col1 + 10, doc.y + 3, { width: col2 - 20 })
-      doc.text(formatCurrency(booking.baseFare || 0), itemsTableX + col1 + col2 + 10, doc.y - 17, { width: col3 - 20 })
-      doc.moveDown(1.5)
+      doc.text('Subtotal', itemsTableX + col1 + 10, totalStartY + 5, { width: col2 - 20, lineBreak: false })
+      doc.text(formatCurrency(booking.baseFare || 0), itemsTableX + col1 + col2 + 10, totalStartY + 5, { width: col3 - 20, lineBreak: false })
+      doc.y = totalStartY + 20 + 5;
 
       const taxRows = [
         ['Taxes', formatCurrency(booking.taxes || 0)],
@@ -372,18 +378,20 @@ export const generateInvoicePDF = async (booking, invoiceNumber) => {
       ]
 
       taxRows.forEach(([label, amount]) => {
+        const taxY = doc.y;
         doc.fontSize(10).fillColor('black').font('Helvetica')
-        doc.text(label, itemsTableX + col1 + 10, undefined, { width: col2 - 20 })
-        doc.text(amount, itemsTableX + col1 + col2 + 10, doc.y - 15, { width: col3 - 20 })
-        doc.moveDown(1.2)
+        doc.text(label, itemsTableX + col1 + 10, taxY, { width: col2 - 20, lineBreak: false })
+        doc.text(amount, itemsTableX + col1 + col2 + 10, taxY, { width: col3 - 20, lineBreak: false })
+        doc.y = taxY + 15;
       })
 
-      doc.rect(itemsTableX + col1, doc.y, col2 + col3, 25).fill(ACCENT_COLOR)
+      const finalTotalY = doc.y;
+      doc.rect(itemsTableX + col1, finalTotalY, col2 + col3, 25).fill(ACCENT_COLOR)
       doc.fillColor('white').fontSize(12).font('Helvetica-Bold')
-      doc.text('TOTAL', itemsTableX + col1 + 10, doc.y + 5, { width: col2 - 20 })
-      doc.text(formatCurrency(booking.totalAmount || 0), itemsTableX + col1 + col2 + 10, doc.y - 20, { width: col3 - 20 })
+      doc.text('TOTAL', itemsTableX + col1 + 10, finalTotalY + 7, { width: col2 - 20, lineBreak: false })
+      doc.text(formatCurrency(booking.totalAmount || 0), itemsTableX + col1 + col2 + 10, finalTotalY + 7, { width: col3 - 20, lineBreak: false })
 
-      doc.moveDown(3)
+      doc.y = finalTotalY + 25 + 30;
 
       // Payment Info
       doc.fontSize(10).fillColor('black')

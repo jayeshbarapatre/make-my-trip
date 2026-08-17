@@ -40,7 +40,7 @@ const TAX_POLICY = {
   cab: { gstRate: 0.05, conveniencePerUnit: 25 }
 }
 
-const MAX_UNITS = { flight: 9, hotel: 10, bus: 10, train: 6, cab: 4 }
+const MAX_UNITS = { flight: 9, hotel: 1500, bus: 50, train: 10, cab: 4 }
 const MAX_NIGHTS = 90
 const MAX_TRIP_KM = 2000
 
