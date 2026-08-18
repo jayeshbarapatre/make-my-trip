@@ -63,7 +63,7 @@ const VendorSidebar = ({ isOpen, toggleSidebar }) => {
                   key={item.path}
                   to={item.path}
                   className={`nav-item ${isActive(item.path) ? 'active' : ''}`}
-                  onClick={toggleSidebar}
+                  onClick={() => { if (isOpen) toggleSidebar() }}
                 >
                   <i className={`nav-icon ${item.icon}`}></i>
                   <span className="nav-label">{item.label}</span>

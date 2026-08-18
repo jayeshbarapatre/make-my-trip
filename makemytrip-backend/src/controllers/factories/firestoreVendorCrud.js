@@ -171,6 +171,7 @@ export const createVendorCrud = ({
 
       const errors = validate({ ...found.data, ...req.body }, { partial: true })
       if (Object.keys(errors).length) {
+        console.error('Validation failed for cab:', req.body, errors)
         return res.status(400).json({ success: false, message: 'Validation failed', errors })
       }
 
@@ -192,6 +193,7 @@ export const createVendorCrud = ({
 
       const patch = {
         ...payload,
+        ...routeIndexFields(collection, { ...found.data, ...payload }),
         updatedAt: now(),
         updatedBy: req.principal?.uid ?? null
       }

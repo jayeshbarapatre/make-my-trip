@@ -10,7 +10,11 @@ const vendorAPI = axios.create({
 vendorAPI.interceptors.request.use(config => {
   const token = localStorage.getItem('vendorToken')
   if (token) {
-    config.headers.Authorization = `Bearer ${token}`
+    if (config.headers && typeof config.headers.set === 'function') {
+      config.headers.set('Authorization', `Bearer ${token}`)
+    } else {
+      config.headers['Authorization'] = `Bearer ${token}`
+    }
   }
   return config
 })
@@ -55,6 +59,10 @@ export const vendorCabsService = {
   update: (id, data) => vendorAPI.put(`/cabs/${id}`, data),
   delete: (id) => vendorAPI.delete(`/cabs/${id}`),
   submit: (id) => vendorAPI.patch(`/cabs/${id}/submit`)
+}
+
+export const vendorBookingsService = {
+  getAll: () => vendorAPI.get('/bookings')
 }
 
 export default vendorAPI

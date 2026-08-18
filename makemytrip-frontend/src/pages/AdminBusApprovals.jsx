@@ -115,7 +115,7 @@ const AdminBusApprovals = () => {
                       {bus.operatorName}
                       <div className="text-sm text-base-content/60">{bus.busNumber}</div>
                     </td>
-                    <td>{bus.departure?.city} → {bus.arrival?.city}</td>
+                    <td>{(bus.from ?? bus.departure?.city ?? '—')} → {(bus.to ?? bus.arrival?.city ?? '—')}</td>
                     <td>
                       <div>{bus.vendor?.vendorName || bus.vendor?.name}</div>
                       <div style={{ fontSize: '12px', color: 'hsl(var(--bc) / 0.6)' }}>{bus.vendor?.email}</div>

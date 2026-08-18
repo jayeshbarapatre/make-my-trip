@@ -118,6 +118,7 @@ export default function HotelPaymentPage() {
         },
         bookingData: {
           type: 'hotel',
+          vendorId: hotel.vendorId || hotel.vendor_id || null,
           hotelId: hotel.id,
           hotelName: hotel.name,
           hotelLocality: hotel.locality || hotel.location || '',

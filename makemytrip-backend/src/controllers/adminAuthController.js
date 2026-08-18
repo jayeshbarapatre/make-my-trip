@@ -159,11 +159,15 @@ export const adminLogin = async (req, res) => {
 
     // One message for every failure mode, so this cannot be used to discover
     // which addresses are registered or which of them are admins.
-    const reject = () => res.status(401).json({ message: 'Invalid credentials or not an admin' })
+    const reject = (reason) => {
+      console.log(`Rejecting admin login for ${email}: ${reason}`)
+      return res.status(401).json({ message: 'Invalid credentials or not an admin' })
+    }
 
-    if (!user?.password) return reject()
-    if (!isPrivileged(resolveRole(user))) return reject()
-    if (!(await bcrypt.compare(password, user.password))) return reject()
+    if (!user) return reject('user not found')
+    if (!user.password) return reject('no password on user')
+    if (!isPrivileged(resolveRole(user))) return reject('not privileged, role is ' + resolveRole(user))
+    if (!(await bcrypt.compare(password, user.password))) return reject('password mismatch')
 
     if (resolveAccountStatus(user) !== AccountStatus.ACTIVE) {
       return res.status(403).json({

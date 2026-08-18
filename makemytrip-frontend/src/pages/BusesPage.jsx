@@ -220,7 +220,7 @@ export default function BusesPage() {
                         </div>
                       ))}
 
-                      {filteredCities.length === 0 && searchQuery.trim() && (
+                      {searchQuery.trim() && (
                         <div 
                           onClick={() => { 
                             setFromCity({ name: searchQuery.trim(), state: 'India' });
@@ -278,7 +278,7 @@ export default function BusesPage() {
                         </div>
                       ))}
 
-                      {filteredCities.length === 0 && searchQuery.trim() && (
+                      {searchQuery.trim() && (
                         <div 
                           onClick={() => { 
                             setToCity({ name: searchQuery.trim(), state: 'India' });

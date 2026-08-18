@@ -324,7 +324,7 @@ const VendorHotelForm = ({ hotelId, onClose, onSuccess }) => {
             </div>
 
             <div style={{ padding: '20px 24px', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '12px', background: 'var(--surface)' }}>
-              <button type="button" className="btn" onClick={onClose} disabled={submitting}>
+              <button type="button" className="btn btn-ghost" onClick={onClose} disabled={submitting}>
                 Cancel
               </button>
               <button type="submit" className="btn btn-primary" disabled={submitting} style={{ minWidth: '140px' }}>

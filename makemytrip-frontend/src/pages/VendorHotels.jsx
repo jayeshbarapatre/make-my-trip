@@ -319,7 +319,7 @@ const VendorHotels = () => {
                 </div>
               </div>
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '36px' }}>
-                <button className="btn" onClick={() => !processingId && setConfirmDialog(null)} disabled={processingId !== null}>
+                <button className="btn btn-ghost" onClick={() => !processingId && setConfirmDialog(null)} disabled={processingId !== null}>
                   Cancel
                 </button>
                 <button 

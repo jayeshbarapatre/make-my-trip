@@ -112,6 +112,7 @@ export default function CabPaymentPage() {
         },
         bookingData: {
           type: 'cab',
+          vendorId: cab.vendorId || cab.vendor_id || null,
           cabId: cab.id,
           cabType: cab.type,
           cabModel: cab.model,

@@ -16,6 +16,7 @@ import {
 import {
   listDrivers, createDriver, updateDriver, deleteDriver
 } from '../controllers/vendorDriverController.js'
+import { getVendorBookings } from '../controllers/vendorBookingController.js'
 import { authenticateVendor, vendorOnly } from '../middleware/vendorAuth.js'
 import { authLimiter, generalLimiter } from '../middleware/rateLimiter.js'
 
@@ -31,6 +32,8 @@ router.put('/change-password', authLimiter, authenticateVendor, changePassword)
 
 // All vendor inventory management below inherits the general policy.
 router.use(generalLimiter)
+
+router.get('/bookings', authenticateVendor, vendorOnly, getVendorBookings)
 
 router.post('/hotels', authenticateVendor, vendorOnly, createHotel)
 router.get('/hotels', authenticateVendor, vendorOnly, getMyHotels)

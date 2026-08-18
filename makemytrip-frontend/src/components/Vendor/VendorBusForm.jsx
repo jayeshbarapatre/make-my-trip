@@ -4,7 +4,6 @@ import { vendorBusesService } from '../../services/vendorService'
 import { useTheme } from '../../context/ThemeContext'
 import toast from 'react-hot-toast'
 
-const cities = ['Delhi', 'Mumbai', 'Bangalore', 'Hyderabad', 'Chennai', 'Kolkata', 'Pune', 'Jaipur', 'Lucknow', 'Ahmedabad']
 const amenitiesList = ['WiFi', 'Charging Point', 'Blanket', 'Water Bottle', 'Movie']
 
 const VendorBusForm = ({ busId, onClose, onSuccess }) => {
@@ -29,7 +28,11 @@ const VendorBusForm = ({ busId, onClose, onSuccess }) => {
       const busesList = response.data.data.buses || response.data.data || []
       const bus = busesList.find(b => (b.id || b._id) === busId)
       if (bus) {
-        setFormData(bus)
+        setFormData({
+          ...bus,
+          departure: bus.departure || { city: bus.from || '' },
+          arrival: bus.arrival || { city: bus.to || '' }
+        })
       } else {
         toast.error('Bus not found')
         onClose()
@@ -221,17 +224,11 @@ const VendorBusForm = ({ busId, onClose, onSuccess }) => {
                 <div style={{ display: 'flex', gap: '16px' }}>
                   <div style={{ flex: 1 }}>
                     <label style={labelStyle}>Departure City <span style={{ color: 'hsl(var(--er))' }}>*</span></label>
-                    <select value={formData.departure.city} onChange={(e) => handleNestedChange('departure', 'city', e.target.value)} required style={inputStyle}>
-                      <option value="">Select departure city</option>
-                      {cities.map(city => <option key={city} value={city}>{city}</option>)}
-                    </select>
+                    <input type="text" value={formData.departure.city} onChange={(e) => handleNestedChange('departure', 'city', e.target.value)} placeholder="e.g., Ahmedabad" required style={inputStyle} />
                   </div>
                   <div style={{ flex: 1 }}>
                     <label style={labelStyle}>Arrival City <span style={{ color: 'hsl(var(--er))' }}>*</span></label>
-                    <select value={formData.arrival.city} onChange={(e) => handleNestedChange('arrival', 'city', e.target.value)} required style={inputStyle}>
-                      <option value="">Select arrival city</option>
-                      {cities.map(city => <option key={city} value={city}>{city}</option>)}
-                    </select>
+                    <input type="text" value={formData.arrival.city} onChange={(e) => handleNestedChange('arrival', 'city', e.target.value)} placeholder="e.g., Bangalore" required style={inputStyle} />
                   </div>
                 </div>
               </div>
@@ -293,7 +290,7 @@ const VendorBusForm = ({ busId, onClose, onSuccess }) => {
             </div>
 
             <div style={{ padding: '20px 24px', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '12px', background: 'var(--surface)' }}>
-              <button type="button" className="btn" onClick={onClose} disabled={submitting}>
+              <button type="button" className="btn btn-ghost" onClick={onClose} disabled={submitting}>
                 Cancel
               </button>
               <button type="submit" className="btn btn-primary" disabled={submitting} style={{ minWidth: '140px' }}>

@@ -44,6 +44,7 @@ const ALIASES = new Map([
   ['benares', 'varanasi'],
   ['banaras', 'varanasi'],
   ['prayagraj', 'allahabad'],
+  ['ahm', 'ahmedabad'],
   ['panaji', 'goa'],
   ['panjim', 'goa'],
   ['dabolim', 'goa']

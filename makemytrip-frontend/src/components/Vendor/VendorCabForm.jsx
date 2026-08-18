@@ -25,7 +25,8 @@ const VendorCabForm = ({ cabId, onClose, onSuccess }) => {
     // actually matches on.
     from: '',
     to: '',
-    cabs: 20
+    available: 20,
+    seatingCapacity: 4
   })
 
   const fetchCabDetails = async () => {
@@ -45,7 +46,8 @@ const VendorCabForm = ({ cabId, onClose, onSuccess }) => {
           // as currentCity, so an edit carries it over rather than blanking it.
           from: cab.from || cab.currentCity || '',
           to: cab.to || '',
-          cabs: cab.cabs
+          available: cab.availableCount || 1,
+          seatingCapacity: (cab.seatingCapacity && cab.seatingCapacity >= 1 && cab.seatingCapacity <= 26) ? cab.seatingCapacity : 4
         })
       } else {
         toast.error('Cab not found')
@@ -85,7 +87,13 @@ const VendorCabForm = ({ cabId, onClose, onSuccess }) => {
       }
       onSuccess()
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to save cab')
+      const data = err.response?.data
+      if (data?.errors && Object.keys(data.errors).length > 0) {
+        const errorMessages = Object.values(data.errors).join(' | ')
+        toast.error(`Validation failed: ${errorMessages}`)
+      } else {
+        toast.error(data?.message || 'Failed to save cab')
+      }
     } finally {
       setSubmitting(false)
     }
@@ -189,7 +197,7 @@ const VendorCabForm = ({ cabId, onClose, onSuccess }) => {
                   </div>
                   <div style={{ flex: 1 }}>
                     <label style={labelStyle}>Total Cabs of this model <span style={{ color: 'hsl(var(--er))' }}>*</span></label>
-                    <input name="cabs" type="number" value={formData.cabs} onChange={handleChange} min="1" required style={inputStyle} />
+                    <input name="available" type="number" value={formData.available} onChange={handleChange} min="1" required style={inputStyle} />
                   </div>
                 </div>
               </div>
@@ -236,12 +244,7 @@ const VendorCabForm = ({ cabId, onClose, onSuccess }) => {
 
             {/* Footer */}
             <div style={{ padding: '16px 24px', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'flex-end', gap: '12px', background: 'var(--surface2)' }}>
-              <button 
-                type="button" 
-                onClick={onClose}
-                disabled={submitting}
-                style={{ padding: '10px 20px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text-primary)', fontSize: '14px', fontWeight: 500, cursor: 'pointer' }}
-              >
+              <button type="button" className="btn btn-ghost" onClick={onClose} disabled={submitting}>
                 Cancel
               </button>
               <button 

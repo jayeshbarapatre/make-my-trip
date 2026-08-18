@@ -1,76 +1,142 @@
-# TripOra — full-stack travel booking platform
+# TripOra - Travel Booking Platform
 
-React 18 + Vite frontend, Node/Express + Firestore backend. Five verticals book
-end to end — flights, hotels, buses, trains and cabs — with server-side pricing,
-Razorpay checkout, atomic inventory reservation, PDF tickets and invoices, plus
-an admin console and a vendor portal.
+TripOra is a comprehensive, full-stack travel booking platform inspired by major industry leaders like MakeMyTrip. It allows users to search, book, and manage travel arrangements across various modes of transportation and accommodations, while providing robust dashboards for vendors and administrators.
 
-> **Demonstration mode.** Accounts, authentication, database writes, emails, PDFs
-> and the booking workflow are real. Travel inventory is seeded and payments run
-> in Razorpay test mode — no seat, room or vehicle is held with any operator.
-> The notice appears in the footer, on checkout, and on every ticket and email.
-> See `src/config/demoMode.js` and `VITE_DEMO_MODE`.
+## 🚀 Features
 
-## Live
+The platform is divided into three major portals:
 
-| | |
-|---|---|
-| Frontend | https://make-my-trip-web.vercel.app |
-| API | https://make-my-trip-api-roan.vercel.app |
+### 1. User Portal (B2C)
+* **Flights:** Search and book domestic and international flights.
+* **Hotels:** Browse accommodations, view room details, and book stays.
+* **Buses & Trains:** Search routes, select seats, and book tickets for road and rail journeys.
+* **Cabs:** Book intercity cabs, airport transfers, and outstation rides.
+* **User Dashboard:** Manage profile, view upcoming trips, cancel bookings, and download PDF tickets.
+* **Checkout & Payment:** Integrated simulated payment flow (Razorpay style) with coupon support, convenience fees, and tax calculation.
 
-## Run it
+### 2. Vendor Portal (B2B)
+* **Inventory Management:** Vendors can add, edit, and manage their listings across Flights, Hotels, Buses, Cabs, and Trains.
+* **Booking Overview:** Vendors can view real-time bookings assigned to their inventory.
+* **Revenue Dashboard:** Visual charts and statistics showing vendor revenue, upcoming bookings, and service-level breakdowns.
 
-```bash
-# API — needs makemytrip-backend/.env (see .env.example)
-cd makemytrip-backend && npm install && npm run dev      # :5000
+### 3. Admin Portal
+* **System Overview:** Comprehensive dashboard showing platform-wide revenue, users, and booking counts.
+* **User & Vendor Management:** Approve/reject vendor applications, manage user accounts, and enforce platform security.
+* **Booking Management:** Search, view, confirm, or cancel bookings across the entire platform.
+* **Inventory Approval:** Admins review and approve new inventory submissions from vendors before they go live to users.
 
-# Web — needs makemytrip-frontend/.env.local
-cd makemytrip-frontend && npm install && npm run dev     # :5173
+## 🛠 Tech Stack
+
+### Frontend
+* **Framework:** React 19 / Vite
+* **Routing:** React Router DOM v7
+* **State Management:** Redux Toolkit / React Query
+* **Styling:** CSS/TailwindCSS (via DaisyUI), GSAP for animations
+* **Icons:** React Icons
+* **Charts:** Recharts
+* **Utilities:** html2canvas, jsPDF (for ticket generation)
+* **Testing:** Playwright (E2E), Vitest
+
+### Backend
+* **Runtime:** Node.js v22+
+* **Framework:** Express.js
+* **Database:** Google Firebase (Firestore Emulator used locally)
+* **Authentication:** Firebase Admin Auth & JWT
+* **Security & Utils:** Bcrypt.js, Express Rate Limit, Winston (Logging), Node-cache
+* **Payments:** Razorpay API (Integration format)
+* **Emails:** Nodemailer / Handlebars (Template driven emails)
+* **Testing:** Native Node.js test runner
+
+## 📦 Project Structure
+
+The repository is organized as a monorepo containing two main directories:
+
+```
+make-my-trip-practical/
+├── makemytrip-frontend/      # React + Vite Client Application
+│   ├── src/
+│   │   ├── components/       # Reusable UI components
+│   │   ├── context/          # React Context (Auth, Theme)
+│   │   ├── pages/            # Page-level components
+│   │   ├── redux/            # Redux store and slices
+│   │   ├── services/         # API integration methods
+│   │   └── utils/            # Helper functions
+│   └── package.json
+│
+└── makemytrip-backend/       # Node.js + Express API
+    ├── src/
+    │   ├── config/           # Environment and Firebase configuration
+    │   ├── controllers/      # Route handlers and business logic
+    │   ├── middleware/       # Auth and validation middleware
+    │   ├── routes/           # Express route definitions
+    │   ├── services/         # Database and third-party integrations
+    │   └── utils/            # Helper functions
+    ├── tests/                # API Test suites
+    ├── scripts/              # Database seeding and migration scripts
+    └── package.json
 ```
 
-## Test it
+## 💻 Running the Project Locally
 
+### Prerequisites
+* Node.js v22 or higher
+* npm or yarn
+* Firebase CLI (`npm i -g firebase-tools`)
+* Java (required for Firebase Emulator)
+
+### 1. Setup Backend
 ```bash
-# Frontend — unit and component, no browser or datastore needed. Gates CI.
-cd makemytrip-frontend && npm test
-cd makemytrip-frontend && npm run test:e2e     # Playwright; needs a browser
+cd makemytrip-backend
+npm install
 
-# Backend
-cd makemytrip-backend && npm run test:mocked   # offline, module-mocked
-cd makemytrip-backend && npm test              # hits real Firestore
-cd makemytrip-backend && npm run verify:payment -- --local-webhook-secret
+# Start the Firebase Emulator (Requires Java)
+npm run emulator
+
+# In a new terminal, run database seeds (if starting fresh)
+npm run seed:firestore
+
+# Start the development server (runs on port 5000)
+npm run dev
 ```
 
-`verify:payment` runs the whole chain against the real Razorpay test gateway:
-order creation, signature verification, webhook idempotency and quote binding.
+### 2. Setup Frontend
+```bash
+cd makemytrip-frontend
+npm install
 
-## Where things are
+# Start the Vite development server (runs on port 5173)
+npm run dev
+```
 
-| Path | |
-|---|---|
-| `makemytrip-frontend/` | React SPA — 75 route-split pages |
-| `makemytrip-backend/` | Express API, Firestore-only |
-| `CLAUDE.md` | **Start here.** Architecture, conventions and the rules that are not obvious from the code |
-| `BLOCKED.md` | What is blocked, on what, and what has already been done about it |
-| `PRODUCTION_ROADMAP.md` | Remaining milestones, sequenced with acceptance criteria |
-| `SECURITY_ROTATION.md` | Credential rotation runbook |
-| `DESIGN_SYSTEM.md` | Tokens and component conventions |
-| `docs/archive/` | Historical build notes — point-in-time, not maintained |
+### 3. Accessing the Application
+* **Frontend Application:** `http://localhost:5173`
+* **Backend API API:** `http://localhost:5000`
+* **Firestore Emulator UI:** `http://localhost:4000`
 
-## The rules worth knowing before you change anything
+## 🔒 Environment Variables
+Both `makemytrip-frontend` and `makemytrip-backend` require `.env` files. Ensure these are correctly populated based on your specific Firebase project and configuration requirements.
 
-- **Firestore is the only database.** No Mongoose, Prisma or Postgres. Do not
-  reintroduce them.
-- **Prices are calculated server-side only,** in `pricingService.js`. The client
-  renders the quote it is given and never computes a total.
-- **A booking requires a captured, caller-owned payment,** and must match the
-  quote it was paid for. `createBookingForPayment()` is the only function that
-  writes a booking.
-- **Inventory is reserved in the same transaction as the booking,** so there is
-  never a seat without a booking or a booking without a seat.
-- **Buttons take `.btn` plus a colour modifier.** `.btn-primary` alone is colour
-  with no geometry.
-- **Design tokens are declared once,** in `design-tokens.css`. A `:root` block in
-  a route-chunk stylesheet leaks to every page for the rest of the session.
+*Typical Backend `.env`:*
+```env
+PORT=5000
+NODE_ENV=development
+FIREBASE_PROJECT_ID=makemytrip-d9272
+FIREBASE_CLIENT_EMAIL=...
+FIREBASE_PRIVATE_KEY=...
+JWT_SECRET=your_secret_key
+FIRESTORE_EMULATOR_HOST=127.0.0.1:8080
+```
 
-`CLAUDE.md` has the full set with the reasoning behind each.
+*Typical Frontend `.env`:*
+```env
+VITE_API_URL=http://localhost:5000/api
+```
+
+## 🤝 Contributing
+1. Create a feature branch (`git checkout -b feature/amazing-feature`)
+2. Commit changes (`git commit -m 'Add amazing feature'`)
+3. Push to branch (`git push origin feature/amazing-feature`)
+4. Open a Pull Request
+
+---
+*Developed for TripOra - Travel Made Easy.*

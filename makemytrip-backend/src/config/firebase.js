@@ -46,13 +46,18 @@ if (!getApps().length) {
     // narrows an offline guess. A failed cert() below already reports a
     // malformed key without needing it.
     try {
-      initializeApp({
-        credential: cert({
-          projectId,
-          clientEmail,
-          privateKey,
-        }),
-      })
+      if (process.env.FIRESTORE_EMULATOR_HOST) {
+        console.log(`🔌 Connecting to Firestore Emulator at ${process.env.FIRESTORE_EMULATOR_HOST}`)
+        initializeApp({ projectId })
+      } else {
+        initializeApp({
+          credential: cert({
+            projectId,
+            clientEmail,
+            privateKey,
+          }),
+        })
+      }
       console.log('✅ Firebase app initialized successfully')
     } catch (err) {
       console.error('❌ Firebase initialization error:', err.message)

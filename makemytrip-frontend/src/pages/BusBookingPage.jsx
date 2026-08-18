@@ -117,14 +117,16 @@ export default function BusBookingPage() {
     const departure = typeof rawBus.departure === 'string' ? JSON.parse(rawBus.departure) : rawBus.departure
     const arrival = typeof rawBus.arrival === 'string' ? JSON.parse(rawBus.arrival) : rawBus.arrival
 
-    const dateToUse = searchDate || departure?.date
+    const dateToUse = searchDate || departure?.date || new Date().toISOString()
 
     return {
       ...rawBus,
-      departure: { ...departure, date: dateToUse },
-      arrival: { ...arrival, date: dateToUse },
-      source: departure?.city || rawBus.source,
-      destination: arrival?.city || rawBus.destination,
+      departure: { ...departure, date: dateToUse, time: rawBus.departureTime || departure?.time },
+      arrival: { ...arrival, date: dateToUse, time: rawBus.arrivalTime || arrival?.time },
+      source: departure?.city || rawBus.source || rawBus.from,
+      destination: arrival?.city || rawBus.destination || rawBus.to,
+      from: rawBus.from || departure?.city || rawBus.source,
+      to: rawBus.to || arrival?.city || rawBus.destination
     }
   })() : null
 
@@ -350,6 +352,7 @@ export default function BusBookingPage() {
         },
         bookingData: {
           type: 'bus',
+          vendorId: bus.vendorId || bus.vendor_id || null,
           busId: bus.id,
           busOperator: bus?.operatorName || bus?.operator || 'Bus Operator',
           busType: bus?.busType || bus?.type || 'AC',

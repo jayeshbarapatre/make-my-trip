@@ -78,10 +78,11 @@ const VendorHotels = lazy(() => import('./pages/VendorHotels'))
 const VendorHotelFormPage = lazy(() => import('./pages/VendorHotelFormPage'))
 const VendorHotelRooms = lazy(() => import('./pages/VendorHotelRooms'))
 const VendorBuses = lazy(() => import('./pages/VendorBuses'))
-import VendorBusForm from './components/Vendor/VendorBusForm'
 const VendorCabs = lazy(() => import('./pages/VendorCabs'))
 const VendorSettings = lazy(() => import('./pages/VendorSettings'))
 const VendorHelp = lazy(() => import('./pages/VendorHelp'))
+const VendorBookings = lazy(() => import('./pages/VendorBookings'))
+import VendorBusForm from './components/Vendor/VendorBusForm'
 const AdminBusApprovals = lazy(() => import('./pages/AdminBusApprovals'))
 const AdminCabApprovals = lazy(() => import('./pages/AdminCabApprovals'))
 const AdminTrains = lazy(() => import('./pages/AdminTrains'))
@@ -488,6 +489,7 @@ function AppContent() {
 
         <Route path="/vendor/login" element={<VendorLoginPage />} />
         <Route path="/vendor/dashboard" element={<ProtectedVendorRoute><VendorDashboard /></ProtectedVendorRoute>} />
+        <Route path="/vendor/bookings" element={<ProtectedVendorRoute><VendorBookings /></ProtectedVendorRoute>} />
         <Route path="/vendor/hotels" element={<ProtectedVendorRoute><VendorHotels /></ProtectedVendorRoute>} />
         <Route path="/vendor/hotels/create" element={<ProtectedVendorRoute><VendorHotelFormPage /></ProtectedVendorRoute>} />
         <Route path="/vendor/hotels/:id/edit" element={<ProtectedVendorRoute><VendorHotelFormPage /></ProtectedVendorRoute>} />

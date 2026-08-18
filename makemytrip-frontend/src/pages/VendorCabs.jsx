@@ -194,7 +194,7 @@ const VendorCabs = () => {
                         {cab.operatorName} - {cab.cabNumber}
                       </h3>
                       <p style={{ fontSize: '13.5px', color: 'var(--text-secondary)', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <i className="fas fa-map-marker-alt"></i> Base: {cab.currentCity || 'Not specified'}
+                        <i className="fas fa-route"></i> Route: {(cab.from && cab.to) ? `${cab.from} to ${cab.to}` : (cab.from || cab.currentCity || 'Not specified')}
                       </p>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
@@ -332,11 +332,7 @@ const VendorCabs = () => {
               </div>
             </div>
             <div style={{ padding: '16px 24px', background: 'var(--surface2)', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
-              <button 
-                className="btn" 
-                onClick={() => setConfirmDialog(null)}
-                disabled={processingId !== null}
-              >
+              <button className="btn btn-ghost" onClick={() => !processingId && setConfirmDialog(null)} disabled={processingId !== null}>
                 Cancel
               </button>
               <button 
